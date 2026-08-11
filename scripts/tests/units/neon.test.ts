@@ -474,7 +474,13 @@ describe('N5 — structure + documentation: nothing dropped, nothing fabricated'
     const nuke = shipped.burst.find((b: any) => hasKind(b, 'flatDamage'));
     expect(nuke.trigger).toEqual({ kind: 'burstCast' });
     expect(nuke.target).toEqual({ kind: 'enemy' });
-    expect(nuke.effects).toEqual([{ kind: 'flatDamage', atkPct: 528.97 }]);
+    // burstDesc: `neon` = SG/Fire base. Her damage block carries the literal jackal's amp
+    // names ('Affects 1 enemy unit(s) with the highest final DEF'), so she is tagged
+    // singleEnemy under the literal-only ruling (owner 2026-08-10). Board-inert — jackal
+    // sits in no graded comp — but a real eligibility claim.
+    expect(nuke.effects).toEqual([
+      { kind: 'flatDamage', atkPct: 528.97, burstDesc: 'singleEnemy' },
+    ]);
     const ammo = shipped.burst.find((b: any) => hasStat(b, 'maxAmmoFlat'));
     expect(ammo.trigger).toEqual({ kind: 'burstCast' });
     expect(ammo.target).toEqual({ kind: 'alliesOfWeapon', weapon: 'SG' });

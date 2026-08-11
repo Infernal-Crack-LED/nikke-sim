@@ -15,15 +15,31 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "escalating",
           "steps": [
-            { "kind": "buff", "stat": "targetMaxHpPct", "value": 10.03 },
-            { "kind": "buff", "stat": "targetMaxHpPct", "value": 20.06 },
-            { "kind": "buff", "stat": "targetMaxHpPct", "value": 57.76 }
+            {
+              "kind": "buff",
+              "stat": "targetMaxHpPct",
+              "value": 10.03
+            },
+            {
+              "kind": "buff",
+              "stat": "targetMaxHpPct",
+              "value": 20.06
+            },
+            {
+              "kind": "buff",
+              "stat": "targetMaxHpPct",
+              "value": 57.76
+            }
           ]
         }
       ]
@@ -32,31 +48,70 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 300 },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 167.45 }]
+      "trigger": {
+        "kind": "hitCount",
+        "count": 300
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 167.45
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "buff", "stat": "atkOfMaxHpPct", "value": 6.16 }]
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkOfMaxHpPct",
+          "value": 6.16
+        }
+      ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "flatDamage", "atkPct": 2439.36, "flavor": "distributed" }
+        {
+          "kind": "flatDamage",
+          "atkPct": 2439.36,
+          "flavor": "distributed",
+          "burstDesc": "allEnemies"
+        }
       ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 792 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 792,
+          "burstDesc": "singleEnemy"
+        }
+      ]
     }
   ]
 }

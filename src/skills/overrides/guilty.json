@@ -63,7 +63,8 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 284.32
+          "atkPct": 284.32,
+          "burstDesc": "singleEnemy"
         }
       ]
     },
@@ -84,7 +85,8 @@
         },
         {
           "kind": "flatDamage",
-          "atkPct": 277.71
+          "atkPct": 277.71,
+          "burstDesc": "singleEnemy"
         }
       ]
     }
@@ -92,6 +94,7 @@
   "caveats": [
     "skill1: 'Duplicates 8.81% of the ATK of the ally with the highest ATK' now uses the new highestAllyAtkPct stat (landed 2026-07-21) — resolves to 8.81% × max(all units' staticAtk) at apply time, feeding the same flat-ATK path as casterAtkPct. Solo (guilty is her own max) is byte-identical to the old casterAtkPct proxy; in a team it now correctly sizes off the highest-ATK ally instead of Guilty's own ATK. Basis is STATIC ATK (not final/buffed) per the caster-ATK convention (⚑ a future refinement could rank by live effectiveAtk if measurement shows the duplicate tracks buffed ATK).",
     "skill2: 'Increases stack count of stackable buffs by 1' is now encoded as an addStack effect on the same hitCount:120 / alliesOfElement Wind block. It accelerates her own S1 stack ramp by one trigger and bumps whatever stackable buffs Wind allies carry in teams.",
-    "burst: the 'at max stacks' gate on the DEF ▼ 20.25% + 277.71% additional-damage riders is not modeled (always-on) — a burst cast before the S1 ramp completes is slightly over-credited."
+    "burst: the 'at max stacks' gate on the DEF ▼ 20.25% + 277.71% additional-damage riders is not modeled (always-on) — a burst cast before the S1 ramp completes is slightly over-credited.",
+    "burst: the 284.32% nuke and its max-stack 277.71% rider both carry burstDesc:'singleEnemy'. Her damage block reads '■ Affects the 1 enemy unit(s) with the highest final DEF.' and the rider's '■ ... Affects the same target(s).' inherits that scope (exia precedent) — one article off the literal jackal's amp names ('skills with \"Affects 1 enemy unit(s)\" in the description'), and that article is a LOCALIZATION artifact, not a targeting rule: seven clause bodies are attested both ways across the roster and pepper, rapi (AR/Fire base) and maiden-ice-rose each use both spellings of the SAME clause in their own kit. Owner ruling 2026-08-10: the game is ASSUMED to key the amp off an internal targeting id rather than the rendered English, so the stray 'the' does not block eligibility. Assumption, not a measurement — safe today because jackal shares no graded comp, so the tag is board-inert (full A/B diff byte-identical); a popup read of an amped nuke would confirm it. ⚑ the amp's additive Damage-Up placement is unmeasured. Decidable by `npx tsx scripts/census-burst-amp-scope.ts`."
   ]
 }

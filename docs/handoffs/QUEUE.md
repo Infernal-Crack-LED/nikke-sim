@@ -58,6 +58,51 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ STANDING ASSUMPTION to confirm when convenient — the amp keys off an INTERNAL TARGETING ID,
+  not the rendered English.** Owner ruling 2026-08-10 ("it'd be really dumb if it didn't"), which
+  forgave the localization's stray article and tagged 6 units (`guilty` ×2, `nero`, `novel`,
+  `pepper`, `power` ×2, `rapi` — AR/Fire base). The artifact case is airtight (7 clause bodies
+  attested both ways; `pepper`, `rapi` and `maiden-ice-rose` each spell the same clause both ways
+  in their OWN kit), but the id-vs-text premise is an assumption, not a measurement. **A popup
+  read of an amped nuke on any of the six settles it**, and being wrong costs zero on the board
+  today — all six are on `jackal`'s side and `jackal` is in no graded comp.
+  [findings](2026-08-10-burst-amp-literal-scope-findings.md) §4a.
+
+- **⇒ ENGINE GAP, recorded: a burst-slot `dot`/`stackedNuke` can never be amp-eligible.**
+  `burstDesc` is authorable on `flatDamage` only, so FIVE units — `ark-ranger-black`,
+  `diesel-winter-sweets`, `guillotine-winter-slayer`, `maiden-ice-rose`, `mana` — carry a
+  QUALIFYING literal on their damage block and still cannot be tagged. Board-inert. The fix
+  threads `burstDesc` through the dot/stackedNuke records + their tick paths — an engine change,
+  deliberately out of the faithfulness sweep's scope.
+  [findings](2026-08-10-burst-amp-literal-scope-findings.md) §4b.
+
+- **⇒ ONE RULING WANTED (U28 class): `neon-vision-eye`'s Super Firepower "Deals 262.79% of final
+  ATK as additional damage" is modeled as an `extraHitDamagePct` RIDER, not a `flatDamage`
+  instance** — so it generates no burst gauge of its own, where a damage instance would. Per U28
+  that is a gauge-economy decision, not cosmetic. It may well be right (it is an "additional
+  damage" rider on her normals) but it is undocumented, and she carries no `caveats` array at
+  all. She is HOT (1.040), so the direction is not obviously wrong. Wants ONE ruling across the
+  U28 rider set rather than a unit-local fix.
+  [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
+
+- **⇒ FAITHFULNESS PASS phase-4 sweep — NEXT UP IS BATCH 7; a fresh session starts at
+  [2026-08-10-faithfulness-batch7-START-HERE.md](2026-08-10-faithfulness-batch7-START-HERE.md).**
+  Self-contained: tree state, what the three burst-amp rulings changed, the 15 remaining
+  graded-comp units with per-unit signals (comps / board / note length / history-phrase count), a
+  suggested six, the recurring-defect detector, and the batch-6 lesson about silent holes in
+  instruments. **It SUPERSEDES the batch-6 START-HERE doc** — do not work from that one.
+
+- **Sweep record (batches 1–6, all landed — reference only, nothing open here):**
+  [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
+  [batch 2](2026-08-10-faithfulness-batch2-findings.md) ·
+  [batch 3](2026-08-10-faithfulness-batch3-findings.md) ·
+  [batch 4 + remainder](2026-08-10-faithfulness-batch4-findings.md) ·
+  [batch 5](2026-08-10-faithfulness-batch5-findings.md) ·
+  [batch 6](2026-08-10-faithfulness-batch6-findings.md) ·
+  [burst-amp literal scope](2026-08-10-burst-amp-literal-scope-findings.md).
+  The batch-6 START-HERE doc is CLOSED (archived to `docs/handoffs/closed/`, untracked) — it was
+  superseded the same day by the burst-amp rulings.
+
 - **⇒ FAITHFULNESS PASS (2026-08-10) — plan of record:
   [2026-08-10-faithfulness-pass-audit.md](2026-08-10-faithfulness-pass-audit.md).** Repeat-pattern
   audit across engine-modeling-gaps + the formula/bucket docs + the unmodeled review (claims
@@ -71,11 +116,25 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > The 2026-08-09 faithfulness-enactment batch LANDED every enactable finding from the
 > unmodeled-entries audit (DECISIONS 2026-08-09 has the full list + board A/B). What remains:
 
-- **Exposed hot fits from the batch — run the pending direct measurements, then re-tune (never
-  re-fudge):** `jill` 0.966→1.924 (read the in-burst normal popup value tier in her focus
-  footage — true-flavored normals bypass DEF, a different value tier) and `maxwell` 0.889→1.252
-  (popup-read the burst window in run-G/N6 footage: railgun shot count + charged value vs the
-  modeled ~2 × 2440.26%).
+- **⇒ `jill` 0.966→1.924 — CAUSE FOUND 2026-08-10 (phase-4 batch 4), fix NOT enacted; owner +
+  `/scientific-method`.** Her burst same-weapon flavor swap restates no cadence and the engine's
+  swap branch never falls back to `u.pullsPerSec`, so her video-MEASURED 2.5/s is discarded and
+  she fires at the AR class default for 10s per burst. Three confirmations (code read; direct
+  shot count 9.28/s in-swap vs 1.98/s out; board 1.924 → 0.983 with `pullsPerSec: 2.5`
+  restated). Fix is unit-local (restate 2.5 on her swap) or engine-level (swap branch falls back
+  to `u.pullsPerSec` — behaviour-identical for every other carrier; she is the only unit with
+  both a `charFixes.pullsPerSec` and a swap). Instrument: jill spec group J8. The old DEF-bypass
+  hypothesis for her HOT is displaced (~0.02% at the bossDef-140 basis, not 2.4×) — the popup
+  read is still nice-to-have, not the explanation. Detail:
+  `2026-08-10-faithfulness-batch4-findings.md`.
+- **Exposed hot fit from the batch — run the pending direct measurement, then re-tune (never
+  re-fudge):** `maxwell` 0.889→1.252 (popup-read the burst window in run-G/N6 footage: railgun
+  shot count + charged value vs the modeled ~2 × 2440.26%).
+- **Self-scoped lifesteal recovery-emit split — wants ONE roster ruling (2026-08-10, batch 4):**
+  of the 13 kits with "Recovers X% of attack damage as HP", 8 emit a recovery event and 5 do not
+  (`d`, `moran`, `red-hood`, `rem`, `tia`). Verified board-INERT for `moran` (a self-scoped heal
+  fires recovery only at its own target, so it cannot reach an ally-side crown-class consumer; a
+  probe emit moved the board by zero) — this is a consistency call, not a fit one.
 - **`alice-wonderland-bunny` stack-grant reading:** now aligned to the +1-GRANT majority; if a
   datamine function-type read or footage confirms the 2026-07-28 cap-raise reading instead,
   revert her addStack block to unmodeled (revert path in her note).
@@ -104,14 +163,30 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `belorta` (S2 −3.52/5s) encodes at her own phase-4 review — the sole override-carrying
   remainder; `centi`/`product-23`/`trony` carry DEF ▼ kit lines but have no overrides;
   `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second carrier).
-  Enemy ATK ▼ stays genuinely inert. The non-literal `burstDesc` scope-string ruling landed
-  2026-08-10 (owner: they all count as targeting the boss — DECISIONS): ten tags enacted
-  across batches (6 + crow/signal/eunhwa/mica); units not yet reviewed with the same clause
-  class (e.g. `helm` "the enemy with the highest final ATK") tag at their own phase-4
-  review. Stale-phrase sweep remainder (grep-keyed, whitespace-normalized — the mica.test.ts
-  line-wrap defeated the exact-phrase grep): `jackal` (also cites deleted crow-precedent
-  wording), `quiry`, `ram` — fix at their reviews; `scripts/kit-autonomy/**` archives
-  presumed CHANGELOG-exempt (one explicit ruling wanted).
+  Batch 4 (`2026-08-10-faithfulness-batch4-findings.md`, the board-outlier slice: `jill`,
+  `ein`, `moran`, `maxwell`, `takina`, `elegg-boom-and-shock`) added NO DEF ▼ encodes —
+  verified against kit text, none of the six carries the line. **The DEF ▼ carrier list is
+  now EMPTY: `belorta` was struck at her batch-4 remainder review** — her S2 DEF ▼3.52% is
+  gated on "an attack hits more than 4 enemy unit(s)", unsatisfiable against a single partless
+  boss, so the line is out-of-domain inert (her override already disposed it that way and pins
+  it). Second census false positive after `cocoa`, and a NEW failure mode: a kit-text grep
+  finds the LINE but not its GATE. `centi`/`product-23`/`trony` still have no overrides;
+  `mast` stays unmodeled (flat caster-DEF-basis shave — build only on a second carrier).
+  Enemy ATK ▼ stays genuinely inert. **The `burstDesc` tag class is now DECIDED BY A CENSUS, not
+  by judgement (owner ruling 2026-08-10 — the amps are LITERAL-ONLY; DECISIONS):** a damage block
+  qualifies only when its own scope clause contains the exact string the amp names
+  (`"Affects all enemies"` / `"Affects 1 enemy unit(s)"`). Run
+  `npx tsx scripts/census-burst-amp-scope.ts`; it answers per unit and `--check` gates
+  over-tagging. That untagged 13 units whose tags rested on the cardinality reading, tagged the
+  3 true carriers in the graded slice, and left the board byte-identical. The earlier same-day
+  scope-string ruling still stands for what it actually answered — those clauses DO target the
+  boss — which is a different question. `cinderella` stays untagged, now by ruling rather than
+  pending a measurement, which is what resolves her 1.523-HOT refutation; the amp's 435.6
+  magnitude and ⚑ additive Damage-Up placement are untouched and still want the popup read. **Stale-phrase sweep remainder CLEARED 2026-08-10** (`jackal`, `quiry`, `ram` fixed
+  at their batch-4 remainder reviews — overrides AND spec headers; a whitespace-normalized
+  grep over all 67 overrides + all unit specs now returns zero for the "DEF=0" / "admits only" /
+  extinct-engine-quote class). `scripts/kit-autonomy/**` archives still carry it and are
+  presumed CHANGELOG-exempt — one explicit ruling wanted.
 - **⇒ Unit-card infographic follow-ups (3, code-verified still open 2026-08-02):**
   1. **No vector source for burst icons.** `web/public/nikke-icons/burst_*` is webp-only (~100px native)
      — fine at every size drawn today, but a surface wanting it large has nothing to rasterize from.

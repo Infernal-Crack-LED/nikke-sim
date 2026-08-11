@@ -60,6 +60,7 @@
 // "≥ her own burst count", not an exact count. Deterministic (no seed); event-log over totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
 import {
   controlComp,
   runComp,
@@ -70,6 +71,7 @@ import {
 const FPS = 60;
 /** controlComp slot order: liter 0 / crown 1 / ein 2 / helm 3. */
 const EIN = 2;
+const EIN_SLUG = 'ein';
 /** Kit per-instance Near Feather true damage (S2). */
 const FEATHER = 90.81;
 /** Prydwen-sourced feather cadence (MEASUREMENT-GATED ⚑2): 34 per her burst, 6 per rotation trickle. */
@@ -289,6 +291,21 @@ describe('ein — kit spec', () => {
     it('is crit-eligible and range-excluded (flatDamage rider convention)', () => {
       expect(nukes.every((d) => d.critEligible)).toBe(true);
       expect(nukes.every((d) => !d.rangeApplied)).toBe(true);
+    });
+
+    it('carries NO scope tag — a capped-multi clause is not the literal string the amp names', () => {
+      // "Affects 10 enemy unit(s) with the highest final DEF". Owner ruling 2026-08-10: the
+      // Burst-Skill-Damage amps are LITERAL-ONLY — trina's names 'skills with "Affects all
+      // enemies"', and a 10-target cap is not that string however plural it reads. Same
+      // outcome for the base-`eunhwa` precedent this tag was originally copied from (her
+      // "10 enemy unit(s) with the highest final ATK" — NOT `eunhwa-tactical-upgrade`, who
+      // has no burst damage line). Asserted ABSENT deliberately, not merely untested.
+      // Decided by `npx tsx scripts/census-burst-amp-scope.ts`.
+      const ov = loadOverride(EIN_SLUG) as any;
+      const nuke = ov.burst
+        .flatMap((b: any) => b.effects)
+        .find((e: any) => e.kind === 'flatDamage');
+      expect(nuke.burstDesc).toBeUndefined();
     });
   });
 

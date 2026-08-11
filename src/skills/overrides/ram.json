@@ -1,8 +1,8 @@
 {
-  "note": "Kit-autonomy gauntlet 2026-08-05 (driver-authored; cross-family S2b claude-fable-5 / S5-S6 claude-opus-5 / S7 kimi-k3). ram (Ram) — SR / Defender / Fire / Burst I (cd 40s, ammo 6, chargeFrames 60, reloadFrames 141, hitsPerShot 1, normalMult 69.04 / chargeMult 250 / coreMult 200, critRate 15 / critDamage 150). Re:ZERO collab BASE counterpart of rem (the MG/Burst-II offensive sister); FROM-SCRATCH build — no prior override existed, simSupported was false. A pure Defender: her whole kit is survivability (an enemy ATK debuff, a self Max-HP grant, an ally DEF grant, a team shield) plus ONE rotation line — the Full-Burst-end refund of her own burst cooldown. In the v1 DPS scope (no HP pool, boss deals no damage, no enemy ATK modeled) only two surfaces are observable: the burst CDR (moves her cast cadence — she gates the stage-1 fill) and the burst shield (emits the shield EVENT that fires 'shielded' consumers / opens requiresShielded windows). MODELED: (S1b) 'when Full Burst ends with an ally from the same squad still on the battlefield → self: Cooldown of Burst Skill ▼ 20.16 sec' = fullBurstEnd → self burstCdr 20.16 — TRIGGER IDENTITY is FB END (the kit says 'when Full Burst ends', not enters); rotation-LOAD-BEARING: the refund collapses her 40s CD to ≈19.8s effective, so the team's stage-1 fill cadence doubles once the gauge cycle is below ~20s. SAME-SQUAD GATE modeled ALWAYS-SATISFIED (the anchor-innocent-maid precedent): the engine HAS the primitive (teamHas.sameSquad, fails closed off src/data/squads.ts) but ram's collab squad is UNCONFIRMED — QUEUE.md 'same-squad primitive migrations' says 'collab-unit squad unknown, confirm before authoring', and squad membership is owner-confirmed fact, never derived; the 'still on the battlefield' clause is scope-trivial regardless (nobody dies at scope lock). (S2a) 'self: Max HP ▲ 40.72% without restoring HP for 10 sec' = interval:15 → self targetMaxHpPct 40.72, durationSec 10 — kit-silent trigger on a CD skill = pure internal timer at the datamined skillCooldownsSec.skill2 = 15s (pepper / helm-aquamarine convention, first fire t=15); 'Max HP ▲ X%' with no 'of the skill user' clause = the TARGET's OWN % (targetMaxHpPct — blanc/maiden/2b precedent; plain maxHpPct is cube-only and validator-rejected in overrides); self-targeted so caster===target → an OWN-kit maxHpFlat grant (e3-eligible). Damage-INERT for ram (her kit has no atkOfMaxHpPct consumer — pinned: removing the block moves no total). 'WITHOUT restoring HP' is honored by construction: a Max-HP grant never emits a recovery event in this engine. (BU) 'all allies: Generates a Shield with 10.08% of the skill user's final Max HP for 10 sec' = burstCast → allies → shield maxHpPct 10.08 durationSec 10 — event-only shield (no HP pool in v1): opens each target's shield-state window (requiresShielded gate) and fires their 'shielded' triggers (naga-class consumers read her shield cadence). KEYED burstCast (her OWN Burst-I cast), NOT fullBurstEnter — pinned in a two-B1 alternation probe (liter opens chains ram sits out: no shield there). The 10.08% magnitude rides on the effect for kit completeness (engine records it; no HP pool to act on; 'final Max HP' caster basis noted). UNMODELED (both damage-inert by construction in v1, verbatim below): S1a the enemy ATK▼ debuff (the engine models NO enemy ATK — the enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0, 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0'; the nearest-wrong damageTakenPct is a DIFFERENT mechanic — boss-takes-more — that would over-credit the whole team; query/pepper/cocoa precedent) and S2b the caster-basis DEF grant (no caster-DEF-scaled StatKey — defPct scales the TARGET's own DEF, wrong basis, and is inert in v1 regardless; the target clause '2 lowest remaining HP' HAS a primitive, the blocker is purely the payload). RESIDUAL ⚑ FLAGS: ⚑1 CADENCE TUPLE (mandatory, datamine-unreliable): pullsPerSec / chargeFrames 60 / reloadFrames 141 shipped at datamine-synced base values; drives her shot count and gauge contribution. Estimate = datamine. Recipe: rounds/min + reload gap from any ram focus video. Tier: low. ⚑2 SAME-SQUAD GATE: modeled always-satisfied; if her in-game squad requires a collab partner (rem/emilia), the CDR over-fires in non-collab teams (impact = her burst/shield cadence only — damage-inert except through shield consumers like naga). Recipe: owner confirms the in-game squad field → curate src/data/squads.ts → swap in teamHas.sameSquad (QUEUE.md migration item). Tier 2. ⚑3 S2 first-fire phase (t=15 vs t=0) — the interval convention, unpinned by footage; worth one 10s grant window. Tier: low. EVIDENCE TIER: every magnitude/duration/trigger is kit-text-literal (DATAMINED L10); the only estimates are the three ⚑s. TIER 2 (scoped self-only CDR, fullBurstEnd trigger identity, burstCast-vs-fullBurstEnter keying, shield-event channel with cross-unit consumers). Faithful>fit; measured>fudge.",
+  "note": "Kit-autonomy gauntlet 2026-08-05 (driver-authored; cross-family S2b claude-fable-5 / S5-S6 claude-opus-5 / S7 kimi-k3). ram (Ram) — SR / Defender / Fire / Burst I (cd 40s, ammo 6, chargeFrames 60, reloadFrames 141, hitsPerShot 1, normalMult 69.04 / chargeMult 250 / coreMult 200, critRate 15 / critDamage 150). Re:ZERO collab BASE counterpart of rem (the MG/Burst-II offensive sister); FROM-SCRATCH build — no prior override existed, simSupported was false. A pure Defender: her whole kit is survivability (an enemy ATK debuff, a self Max-HP grant, an ally DEF grant, a team shield) plus ONE rotation line — the Full-Burst-end refund of her own burst cooldown. In the v1 DPS scope (no HP pool, boss deals no damage, no enemy ATK modeled) only two surfaces are observable: the burst CDR (moves her cast cadence — she gates the stage-1 fill) and the burst shield (emits the shield EVENT that fires 'shielded' consumers / opens requiresShielded windows). MODELED: (S1b) 'when Full Burst ends with an ally from the same squad still on the battlefield → self: Cooldown of Burst Skill ▼ 20.16 sec' = fullBurstEnd → self burstCdr 20.16 — TRIGGER IDENTITY is FB END (the kit says 'when Full Burst ends', not enters); rotation-LOAD-BEARING: the refund collapses her 40s CD to ≈19.8s effective, so the team's stage-1 fill cadence doubles once the gauge cycle is below ~20s. SAME-SQUAD GATE modeled ALWAYS-SATISFIED (the anchor-innocent-maid precedent): the engine HAS the primitive (teamHas.sameSquad, fails closed off src/data/squads.ts) but ram's collab squad is UNCONFIRMED — QUEUE.md 'same-squad primitive migrations' says 'collab-unit squad unknown, confirm before authoring', and squad membership is owner-confirmed fact, never derived; the 'still on the battlefield' clause is scope-trivial regardless (nobody dies at scope lock). (S2a) 'self: Max HP ▲ 40.72% without restoring HP for 10 sec' = interval:15 → self targetMaxHpPct 40.72, durationSec 10 — kit-silent trigger on a CD skill = pure internal timer at the datamined skillCooldownsSec.skill2 = 15s (pepper / helm-aquamarine convention, first fire t=15); 'Max HP ▲ X%' with no 'of the skill user' clause = the TARGET's OWN % (targetMaxHpPct — blanc/maiden/2b precedent; plain maxHpPct is cube-only and validator-rejected in overrides); self-targeted so caster===target → an OWN-kit maxHpFlat grant (e3-eligible). Damage-INERT for ram (her kit has no atkOfMaxHpPct consumer — pinned: removing the block moves no total). 'WITHOUT restoring HP' is honored by construction: a Max-HP grant never emits a recovery event in this engine. (BU) 'all allies: Generates a Shield with 10.08% of the skill user's final Max HP for 10 sec' = burstCast → allies → shield maxHpPct 10.08 durationSec 10 — event-only shield (no HP pool in v1): opens each target's shield-state window (requiresShielded gate) and fires their 'shielded' triggers (naga-class consumers read her shield cadence). KEYED burstCast (her OWN Burst-I cast), NOT fullBurstEnter — pinned in a two-B1 alternation probe (liter opens chains ram sits out: no shield there). The 10.08% magnitude rides on the effect for kit completeness (engine records it; no HP pool to act on; 'final Max HP' caster basis noted). UNMODELED (both damage-inert by construction in v1, verbatim below): S1a the enemy ATK▼ debuff (the engine models NO enemy ATK — the v1 boss deals no damage, so an ATK debuff on it has nothing to scale; the nearest-wrong damageTakenPct is a DIFFERENT mechanic — boss-takes-more — that would over-credit the whole team (cocoa precedent). Enemy DEF ▼ is NOT in the same class: it has had a channel since 2026-08-10) and S2b the caster-basis DEF grant (no caster-DEF-scaled StatKey — defPct scales the TARGET's own DEF, wrong basis, and is inert in v1 regardless; the target clause '2 lowest remaining HP' HAS a primitive, the blocker is purely the payload). RESIDUAL ⚑ FLAGS: ⚑1 CADENCE TUPLE (mandatory, datamine-unreliable): pullsPerSec / chargeFrames 60 / reloadFrames 141 shipped at datamine-synced base values; drives her shot count and gauge contribution. Estimate = datamine. Recipe: rounds/min + reload gap from any ram focus video. Tier: low. ⚑2 SAME-SQUAD GATE: modeled always-satisfied; if her in-game squad requires a collab partner (rem/emilia), the CDR over-fires in non-collab teams (impact = her burst/shield cadence only — damage-inert except through shield consumers like naga). Recipe: owner confirms the in-game squad field → curate src/data/squads.ts → swap in teamHas.sameSquad (QUEUE.md migration item). Tier 2. ⚑3 S2 first-fire phase (t=15 vs t=0) — the interval convention, unpinned by footage; worth one 10s grant window. Tier: low. EVIDENCE TIER: every magnitude/duration/trigger is kit-text-literal (DATAMINED L10); the only estimates are the three ⚑s. TIER 2 (scoped self-only CDR, fullBurstEnd trigger identity, burstCast-vs-fullBurstEnter keying, shield-event channel with cross-unit consumers). Faithful>fit; measured>fudge.",
   "unmodeled": {
     "skill1": [
-      "■ Activates after landing 5 normal attack(s). Affects the target(s).\nATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v1 boss deals no damage; the enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0), offensively inert by construction; the nearest-wrong mapping (damageTakenPct) is a different mechanic (boss-takes-more) that would over-credit the whole team."
+      "■ Activates after landing 5 normal attack(s). Affects the target(s).\nATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK because the v1 boss deals no damage, so there is nothing for the debuff to scale. Offensively inert by construction; the nearest-wrong mapping (damageTakenPct) is a different mechanic (boss-takes-more) that would over-credit the whole team."
     ],
     "skill2": [
       "■ Affects 2 ally unit(s) with the lowest remaining HP.\nDEF ▲ 11.34% of the skill user's DEF for 5 sec. — caster-basis flat DEF add: no such primitive (defPct scales the TARGET's own DEF — wrong basis — and is inert in v1 regardless); the target clause has a primitive (alliesLowestHp count 2, leftmost stand-in) — the blocker is purely the payload."
@@ -11,7 +11,7 @@
   },
   "caveats": [
     "skill1: the burst-CDR's 'an ally from the same squad still on the battlefield' clause is modeled ALWAYS-SATISFIED — ram's collab squad is uncurated (squad membership is owner-confirmed fact; QUEUE.md 'same-squad primitive migrations' says confirm before authoring). If her in-game squad requires rem/emilia, the CDR over-fires in non-collab teams (⚑2: swap in teamHas.sameSquad once curated)",
-    "skill1: the 'after landing 5 normal attacks → target ATK ▼ 7.95%' line is UNMODELED — the engine drops enemy ATK debuffs (they cannot affect damage dealt at DEF=0); NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic)",
+    "skill1: the 'after landing 5 normal attacks → target ATK ▼ 7.95%' line is UNMODELED — the engine models no enemy ATK (the boss deals no damage, so the debuff has nothing to scale); NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic). Enemy DEF ▼ is a separate case with a live channel since 2026-08-10; ATK ▼ is the genuinely inert one.",
     "skill2: the Max-HP grant fires on the interval:15 convention for kit-silent CD skills (first fire t=15; ⚑3 phase unpinned by footage); it is damage-INERT for ram (no atkOfMaxHpPct consumer) and 'without restoring HP' is honored by construction (a Max-HP grant never emits recovery events)",
     "skill2: the DEF grant (11.34% of the skill user's DEF → 2 lowest-HP allies) is UNMODELED — no caster-basis DEF stat; defPct would be the wrong basis (target's own %) and is inert in v1 anyway",
     "burst: the shield is EVENT-ONLY (no HP pool in v1) — it opens shield-state windows and fires 'shielded' triggers (naga-class consumers), keyed to ram's OWN burstCast (never on Full Bursts she sat out); the 10.08%-of-final-Max-HP magnitude is recorded for kit completeness only"
@@ -19,16 +19,30 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "fullBurstEnd" },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "burstCdr", "seconds": 20.16 }]
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 20.16
+        }
+      ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "interval", "sec": 15 },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "interval",
+        "sec": 15
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -42,10 +56,18 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "shield", "maxHpPct": 10.08, "durationSec": 10 }
+        {
+          "kind": "shield",
+          "maxHpPct": 10.08,
+          "durationSec": 10
+        }
       ]
     }
   ]

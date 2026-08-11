@@ -17,10 +17,10 @@
 //      ■ all Defender allies: Critical Rate ▲ 19.9% for 10 sec.                    [Q4]
 //
 // Modeling posture (full story in the override note):
-//   * The S1 enemy ATK▼ debuff is UNMODELED: the engine has no enemy-ATK model (the boss deals no
-//     damage; applyEffect's enemy branch accepts only damageTakenPct/distributedDamagePct > 0 —
-//     "other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0", sim.ts). It is
-//     offensively inert by construction, verbatim in unmodeled (mast/novel DEF▼ precedent).
+//   * The S1 enemy ATK▼ debuff is UNMODELED: the engine has no enemy-ATK model, because the v1
+//     boss deals no damage and so an ATK debuff on it has nothing to scale. Offensively inert by
+//     construction, verbatim in unmodeled. Enemy DEF ▼ is NOT the same case — it has had a
+//     channel since 2026-08-10; enemy ATK ▼ is the genuinely inert enemy debuff.
 //   * S1's ally ATK buff is a CASTER-ATK FLAT add ("5.81% OF THE SKILL USER'S ATK" — not the
 //     target's own %): casterAtkPct resolves (5.81/100)×quiry.staticAtk at apply time. The kit
 //     says plain "the skill user's ATK", not "final ATK", so the STATIC basis is the literal-word
@@ -84,7 +84,9 @@ const buffs = (evs: SimEvent[]) =>
 const quiryShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'quiry');
 const quiryCasts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'quiry');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'quiry'
+  );
 
 /** asuka's "when recovery takes effect" self ATK buff — one buffApply per recovery event she
  *  receives (applications AND refreshes both log). The Q3 recovery-channel observable. */

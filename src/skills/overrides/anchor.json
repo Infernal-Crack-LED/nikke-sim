@@ -3,10 +3,19 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "lastBullet" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "buff", "stat": "defPct", "value": 23.82, "durationSec": 5 }
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 23.82,
+          "durationSec": 5
+        }
       ]
     }
   ],
@@ -14,9 +23,19 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 304.45 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 304.45,
+          "burstDesc": "allEnemies"
+        }
+      ]
     }
   ],
   "unmodeled": {

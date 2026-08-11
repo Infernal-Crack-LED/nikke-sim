@@ -10,7 +10,8 @@
     "skill2: stage-2/stage-3 stacks build in parallel with stage-1 (the kit's stage-unlock ordering is not encoded) — slight over-credit during ramp/post-reload (⚑)",
     "skill2: Hit Rate stacks modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19: feeds her SMG core rate via acrForHR); in-game magnitude of the core-rate lift unmeasured (⚑)",
     "all: cadence = EFFECTIVE 20 pulls/s (SMG frame quantization DEFAULT-ON since 2026-07-23: rate_of_fire 1440rpm = 2.5 frames → ceil 3 = 20.0/s, ammo-counter MEASURED; 24/s is the un-quantized SMGRATE=24 revert arm only). muzzle_count 2 → 40 bullets/s, but the shot damage SPLITS over the 2 bullets (nAM 10.12 = per-bullet 5.06 × 2 muzzles, already baked in), so throughput = 20 shots × 10.12 is self-consistent, NOT over-modeled (owner-confirmed 2026-07-19). reloadFrames 81 still raw datamine (⚑). Kit-autonomy gauntlet 2026-07-25 (S7 judge): every proxy + stack window re-derived at 20/s — all still saturate, encoding cadence-robust. Her flag-off HOT baseline is the kit (Explore-Route stage-2/3 parallel-build over-credit, ⚑2), not cadence.",
-    "burst: the 1736.31% distributed nuke carries no explicit crit field, so it inherits the engine crit-ON default for function damage (crit at the caster rate); damage-calculation §1 marks distributed-damage crit as disputed. Kit-autonomy gauntlet 2026-07-25 (S7 judge, low severity): documented, number unchanged. Resolution is engine-global (settle once for all distributed carriers): on a focus recording of her burst, read the nuke popup colour/icon across several casts — orange + icon = crit-eligible, white-only across many casts = crit-exempt; a crit/non-crit popup PAIR at ×1.5 settles it outright."
+    "burst: the 1736.31% distributed nuke carries no explicit crit field, so it inherits the engine crit-ON default for function damage (crit at the caster rate); damage-calculation §1 marks distributed-damage crit as disputed. Kit-autonomy gauntlet 2026-07-25 (S7 judge, low severity): documented, number unchanged. Resolution is engine-global (settle once for all distributed carriers): on a focus recording of her burst, read the nuke popup colour/icon across several casts — orange + icon = crit-eligible, white-only across many casts = crit-exempt; a crit/non-crit popup PAIR at ×1.5 settles it outright.",
+    "burst: the 1736.31% distributed nuke carries burstDesc:'allEnemies' — its kit line sits under '■ Affects all enemies.', the exact string trina's Spread Roots names, so she is a TRUE carrier under the literal-only ruling (owner 2026-08-10). It reads the trina-family burstSkillAoeDamagePct amp when cast inside an amp window; no amp shares her comps today, so the tag is board-inert (full A/B diff byte-identical). The distributed flavor is orthogonal — the amp lands in Damage Up, the distributed split in its own bucket. ⚑ the amp's additive Damage-Up placement is unmeasured."
   ],
   "skill1": [
     {
@@ -126,7 +127,12 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "enemy" },
       "effects": [
-        { "kind": "flatDamage", "atkPct": 1736.31, "flavor": "distributed" }
+        {
+          "kind": "flatDamage",
+          "atkPct": 1736.31,
+          "flavor": "distributed",
+          "burstDesc": "allEnemies"
+        }
       ]
     }
   ]

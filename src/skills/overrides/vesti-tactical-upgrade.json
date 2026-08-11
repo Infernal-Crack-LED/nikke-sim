@@ -121,7 +121,8 @@
         {
           "kind": "flatDamage",
           "atkPct": 492.3,
-          "flavor": "true"
+          "flavor": "true",
+          "burstDesc": "allEnemies"
         }
       ]
     }

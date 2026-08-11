@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 154 | 37.2% |
-| Other / see caveats | 104 | 25.1% |
-| Missing engine primitive / trigger | 88 | 21.3% |
-| Out-of-domain / parser unsupported | 30 | 7.2% |
-| Partless boss | 12 | 2.9% |
+| Defensive / HP / shield / aggro | 156 | 37.9% |
+| Other / see caveats | 97 | 23.5% |
+| Missing engine primitive / trigger | 90 | 21.8% |
+| Out-of-domain / parser unsupported | 30 | 7.3% |
 | Weapon-state / shot-count approximation | 11 | 2.7% |
+| Partless boss | 11 | 2.7% |
 | Self-status / stack gate | 8 | 1.9% |
-| RNG / probabilistic | 4 | 1.0% |
+| RNG / probabilistic | 6 | 1.5% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **414** | 100.0% |
+| **Total** | **412** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (154)
+### Defensive / HP / shield / aggro (156)
 
 **A2** (a2)
 
@@ -239,11 +239,13 @@ Recovers 10.77% of the skill user's final Max HP as HP.
 
 - **skill1:** Activates only when in Heat Emission status. Affects self. Recovers 2% Max HP/1s continuously.
   - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
+- **burst:** Prediction: Current HP ▼ 1% every 1 sec, lasts for 10 sec (self HP cost; no HP pool is modeled, no damage channel)
+  - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
 
 **Jackal** (jackal)
 
 - **skill1:** ATK ▼ 9.09% for 10 sec.
-  - *Why:* ATK ▼ 9.09% for 10 sec.') is UNMODELED IN FULL (all three verbatim lines in unmodeled.skill1): the trigger is a counter of hits RECEIVED — the Damage-Taken half is now encoded on the real attacked:10 trigger (enacted 2026-08-09) but the sim has NO incoming-damage model to feed it and the v1 boss is immortal and never acts, so the block is dormant at scope and applies nothing
+  - *Why:* ATK ▼ 9.09% for 10 sec.'): the Damage-Taken half IS encoded on the kit's real `attacked:10` trigger, and is honestly DORMANT at scope lock — the sim has no incoming-damage model and the v1 boss never acts, so nothing feeds the counter and the block applies nothing
 
 **Kilo** (kilo)
 
@@ -380,11 +382,11 @@ Damage dealt to Shield ▲ 150% continuously.
 - **skill2:** Once: Max HP ▲ 91% for 3 sec. Activates once per battle.
   - *Why:* See unit note / caveats
 - **skill2:** Twice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.
-  - *Why:* [2026-07-17 THEME-13] Her S2 Perseverance 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are DELIBERATELY still unmodeled: they are HP-loss-gated ('Activates when HP falls below 20%'), so on the immortal partless boss (HP never drops) they NEVER fire — a kill/HP-gate (theme 18), not a theme-13 Max-HP-grant gap
+  - *Why:* PERSEVERANCE: her S2 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are unmodeled by design — HP-loss-gated ('Activates when HP falls below 20%'), so against the immortal partless boss they never fire, and they are self-targeted survival buffs with no atkOfMaxHpPct consumer on her, so they would be offensively inert even if they did
 - **skill2:** Three Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle.
-  - *Why:* [2026-07-17 THEME-13] Her S2 Perseverance 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are DELIBERATELY still unmodeled: they are HP-loss-gated ('Activates when HP falls below 20%'), so on the immortal partless boss (HP never drops) they NEVER fire — a kill/HP-gate (theme 18), not a theme-13 Max-HP-grant gap
+  - *Why:* PERSEVERANCE: her S2 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are unmodeled by design — HP-loss-gated ('Activates when HP falls below 20%'), so against the immortal partless boss they never fire, and they are self-targeted survival buffs with no atkOfMaxHpPct consumer on her, so they would be offensively inert even if they did
 - **burst:** Recovers 36.14% of attack damage as HP over 10 sec.
-  - *Why:* See unit note / caveats
+  - *Why:* ⚑ RECOVERY-EVENT SHAPE (checked 2026-08-10, phase-4 batch 4 — no change needed): her burst's 'Recovers 36.14% of attack damage as HP for 10 sec' is unmodeled as an HP magnitude (correct — no HP pool) and emits no recovery EVENT. Verified board-INERT rather than assumed: the lifesteal is SELF-scoped, the engine's heal effect fires recovery only at the block's own targets, and a 'recovery'-triggered consumer fires only when ITS unit receives one — so a self-lifesteal can never reach the crown-class ally consumer she shares the N9 comp with. A probe adding a shotFired+swapGate self-heal emit to her burst moved the board by exactly zero. Emitting it would still be more faithful (a future self-scoped on-recovery consumer would see it), so this is a consistency item, not a fit item: roster-wide, 8 of the 13 'Recovers X% of attack damage as HP' carriers emit and 5 (incl. her) do not. Wants one roster-wide ruling, not a unit-local fix.
 - **burst:** Attract: Taunts all enemies for 10 sec.
   - *Why:* See unit note / caveats
 - **burst:** Note: Unable to take cover while using Burst Skill.
@@ -469,6 +471,8 @@ Refresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 
 
 **Quiry** (quiry)
 
+- **skill1:** ■ Activates when hitting a target with Full Charge. Affects the target. ATK ▼ 8.94% of the skill user's ATK for 3 sec. — enemy ATK debuff: the engine models no enemy ATK because the v1 boss deals no damage, so there is nothing for the debuff to scale. Offensively inert by construction (unlike enemy DEF ▼, which has had a channel since 2026-08-10).
+  - *Why:* skill1: the enemy ATK▼ line is unmodeled — the engine models no enemy ATK (the boss deals no damage); offensively inert by construction, carried verbatim in unmodeled. Not to be confused with enemy DEF ▼, which the engine has channelled since 2026-08-10.
 - **burst:** ■ Affects all allies. Recovers 6.96% of the skill user's final Max HP every 1 sec for 10 sec. — magnitude only: the engine `heal` carries no HP amount by design (no HP pool); the 10-second recovery-event WINDOW is modeled (burst heal ticks:10 intervalSec:1).
   - *Why:* burst: the heal carries no HP amount — recovery-event window only (ticks:10 intervalSec:1); the 6.96%-of-final-Max-HP magnitude is unmodeled, not fudged
 
@@ -625,7 +629,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (104)
+### Other / see caveats (97)
 
 **A2** (a2)
 
@@ -662,11 +666,6 @@ Attract: Taunts all enemies for 5 sec.
   - *Why:* skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).
 - **burst:** Charges Extrasensory to 100%.
   - *Why:* Burst ATK 73.16/10s on burstCast (her own cast — hard rule 6); 'Charges Extrasensory to 100%' folded into the trajectory derivation → unmodeled
-
-**D: Killer Wife** (d-killer-wife)
-
-- **skill1:** ■ Activates when attacking with Full Charge for 3 time(s). Affects self.
-  - *Why:* See unit note / caveats
 
 **Delta: Ninja Thief** (delta-ninja-thief)
 
@@ -712,10 +711,6 @@ Attract: Taunts all enemies for 5 sec.
   - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
 - **skill2:** Removed upon reloading to max ammunition.
   - *Why:* See unit note / caveats
-- **burst:** Prediction:
-  - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
-- **burst:** Current HP ▼ 1% every 1 sec, lasts for 10 sec.
-  - *Why:* See unit note / caveats
 
 **Laplace: Ultimate Hero** (laplace-ultimate-hero)
 
@@ -751,11 +746,6 @@ Attract: Taunts all enemies for 5 sec.
   - *Why:* See unit note / caveats
 - **skill1:** Removes Metal γ.
   - *Why:* See unit note / caveats
-
-**Maxwell** (maxwell)
-
-- **skill2:** Activates when there are above 5 enemy units, excluding Nikkes. Affects self. Critical Rate ▲ 4.83%. Critical Damage ▲ 13.91%.
-  - *Why:* Skill2 (Crit Rate 4.83% + Crit Damage 13.91%) is gated on 'above 5 enemy units, excluding Nikkes'; in a single-boss solo raid that condition is never met, so the parser correctly drops it (deliberately left inactive)
 
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
@@ -836,21 +826,16 @@ Critical Rate ▲ 3.56% for 5 sec.
 - **burst:** Designated Target: ATK ▼ 5.02% for 10 sec. (the STATUS is modeled via targetStatus; its ATK-down content is inert in v1 — the boss never attacks)
   - *Why:* STATUS WINDOW: durationSec 10 is DATAMINED, not inferred — the burst line "Designated Target: ATK 5.02% down for 10 sec" IS the status line, so the 10s is the status's own window
 
-**Quiry** (quiry)
-
-- **skill1:** ■ Activates when hitting a target with Full Charge. Affects the target. ATK ▼ 8.94% of the skill user's ATK for 3 sec. — enemy ATK debuff: the engine models no enemy ATK (v1 boss deals no damage; the enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0), offensively inert by construction.
-  - *Why:* skill1: the enemy ATK▼ line is unmodeled — the engine models no enemy ATK (boss deals no damage); offensively inert by construction, carried verbatim in unmodeled
-
 **Ram** (ram)
 
 - **skill1:** ■ Activates after landing 5 normal attack(s). Affects the target(s).
-ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v1 boss deals no damage; the enemy-buff branch accepts only damageTakenPct/distributedDamagePct > 0), offensively inert by construction; the nearest-wrong mapping (damageTakenPct) is a different mechanic (boss-takes-more) that would over-credit the whole team.
-  - *Why:* skill1: the 'after landing 5 normal attacks → target ATK ▼ 7.95%' line is UNMODELED — the engine drops enemy ATK debuffs (they cannot affect damage dealt at DEF=0); NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic)
+ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK because the v1 boss deals no damage, so there is nothing for the debuff to scale. Offensively inert by construction; the nearest-wrong mapping (damageTakenPct) is a different mechanic (boss-takes-more) that would over-credit the whole team.
+  - *Why:* skill1: the 'after landing 5 normal attacks → target ATK ▼ 7.95%' line is UNMODELED — the engine models no enemy ATK (the boss deals no damage, so the debuff has nothing to scale); NOT damageTakenPct (that is 'boss takes more damage' — a different mechanic). Enemy DEF ▼ is a separate case with a live channel since 2026-08-10; ATK ▼ is the genuinely inert one.
 
 **Rapi: Red Hood** (rapi-red-hood)
 
 - **skill2:** Attachable Projectile — Max Ammo: 1 (COSMETIC per owner ruling 2026-08-04: one rocket 'loaded' at meter-full fires alongside the bullet on the first frame after 100%; not reflected in game, no damage effect — nothing to model)
-  - *Why:* Max Ammo:1 reclassified COSMETIC (meter-full loads one rocket alongside the bullet; not reflected in game, no damage effect)
+  - *Why:* MECHANIC (owner-measured red rocket meter): the meter right of the crosshair fills 0->100%; at 100% one rocket attaches
 
 **Raven** (raven)
 
@@ -956,14 +941,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 **Takina** (takina)
 
 - **skill2:** Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)
-  - *Why:* S2 is a 15s-cooldown pulse (cooldown NOT in the DB text; Prydwen COMMUNITY ⚑ confirms 15s): enemies Damage Taken 10.09%/5s + 2s stun (boss-inert, UNMODELED), allies True Damage 140.49%/10s
-
-**Trina** (trina)
-
-- **burst:** Changes Spread Roots to Wilted Roots.
-  - *Why:* burst: Spread Roots is MODELED (2026-08-10, faithfulness pass): burstSkillAoeDamagePct 435.6 to all allies for 5s on her burstCast — the kit gates it on 'enemy count aside from Nikkes is 1', which is ALWAYS true in the solo-raid sim, so no gate is encoded. Read only by burst-slot hits tagged burstDesc:'allEnemies' (scarlet/liberalio nukes tagged; further carriers tag as reviewed). As a B2 her cast precedes the chain's B3 by under a second, so the window covers the nuke. The Wilted Roots branch (enemy count ≥2) is unreachable at scope and stays unmodeled verbatim. ⚑ additive Damage-Up placement per the '○○ Damage ▲' family rule (SSOT damage-formula §2); a popup read of an amped all-enemies nuke pins it.
-- **burst:** Wilted Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 64.46% for 5 sec.
-  - *Why:* burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).
+  - *Why:* S2 is a 15s-cooldown pulse (cooldown NOT in the DB text; Prydwen COMMUNITY ⚑ supplies the 15s): enemies Damage Taken 10.09%/5s + 2s stun (boss-inert, UNMODELED), allies True Damage 140.49%/10s
 
 **Velvet** (velvet)
 
@@ -995,7 +973,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK (v
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Missing engine primitive / trigger (88)
+### Missing engine primitive / trigger (90)
 
 **A2** (a2)
 
@@ -1081,6 +1059,11 @@ Gains debuff immunity to 1 debuff(s) for 10 sec.
   - *Why:* skill2: the Reliable Cooking 'DEF ▲10% of the skill user's DEF' grant is encoded as an inert defPct 10 block (kit completeness) — the kit is caster-DEF-derived but no casterDefPct StatKey exists, so it is approximated by the target's own defPct; defPct is damage-inert in v1, so this moves nothing. The 'Removes 1 debuff' cleanse is unmodeled (no ally-debuff model); the 'allies not in Reliable Cooking' no-refresh gate is expressible via `noRetriggerWhileActive` (types.ts, vesti-tactical-upgrade precedent) but left unenacted — the gated grant is defPct, damage-inert in v1
 - **skill2:** Removes 1 debuff.
   - *Why:* skill2: the Reliable Cooking 'DEF ▲10% of the skill user's DEF' grant is encoded as an inert defPct 10 block (kit completeness) — the kit is caster-DEF-derived but no casterDefPct StatKey exists, so it is approximated by the target's own defPct; defPct is damage-inert in v1, so this moves nothing. The 'Removes 1 debuff' cleanse is unmodeled (no ally-debuff model); the 'allies not in Reliable Cooking' no-refresh gate is expressible via `noRetriggerWhileActive` (types.ts, vesti-tactical-upgrade precedent) but left unenacted — the gated grant is defPct, damage-inert in v1
+
+**D: Killer Wife** (d-killer-wife)
+
+- **burst:** Buff takes effect depending on the area hit — the PARTS branch ('Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s') is unmodeled (TODO: needs destructible-part modeling; core-only proxy for now — see caveats).
+  - *Why:* burst: the parts branch ('Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s') is PARKED — not in the effects array. It is parts-gated, and on the partless v1 scope-lock boss no ally can ever hit parts, so it can never be earned (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs). The body branch is what ships. TODO PARTS: re-enable it only for a boss with destructible parts, wired as requiresTargetStatus 'Wipe Out' + requiresCore (the parts→core proxy) + a parts-hit trigger. OUT OF SCOPE for v1.
 
 **Delta** (delta)
 
@@ -1216,6 +1199,11 @@ Damage Taken ▼ 57.86% for 15 sec. — UNMODELED (inert): no incoming-damage mo
 - **skill1:** Activates when landing a Full Charge attack. Affects all allies.
   - *Why:* || FULL-KIT AUDIT (every line accounted for): S1 bullet1 'on Full Charge landing → Damage dealt to Shield ▲100.09%/3s (all allies)' = UNMODELED (⚑4) — an offensive buff vs an ENEMY Shield; the v1 raid boss is partless and never shields, and no StatKey exists for shield-damage
 
+**Maxwell** (maxwell)
+
+- **skill2:** Activates when there are above 5 enemy units, excluding Nikkes. Affects self. Critical Rate ▲ 4.83%. Critical Damage ▲ 13.91%.
+  - *Why:* S2 (Critical Rate 4.83% + Critical Damage 13.91%) is gated on 'above 5 enemy unit(s), excluding Nikkes'; against a single partless boss that gate is permanently FALSE and the engine has no enemy-count primitive, so the faithful model is INERT (skill2 empty) — NOT an ungated crit passive
+
 **Mica: Snow Buddy** (mica-snow-buddy)
 
 - **burst:** Affects all allies. Removes 1 debuff(s).
@@ -1293,9 +1281,9 @@ Outgoing healing ▲ 30.05% continuously.
 **Rapi: Red Hood** (rapi-red-hood)
 
 - **burst:** Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)
-  - *Why:* A rocket that attaches DURING Full Burst explodes INSTANTLY (storedHit.instantInFb); rockets attached OUT of burst do NOT explode until FB begins, so they ACCUMULATE and the FIRST explosion of each FB is a BATCH of all accumulated rockets
+  - *Why:* A rocket attaching DURING Full Burst explodes INSTANTLY; rockets attached OUT of burst do NOT explode until FB begins, so they ACCUMULATE and the first explosion of each FB is a BATCH of all accrued rockets, rendering as exact integer multiples of the single-body value
 - **burst:** Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)
-  - *Why:* 2026-08-04 ATTACHMENT REWORK (owner control+carry footage re-read; three owner overrides, gate skipped by owner ruling, test-first kept): (1) the +421.2% Projectile Attachment Damage line (Burst Stage 3, self, 10s) is RESTORED — the 2026-07-14 'MEASURED-INERT' verdict (dead datamine entry 101631006) is OVERTURNED: the amplified attachment bodies it could not attribute were mis-sorted into the explosion class (same flavor family, overlapping popup columns)
+  - *Why:* A rocket attaching DURING Full Burst explodes INSTANTLY; rockets attached OUT of burst do NOT explode until FB begins, so they ACCUMULATE and the first explosion of each FB is a BATCH of all accrued rockets, rendering as exact integer multiples of the single-body value
 
 **Rapunzel** (rapunzel)
 
@@ -1483,57 +1471,6 @@ Explosion Radius ▲ 15.01% for 10 sec.
 Outgoing healing ▲ 35.2% continuously.
   - *Why:* skill1/skill2 are EMPTY BY CONSTRUCTION, not by omission — every line there is out-of-domain for cause: (K1) S1 'Outgoing healing ▲ 35.2%' modifies heal AMOUNTS, which do not exist in the sim — no stat, no channel, and no recovery-consumer reads an amount
 
-### Partless boss (12)
-
-**D: Killer Wife** (d-killer-wife)
-
-- **skill1:** Gain Pierce for 1 shot.
-  - *Why:* skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)
-- **burst:** Buff takes effect depending on the area hit — the PARTS branch ('Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s') is unmodeled (TODO: needs destructible-part modeling; core-only proxy for now — see caveats).
-  - *Why:* burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] the parts branch 'Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s' is parts-gated — on the partless v1 scope-lock boss no ally can hit parts, so it can never be earned. It was previously modeled as an ungated all-ally coreDamagePct buff, which over-credited every ally's core bucket (core hits DO exist on a partless boss's core). Now REMOVED from the effects array (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs); the body branch 'Allies that hit the body: ATK ▲12.19% of skill user's ATK' (casterAtkPct, always active on the partless body) is KEPT. Re-enable the parts branch (as a parts-hit-gated coreDamagePct) only for a boss with destructible parts (OUT OF SCOPE for v1).
-
-**Moran (Treasure)** (moran)
-
-- **skill2:** Activates when HP falls below 20%. Affects self. Effects vary according to the number of uses. Perseverance: Only one effect is triggered at a time.
-  - *Why:* [2026-07-17 THEME-13] Her S2 Perseverance 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are DELIBERATELY still unmodeled: they are HP-loss-gated ('Activates when HP falls below 20%'), so on the immortal partless boss (HP never drops) they NEVER fire — a kill/HP-gate (theme 18), not a theme-13 Max-HP-grant gap
-
-**Nihilister** (nihilister)
-
-- **skill1:** ■ Activates when hits 2 or more enemies concurrently. Affects all enemies hit.
-Deals 50.33% of final ATK as additional damage.
-  - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
-
-**Rapi: Red Hood** (rapi-red-hood)
-
-- **skill1:** Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)
-  - *Why:* S1 Combat Assist: with NO Burst 1 ally she fills the B1 slot (stage-1 eligibility) and grants team CDR 7.48s + Attack Damage 8.02% on each full burst; WITH a B1 ally she instead self-buffs ATK 95.04% on full burst
-
-**Raven** (raven)
-
-- **skill2:** Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.
-  - *Why:* skill2: Single Point Attack (Sustained damage ▲ 47.32%) keys on destroying an enemy part — it can never fire against the partless scope-lock boss and is not modeled (previously approximated as an always-on passive)
-
-**Sakura** (sakura)
-
-- **burst:** Damage to Interruption Parts ▲ 23.54% for 30 sec.
-  - *Why:* (K6) burst 'at max Tea stacks → Damage to Interruption Parts ▲23.54%' = partsDamagePct, inert vs the partless scope-lock boss (helm H4 precedent) AND gated on the unmodeled K1 stacks
-
-**Sakura: Bloom in Summer** (sakura-bloom-in-summer)
-
-- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self.
-  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
-- **skill1:** Sustained Damage ▲ 5.1% for 30 sec.
-  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
-- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.
-  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
-- **skill1:** Dancing Flower Duration ▲ 10.02 sec.
-  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
-
-**Sora** (sora)
-
-- **skill2:** ■ Activates when an ally or self destroys an enemy's part. Affects all allies.
-  - *Why:* (K2) S2 is gated on PART DESTRUCTION ('when an ally or self destroys an enemy's part'): the engine emits no part-destroyed event and the scope-lock boss is partless (sim.ts: 'partless test boss ..
-
 ### Weapon-state / shot-count approximation (11)
 
 **Ade: Agent Bunny** (ade-agent-bunny)
@@ -1582,6 +1519,55 @@ Deals 50.33% of final ATK as additional damage.
 - **burst:** Additional Effect (weapon-change spec — VERBATIM TEXT NOT AVAILABLE to this audit; fetch from blablalink: likely carries the swap weapon's charge time / ammo / Full Charge Damage spec that pins the swap shot economy)
   - *Why:* burst: swap shot economy is a materialized parser estimate, not hand-verified — engine fires ~10 swapped shots/10s (60f cycle, no bolt gap) each carrying her SR charge-damage bucket on top of the 7% multiplier.
 
+### Partless boss (11)
+
+**D: Killer Wife** (d-killer-wife)
+
+- **skill1:** Activates when attacking with Full Charge for 3 time(s). Affects self. Gain Pierce for 1 shot. (Damage-inert on the partless single-target scope-lock boss: the Pierce tag adds no targets. NOTE it is not unconditionally inert — a pierce-tagged shot becomes eligible for Pierce Damage ▲ Damage-Up entries, so a comp pairing her with a Pierce Damage granter would make this live; see caveats.)
+  - *Why:* skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)
+
+**Moran (Treasure)** (moran)
+
+- **skill2:** Activates when HP falls below 20%. Affects self. Effects vary according to the number of uses. Perseverance: Only one effect is triggered at a time.
+  - *Why:* PERSEVERANCE: her S2 'Max HP ▲ 91%/69.84%/51.09% for 3 sec (once per battle)' lines are unmodeled by design — HP-loss-gated ('Activates when HP falls below 20%'), so against the immortal partless boss they never fire, and they are self-targeted survival buffs with no atkOfMaxHpPct consumer on her, so they would be offensively inert even if they did
+
+**Nihilister** (nihilister)
+
+- **skill1:** ■ Activates when hits 2 or more enemies concurrently. Affects all enemies hit.
+Deals 50.33% of final ATK as additional damage.
+  - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
+
+**Rapi: Red Hood** (rapi-red-hood)
+
+- **skill1:** Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)
+  - *Why:* || S1 'Combat Assist' is FORMATION-BRANCHED: with NO Burst-1 ally she fills the B1 slot (burstEligibility stage 1) and grants the team burstCdr 7.48s + Attack Damage 8.02%/10s on each full burst (formation 'noB1'); WITH a B1 ally she instead self-buffs ATK 95.04%/10s (formation 'hasB1')
+
+**Raven** (raven)
+
+- **skill2:** Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.
+  - *Why:* skill2: Single Point Attack (Sustained damage ▲ 47.32%) keys on destroying an enemy part — it can never fire against the partless scope-lock boss and is not modeled (previously approximated as an always-on passive)
+
+**Sakura** (sakura)
+
+- **burst:** Damage to Interruption Parts ▲ 23.54% for 30 sec.
+  - *Why:* (K6) burst 'at max Tea stacks → Damage to Interruption Parts ▲23.54%' = partsDamagePct, inert vs the partless scope-lock boss (helm H4 precedent) AND gated on the unmodeled K1 stacks
+
+**Sakura: Bloom in Summer** (sakura-bloom-in-summer)
+
+- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+- **skill1:** Sustained Damage ▲ 5.1% for 30 sec.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+- **skill1:** Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+- **skill1:** Dancing Flower Duration ▲ 10.02 sec.
+  - *Why:* SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class)
+
+**Sora** (sora)
+
+- **skill2:** ■ Activates when an ally or self destroys an enemy's part. Affects all allies.
+  - *Why:* (K2) S2 is gated on PART DESTRUCTION ('when an ally or self destroys an enemy's part'): the engine emits no part-destroyed event and the scope-lock boss is partless (sim.ts: 'partless test boss ..
+
 ### Self-status / stack gate (8)
 
 **Eunhwa: Tactical Upgrade** (eunhwa-tactical-upgrade)
@@ -1612,7 +1598,7 @@ Deals 50.33% of final ATK as additional damage.
 - **burst:** Deals 457.87% of final ATK as additional damage.
   - *Why:* burst: the 'when in Calm status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Calm self-status, so the burst fires at half its theoretical (Calm-active) magnitude
 
-### RNG / probabilistic (4)
+### RNG / probabilistic (6)
 
 **Elegg: Boom and Shock** (elegg-boom-and-shock)
 
@@ -1630,6 +1616,13 @@ Deals 50.33% of final ATK as additional damage.
 
 - **skill2:** There is a 30% chance of activating when attacked.
   - *Why:* See unit note / caveats
+
+**Trina** (trina)
+
+- **burst:** Changes Spread Roots to Wilted Roots.
+  - *Why:* burst: Spread Roots is the kit's solo-raid branch — its gate is 'enemy count aside from Nikkes is 1', always true here, so the Wilted Roots (>2 enemies) branch never fires and stays unmodeled. ⚑ VALIDATION-GATED, measured 2026-08-10 (phase-4 batch 5): the amp is LIVE and it already bites in exactly ONE place — `liberalio` in N3, whose tagged burst hit is a small share of her total, so the amp moves her mean 0.917 -> 0.929 (one reading 0.88 -> 0.92), i.e. TOWARD her real fight. Every other tagged unit is unpaired with her, so the rest of the board is byte-identical either way. The danger is the first BIG pairing: cinderella (run-B, 'Affects random enemies' 1365.92% x10, roughly half her damage) is the obvious next tag, and tagging her takes her from 0.893 COLD to 1.523 HOT — her three trina readings go 0.94/0.96/1.01 -> 1.91/2.55/2.60. The real fights therefore REFUTE the combination of (435.6 magnitude, additive Damage-Up placement, non-literal scope) at that scale; one of the three is wrong. Validate before tagging any further comp-mate of hers.
+- **burst:** Wilted Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 64.46% for 5 sec.
+  - *Why:* burst: Spread Roots is MODELED (2026-08-10, faithfulness pass): burstSkillAoeDamagePct 435.6 to all allies for 5s on her burstCast — the kit gates it on 'enemy count aside from Nikkes is 1', which is ALWAYS true in the solo-raid sim, so no gate is encoded. Read only by burst-slot hits tagged burstDesc:'allEnemies'. SCOPE IS LITERAL-ONLY (owner ruling 2026-08-10): the kit amplifies 'skills with "Affects all enemies"', so a damage block qualifies only when its own clause contains that exact string — a paraphrase of the same meaning ('random enemies', 'enemies within attack range', a 10-target cap) does NOT. The qualifying carriers today are isabel, liberalio, mica, noir, phantom, privaty (the AR/Water Treasure base), quency-escape-queen, scarlet and soda-twinkling-bunny; the census that decides it is `npx tsx scripts/census-burst-amp-scope.ts`, pinned by scripts/tests/census-burst-amp-scope.test.ts. As a B2 her cast precedes the chain's B3 by under a second, so the window covers the nuke. The Wilted Roots branch (enemy count ≥2) is unreachable at scope and stays unmodeled verbatim. ⚑ additive Damage-Up placement per the '○○ Damage ▲' family rule (SSOT damage-formula §2); a popup read of an amped all-enemies nuke pins it.
 
 ### Measurement-gated / unverified cadence (3)
 

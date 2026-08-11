@@ -13,33 +13,60 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "interval", "sec": 10 },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "atkPct", "value": 16.16, "durationSec": 5 }
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 16.16,
+          "durationSec": 5
+        }
       ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "fullBurstEnter" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
         {
           "kind": "escalating",
           "steps": [
-            { "kind": "burstCdr", "seconds": 1.82 },
-            { "kind": "burstCdr", "seconds": 2.2 },
-            { "kind": "burstCdr", "seconds": 2.6 }
+            {
+              "kind": "burstCdr",
+              "seconds": 1.82
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 2.2
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 2.6
+            }
           ]
         }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
         {
           "kind": "escalating",
@@ -70,9 +97,19 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 734.69 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 734.69,
+          "burstDesc": "singleEnemy"
+        }
+      ]
     }
   ]
 }

@@ -280,6 +280,26 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
         'the −9 spend drops every later cast to the 6-hit branch'
       ).toBe(true);
     });
+
+    it('NO sequential hit in EITHER branch carries a scope tag — "random enemy units" is not the literal string', () => {
+      // Owner ruling 2026-08-10: the Burst-Skill-Damage amps are LITERAL-ONLY. trina's
+      // amplifies 'skills with "Affects all enemies"'; her clause is "Affects random enemy
+      // units if the number of ghosts is …", which is not that string. The 19 tags landed on
+      // the plural-cardinality reading are removed — asserted ABSENT across BOTH branches so
+      // a partial re-tag of one branch also fails.
+      // Decided by `npx tsx scripts/census-burst-amp-scope.ts`.
+      const ov: any = loadOverride('elegg-boom-and-shock');
+      const hits = ov.burst
+        .flatMap((b: any) => b.effects)
+        .filter((e: any) => e.kind === 'flatDamage');
+      expect(
+        hits.length,
+        'six ≠13-branch hits + thirteen =13-branch hits'
+      ).toBe(19);
+      expect([...new Set(hits.map((e: any) => e.burstDesc))]).toEqual([
+        undefined,
+      ]);
+    });
   });
 
   describe('H4 — S1 ≥4-ghost Elemental Advantage tier: gated on pool≥4, live in the default sim', () => {

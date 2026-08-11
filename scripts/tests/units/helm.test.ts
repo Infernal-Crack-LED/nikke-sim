@@ -39,6 +39,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
 import {
   controlComp,
   runComp,
@@ -299,6 +300,21 @@ describe('helm (Treasure) — kit spec', () => {
         took.map((d) => d.sec),
         'burst-cast damage must precede the FB window'
       ).toEqual([]);
+    });
+
+    it("is UNTAGGED — her clause is not the literal string jackal's amp names", () => {
+      // Owner ruling 2026-08-10: the Burst-Skill-Damage amps are LITERAL-ONLY. jackal's reads
+      // 'Burst Skill damage of skills with "Affects 1 enemy unit(s)" in the description' —
+      // an explicit literal-string test — and helm's clause is "Affects the enemy with the
+      // highest final ATK", which does not contain it. So no amp reaches this nuke, and
+      // there is no pending tag: this assertion is the settled state, not a hold.
+      // (crow carried the same clause and the same tag; both are untagged under the ruling.)
+      // Enforced roster-wide by scripts/tests/census-burst-amp-scope.test.ts.
+      const ov = loadOverride('helm') as any;
+      const nuke = ov.burst
+        .flatMap((b: any) => b.effects)
+        .find((e: any) => e.kind === 'flatDamage');
+      expect(nuke.burstDesc).toBeUndefined();
     });
   });
 

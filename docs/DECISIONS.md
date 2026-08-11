@@ -9,7 +9,183 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) FAITHFULNESS PHASE-4 BATCH 3 — the "records the same shape" list
+- **(2026-08-10, latest) THE UNTAGGED AMP-CARRIER DEBT IS CLEARED — 28 `burstDesc` instances
+  across 25 units; a third localization phrasing-hole found doing it.** Owner-directed after the
+  literal-only + block-level + stray-article rulings. Every unit whose burst damage block carries
+  a qualifying literal is now tagged. **Board byte-identical on a full diff** (7/14/23/22, 142
+  datapoints) — none of the 25 shares a comp with `trina` or `jackal`.
+  22 units tagged wholesale (every damage block qualifying and wanting the SAME tag); 3 tagged
+  PER BLOCK because only some of their damage blocks qualify — `2b` (`allEnemies` on the 2439.36%
+  distributed nuke, `singleEnemy` on the 792% additional-damage line: two different literals in
+  one burst), `helm-aquamarine` (the Electric-gated "Affects the target" block excluded) and
+  `laplace-ultimate-hero` (the four Over-Energy "nearest to the crosshair" blocks excluded).
+  **Third phrasing-variant hole, same family as the DAMAGE_LINE bug and the stray article:** the
+  "this block reuses the previous block's scope" rule matched only `Affects the same target(s)`,
+  while the localization spells it SEVEN ways across 13 occurrences (`targets`, `target`,
+  `enemy unit(s)`, `enemy units`, plus status-qualified variants). It had silently dropped
+  inheritance on `epinel`, `sakura-bloom-in-summer`, `julia`, `brid`, `guillotine`, `ether`,
+  `mihara-bonding-chain` and `laplace`. Now matched loosely. The standing lesson: **this
+  instrument kept being too literal about a kit text that is not written consistently** — three
+  holes of one shape in one session, each caught only by a naive grep disagreeing with it.
+  The census's vitest pin no longer carries a maintained list; it asserts the under-tagged set is
+  EMPTY and that every remaining mismatch is the `dot`/`stackedNuke` engine-gap class. The
+  `--under` flag is committed as the worklist generator, splitting future work into "safe to tag
+  wholesale" vs "tag per block". Slugs: `2b`, `anchor` (RL/Wind), `arcana` (RL/Electric),
+  `arcana-fortune-mate`, `d` (SMG/Wind), `delta-ninja-thief`, `dolla`, `epinel`, `harran`,
+  `helm-aquamarine`, `kilo`, `laplace-ultimate-hero`, `maiden` (SG/Electric), `mari`, `mihara`
+  (AR/Water), `milk` (SR/Water), `nayuta`, `neon` (SG/Fire), `privaty-unkind-maid`, `raven`,
+  `rei-ayanami`, `rei-ayanami-tentative-name`, `vesti` (RL/Water), `vesti-tactical-upgrade`,
+  `yulha`.
+
+- **(2026-08-10) THE BURST-SKILL-DAMAGE AMPS ARE LITERAL-ONLY — owner ruling; the
+  `burstDesc` tag set is rebuilt from the kit strings and 13 units are untagged.** Owner, asked
+  whether `trina`'s Spread Roots reaches a non-literal scope clause: **"trina's amp is literal
+  only."** Both amps quote a string and amplify skills whose description contains it — `trina`
+  `'Burst Skill damage of skills with "Affects all enemies" ▲ 435.6% for 5 sec'`, `jackal`
+  `'Burst Skill damage of skills with "Affects 1 enemy unit(s)" in the description ▲ 38.91% for
+15 sec'`. `jackal`'s "in the description" is explicit and `trina`'s is the same construction,
+  so the ruling is applied to both. A clause that paraphrases the same meaning in English does
+  NOT qualify.
+  **This SCOPES, and does not overturn, the earlier same-day scope-string ruling** — that one
+  answered whether such clauses count as TARGETING THE BOSS (they do, and the damage still
+  lands), which is a different question from whether they satisfy an amp that names a literal
+  string. Batch 5 flagged exactly this conflation; `burstDesc` feeds nothing in the engine but
+  these two amps, so a tag is precisely a claim of amp eligibility.
+  **Resolves the batch-5 refutation by localizing the wrong term.** Tagging `cinderella`
+  ("Affects **random** enemies") had taken her 0.893 COLD → 1.523 HOT, her three `trina`
+  readings 0.94/0.96/1.01 → 1.91/2.55/2.60, and the real fights refused it. The scope was the
+  wrong term — the 435.6 magnitude and the ⚑ additive Damage-Up placement are untouched by
+  this and remain unmeasured.
+  **Enacted:** 31 tag instances removed across 12 units whose damage-block clause holds no
+  literal (`anis`, `belorta`, `crow`, `ein`, `elegg`, `elegg-boom-and-shock` ×19, `eunhwa`,
+  `exia` ×2, `frima`, `ludmilla`, `signal`, `viper`) plus `novel` (see the hold below);
+  `allEnemies` added to the three true carriers in the graded slice (`noir` 351.64%, `privaty`
+  — the AR/Water Treasure base — 1407.64%, `quency-escape-queen` 1736.31%), whose damage blocks
+  read "■ Affects all enemies." verbatim. `isabel`, `liberalio`, `mica`, `phantom`, `scarlet`
+  and `soda-twinkling-bunny` keep theirs — all literal. `liberalio` is the one board-active
+  pairing (N3 with `trina`) and is unaffected, so her 0.917 → 0.929 amp movement stands.
+  Every slug in this entry is exact and several are ambiguous base names — read them as the BASE
+  unit: `anis` = RL/Iron (not `anis-star`), `elegg` = MG/Electric (not `elegg-boom-and-shock`,
+  listed separately), `eunhwa` = SR/Fire (not `eunhwa-tactical-upgrade`), `helm` = SR/Water
+  Treasure (not `helm-aquamarine`), `ludmilla` = SMG/Water, `mica` = RL/Wind, `scarlet` =
+  AR/Electric (not `scarlet-black-shadow`), `cinderella` = RL/Electric (not
+  `cinderella-crystal-wave`), `privaty` = AR/Water Treasure (not `privaty-unkind-maid`).
+  `helm`'s batch-5 hold COLLAPSES: her clause is non-literal, so there was never a tag to land
+  and the coordinated `jackal` J4/J5 edit is moot. **Board byte-identical on a full diff** (no
+  retagged unit shares a comp with `trina`; `jackal` sits in no graded comp) — 7/14/23/22 across
+  142 datapoints, unchanged. Six spec pins flipped from asserting the tag to asserting its
+  ABSENCE with the reason, so it cannot be silently re-added.
+  **THE MATCH IS BLOCK-LEVEL — owner ruling, same day.** The literal must sit in the SAME "■"
+  block as the damage line it would amplify, not merely somewhere in the burst description.
+  Owner: _"it does require it to be on the same block — look at `scarlet` as an example for a
+  known working trina amp target."_ `scarlet` (AR/Electric base) has two burst blocks, "Affects
+  self. Activates when HP falls below 50%." (Crit Rate, no damage) and "Affects all enemies."
+  (the 849.15% nuke); the literal is on the damage block. Note she is consistent with BOTH
+  readings, so she is a confirming positive control rather than the discriminator — the ruling
+  is what settles it. **Exactly ONE unit differs between the readings — `sin`** (literal on a
+  Damage-Taken block; her damage block reads "Affects enemies within attack range"), and she is
+  untagged. [This originally named four units; `guillotine-winter-slayer` and `kilo` were a
+  census bug — see the batch-6 entry — and `novel` left when the article was forgiven.]
+  **A trailing qualifier does not break the match** (`2b` "Affects 1 enemy unit(s) with the
+  highest remaining HP" qualifies); an inserted word does — see the near-miss entry below.
+  Instrument: **`npx tsx scripts/census-burst-amp-scope.ts`** (block-level, whitespace-
+  normalized; `--check` gates over-tagging, `--near-miss` reports the article cases), self-
+  validated by `scripts/tests/census-burst-amp-scope.test.ts`, which also pins the roster
+  invariant and the explicit list of 24 literal carriers outside the graded slice that are not
+  yet tagged (inert — a missing tag applies no amp — and each one a per-unit review).
+
+- **(2026-08-10) THE ENGLISH KIT TEXT'S STRAY ARTICLE IS FORGIVEN — owner ruling; the amp is
+  assumed to key off an internal targeting id, and 6 more units are tagged.** Owner: _"let's
+  operate under the assumption it keys off internal id because it'd be really dumb if it
+  didn't."_ Seven units have a burst DAMAGE block reading "Affects **the** 1 enemy unit(s) with
+  …", one article off the literal `jackal` names.
+  **The article is a localization artifact, not a targeting distinction** — seven clause bodies
+  are attested BOTH ways across the roster ("…with the highest remaining HP": `nero` with, `2b`
+  without; "…with the highest final DEF": `guilty` with, `dolla`/`milk`/`neon` without), and
+  decisively **`pepper`, `rapi` (AR/Fire base) and `maiden-ice-rose` each use BOTH spellings of
+  the SAME clause inside their own kit**, which no targeting rule can explain.
+  **Enacted:** `stripStrayArticle()` normalizes "Affects the ⟨count⟩" → "Affects ⟨count⟩" before
+  matching, so the census decides this rather than a hardcoded unit list. 8 tag instances added
+  across 6 units — `guilty` (×2: the nuke plus its max-stack "Affects the same target(s)" rider,
+  which inherits the scope per the `exia` precedent), `nero`, `novel`, `pepper`, `power` (×2,
+  same inheriting-rider shape), `rapi`. The 7th, `ark-ranger-black`, qualifies on the clause but
+  her burst damage is a `dot` and is blocked by the engine gap below instead. Board byte-
+  identical on a full diff. `novel` stops being a block-vs-skill case entirely: with the article
+  forgiven, her own damage block carries the literal.
+  **This is an ASSUMPTION, not a measurement, and is recorded as one.** It is safe to adopt now
+  because every affected unit is on `jackal`'s side and `jackal` sits in no graded comp, so being
+  wrong costs zero today; a popup read of an amped nuke on any of the six confirms or refutes it.
+  The rule is deliberately narrow — it fires only where the article precedes a COUNT, which is
+  exactly where the inconsistency is attested, and does not touch "Affects the enemy nearest to
+  the crosshair" / "with the highest final ATK" / "the same target(s)", which are different
+  targeting rules that the literal-only ruling still excludes. `viper` ("Affects 1
+  **designated** enemy unit(s)") stays a genuine non-match — "designated" is a real word doing
+  real work, and the census pins the two classes separately.
+  Detector: `npx tsx scripts/census-burst-amp-scope.ts --near-miss` (now reports `viper` alone).
+
+- **(2026-08-10) A BURST-SLOT `dot` IS STRUCTURALLY AMP-INELIGIBLE — engine gap, recorded.**
+  `burstDesc` is plumbed only on the `flatDamage` effect and its pending-hit path, so a burst
+  damage line modeled as a `dot` can never read an amp however its kit clause reads.
+  **FIVE units carry a qualifying literal on their damage block and still cannot be tagged** —
+  `ark-ranger-black`, `diesel-winter-sweets`, `guillotine-winter-slayer`, `maiden-ice-rose`,
+  `mana`. (`maiden-ice-rose`'s burst is a `stackedNuke`, the roster's only one, and carries no
+  `burstDesc` either — same structural gap, third primitive.) `mihara-bonding-chain` is a dot
+  carrier too but her clause is non-literal, so she is moot on both counts. Board-inert (no dot
+  carrier shares a comp with an amp). Fixing it means threading `burstDesc` through the
+  dot/stackedNuke records and their tick paths — an engine change, out of scope for the sweep.
+
+- **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 5 — the graded-comp slice; the burst-amp
+  channel is an UNTESTED LANDMINE.** Six highest-leverage graded-comp reviews (`crown`,
+  `anis-star`, `cinderella`, `little-mermaid`, `helm`, `trina` — full record
+  `docs/handoffs/2026-08-10-faithfulness-batch5-findings.md`). Enacted: prose only — ZERO
+  `burstDesc` tags. `helm`'s 8236.8% nuke qualifies for 'singleEnemy' ("Affects the enemy with
+  the highest final ATK", crow's clause word-for-word) and is board-inert by full A/B diff, but
+  is HELD: jackal's spec fixture seats helm, so the tag switches the amp on there and breaks two
+  jackal pins — a cross-unit edit the sweep does not make. (That failure is also the first
+  end-to-end exercise of the burst-amp channel in the whole suite.) A new helm H7 pin asserts
+  the tag's ABSENCE with the reason, so the hold is deliberate. `trina`'s first caveat still claimed
+  Spread Roots is "NOT modeled" while her fifth said MODELED (same self-contradiction class as
+  `jackal`); corrected. Provenance narration deleted from all six notes. **THE FINDING:**
+  `trina`'s Spread Roots (`burstSkillAoeDamagePct` 435.6, all allies, 5s) is live, its kit gate
+  ("enemy count aside from Nikkes is 1") is always true in solo raid. It bites in exactly ONE
+  place today — `liberalio` in N3, where the amped hit is a small share of her total and the amp
+  moves her mean 0.917 → 0.929, TOWARD her real fight; every other tagged unit is unpaired with
+  her, so the rest of the board is byte-identical either way. The danger is the first BIG
+  pairing. Tagging the obvious next carrier, `cinderella` ("Affects random enemies",
+  plural ⇒ 'allEnemies' under the 2026-08-10 scope-string ruling, and her run-B comp-mate),
+  takes her from **0.893 COLD to 1.523 HOT** — the three trina readings go 0.94/0.96/1.01 →
+  1.91/2.55/2.60. The real fights REFUTE the combination of (435.6 magnitude, additive
+  Damage-Up placement, non-literal scope) AT THAT SCALE; at least one is wrong, most likely the scope (the amp
+  names the literal string "Affects all enemies") or the additive placement (unmeasured ⚑ since
+  it landed). **Consequence for the remaining sweep: the dormancy of the 39 tag instances landed so far (20 units)
+  is NOT evidence of safety — it is evidence that nothing has been paired yet. No further tag
+  on a unit sharing an amp carrier's comp until the amp is validated, and every future tag gets
+  an A/B before it lands.** Validation recipe: popup-read a qualifying all-enemies burst nuke
+  cast inside vs outside a Spread Roots window. `cinderella` stays untagged with the reason in
+  her caveats. Full gate green; board byte-identical.
+
+- **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 4 — the board-outlier slice; `jill`'s
+  1.924 is a DEFECT, not a residual.** Six checklist reviews of the worst-ranked unreviewed
+  board outliers (`jill`, `ein`, `moran`, `maxwell`, `takina`, `elegg-boom-and-shock` — full
+  record `docs/handoffs/2026-08-10-faithfulness-batch4-findings.md`). Enacted under standing
+  rulings only: 20 `burstDesc` tags (`ein` burst nuke 300.02% 'allEnemies'; ALL 19
+  `elegg-boom-and-shock` burst hits across both ghost branches 'allEnemies'), all dormant and
+  byte-identical. **Zero DEF ▼ encodes — verified against kit text, none of the six carries the
+  line.** Prose: 6 bare `sim.ts:<line>` citations fixed, every one of which had already rotted;
+  `moran`'s note (~70% changelog, all of it already here) re-based on the current model;
+  `jill`'s falsified "grades ~1.07–1.34" + "acid dot is noFb" claims and her spec header's
+  three UNMODELED claims deleted. **NOT ENACTED, owner + `/scientific-method` gate:** `jill`'s
+  burst is a same-weapon flavor swap that restates no cadence, and the engine's swap branch
+  reads `u.swap.pullsPerSec ?? PULLS_PER_SEC[...]` without falling back to `u.pullsPerSec` —
+  so her video-MEASURED 2.5/s is discarded for the 10s window and she fires at the AR class
+  default. Three independent confirmations (code read; a direct shot count of 9.28/s in-swap vs
+  1.98/s out; board 1.924 → 0.983 with `pullsPerSec: 2.5` restated, within-±5% 14 → 15). She is
+  the roster's ONLY unit with both a `charFixes.pullsPerSec` and a `weaponSwap`; a
+  `charFixes.reloadFrames` does survive a swap, which is why this went unseen. Instrument
+  committed as jill spec group J8. This displaces the QUEUE's DEF-bypass hypothesis for her HOT
+  (worth ~0.02% at the `bossDef = 140` basis, not 2.4×). Full gate green; board byte-identical.
+
+- **(2026-08-10) FAITHFULNESS PHASE-4 BATCH 3 — the "records the same shape" list
   held real carriers; 7 more DEF ▼ encodes + 4 scope tags.** Six checklist reviews
   (`ether`, `eunhwa`, `himeno`, `signal`, `mica`, `crow` — full record
   `docs/handoffs/2026-08-10-faithfulness-batch3-findings.md`), every carrier claim verified

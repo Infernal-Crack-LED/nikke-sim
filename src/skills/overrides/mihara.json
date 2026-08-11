@@ -14,24 +14,47 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "lastBullet" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "buff", "stat": "critDamagePct", "value": 18.7, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 18.7,
+          "durationSec": 10
+        }
       ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "escalating",
           "steps": [
-            { "kind": "buff", "stat": "atkPct", "value": 15.56, "durationSec": 45 },
-            { "kind": "buff", "stat": "critRatePct", "value": 11.28, "durationSec": 45 }
+            {
+              "kind": "buff",
+              "stat": "atkPct",
+              "value": 15.56,
+              "durationSec": 45
+            },
+            {
+              "kind": "buff",
+              "stat": "critRatePct",
+              "value": 11.28,
+              "durationSec": 45
+            }
           ]
         }
       ]
@@ -40,20 +63,41 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
-      "effects": [{ "kind": "fullBurstExtend", "seconds": -5 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fullBurstExtend",
+          "seconds": -5
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
         {
           "kind": "escalating",
           "steps": [
-            { "kind": "flatDamage", "atkPct": 399.6 },
-            { "kind": "flatDamage", "atkPct": 266.4 }
+            {
+              "kind": "flatDamage",
+              "atkPct": 399.6,
+              "burstDesc": "allEnemies"
+            },
+            {
+              "kind": "flatDamage",
+              "atkPct": 266.4,
+              "burstDesc": "allEnemies"
+            }
           ]
         }
       ]

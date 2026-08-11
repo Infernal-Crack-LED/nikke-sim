@@ -36,8 +36,18 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "critRatePct", "value": 31.95, "durationSec": 20 },
-        { "kind": "buff", "stat": "hitRatePct", "value": 22.04, "durationSec": 20 }
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 31.95,
+          "durationSec": 20
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 22.04,
+          "durationSec": 20
+        }
       ]
     }
   ]

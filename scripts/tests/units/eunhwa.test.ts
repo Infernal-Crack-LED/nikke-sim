@@ -25,21 +25,18 @@
 //       ROUND-COUNT windows: "for 2 shots" / "for 2 rounds" are durationShots 2 with NO
 //       wall-clock expiry, so the window survives the 161f reload and expires right after
 //       her 2nd shot of the next magazine (Tier-2 round-count discrimination).
-//   S2  UNMODELED (pinned by ABSENCE): the sim runs a DEF=0 enemy basis and the engine's
-//       enemy-buff channel admits only damageTakenPct/distributedDamagePct — enemy DEF▼ is
-//       dropped at dispatch (sim.ts; exia precedent), so there is nothing to enact. The line
-//       is recorded VERBATIM in the override's unmodeled.skill2. Nearest wrong model:
+//   S2  FAITHFUL (encoded 2026-08-10 on the enemy defPct channel): DEF ▼29% for 5 sec on the
+//       kit's own lastBullet trigger. The graded basis is bossDef = 140, so the shave is worth
+//       ~0.02% there and is live at the web app's raid DEF defaults. Nearest wrong model:
 //       laundering the DEF▼ into damageTakenPct (a different mechanic — the boss taking more
-//       damage) would fabricate a ~29% team lift the kit never grants; the ABSENCE pins prove
-//       the shipped override is not that model. The lastBullet trigger of this line is part of
-//       the skipped sentence (an enemy-targeted lastBullet effect has no channel either).
+//       damage) would fabricate a ~29% team lift the kit never grants; that trap stays pinned.
 //   B1  FAITHFUL — burstCast flatDamage 85.62 ("the 10 enemy unit(s) with the highest final
 //       ATK" collapses to the single immortal boss — multi-target selection is inert in the
 //       single-target sim, exia precedent). The cast lands BEFORE the Full Burst window, so it
 //       must never take the +50% FB major (engine auto-exempts burstCast damage); it crits at
 //       the caster rate (U1 rider convention).
-//   B2  UNMODELED (pinned by ABSENCE): same DEF=0 basis as S2 — recorded VERBATIM in
-//       unmodeled.burst.
+//   B2  FAITHFUL (encoded 2026-08-10): DEF ▼2.43% for 15 sec, riding the nuke block AFTER the
+//       flatDamage (kit-order effects). Same channel and same basis note as S2.
 //   B3  FAITHFUL — burstCast-keyed critRatePct 4.65 to ALL allies (self included — the kit
 //       says "all allies", never "other allies"), 15s wall-clock window. Tier-2
 //       burstCast-vs-fullBurstEnter discrimination: the buff is granted by HER burst skill, so
@@ -447,12 +444,18 @@ describe('eunhwa — kit spec', () => {
       }
     });
 
-    it('the nuke carries the allEnemies scope tag (owner scope-string ruling 2026-08-10)', () => {
+    it('the nuke carries NO scope tag — a 10-target cap is not the literal string the amp names', () => {
+      // "Affects 10 enemy unit(s) with the highest final ATK". Owner ruling 2026-08-10: the
+      // Burst-Skill-Damage amps are LITERAL-ONLY — trina's amplifies 'skills with "Affects
+      // all enemies"' and this clause does not contain that string. Asserted ABSENT
+      // deliberately: the tag was landed on the plural-cardinality reading and removed when
+      // the owner ruled the scope literal, so it must not be silently re-added.
+      // Decided by `npx tsx scripts/census-burst-amp-scope.ts`.
       const ov = loadOverride(EUNHWA) as any;
       const nuke = ov.burst
         .flatMap((b: any) => b.effects)
         .find((e: any) => e.kind === 'flatDamage');
-      expect(nuke.burstDesc).toBe('allEnemies');
+      expect(nuke.burstDesc).toBeUndefined();
     });
   });
 

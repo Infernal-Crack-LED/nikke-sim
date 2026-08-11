@@ -8,6 +8,9 @@
     "skill2": ["ATK ▼ 3.55% for 5 sec."],
     "burst": []
   },
+  "caveats": [
+    "burst: the 1237.5% nuke carries burstDesc:'singleEnemy'. Her damage block reads '■ Affects the 1 enemy unit(s) with the highest final ATK.'; pepper is one of the three units that spell the same clause both ways inside their own kit — one article off the literal jackal's amp names ('skills with \"Affects 1 enemy unit(s)\" in the description'), and that article is a LOCALIZATION artifact, not a targeting rule: seven clause bodies are attested both ways across the roster and pepper, rapi (AR/Fire base) and maiden-ice-rose each use both spellings of the SAME clause in their own kit. Owner ruling 2026-08-10: the game is ASSUMED to key the amp off an internal targeting id rather than the rendered English, so the stray 'the' does not block eligibility. Assumption, not a measurement — safe today because jackal shares no graded comp, so the tag is board-inert (full A/B diff byte-identical); a popup read of an amped nuke would confirm it. ⚑ the amp's additive Damage-Up placement is unmeasured. Decidable by `npx tsx scripts/census-burst-amp-scope.ts`."
+  ],
   "skill1": [
     {
       "slot": "skill1",
@@ -35,7 +38,9 @@
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 1237.5 }]
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 1237.5, "burstDesc": "singleEnemy" }
+      ]
     },
     {
       "slot": "burst",

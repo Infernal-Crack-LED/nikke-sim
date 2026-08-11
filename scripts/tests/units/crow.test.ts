@@ -232,15 +232,18 @@ describe('crow — kit spec', () => {
     });
   });
 
-  describe('C5 — the burst nuke carries the singleEnemy scope tag (owner scope-string ruling 2026-08-10)', () => {
-    it('the shipped flatDamage is tagged singleEnemy ("the enemy with the highest final ATK" — singular clause); dormant in this comp', () => {
+  describe('C5 — the burst nuke carries NO scope tag (amp scope is literal-only, owner 2026-08-10)', () => {
+    it('the shipped flatDamage is UNtagged: "the enemy with the highest final ATK" is not the string jackal names', () => {
+      // jackal's amp reads 'skills with "Affects 1 enemy unit(s)" in the description' — an
+      // explicit literal-string test. Her clause paraphrases it and does not contain it, so
+      // the amp does not reach this nuke. Asserted ABSENT deliberately: the tag was landed on
+      // the singular-cardinality reading and removed when the owner ruled the scope literal.
+      // Decided by `npx tsx scripts/census-burst-amp-scope.ts`.
       const ov = loadOverride('crow') as any;
       const nuke = ov.burst
         .flatMap((b: any) => b.effects)
         .find((e: any) => e.kind === 'flatDamage');
-      expect(nuke.burstDesc).toBe('singleEnemy');
-      // amp arithmetic is owned by the engine amp tests; no amp carrier sits in this
-      // fixture, so the tag is byte-identical here (dormant-live convention).
+      expect(nuke.burstDesc).toBeUndefined();
     });
   });
 

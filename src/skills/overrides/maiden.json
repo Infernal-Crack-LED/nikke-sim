@@ -23,8 +23,13 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "interval", "sec": 30 },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "interval",
+        "sec": 30
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
         {
           "kind": "buff",
@@ -38,9 +43,19 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [{ "kind": "flatDamage", "atkPct": 457.87 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.87,
+          "burstDesc": "allEnemies"
+        }
+      ]
     }
   ]
 }
