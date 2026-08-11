@@ -32,6 +32,13 @@
 #      spawns `npx tsx` (~1-2s) on essentially every project write; over an overnight run that is real
 #      wall clock. (Proper fix later: read data/characters.json inline instead of spawning.)
 #
+# ─── r5 (2026-08-11) — INERTNESS/A-B CLAIMS JOIN THE VERDICT ESCALATION (owner-approved, Tier 0/D5) ──
+# "inert" / "byte-identical" / "moved by exactly zero" is a verdict verb: it asserts a measured result
+# whose truth depends on the ROSTER it was measured in, and the losing case is silent (a claim that
+# looks careful, is unfalsifiable as written, and is wrong by 22.6%). Same routing as the other verdict
+# verbs — content predicate AND SHARED_ARTIFACT target — with its own escalation text, because the
+# burden here is "in which fixture, with which enabling teammate", not "at what n".
+#
 # Companion: destructive-bash-guard.py (Bash tier), autonomous-blast-radius.py (autonomous diff cap).
 import json, os, re, subprocess, sys
 
@@ -76,6 +83,22 @@ SHARED_ARTIFACT = (VALUE_SURFACE or IS_DECISIONS or IS_SNAPSHOT
 VERDICT = re.compile(r"VALIDATED|REFUTED|SUPERSEDED|DEBUNK|overturn|is (now )?(GONE|DELETE)")
 has_verdict = bool(VERDICT.search(blob))
 verdict_enact = has_verdict and SHARED_ARTIFACT
+
+# r5 (2026-08-11, owner-approved — faithfulness Tier 0 / D5): AN INERTNESS OR A/B CLAIM IS A VERDICT.
+# "inert" / "byte-identical" / "the board moved by exactly zero" asserts a MEASURED result, but whether
+# a tag reaches damage depends on who else is in the comp — so the identical claim can be true in one
+# fixture and wrong by tens of percent in another. Root: `alice` (SR/Fire, not alice-wonderland-bunny)
+# carried "inert, verified byte-identical" for `hasPierce`, measured in a PIERCE-FREE fixture; her only
+# graded comp seats `mint`, whose S2 makes the tag worth 22.6% of her damage. The A/B was not run
+# carelessly — it was run correctly in the wrong roster, and nothing in its wording revealed which
+# roster that was. A pattern LINT was rejected with numbers (620 mentions across 153 override files,
+# most of the strong-looking ones "board A/B is the discriminator" — a plan, not a result, so a
+# ~100-file backfill would be mostly false positives). The hook is the one place that catches the claim
+# at WRITE time, and like every guard here it gates on the TARGET: only when it lands on a shared
+# artifact. Convention text: docs/CONVENTIONS.md "An inertness or A/B claim must NAME ITS ROSTER".
+INERT = re.compile(r"byte[-\s]?identical|board[-\s]?inert|\binert(ness)?\b|"
+                   r"(move[sd]?|change[sd]?) (by )?(exactly )?zero|zero (board )?(movement|change)", re.I)
+inert_enact = bool(INERT.search(blob)) and SHARED_ARTIFACT
 
 def nums(s):  # numeric literals, for detecting a value change on an Edit
     return re.findall(r"-?\d+\.?\d*", s)
@@ -184,6 +207,18 @@ P10 = ("REUSE BEFORE YOU DERIVE: before spending a single expensive pass generat
 VERDICT_ESCALATE = ("⛔ VERDICT-VERB DETECTED — point 7 applies HARD: name the n + evidence TIER that earns this "
                     "verdict. n=1 / single recording / MEDIUM-confidence ⇒ DOWNGRADE to a recorded observation; "
                     "do NOT assert the verdict, flip a constant/default, or rewrite a plan's direction here.")
+# r5 — the inertness verb carries a DIFFERENT burden than the other verdict verbs: not "how much
+# evidence", but "IN WHICH ROSTER". A missing roster does not make the claim weaker, it makes it
+# unfalsifiable, so the demand is for the two facts that make it checkable.
+INERT_ESCALATE = ("⛔ INERTNESS / A-B CLAIM DETECTED — an 'inert' / 'byte-identical' / 'moved by exactly zero' "
+                  "result is a statement about a FIXTURE, never a property of the encoding. Name BOTH: (1) the "
+                  "comp/fixture it was measured in, and (2) the ENABLING TEAMMATE it did or did not seat — the "
+                  "unit whose buff the tag is eligible FOR. A claim missing (2) is not a weaker claim, it is an "
+                  "unfalsifiable one (`alice`'s hasPierce was 'byte-identical' in a pierce-free fixture and worth "
+                  "22.6% of her damage on her actual graded comp, which seats `mint`). If the A/B has not run "
+                  "yet, write 'board A/B is the discriminator — not yet run', NOT an inertness result. Inert BY "
+                  "MECHANISM (no consumer exists roster-wide) is a stronger claim than inert by measurement — if "
+                  "that is what you mean, say so and name the consumer sweep.")
 
 # ---- ROUTER: build only the applicable blocks ----
 blocks = []
@@ -194,10 +229,12 @@ if lint:
 
 # R2 — evidence/enactment: a VALUE changed on a value surface, OR a DECISIONS/snapshot edit, OR a
 # verdict-verb STAMPED on a load-bearing surface.
-if value_changed or IS_DECISIONS or IS_SNAPSHOT or verdict_enact:
+if value_changed or IS_DECISIONS or IS_SNAPSHOT or verdict_enact or inert_enact:
     b = f"{P2}\n{P7}"
     if verdict_enact:
         b += f"\n  {VERDICT_ESCALATE}"
+    if inert_enact:
+        b += f"\n  {INERT_ESCALATE}"
     if SHARED_ARTIFACT:
         b += f"\n  {P8}"
     blocks.append(b)

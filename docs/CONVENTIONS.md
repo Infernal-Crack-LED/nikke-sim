@@ -106,13 +106,18 @@ of her damage** (on = 444M / ratio 1.100; off = 362M / 0.897, every other unit b
 A/B was not run carelessly — it was run correctly in the wrong roster, and nothing in its wording
 revealed which roster that was. That is the failure mode this rule exists to catch.
 
-Enforced by convention, not by lint: there are 620 `inert`/`byte-identical`/`board-inert` mentions
-across 153 override files, and most of the strong-looking ones are "board A/B is the discriminator"
-— a plan, not a result — so a pattern lint would be mostly false positives over a ~100-file
-backfill. Backfill a file's claims when you next touch it for another reason; `alice`'s own note is
-the model wording. (Open owner question, tracked in `QUEUE.md`: whether to add `inert` /
-`byte-identical` to the pre-write discipline hook's verdict-verb escalation, which would catch the
-claim at write time — `.claude/**` is protected, so it needs an explicit go-ahead.)
+Enforced at WRITE time, not by a repo lint. `inert` / `inertness` / `byte-identical` / "moved by
+exactly zero" are verdict verbs in the pre-write discipline hook (`.claude/hooks/pre-write-
+discipline.py`, r5): writing one onto a shared artifact — an override, DECISIONS, STATE, a
+mechanics doc — raises an escalation demanding the fixture and the enabling teammate. Like every
+guard there it gates on the TARGET, so prose about inertness elsewhere stays silent, and the
+plan wording ("board A/B is the discriminator — not yet run") does not trip it at all.
+
+A repo-wide pattern lint was rejected with numbers: 620 `inert`/`byte-identical`/`board-inert`
+mentions across 153 override files, most of the strong-looking ones being that same "A/B is the
+discriminator" plan, so it would be mostly false positives over a ~100-file backfill. Backfill an
+existing file's claims when you next touch it for another reason; `alice`'s own note is the model
+wording.
 
 ## Ratio direction (sim/real vs real/sim) — DO NOT CONFLATE
 

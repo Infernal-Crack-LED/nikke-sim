@@ -795,25 +795,8 @@ template mislock, → 0 on relock) + 29 countable`. 42 − 35 = 7 / 5 shots = **
 - **AR-burst-window residual (moran/jill)** — footage-blocked. moran's swap coldness is THROUGHPUT
   (~1.3× more hits in the swap window), NOT per-shot (the '1440'=24/s datamine was measured-refuted; base
   ~12/s stands); needs an isolated moran-solo recording or the swap weapon's `shot_count` datamine.
-- **ONE OWNER DECISION OPEN from faithfulness Tier 0 (D5): should `inert` / `byte-identical` join the
-  pre-write discipline hook's verdict-verb escalation list?** The convention itself LANDED — an
-  inertness/A-B claim must name its fixture AND the enabling teammate it did or did not seat
-  (`docs/CONVENTIONS.md`, "An inertness or A/B claim must NAME ITS ROSTER"; root cause `alice`
-  (SR/Fire), whose "byte-identical" claim was measured in a pierce-free fixture and was wrong by
-  22.6% on her actual graded comp). A pattern LINT was rejected with numbers: 620 mentions across 153
-  override files, and most strong-looking ones are "board A/B is the discriminator" — a plan, not a
-  result — so it would be mostly false positives over a ~100-file backfill. The hook is the one place
-  that could catch the claim at WRITE time instead. **`.claude/**` is protected, so this needs an
-  explicit owner go-ahead; nothing was changed there.** Backfill of existing claims is opportunistic
-  (when a file is touched for another reason), not a sweep.
-- **D1 has no durability guard — `/kit-parse` still writes the banner it just swept away.**
-  `.claude/skills/kit-parse/SKILL.md` instructs emitting
-  `PARSER BASELINE (HYPOTHESIS — NOT a validated model)…` into a new baseline's note, which is
-  ACCURATE at authoring time for a genuinely untuned unit. The staleness came from the other end:
-  nothing removes the banner once the unit gains spec tests / a gauntlet pass / a graded fight, which
-  is exactly how 19 carriers ended up asserting the opposite of the tree. Options: (a) a
-  `kit-status.ts --check` rule failing when a note carries the banner AND the unit has a spec test or
-  `gauntlet` provenance — a script, so no protected path; (b) reword the kit-parse banner to state
-  only the recording status, which cannot go stale the same way (`.claude/**`, needs owner
-  go-ahead). Recommendation: (a) — it is the mechanical guard, and it would have caught this class
-  the day it appeared. **Not done: outside the five approved Tier 0 items.**
+- **Inertness-claim backfill is OPPORTUNISTIC, never a sweep.** The write-time guard (hook r5) and the
+  convention both landed 2026-08-11, but the ~620 pre-existing `inert`/`byte-identical` mentions across
+  153 override files are NOT a worklist — most strong-looking ones are "board A/B is the discriminator",
+  a plan rather than a result. Fix a file's claims when you next touch it for another reason; `alice`
+  (SR/Fire) is the model wording.

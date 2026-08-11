@@ -52,11 +52,13 @@ fidelity + a new `BOSS_ONLY_BUFF_STATS` validator warning (fires on exactly the 
 `modeling-priors.md` §11 · **D4** direction ruled (the omission is a defect), enactment still
 bundled with the gauge cluster · **D5** convention in `CONVENTIONS.md`, lint rejected with numbers.
 
-**Two things this batch left open, both needing the owner:** (a) whether `inert`/`byte-identical`
-join the pre-write hook's verdict-verb escalation — `.claude/**` is protected and untouched; (b)
-`/kit-parse`'s SKILL.md still instructs writing the D1 banner (correct for a genuinely new untuned
-unit, but nothing removes it once the unit gets tests, which is how it went stale the first time —
-a `kit-status --check` rule would make D1 durable). Both are tracked in `QUEUE.md`.
+**The two follow-up questions this batch left open were RULED AND LANDED 2026-08-11** (DECISIONS,
+"TIER 0 FOLLOW-UPS"): (a) `inert`/`inertness`/`byte-identical`/"moved by exactly zero" ARE now
+verdict verbs in the pre-write hook (r5, protected path edited with owner go-ahead), escalating only
+on a shared-artifact target; (b) D1 is durable — `kit-status.ts --check` fails when a note's
+provenance claim contradicts the tree (`scripts/lib/baseline-banner.ts`, pinned by
+`scripts/tests/baseline-banner.test.ts`). `/kit-parse`'s SKILL.md is deliberately unchanged: the
+banner is correct at authoring time, so the guard belongs at the other end. Nothing open in Tier 0.
 
 <details><summary>The original decision table (historical — all five now ruled)</summary>
 

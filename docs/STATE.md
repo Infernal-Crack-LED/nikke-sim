@@ -325,6 +325,10 @@ noted.
   branch work); `/audit-kit` samples, `/kit-parse` seeds untuned units. → CONVENTIONS.md.
 - **Per-unit tier SSOT = `data/kit-status.json`** (via `scripts/kit-status.ts`). Every tuning change
   updates it. Evidence tiers (MEASURED > DATAMINED > COMMUNITY > CALIBRATED ⚑): → CONVENTIONS.md.
+  `--check` (a verify.sh gate) holds the AUTO mirrors fresh AND checks each note's provenance CLAIM
+  against the tree: the `/kit-parse` HYPOTHESIS banner beside a spec test or gauntlet pass fails, and
+  so does "No real-fight recording yet" beside board readings (`scripts/lib/baseline-banner.ts`).
+  → DECISIONS 2026-08-11.
 - **Supported roster** = enikk top-100 audit list + all hand-tuned overrides; never remove a
   hand-tuned-override unit. Two independent flags gate the web tools: `generatorSupported` (enikk-proven)
   and `simSupported` (has an override).

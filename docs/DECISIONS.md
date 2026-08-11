@@ -9,7 +9,39 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-10, latest) FAITHFULNESS TIER 0 — five batched owner rulings, all board-inert (0 engine
+- **(2026-08-11, latest) TIER 0 FOLLOW-UPS — both open owner questions ruled: the D1 banner gets a
+  MECHANICAL guard, and inertness claims join the hook's verdict verbs.** Tier 0 (below) closed five
+  rulings but left two questions the owner had to answer, one of them because it needed a protected
+  path. Both are now approved and landed, and both are enforcement, not modeling: **zero engine lines,
+  zero damage values, board untouched.**
+  1. **D1 durability — `kit-status.ts --check` now fails on a provenance claim the tree contradicts.**
+     `/kit-parse` writes the `PARSER BASELINE (HYPOTHESIS — NOT a validated model)` banner into every
+     new baseline, which is ACCURATE the day it is written. The staleness came from the other end:
+     nothing removed it once the unit gained spec tests, a gauntlet pass, or a real fight — which is
+     exactly how 19 carriers came to assert the opposite of the tree. The banner is a claim ABOUT this
+     repo, so the gate can read the repo and check it: `scripts/lib/baseline-banner.ts` (pinned by
+     `scripts/tests/baseline-banner.test.ts`, 9 cases) fails `--check` when (a) the HYPOTHESIS banner
+     sits beside a `scripts/tests/units/<slug>.test.ts` or a `Kit-autonomy gauntlet` marker, or (b) the
+     reworded `No real-fight recording yet` claim — the wording D1 KEPT on 18 units — sits beside board
+     readings or graded teams. Arm (b) is SILENT on today's tree (all 18 carriers have zero board
+     readings) and exists so the surviving wording cannot repeat the failure it was rewritten out of.
+     Consequence to expect: a `/kit-tdd` session that pins a still-bannered baseline now gets a red
+     verify until it rewrites that one note line — which is the ruling working, not a false positive.
+     The rejected alternative was rewording the `/kit-parse` banner itself: it would leave every
+     ALREADY-authored baseline unguarded and needs a protected path to fix nothing mechanical.
+  2. **D5 — `inert` / `inertness` / `byte-identical` / "moved by exactly zero" are now VERDICT VERBS**
+     in `.claude/hooks/pre-write-discipline.py` (r5, protected path edited with explicit owner
+     go-ahead). Routed exactly like the existing verdict verbs — content predicate AND a
+     `SHARED_ARTIFACT` target — with its own escalation text, because the burden an inertness claim
+     carries is not "at what n" but "in WHICH FIXTURE, with which enabling teammate seated". The
+     repo-wide pattern LINT stays rejected on the same numbers as before (620 mentions / 153 files,
+     mostly "board A/B is the discriminator" — a plan, not a result); a write-time guard sees one claim
+     at a time, so the false-positive arithmetic that killed the lint does not apply. Verified against
+     sample payloads: fires on an override or DECISIONS write carrying the claim, silent on the plan
+     wording, on `.claude/**` itself, and on ordinary code. Backfill of the 620 existing mentions
+     remains opportunistic, not a sweep (`QUEUE.md`).
+
+- **(2026-08-10) FAITHFULNESS TIER 0 — five batched owner rulings, all board-inert (0 engine
   lines changed, 0 damage values touched).** Board before and after: `±3% 7 | ±5% 15 | ±8% 24 |
 worse 21` over 142 datapoints / 45 units.
   1. **STALE PROVENANCE TAGS — deleted, not reworded.** The `PARSER BASELINE (HYPOTHESIS — NOT a

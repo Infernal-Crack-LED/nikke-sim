@@ -19,6 +19,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { writeJsonArtifact } from '../src/data/json-artifact.js';
 import { mirrorStaleness } from './lib/kit-status-mirrors.js';
+import { bannerStaleness } from './lib/baseline-banner.js';
 
 const KIT_STATUS_URL = new URL('../data/kit-status.json', import.meta.url);
 const LEGACY_HAND_TUNED_URL = new URL(
@@ -27,6 +28,8 @@ const LEGACY_HAND_TUNED_URL = new URL(
 );
 const OVERRIDE_URL = (slug: string) =>
   new URL(`../src/skills/overrides/${slug}.json`, import.meta.url);
+const SPEC_TEST_URL = (slug: string) =>
+  new URL(`./tests/units/${slug}.test.ts`, import.meta.url);
 
 // 'unit-tested' = passed the kit-autonomy gauntlet (autonomous test-first faithfulness audit). It is a
 // WORKFLOW status (the kit-parse axis), NOT a tuning tier: a gauntleted unit keeps tier MODEL_ONLY until a
@@ -274,6 +277,19 @@ if (mode === '--refresh') {
       if (provenance(o.note ?? '') !== u.kitParse?.provenance) {
         errors.push(`${slug}: provenance stale (run --refresh)`);
       }
+      // Banner durability (2026-08-11, owner-approved): /kit-parse writes the PARSER BASELINE
+      // banner into every new baseline, and nothing removes it once the unit gains spec tests /
+      // a gauntlet pass / a real fight — the exact way 19 carriers came to assert the opposite of
+      // the tree before the Tier 0 sweep. The banner is a claim ABOUT this repo, so the gate can
+      // read the repo and check it. scripts/lib/baseline-banner.ts, pinned by
+      // scripts/tests/baseline-banner.test.ts.
+      errors.push(
+        ...bannerStaleness(slug, o.note ?? '', {
+          hasSpecTest: existsSync(SPEC_TEST_URL(slug)),
+          boardReadings: u.board?.n ?? 0,
+          gradedTeams: u.graded?.teams ?? 0,
+        })
+      );
     }
   }
   if (errors.length) {
