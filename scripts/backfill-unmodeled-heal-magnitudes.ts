@@ -67,11 +67,27 @@ function arrayEnd(raw: string, open: number): number {
   throw new Error('unterminated array');
 }
 
-/** The `"unmodeled": { … }` region, so a slot key elsewhere in the file is never matched. */
+/**
+ * The `"unmodeled": { … }` region, so a slot key elsewhere in the file is never matched.
+ *
+ * The key scan is a plain `indexOf`, which would mis-locate if a `note` mentioned the field name
+ * in escaped quotes BEFORE the real key. Guarded rather than assumed: the match must be followed
+ * by `:` and then `{`, so a prose mention throws loudly instead of splicing the wrong region.
+ */
 function unmodeledRegion(raw: string): [number, number] {
-  const key = raw.indexOf('"unmodeled"');
+  let key = -1;
+  for (
+    let at = raw.indexOf('"unmodeled"');
+    at !== -1;
+    at = raw.indexOf('"unmodeled"', at + 1)
+  ) {
+    if (/^\s*:\s*\{/.test(raw.slice(at + '"unmodeled"'.length))) {
+      key = at;
+      break;
+    }
+  }
   if (key === -1) {
-    throw new Error('no unmodeled field');
+    throw new Error('no unmodeled field (or only prose mentions of it)');
   }
   const open = raw.indexOf('{', key);
   let depth = 0;
@@ -110,7 +126,19 @@ export function insertEntries(
   }
   const [regionStart, regionEnd] = unmodeledRegion(raw);
   const region = raw.slice(regionStart, regionEnd);
-  const keyAt = region.indexOf(`"${slot}"`);
+  // Same guard as unmodeledRegion: the slot key must be followed by `: [`, so an entry whose
+  // TEXT contains `"burst"` cannot be mistaken for the key.
+  let keyAt = -1;
+  for (
+    let at = region.indexOf(`"${slot}"`);
+    at !== -1;
+    at = region.indexOf(`"${slot}"`, at + 1)
+  ) {
+    if (/^\s*:\s*\[/.test(region.slice(at + slot.length + 2))) {
+      keyAt = at;
+      break;
+    }
+  }
   if (keyAt === -1) {
     throw new Error(`unmodeled has no "${slot}" key`);
   }

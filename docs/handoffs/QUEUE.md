@@ -263,8 +263,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   surfaced (the 5-carrier lifesteal non-emitter ruling and the U28 rider-gauge class) are RULED —
   see DECISIONS 2026-08-10 Tier 0. The §5 proposal it raised is RULED AND ENACTED (owner
   2026-08-11: unmodeled behaviour is recorded under `unmodeled`, never left to prose — 50 heal
-  lines across 34 units + `kilo`'s HP-basis clause; `census-kit-numbers.ts --check` now gates it in
-  verify.sh). **Two things are open:**
+  lines across 34 units; `census-kit-numbers.ts --check` now gates it in verify.sh). **Three things
+  are open:**
+  - **⇒ OWNER CALL, one line: does the ruling cover `kilo`?** Her burst nuke IS modelled, but off
+    her own ATK rather than the kit's "5% of final Max HP" basis; the basis clause sits in her
+    `caveats` with a ⚑ and a recipe. Filed as an `unmodeled` entry or left as an approximation —
+    the pass shipped the latter. Both readings written out in DECISIONS 2026-08-11. If filed, it is
+    a hand edit (the backfill script is heal-only).
   - **Axes A2–A6 proposed, none built** — `unmodeled` entries matching no kit line; non-percent
     quantity accounting (the tier that held the `d-killer-wife` round-count defect); "fixed at" vs
     the clamp StatKeys; held-primitive carrier scan; and READ (do not rebuild)

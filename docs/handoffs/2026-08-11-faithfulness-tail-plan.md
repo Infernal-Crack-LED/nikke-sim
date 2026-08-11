@@ -155,11 +155,17 @@ graded-45 re-calibration.
 >
 > **What was filed:** the 50 heal-magnitude lines below across 34 units
 > (`scripts/backfill-unmodeled-heal-magnitudes.ts`, idempotent, re-runnable after a roster sync),
-> plus `kilo`'s burst HP-basis clause — the one non-heal gap this axis found. Each entry records
+> and nothing else. Each entry records
 > what is missing (the amount) and what is not (the recovery event), in the `ada` wording, so nobody
 > later "fixes" a filed line by adding a second emitter.
 >
-> **What was deliberately NOT filed, and why that is not a loophole:** every remaining PROSE-ONLY
+> **`kilo` was drafted and then DROPPED — one reading left open for the owner.** Her burst nuke IS
+> modelled; only the kit's "ATK … calculated from 5% of final Max HP" BASIS is not, and that lives
+> in her `caveats` with a ⚑ and a recipe. Filing it would have asserted the nuke is unmodelled,
+> which is false — but the ruling's plain text arguably covers a basis clause sitting in prose.
+> Shipped: not filed. Full statement of both readings in DECISIONS (2026-08-11).
+>
+> **What else was deliberately NOT filed, and why that is not a loophole:** every remaining PROSE-ONLY
 > line was checked, and all of them are magnitudes that ARE modelled, in transformed form (§2b) —
 > `nayuta` folds 150 + 380.46 into one 530.46 rider, `takina` uptime-averages 140.49 × 10/15 = 93.66,
 > `mihara-bonding-chain` ships 12 × 25.08, `soda-twinkling-bunny` sums 52.04 + 85.02. Filing those

@@ -231,10 +231,6 @@ describe('the three dispositions', () => {
 
 describe('roster calibration — scored against the sweep-reviewed slice', () => {
   const rows = census().rows;
-  const silent = (graded: boolean) =>
-    rows
-      .filter((r) => r.graded === graded && r.silent.length > 0)
-      .map((r) => r.slug);
 
   it('audits the whole override roster', () => {
     expect(rows.length).toBeGreaterThan(180);
@@ -246,11 +242,19 @@ describe('roster calibration — scored against the sweep-reviewed slice', () =>
     // `unmodeled`, not left to prose. Everything that fired here has been dispositioned — the heal
     // magnitudes are filed roster-wide, and what remains is `power`, whose "Reloads 100% of the
     // magazine" is genuinely encoded as instantReload fraction: 1 and cannot be digit-matched.
-    // This is the same invariant `--check` enforces in verify.sh.
-    const acceptedSlugs = new Set(ACCEPTED_SILENT.map((a) => a.slug));
-    expect(
-      [...silent(true), ...silent(false)].filter((s) => !acceptedSlugs.has(s))
-    ).toEqual([]);
+    // Matched on (slug, VALUE), exactly as `--check` does — not on slug alone. A slug-level
+    // allowlist would stay green if an accepted unit grew a SECOND silent magnitude beside its
+    // accepted one, which is precisely the regression this exists to catch.
+    const isAccepted = (slug: string, value: string) =>
+      ACCEPTED_SILENT.some((a) => a.slug === slug && a.value === value);
+    const unexpected = rows.flatMap((r) =>
+      r.silent.flatMap((f) =>
+        f.missing
+          .filter((v) => !isAccepted(r.slug, v))
+          .map((v) => `${r.slug} ${f.slot} ${v}`)
+      )
+    );
+    expect(unexpected).toEqual([]);
   });
 
   it('keeps every accepted blind spot real — it must still actually fire', () => {

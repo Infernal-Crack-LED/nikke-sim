@@ -26,7 +26,7 @@ lives. Newest first within each section.
     under-reports; complete, it is an answer.
   - **Enacted:** 50 heal-magnitude lines across 34 units, via
     `scripts/backfill-unmodeled-heal-magnitudes.ts` (idempotent, re-runnable after a roster sync),
-    plus `kilo`'s burst HP-basis clause. Entries use the `ada` wording — they record that the
+    and nothing else. Entries use the `ada` wording — they record that the
     AMOUNT is unmodeled while the recovery EVENT is modelled, so a later reader does not "fix" a
     filed line by adding a second emitter. **Inert BY MECHANISM, not by fixture:** `unmodeled` has
     no engine consumer at all — `src/engine/sim.ts` never reads the field (it is carried onto the
@@ -39,6 +39,17 @@ lives. Newest first within each section.
     `mihara-bonding-chain` 12 × 25.08; `soda-twinkling-bunny` 52.04 + 85.02). Filing those under
     `unmodeled` would assert something false. The ruling binds unmodeled BEHAVIOUR; transformed
     encodings are modelled behaviour.
+  - **⇒ ONE READING LEFT OPEN FOR THE OWNER — `kilo`, drafted and then DROPPED.** Her burst nuke IS
+    modelled and fires (`flatDamage 1150.84`, `requiresShielded`), but off her own final ATK
+    instead of the kit's "ATK … calculated from 5% of final Max HP" basis, because no HP-basis
+    primitive exists. The basis clause is therefore unmodelled and lives only in her `caveats`,
+    with a ⚑ and a measurement recipe. Under the ruling's plain text ("record ALL unmodeled
+    behavior…") that is arguably prose-recorded unmodelled behaviour and should be filed; under the
+    reading this pass shipped, an APPROXIMATION of a modelled line is not "behaviour left in prose"
+    — and the `ada` amount/event wording does not fit a basis substitution anyway. **Shipped: not
+    filed.** If the owner draws the line the other way it is a hand edit, not a re-run — the
+    backfill script is heal-only by construction. Raised by the cross-family review
+    (`kimi-code/k3`, 2026-08-11) as the owner's call, not the reviewer's.
   - **The standing guard:** `census-kit-numbers.ts --check` runs in `verify.sh`, so a kit magnitude
     that appears nowhere in its override now fails the gate. One accepted blind spot — `power`'s
     "Reloads 100% of the magazine", genuinely encoded as `instantReload fraction: 1`, which a
