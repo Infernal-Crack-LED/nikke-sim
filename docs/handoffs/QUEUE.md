@@ -94,6 +94,47 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   — see ENGINE-WORK ORDER item 4 and `2026-08-10-gauge-economy-findings.md`.
   [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
 
+- **⇒ OWNER RULINGS 2026-08-11, SECOND BATCH (M-list triage part 2). ENACTMENT PENDING for 2 of them.** 7. **M3 — distributed damage CAN crit.** This CONFIRMS the shipped engine default: `flatDamage`
+  procs crit unless a block sets `crit: false`, and a roster sweep shows all 12 distributed
+  carriers (`quency-escape-queen`'s 1736.31 nuke, `dorothy`'s 8900.83, `phantom`, `2b`,
+  `scarlet-black-shadow`, …) already run crit-on. **Nothing to enact — the question closes.** 8. **M8 — `red-hood`: do NOT average the ramp, model the actual stack ramp.** Her
+  `chargeDamagePct` 90 ⚑ is today's ramp AVERAGE against a cap-faithful 93.36 ((138.9 − 100) ×
+  2.4, at 100.8 swap + 3.81 × 10 stacks). ENACTMENT: drive it off the live stack count instead of
+  a baked average — the `rampSec` primitive is the nearest existing tool, but the faithful shape
+  is per-stack, so check whether a stack-driven value is expressible before assuming it is. 9. **M10 — `rouge`: ALL THREE coin statuses CO-EXIST; the earlier ones REMAIN when the next
+  activates.** This is a MODEL DEFECT, not a caveat: the override encodes `coin` as a
+  mutually-exclusive resource (0 = Sword, 1 = Shield, 2 = Double Sword), so Sword's Attack Damage
+  ▲ 6.65% is switched OFF the moment Shield activates at 30 full charges. Under the ruling it
+  should persist for the rest of the fight, on `selfAndAdjacent`. Direction of the fix is a team
+  damage INCREASE from ~the first quarter onward. ⚠ Interacts with **U38** (whether
+  `selfAndAdjacent.sides: 2` reaches 3 allies or 5) — the two decide the same buff's reach, so
+  land them together or state which is assumed. 10. **M12 — `mint`'s alternation starts on DANCING and flips on her OWN cast.** CONFIRMS the
+  shipped model: resource `singing` initial 0 (= Dancing) with two `mode:'solo'` `burstCast`
+  blocks at `everyN` 2 / offsets 0 and 1, i.e. +1 on her first cast and alternating thereafter.
+  **Nothing to enact.** Her solo mode still has no real-fight anchor for the MAGNITUDES it gates
+  (S1 `casterAtkPct` 45.02; S2's crit 19.94 / projectileExplosion 50 / pierce 32.72) — that part
+  of M12 stands as an unanchored-model item, not as a mechanism question.
+
+- **M1 `guillotine-winter-slayer` — the cadence ask is CLOSED, and the "~26% hot normal fire" framing
+  was a MISATTRIBUTION.** OWNER RULING 2026-08-11: she uses her datamined fire rate (`pullsPerSec` 12
+  / `rate_of_fire` 720); do not refit it. Checked the owner's hypothesis (is the level-up ammo refill
+  modelled wrong?) by A/B on her graded comp `PH water B3s`: removing the `instantReload` block
+  entirely moves her 1813 → 1802 shots and 280M → 279M — **the whole ammo channel is +0.6% of her
+  shots**, so it cannot inflate a fire rate either. Re-cadencing the EXP/level blend to a realistic
+  core fraction (c = 0.44: `hitCount` 3 → 4, level-up 30 → 42) is worth ~1.4% (1.023 → 1.006). AND
+  the whole-picture check nobody ran: **her board reading is 1.0238, inside ±3%.** The 26% traces to
+  two OLD unit-level readings (`run H` slot-5 + `N8` focus, 1.21–1.34) recorded in her `residual`
+  line, i.e. a different context, and `12 / 1.26 ≈ 9.5/s` was an arithmetic coincidence turned into a
+  suspect. If anyone wants the residual re-opened, re-derive it from a CURRENT reading first.
+
+- **M7 `noir` reload gap → folded into the ONGOING SG INVESTIGATION** (owner-directed 2026-08-11),
+  not a standalone recording ask. Her recon reads a reload of ~0.6–0.9s against the datamined 62f ≈
+  1.03s and she sits 0.884 COLD on 2 graded comps, but she is the **SG-landing-table calibration
+  anchor** (`docs/probe-data/noir-solo-recon.json`), so a cadence change moves the band table's own
+  basis — which is exactly why it belongs to the SG thread rather than beside it. Cross-referenced
+  from `docs/handoffs/2026-08-06-OWNER-ASK-mislock-labels.md`, the live SG owner-ask (it already
+  asks for `noir` pellet marking, so the same footage may serve both).
+
 - **⇒ OWNER RULINGS 2026-08-11 (M-list triage) — SIX of the twelve recording asks answered from game
   knowledge, no footage needed. ENACTMENT PENDING: one gated pass each, none of them landed yet.**
   1. **Tier 2 / M2 — `trina`'s Burst-Skill-Damage amp follows the LITERAL wording only, and

@@ -120,7 +120,37 @@ are safe only while unpaired.
 inside vs outside a `trina` Spread Roots window and compare the ratio against `1 + 4.356` additive
 in Damage-Up. Any comp with `trina` plus a plural-clause B3 gives it.
 
-## 5. Tier 3 — THE RECORDING LIST (hand this to the owner; it is where the remaining accuracy is)
+## 5. Tier 3 — THE RECORDING LIST — **TRIAGED BY THE OWNER 2026-08-11: 10 of 12 CLOSED**
+
+The premise of this section — "the remaining accuracy is behind footage" — was **half wrong**. Ten
+of the twelve asks were answered without a camera: eight from owner game knowledge, one (M1) by an
+A/B that refuted the ask's own premise, one (M7) by re-filing it into the SG investigation that owns
+its blast radius. **The durable lesson: ask the owner before asking for footage** — a recording
+request is expensive and several of these were game rules he could state in a sentence.
+
+Status of each, with the rulings in `QUEUE.md` (enactment pending, one gated pass each):
+
+- **CLOSED, nothing to enact:** M2 (`trina` amp is literal-only; `cinderella` RL/Electric does not
+  receive it), M3 (distributed damage CAN crit — confirms the shipped default on all 12 carriers),
+  M6 (ALL STACKS REFRESH unless a kit says otherwise — a general rule, so `ade-agent-bunny`'s
+  `hitCount:10` gate does open), M11 (`mihara-bonding-chain`'s burst RESETS Ensnaring; build outside
+  B3, consume with B3 — the mechanism her note already models), M12 (`mint` starts on Dancing and
+  flips on her own cast — confirms the shipped `singing` resource), M1 (see below).
+- **CLOSED, ENACTMENT PENDING:** M4 (true damage CAN core hit — engine-global), M5 (`ada` fires ONE
+  special-charged shot; kit-literal, costs board 0.995 → ~0.95), M8 (`red-hood`: model the ACTUAL
+  stack ramp, do not average), M9 (`prika` IS Pierce-tagged during Performance — hold released),
+  M10 (`rouge`: all three coin statuses CO-EXIST — a model defect, the override makes them
+  mutually exclusive).
+- **M1 `guillotine-winter-slayer` — the ask was built on a misattribution.** Owner: she uses her
+  datamined fire rate. A/B on her graded comp: the level-up ammo refill is worth **+0.6% of her
+  shots** (1813 → 1802 with the block removed), the EXP/level blend ~1.4% — and **her board reading
+  is 1.0238, inside ±3%**. The "~26% hot" came from two old unit-level readings in a different
+  context, and `12 / 1.26 ≈ 9.5/s` was an arithmetic coincidence promoted to a suspect.
+- **M7 `noir` — folded into the ongoing SG investigation**, cross-referenced from
+  `2026-08-06-OWNER-ASK-mislock-labels.md` §5b. She is the SG-landing anchor, so her cadence cannot
+  be settled beside the SG work, only inside it.
+
+<details><summary>The original table (historical — see the status above before acting on any row)</summary>
 
 Ordered by payoff. Several settle a question for MANY units at once — those first.
 
@@ -141,6 +171,8 @@ Ordered by payoff. Several settle a question for MANY units at once — those fi
 
 `/hand-tune-batches` builds the teams; `/testing-requests` publishes asks for units the owner does
 not own; `/probe-processing` scores what comes back.
+
+</details>
 
 ## 6. Tier 4 — safe consistency enactments (board-inert, do after Tier 0 answers)
 
