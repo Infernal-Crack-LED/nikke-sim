@@ -30,18 +30,35 @@ not behind code.
 
 ## 1. Tree state
 
-- **PR #98** (`fix/faithfulness-batch7`, batches 7+8) is open against `main`. If it has merged,
-  branch fresh off `main`; if not, do NOT branch off it for engine work — engine work gets its own
-  worktree either way (CLAUDE.md constraint 8).
-- Board at the time of writing: **`±3% 7 | ±5% 14 | ±8% 23 | worse 22`, 142 datapoints / 45 units.**
-  Re-read it yourself (`npx tsx scripts/board-read.ts`) before touching anything; if it differs,
-  find out why first.
+- PRs #98 (batches 7+8) and #99 (`jill`) are both MERGED — branch fresh off `main`. Engine work
+  gets its own worktree regardless (CLAUDE.md constraint 8).
+- Board: **`±3% 7 | ±5% 15 | ±8% 24 | worse 21`, 142 datapoints / 45 units** (the one-unit gain over
+  this doc's original figures is `jill` landing). Re-read it yourself
+  (`npx tsx scripts/board-read.ts`) before touching anything; if it differs, find out why first.
 - `verify.sh` green. `validate-overrides.ts` clean. Burst-amp census `--under` = 0.
 
-## 2. Tier 0 — OWNER DECISIONS (do these first, in one sitting)
+## 2. Tier 0 — OWNER DECISIONS — ALL FIVE RULED AND ENACTED 2026-08-10
 
-None of these need code or measurement. Each currently blocks or muddies work downstream, and they
-are cheap to answer together. **Bring them as one batch, not five conversations.**
+Nothing open here. All five were brought as one batch, ruled, and landed board-inert (board
+identical before/after; 0 engine lines, 0 damage values). Full rationale for each:
+`docs/DECISIONS.md`, the 2026-08-10 "FAITHFULNESS TIER 0" entry — that is the durable record, and
+the table below is kept only so the shape of the batch stays legible.
+
+What landed, in one line each: **D1** both tags DELETED rather than reworded (the 8 materialized
+carriers are all board-graded, and all 19 banner carriers already classified `gauntlet` by
+`kit-status` provenance, so the banner's own classifier branch had been dead code) · **D2** kept for
+fidelity + a new `BOSS_ONLY_BUFF_STATS` validator warning (fires on exactly the 3 carriers) ·
+**D3** self-scoped lifesteal stays recorded, no emit — inert by MECHANISM, prior in
+`modeling-priors.md` §11 · **D4** direction ruled (the omission is a defect), enactment still
+bundled with the gauge cluster · **D5** convention in `CONVENTIONS.md`, lint rejected with numbers.
+
+**Two things this batch left open, both needing the owner:** (a) whether `inert`/`byte-identical`
+join the pre-write hook's verdict-verb escalation — `.claude/**` is protected and untouched; (b)
+`/kit-parse`'s SKILL.md still instructs writing the D1 banner (correct for a genuinely new untuned
+unit, but nothing removes it once the unit gets tests, which is how it went stale the first time —
+a `kit-status --check` rule would make D1 durable). Both are tracked in `QUEUE.md`.
+
+<details><summary>The original decision table (historical — all five now ruled)</summary>
 
 | #   | Decision                                             | Scope                                                                                               | Why it matters                                                                                                                                                                                                                                     |
 | --- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -50,6 +67,8 @@ are cheap to answer together. **Bring them as one batch, not five conversations.
 | D3  | Self-scoped lifesteal: emit a recovery event or not? | 5 non-emitters of 13 carriers — `d` (SMG/Wind), `moran`, `red-hood` (SR/Iron), `rem`, `tia`         | Proven board-inert for self scope (batch 4 probe on `moran` moved zero; `red-hood` confirmed self-scoped in batch 8). Pure consistency — but it only stays inert while no unit has a self-recovery consumer, and `asuka` (AR/Fire) is one.         |
 | D4  | U28 rider gauge economy                              | `modernia`, `nayuta`, `neon-blue-ocean`, `neon-vision-eye`                                          | `extraHitDamagePct` riders emit no `skillGauge` where an equivalent `flatDamage` instance would. A gauge-economy choice, not cosmetic. Interacts with the `skillGauge`-fires-twice bug — see §5.                                                   |
 | D5  | Inertness-claim convention                           | roster-wide                                                                                         | Batch 8: `alice` (SR/Fire) — an "inert, verified byte-identical" claim was wrong by 22.6% because it was measured in a pierce-free fixture. Require an inertness/A-B claim in override prose to NAME its roster. Enforce by lint or by convention? |
+
+</details>
 
 ## 3. Tier 1 — the one board-moving fix: `jill` (AR/Electric) — LANDED 2026-08-10
 
@@ -112,11 +131,10 @@ not own; `/probe-processing` scores what comes back.
 
 ## 6. Tier 4 — safe consistency enactments (board-inert, do after Tier 0 answers)
 
-Cheap, mechanical, and each is gated only on its Tier-0 decision:
+Cheap and mechanical. The three that were gated on a Tier-0 decision (the D1 tag sweep across 19 + 8
+carriers, D2 on `moran`/`rouge`/`rumani`, D3 across the 5 lifesteal non-emitters) LANDED with Tier 0
+— see §2. What remains needs no decision:
 
-- Sweep the D1 provenance tags across the 19 + 8 carriers.
-- Apply D2 to `moran` / `rouge` / `rumani`.
-- Apply D3 across the 5 lifesteal non-emitters.
 - **Clean the last 3 bare parser-warning caveats** — `maiden-ice-rose` (1), `milk-blooming-bunny`
   (2). They ship raw `unparsed effect` / `unsupported trigger` strings that `validate-overrides.ts`
   echoes as live failures, while both units record the same lines' real dispositions in `unmodeled`.

@@ -86,42 +86,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   Tier 5 held engine primitives. It opens with the honest framing: enacting everything ready today
   improves the board by roughly ONE unit.
 
-- **⇒ ONE RULING WANTED (U28 class): `neon-vision-eye`'s Super Firepower "Deals 262.79% of final
-  ATK as additional damage" is modeled as an `extraHitDamagePct` RIDER, not a `flatDamage`
-  instance** — so it generates no burst gauge of its own, where a damage instance would. Per U28
-  that is a gauge-economy decision, not cosmetic. It may well be right (it is an "additional
-  damage" rider on her normals) but it is undocumented, and she carries no `caveats` array at
-  all. She is HOT (1.040), so the direction is not obviously wrong. Wants ONE ruling across the
-  U28 rider set rather than a unit-local fix.
+- **U28 rider-gauge class — DIRECTION RULED (2026-08-10, Tier 0 / D4), enactment still bundled.**
+  `extraHitDamagePct` riders emit no `skillGauge` where an equivalent `flatDamage` instance would
+  (`sim.ts:4053` vs 2568/2605/3803); the omission is a DEFECT, not a modeling choice, so only WHEN
+  is open. All four carriers (`modernia`, `nayuta`, `neon-blue-ocean`, `neon-vision-eye`) now record
+  the ruling in their notes. Lands with the batched gauge cluster, whose corrections partially cancel
+  — see ENGINE-WORK ORDER item 4 and `2026-08-10-gauge-economy-findings.md`.
   [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
-
-- **⇒ OWNER RULING WANTED — two stale provenance tags, one joint decision.** (a) The
-  `PARSER BASELINE (HYPOTHESIS — NOT a validated model)` banner on **19 remaining overrides** — all
-  carry spec tests + gauntlet passes, and all contradict the banner elsewhere in their own prose. It
-  conflates "kit-faithfulness unvalidated" (false for all of them) with "magnitude not hand-tuned
-  against a graded fight" (true for most). (b) The `[materialized … NOT hand-verified]` tag on **8
-  remaining units** — `cinderella-crystal-wave`, `d-killer-wife`, `liberalio`, `maiden-ice-rose`,
-  `milk-blooming-bunny`, `naga`, `scarlet-black-shadow`, `velvet` — every one since pinned
-  test-first, so the tag asserts the opposite of the tree. Same shape, want one wording decision;
-  `noir` / `chisato` (batch 7) and `alice` / `red-hood` / `mint` / `mihara-bonding-chain` (batch 8)
-  are the worked examples.
-
-- **⇒ CONVENTION WANTED — an inertness/A-B claim in override prose must NAME THE ROSTER it was
-  measured on.** `alice`'s "damage-INERT at scope lock … verified byte-identical totals with/without
-  hasPierce" was true in `controlComp()` (liter/crown/carry/`helm`, no pierce source) and wrong by
-  **22.6%** on her only graded comp, which seats `mint` and her `pierceDamagePct` 32.72. Fixture-inert
-  is not board-inert. Cheap enforcement options: a caveat-prose lint, or a harness helper that stamps
-  the comp into the claim. [batch-8 findings](2026-08-10-faithfulness-batch8-findings.md).
 
 - **Clean 3 bare parser-warning caveats in 2 units** — `maiden-ice-rose` (1) and
   `milk-blooming-bunny` (2) still ship raw `unparsed effect` / `unsupported trigger` strings as
   caveats. `validate-overrides.ts` echoes caveats, so they read as live unresolved failures on every
   run; both units also record the same lines' real dispositions in `unmodeled`.
-
-- **⇒ OWNER RULING WANTED — ally-targeted `damageTakenPct` on 3 carriers** (`moran`, `rouge`,
-  `rumani`). The StatKey is boss-side (the engine sums it from the enemy buff list only), so all
-  three are applied-and-never-read: correct in outcome, live-looking in the file. Either move them
-  to `unmodeled` or have `validate-overrides.ts` warn on the target/stat mismatch.
 
 - **The audit doc's F7 ramp-bake list is nought for three — do not forward its membership as a
   per-unit prior.** `chisato` and `rouge` carry no stack-ramp line at all; `mast-romantic-maid` has a
@@ -141,9 +117,8 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   to check inertness against. It wants its own entry doc and probably a GENERATED-CENSUS approach
   (the pattern that demonstrably works here — `scripts/doc-drift.ts`, the burst-amp census,
   `lint-target-status.ts`) rather than per-unit reads. The batch-7 START-HERE doc is CLOSED with
-  batch 8. Still open and roster-wide from the sweep: the 5-carrier lifesteal non-emitter ruling
-  (`d`, `moran`, `red-hood`, `rem`, `tia` — `red-hood` is confirmed SELF-scoped, so a consistency
-  item, not a fit one) and the U28 rider-gauge class.
+  batch 8. Both roster-wide items the sweep surfaced (the 5-carrier lifesteal
+  non-emitter ruling and the U28 rider-gauge class) are RULED — see DECISIONS 2026-08-10 Tier 0.
 
 - **Sweep record (batches 1–8, all landed — reference only, nothing open here):**
   [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
@@ -174,11 +149,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **Exposed hot fit from the batch — run the pending direct measurement, then re-tune (never
   re-fudge):** `maxwell` 0.889→1.252 (popup-read the burst window in run-G/N6 footage: railgun
   shot count + charged value vs the modeled ~2 × 2440.26%).
-- **Self-scoped lifesteal recovery-emit split — wants ONE roster ruling (2026-08-10, batch 4):**
-  of the 13 kits with "Recovers X% of attack damage as HP", 8 emit a recovery event and 5 do not
-  (`d`, `moran`, `red-hood`, `rem`, `tia`). Verified board-INERT for `moran` (a self-scoped heal
-  fires recovery only at its own target, so it cannot reach an ally-side crown-class consumer; a
-  probe emit moved the board by zero) — this is a consistency call, not a fit one.
 - **`alice-wonderland-bunny` stack-grant reading:** now aligned to the +1-GRANT majority; if a
   datamine function-type read or footage confirms the 2026-07-28 cap-raise reading instead,
   revert her addStack block to unmodeled (revert path in her note).
@@ -836,3 +806,14 @@ template mislock, → 0 on relock) + 29 countable`. 42 − 35 = 7 / 5 shots = **
   that could catch the claim at WRITE time instead. **`.claude/**` is protected, so this needs an
   explicit owner go-ahead; nothing was changed there.** Backfill of existing claims is opportunistic
   (when a file is touched for another reason), not a sweep.
+- **D1 has no durability guard — `/kit-parse` still writes the banner it just swept away.**
+  `.claude/skills/kit-parse/SKILL.md` instructs emitting
+  `PARSER BASELINE (HYPOTHESIS — NOT a validated model)…` into a new baseline's note, which is
+  ACCURATE at authoring time for a genuinely untuned unit. The staleness came from the other end:
+  nothing removes the banner once the unit gains spec tests / a gauntlet pass / a graded fight, which
+  is exactly how 19 carriers ended up asserting the opposite of the tree. Options: (a) a
+  `kit-status.ts --check` rule failing when a note carries the banner AND the unit has a spec test or
+  `gauntlet` provenance — a script, so no protected path; (b) reword the kit-parse banner to state
+  only the recording status, which cannot go stale the same way (`.claude/**`, needs owner
+  go-ahead). Recommendation: (a) — it is the mechanical guard, and it would have caught this class
+  the day it appeared. **Not done: outside the five approved Tier 0 items.**
