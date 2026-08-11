@@ -26,9 +26,11 @@
   run, the reviewer is ALWAYS the opposite model family (Kimi driver → Claude via
   `dispatch-claude.sh`; Claude driver → Kimi k3 via `dispatch-kimi.sh`). Routing:
   `scripts/kit-autonomy/CROSS-FAMILY-PROTOCOL.md` § "Generic engineering gates".
-- **Front end:** read `docs/frontend-conventions.md` before any UI work — named exports only, no
-  CSS modules, `var(--token)` colors, `ResizeObserver` for responsive layouts, pills
-  `border-radius: 999px`, cards 10px, inputs 8px.
+- **Front end:** read `docs/frontend-conventions.md` before any UI work — the binding,
+  harness-agnostic reference for ALL user-visible web work: styling (named exports only, no CSS
+  modules, `var(--token)` colors, pills `999px` / cards `10px` / inputs `8px` radius), routing,
+  SEO + embed metadata, the no-JS crawler surface, backend/data flow, share-card pipelines, and
+  image scaling. New pages follow its multi-file touch-point checklist (§13).
 
 ## Quick reference (details in CLAUDE.md)
 

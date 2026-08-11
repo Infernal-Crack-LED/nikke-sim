@@ -45,8 +45,10 @@ export function mimeFor(file: string): string {
 // ---- per-tab embed metadata -------------------------------------------------
 // Crawlers (Discord/Twitter/etc.) don't run JS, so a shared link's Open Graph
 // card must be baked into the HTML the server returns. We branch the OG/Twitter
-// tags on the URL's `?tab=` (mirrors the client's tabFromLocation) so each tab is
-// independently linkable with its own title/description.
+// tags on the URL's path (tabFromReqUrl below, mirrors the client's tabKey) so
+// each route is independently linkable with its own title/description. MUST stay
+// in lockstep with useDocumentHead.ts META and scripts/serve.mjs TAB_META —
+// scripts/tests/share/meta-parity.test.ts enforces it.
 const SITE = 'https://nikkesim.app';
 interface TabMeta {
   title: string;
@@ -59,7 +61,7 @@ interface TabMeta {
   // generic og:image.
   image?: string;
 }
-let TAB_META: Record<string, TabMeta> = {
+export let TAB_META: Record<string, TabMeta> = {
   sim: {
     title:
       'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
@@ -70,7 +72,7 @@ let TAB_META: Record<string, TabMeta> = {
     title:
       'NIKKE DPS Rankings — Neutral, Elemental Advantaged, with and without Supports',
     label: 'DPS Rankings',
-    desc: 'Ranked DPS of every B3 under standardized frameworks.',
+    desc: 'Ranked DPS of every NIKKE B3 under standardized frameworks: neutral and elementally advantaged, with and without supports.',
   },
   dps: {
     title: 'Unit Comparison — NIKKE Head-to-Head DPS Comparator',
@@ -122,7 +124,7 @@ let TAB_META: Record<string, TabMeta> = {
   teambuilder: {
     title: 'NIKKE Team Builder — Visual Team Planner & Loadout Editor',
     label: 'Team Builder',
-    desc: 'Build and share NIKKE solo raid, union raid, tower, and campaign teams visually. Filter the full roster, set loadouts, and copy your team into the sim or roster sim.',
+    desc: 'Build and share NIKKE solo raid and union raid teams visually. Filter the full roster, set loadouts, and copy your team into the sim or roster sim.',
   },
   resources: {
     title:
@@ -164,7 +166,7 @@ let TAB_META: Record<string, TabMeta> = {
   builder: {
     title: 'NIKKE Card Builder — Custom DPS Charts & Infographics',
     label: 'Card Builder',
-    desc: 'Build a shareable NIKKE infographic: custom DPS chart, unit comparison, rank board, unit card, or overload table — with a live preview and a hosted, Discord-embeddable URL.',
+    desc: 'Build a shareable NIKKE infographic: Nikke Card, custom DPS chart, unit comparison, rank board, and more. Live preview and specialized formatting for Discord and X.',
     // Showcases an actual generated card (the builder's Nikke Card default
     // pick) instead of the generic site screenshot.
     image: 'unit/maiden-ice-rose.discord',

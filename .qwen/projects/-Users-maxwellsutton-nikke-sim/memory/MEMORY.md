@@ -1,1 +1,1 @@
-- [Frontend stack and conventions](project-frontend-stack.md) — React 18 + Vite 5 in web/, single CSS, dark theme. Read docs/frontend-conventions.md before writing UI code.
+- [Frontend stack and conventions location](project-frontend-stack.md) — binding harness-neutral web playbook at docs/frontend-conventions.md (SEO, backend, cards, images)

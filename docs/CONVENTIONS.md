@@ -222,8 +222,9 @@ logs from poisoning agent context with stale-but-retained narration.
   still-true-but-resolved block, confirm the fact is in a changelog doc (DECISIONS /
   answered-questions); if
   not, append it there first, then delete. Members: `docs/STATE.md`, `docs/data/*.md` (incl.
-  sg-calc), `docs/CONVENTIONS.md`, `docs/modeling-priors.md`, `docs/engine-modeling-gaps.md`,
-  `docs/test-speed-gotchas.md`, `CLAUDE.md`, open `docs/handoffs/*` (incl.
+  sg-calc), `docs/CONVENTIONS.md`, `docs/frontend-conventions.md`, `docs/modeling-priors.md`,
+  `docs/engine-modeling-gaps.md`, `docs/seo-followups.md`, `docs/test-speed-gotchas.md`,
+  `CLAUDE.md`, open `docs/handoffs/*` (incl.
   `docs/handoffs/QUEUE.md`, the live work queue),
   `docs/open-questions.md` (UNANSWERED only), the
   backlog/ledger docs, and **the prose fields of every override** — `src/skills/overrides/*.json`

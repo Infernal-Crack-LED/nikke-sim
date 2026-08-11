@@ -214,6 +214,9 @@ These paths are load-bearing for the sim's accuracy guarantees. **Never modify t
 
 - See [docs/CONVENTIONS.md](docs/CONVENTIONS.md) — evidence tiers, validation methodology,
   verify discipline, doc audience/location/hygiene rules.
+- **Front end / user-visible web:** any work in `web/` — plus SEO meta, no-JS crawler bodies,
+  share cards, and static assets — is bound by [docs/frontend-conventions.md](docs/frontend-conventions.md).
+  Read it before editing; it is also the reusable website playbook for future sites (§14).
 - Skills by task area: **`/scientific-method` RESOLVES UNKNOWNS — an empirical test, a DERIVED
   engine constant, a measurement-driven retune, a verdict stamp, a DECISIONS overturn** (the
   procedure of record — premise gate → Fable pre-op → work → driver gate → BLIND Fable post-op →
@@ -244,7 +247,9 @@ These paths are load-bearing for the sim's accuracy guarantees. **Never modify t
 
 - **CURRENT-STATE** — freely rewritten; stale content is DELETED (capture the fact in a changelog
   doc first, then delete). No history accumulates. Members: `docs/STATE.md`, `docs/data/*.md`,
-  `docs/CONVENTIONS.md`, `docs/modeling-priors.md`, `docs/engine-modeling-gaps.md`, `docs/test-speed-gotchas.md`, `docs/VALIDATION-INDEX.md`, `CLAUDE.md`,
+  `docs/CONVENTIONS.md`, `docs/frontend-conventions.md`, `docs/modeling-priors.md`,
+  `docs/engine-modeling-gaps.md`, `docs/seo-followups.md`, `docs/test-speed-gotchas.md`,
+  `docs/VALIDATION-INDEX.md`, `CLAUDE.md`,
   open `docs/handoffs/*`, open-questions **UNANSWERED**, the backlog/ledger docs, **and the prose
   fields of every override — `src/skills/overrides/*.json` `note` / `caveats` / `unmodeled`.**
   - **⇒ OVERRIDE PROSE DESCRIBES THE UNIT AS IT IS MODELED TODAY — NOTHING ELSE (2026-07-22 owner

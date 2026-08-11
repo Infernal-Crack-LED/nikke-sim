@@ -8,18 +8,21 @@ interface HeadMeta {
 }
 
 // Per-route SEO metadata. Titles are keyword-rich and unique per page so
-// Google sees each route as a distinct, relevant result.
-const META: Record<string, HeadMeta> = {
+// Google sees each route as a distinct, relevant result. MUST stay in
+// lockstep with the servers' TAB_META tables (src/server/static.ts,
+// scripts/serve.mjs) — scripts/tests/share/meta-parity.test.ts enforces it.
+export const META: Record<string, HeadMeta> = {
   sim: {
     title:
       'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
     description:
-      'NIKKE solo-raid damage simulator: per-unit DPS calculator, overload optimizer, best overload lines, team builder, and game mechanics reference. Frame-tick accuracy, runs in your browser.',
+      'NIKKE solo raid damage simulator: per-unit DPS calculator, overload optimizer, best overload lines, team builder, and game mechanics reference. Frame-tick accuracy, runs in your browser.',
   },
   dpschart: {
-    title: 'NIKKE DPS Rankings — Best Units & Overload Lines Tier List',
+    title:
+      'NIKKE DPS Rankings — Neutral, Elemental Advantaged, with and without Supports',
     description:
-      'Ranked DPS of every NIKKE B3 carry under standardized solo-raid frameworks. Compare units, see best overload lines, and find your best carries.',
+      'Ranked DPS of every NIKKE B3 under standardized frameworks: neutral and elementally advantaged, with and without supports.',
   },
   dps: {
     title: 'Unit Comparison — NIKKE Head-to-Head DPS Comparator',
@@ -28,29 +31,30 @@ const META: Record<string, HeadMeta> = {
   },
   ranks: {
     title:
-      'NIKKE Support Rankings — Burst Gen, Burst CDR, Sustain & Team Buffs Boards',
+      'NIKKE Support Rankings — Team Damage Buffs, Burst Gen, Burst CDR, & Sustain',
     description:
-      'Ranked NIKKE support boards: burst generation, burst cooldown reduction, sustain (team HP), and buffer value — precomputed from the same frame-tick solo-raid sim as the DPS rankings.',
+      'Ranked NIKKE support boards: team damage buffs, burst generation, burst cooldown reduction, and sustain. Computed from the same frame-tick solo raid sim as the DPS rankings.',
   },
   overload: {
     title: 'NIKKE Overload Optimizer — Best Overload Lines Calculator',
     description:
-      'Find the optimal 3rd overload line for every NIKKE B3. The overload calculator uses frame-tick sim data to rank every roll by DPS gain.',
+      'Find the optimal overload lines for any Nikke. The overload calculator uses frame-tick sim data to rank every roll by DPS gain.',
   },
   team: {
-    title: 'NIKKE Team Generator — Best 5-Unit Solo Raid Team',
+    title: 'NIKKE Team Generator — Best 5 Nikke Team',
     description:
-      'Generate the best 5-Nikke solo-raid team against a custom boss profile. Factors element, burst rotation, and overload synergy.',
+      'Generate the best 5 Nikke team against a custom boss profile. Factors element, burst rotation, and overload synergy.',
   },
   roster: {
-    title: 'NIKKE Roster Generator — Best Solo-Raid Teams from Your Units',
+    title:
+      'NIKKE Roster Generator — Best Solo Raid/Union Raid Teams from Your Units',
     description:
-      'Input your NIKKE roster and generate the optimal solo-raid teams. Accounts for your actual units, gear, and overload lines.',
+      'Input your NIKKE roster and generate the optimal solo raid teams. Accounts for your actual units, gear, and overload lines.',
   },
   rostersim: {
-    title: 'NIKKE Roster Sim — Compare All Your Solo-Raid Teams',
+    title: 'NIKKE Roster Sim — Sim Your Solo Raid and Union Raid Teams',
     description:
-      'Sim your own five solo-raid teams at once and compare their damage side by side. See which roster lineup deals the most DPS.',
+      'Sim your own five solo raid teams at once and compare their damage side by side. See which roster lineup deals the most DPS.',
   },
   olsim: {
     title: 'NIKKE Overload Rolling Simulator — Module Cost Calculator',
@@ -70,12 +74,13 @@ const META: Record<string, HeadMeta> = {
   teambuilder: {
     title: 'NIKKE Team Builder — Visual Team Planner & Loadout Editor',
     description:
-      'Build and share NIKKE solo-raid teams visually. Filter the full roster, set loadouts, and copy your team into the sim or roster sim.',
+      'Build and share NIKKE solo raid and union raid teams visually. Filter the full roster, set loadouts, and copy your team into the sim or roster sim.',
   },
   resources: {
-    title: 'NIKKE Resource Calculator — Daily Custom Module & Fragment Income',
+    title:
+      'NIKKE Resource Calculator — Daily Custom Module & Anomaly Interception Outcome',
     description:
-      'Expected daily solo-raid resource drops by stage: overload custom modules, module fragments, locks, and XP fodder. Plan your daily farming.',
+      'Expected daily custom module and T9 drops by stage. Supports Kraken and other Anomaly Interception bosses. Plan your daily farming.',
   },
   howto: {
     title: 'How to Use the NIKKE Solo Raid Sim — Quick Start Guide',
@@ -83,9 +88,10 @@ const META: Record<string, HeadMeta> = {
       'Learn how to use the NIKKE Solo Raid Sim: build a team, configure the boss, read DPS results, and optimize your overload lines.',
   },
   mechanics: {
-    title: 'NIKKE Game Mechanics Reference — Damage Formula & Solo Raid Guide',
+    title:
+      'NIKKE Game Mechanics Reference — Damage Formula & Other Game Mechanics',
     description:
-      'Comprehensive NIKKE mechanics reference: damage formula, burst rotation, charge math, and solo-raid mechanics — all sourced and tiered.',
+      'Comprehensive NIKKE mechanics reference: damage formula, burst rotation, charge math, and other game mechanics — all sourced and tiered.',
   },
   dev: {
     title: 'Meet the Dev — NIKKE Solo Raid Sim',
@@ -108,9 +114,14 @@ const META: Record<string, HeadMeta> = {
       'Import your real NIKKE roster into the sim via blablalink. Auto-fills your units, gear, and overload lines for accurate team generation.',
   },
   builder: {
-    title: 'NIKKE Card Builder — Custom DPS Charts & Share Images',
+    title: 'NIKKE Card Builder — Custom DPS Charts & Infographics',
     description:
-      'Build a shareable NIKKE infographic: custom DPS chart, unit comparison, rank board, unit card, or overload table — with a live preview and a hosted, Discord-embeddable URL.',
+      'Build a shareable NIKKE infographic: Nikke Card, custom DPS chart, unit comparison, rank board, and more. Live preview and specialized formatting for Discord and X.',
+  },
+  characters: {
+    title: 'NIKKE Characters — Every Nikke’s Kit, Overload Lines & DPS Rank',
+    description:
+      'Browse every NIKKE character. Filter by element, weapon, burst stage, class or kit role, then open a Nikke for her full kit, best overload lines, and solo-raid DPS ranking.',
   },
   credits: {
     title: 'Credits — NIKKE Solo Raid Sim',
@@ -177,7 +188,7 @@ function tabKey(): string {
     }
     return 'dpschart';
   }
-  if (segs[0] && META[segs[0]]) {
+  if (segs[0] && Object.hasOwn(META, segs[0])) {
     return segs[0];
   }
   return 'sim';
