@@ -15,16 +15,18 @@
 pessimism, it is the actual shape of the findings, and planning as if there are 45 fixes waiting
 will waste the session:
 
-- **Exactly one finding moves the board materially and is ready to enact: `jill`.** 1.924 → 0.983.
+- **The one finding that moved the board materially has LANDED: `jill`, 1.924 → 0.983**
+  (`docs/DECISIONS.md`, 2026-08-10, IMPLEMENT entry). See §3 for the pointer — the plan that used to
+  live there is done, not open.
 - **One more is probably bigger and is BLOCKED on footage:** `guillotine-winter-slayer`'s normal
   fire reads ~26% hot against her datamined cadence. Nobody can fix that without a recording.
 - **One is a live RISK rather than a gain:** the burst-amp channel is unvalidated and would send
   `cinderella` (RL/Electric) to 1.523 if the obvious next tag were applied. It blocks further tagging.
 - **Everything else is consistency, hygiene, or measurement-gated.** Board-inert by construction.
 
-So the highest-value output of an enactment session is: land `jill`, get the batched owner
-decisions made, and **hand the owner a recording list** — because the remaining accuracy is behind
-footage, not behind code.
+So the highest-value remaining output of an enactment session is: get the batched owner decisions
+made, and **hand the owner a recording list** — because the remaining accuracy is behind footage,
+not behind code.
 
 ## 1. Tree state
 
@@ -49,49 +51,14 @@ are cheap to answer together. **Bring them as one batch, not five conversations.
 | D4  | U28 rider gauge economy                              | `modernia`, `nayuta`, `neon-blue-ocean`, `neon-vision-eye`                                          | `extraHitDamagePct` riders emit no `skillGauge` where an equivalent `flatDamage` instance would. A gauge-economy choice, not cosmetic. Interacts with the `skillGauge`-fires-twice bug — see §5.                                                   |
 | D5  | Inertness-claim convention                           | roster-wide                                                                                         | Batch 8: `alice` (SR/Fire) — an "inert, verified byte-identical" claim was wrong by 22.6% because it was measured in a pierce-free fixture. Require an inertness/A-B claim in override prose to NAME its roster. Enforce by lint or by convention? |
 
-## 3. Tier 1 — the one board-moving fix: `jill` (AR/Electric)
+## 3. Tier 1 — the one board-moving fix: `jill` (AR/Electric) — LANDED 2026-08-10
 
-**This is the whole accuracy payoff available today. Do it properly, alone, on its own worktree.**
-
-- **Defect.** `src/engine/sim.ts` swap fire-cadence branch reads
-  `u.swap.pullsPerSec ?? PULLS_PER_SEC[u.swap.weapon ?? u.char.weapon]` — it never falls back to
-  `u.pullsPerSec`, which is where `charFixes.pullsPerSec` lands. `jill` is the ONLY unit roster-wide
-  carrying both a measured `charFixes.pullsPerSec` (2.5, named in the engine's own table comment)
-  and a `weaponSwap`. Her burst is a same-weapon `trueNormals` swap with no `weapon` field, so for
-  10s of every burst she fires at `PULLS_PER_SEC['AR']` = 12/s — **4.8×** measured, in the window
-  where her normals are also true damage.
-- **Asymmetry that hid it:** `charFixes.reloadFrames` IS patched onto the char record and survives a
-  swap; only `pullsPerSec` routes through the field the swap branch skips. F2-class silent failure.
-- **Three independent confirmations already on record** (batch 4 + batch 7): the code read; a direct
-  shot count on her control fixture (**9.28 shots/s inside the swap vs 1.98 outside**); and the
-  board A/B.
-- **Effect.** 1.924 HOT → **0.983 OK** (0.92 / 2.39 / 2.46 → 0.92 / 1.00 / 1.03), MAD 0.978 → 0.038,
-  rank 45/45 → 10/45. Board ±5% 14→15, ±8% 23→24, worse 22→21. Sub-1% ripple on comp-mates.
-- **Rotation is preserved** — every measured full-burst assert passes. Not a rotation change.
-- **Independent discriminator:** her unchanged `0.92` datapoint is the N1 comp where she never
-  bursts, so the swap never fires. The fix touches exactly the comps the mechanism predicts.
-
-**Two candidate fixes, and the pass must choose deliberately:**
-
-1. **Engine-level** (what the probe used): fall back to `u.pullsPerSec` when `u.swap.weapon` is
-   undefined, i.e. same-weapon swaps only. Behaviour-identical for every other carrier today and
-   closes the class for future ones. The `u.swap.weapon === undefined` guard is load-bearing — an
-   unconditional fallback would be WRONG for swaps into a different weapon class (`k` → SG,
-   `nayuta` → SR), where the unit's own cadence should not apply.
-2. **Unit-local**: restate `pullsPerSec: 2.5` on her swap effect. Narrower, leaves the class open.
-
-**Also required by the pass:** check whether her override was fitted against the buggy cadence. Her
-coefficients are datamined kit literals and the result lands at 0.98 rather than overshooting, which
-argues no — but that is the standard fit-exposure check for a cadence fix and it should be made
-explicitly, not inferred from one number.
-
-**Instrument already committed:** `scripts/tests/units/jill.test.ts` group **J8** measures the
-in-swap/out-of-swap cadence ratio and is written to go RED when the fix lands — flip it to assert
-parity as part of the change.
-
-**Route:** `/scientific-method` (premise gate → Fable pre-op → work → driver → blind Fable post-op →
-2-of-2 → implement → step-7 review), isolated worktree, PR to `origin/main`. Snapshot regeneration
-goes in the SAME commit as the change.
+Ran the full `/scientific-method` panel; blocked on LOG (a real, then-unexplained teammate
+cast-timing ripple in one comp); investigated per owner challenge and traced the mechanism to
+reload-cycle-phase carryover across the swap boundary (real, faithful, not a rotation-engine
+defect); revised to IMPLEMENT. Board 1.924 HOT → 0.983 OK. Full trail: `docs/DECISIONS.md`
+(2026-08-10 IMPLEMENT entry) and `docs/handoffs/scientific-method-harness.md` (2026-08-10
+addendum) — nothing left open here.
 
 ## 4. Tier 2 — the blocker: validate the burst-amp channel before ANY further tagging
 

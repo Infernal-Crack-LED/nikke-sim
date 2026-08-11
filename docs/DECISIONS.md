@@ -31,10 +31,15 @@ either"` — an existing, already-general primitive, not new). Toggling the fix 
   real game; only their GAUGE contribution is gated) — so the ripple is real, faithful collateral
   of fixing `jill`'s cadence, not a bug the fix introduces. **Faithful > fit stands: the fix
   lands.** Board: 1.924 → 0.983 (0.92 / 1.00 / 1.03). Snapshot diff, verified value-by-value
-  (not just pass/fail): confined to the `misc B3s (run I order)` comp, `jill`'s own row (58.22%,
-  expected) plus the four now-EXPLAINED teammate rows (`grave` +0.57%, `anis-star` -0.18%,
-  `chisato` -2.70%, `noir` +0.62%) — every other one of the ~15 other graded comps byte-identical.
-  Every measured full-burst-count assertion preserved (12/12/12 on her three comps). Mechanism
+  (not just pass/fail): confined to the ONE pinned comp containing `jill` — `misc B3s (run I
+order)` — `jill`'s own row (a 58.22% DECREASE, expected) plus the four now-EXPLAINED teammate
+  rows (`grave` +0.57%, `anis-star` -0.18%, `chisato` -2.70%, `noir` +0.62%); every other pinned
+  comp byte-identical. Her other two graded (real-recording) comps, `N1` (never bursts — moved
+  zero, confirmed) and `PI` (same 5-unit roster as PI2 in a different slot order, jill 1.03), are
+  NOT snapshot-pinned, so the same reload-phase ripple on `PI`'s four teammates is real but
+  unmeasured by the regression gate — a coverage gap, not a different outcome; pin it or accept
+  the gap explicitly if this becomes load-bearing later. Every measured full-burst-count assertion
+  preserved (12/12/12 on her three comps). Mechanism
   pinned as a new spec-test group (`scripts/tests/units/jill.test.ts` J9) that asserts her first
   swap window completes only 1-3 reload cycles, not the ~7 the buggy cadence forced — a regression
   guard against the bug's reintroduction from the reload-count angle, independent of J8's
