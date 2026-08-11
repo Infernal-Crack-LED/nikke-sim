@@ -57,14 +57,26 @@ const N = 4;
 // to un-stall the b3@13 window (greedy already finds 4 teams there now). B3 window re-scanned:
 // b3@15 measures greedy=3 / polished=4 / ratio 1.1480 (>1.09 floor) — the same scenario,
 // re-measured. Next damage-model change to a pool unit re-opens it.
+// RECALIBRATED 2026-08-11 (d-killer-wife round-count Pierce enactment, DECISIONS 2026-08-11) —
+// AND THIS ONE MOVED b2, NOT b3, FOR A REASON WORTH KNOWING. d-killer-wife sits at B1 index 1,
+// i.e. the FIRST entry of the fixed b1 window, so she is in EVERY variant's pool; grave sits in
+// the b2 window and grants a permanent all-ally pierceDamagePct 48.4. Tagging d-killer-wife's
+// shots turns that dormant buff live, worth +20% to her in a pool seating both — so her damage
+// rose in every b3 variant at once and greedy stopped stalling across the WHOLE b3 range
+// (scanned 8..27: greedy=4 everywhere; b3@28 stalls but only reaches ratio 1.0524, under floor).
+// Re-scanned in 2D instead: b1@1/b2@1/b3@12 measures greedy=3 / polished=4 / ratio 1.2853 — the
+// same scenario, re-measured, and the most headroom of the three qualifying windows.
+// ⇒ The scan is now a COMMITTED instrument: `npx tsx scripts/scan-polish-window.ts` (it takes
+// --b1/--b2/--b3 or --bN-range lo:hi and sweeps every combination). Use it instead of re-deriving
+// this by hand a sixth time; it self-validates by reproducing the current pin.
 const POOL = new Set([
   ...byBurst('I')
     .filter((s) => s !== 'emma-tactical-upgrade')
     .slice(1, 5),
-  ...byBurst('II').slice(2, 8),
+  ...byBurst('II').slice(1, 7),
   ...byBurst('III')
     .filter((s) => s !== 'e-h')
-    .slice(15, 25),
+    .slice(12, 22),
 ]);
 
 // One instance for the whole file: the calc memoizes sims, so both A/B arms and
