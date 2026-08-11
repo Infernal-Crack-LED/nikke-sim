@@ -191,7 +191,8 @@ export const HEAL_LINE = /\b(?:recovers?|restores?|heals?)\b/i;
  * that QUOTES magnitudes ("Reload Speed ▲36.96% … for 10s", "528.97%-of-final-ATK missile").
  * Treating it as structured would mask any line whose magnitude is quoted ONLY there — a latent
  * silent hole on exactly those 10 units. Today it changes nothing (measured: moving it to the
- * structured side leaves the census byte-identical, because every magnitude those summaries quote
+ * structured side leaves every FINDING identical — 0 of 183 rows change tier — because every
+ * magnitude those summaries quote
  * is also encoded in a real block or restated in note/caveats), so this is future protection, not
  * a live correction. The fixture pins the classification so it cannot drift back.
  */
