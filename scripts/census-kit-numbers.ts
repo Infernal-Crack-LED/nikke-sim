@@ -188,9 +188,12 @@ export const HEAL_LINE = /\b(?:recovers?|restores?|heals?)\b/i;
  * else in the file counts as structured (see auditUnit).
  *
  * `kitDescription` (10 units) belongs here and is easy to miss: it is a human-readable kit summary
- * that QUOTES magnitudes ("Reload Speed ▲36.96% … for 10s", "528.97%-of-final-ATK missile"). Were
- * it treated as structured, every magnitude it quotes would read as encoded and those 10 units
- * would go quietly clean — the exact silent-hole failure this census is supposed to avoid.
+ * that QUOTES magnitudes ("Reload Speed ▲36.96% … for 10s", "528.97%-of-final-ATK missile").
+ * Treating it as structured would mask any line whose magnitude is quoted ONLY there — a latent
+ * silent hole on exactly those 10 units. Today it changes nothing (measured: moving it to the
+ * structured side leaves the census byte-identical, because every magnitude those summaries quote
+ * is also encoded in a real block or restated in note/caveats), so this is future protection, not
+ * a live correction. The fixture pins the classification so it cannot drift back.
  */
 export const PROSE_FIELDS = ['note', 'caveats', 'kitDescription'] as const;
 

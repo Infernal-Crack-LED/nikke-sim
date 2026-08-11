@@ -86,6 +86,14 @@ list — every future axis and every reviewer hits these:
 The last row is a genuine structural blind spot: a kit line can be faithfully modelled in a **data
 file** rather than the override, and no override-only census can see it.
 
+**Roster delta from the round-1 review fix, recorded so the numbers above stay reconcilable:**
+treating the structured side as a deny-list of prose fields (rather than an allow-list of the three
+slot arrays + `unmodeled`) cleared exactly one false positive roster-wide — `dorothy-serendipity`'s
+"Attack damage ▲ 72% for 3 round(s)", which is genuinely encoded as `consolidation.attackDamagePct:
+72`, a field the allow-list never read. She was a graded, sweep-reviewed unit, which is precisely
+where a false positive is most expensive. Both worklists and the graded calibration are otherwise
+unchanged.
+
 ---
 
 ## 3. What axis 1 cannot see
@@ -172,7 +180,8 @@ Max HP" basis gap is fully documented in prose, with a ⚑ and a measurement rec
 nowhere in her structured record.
 
 **The ask is one ruling:** file inert-by-design magnitudes under `unmodeled` (the `ada` convention —
-50 lines across 32 units to backfill, prose-only edits, zero board movement), or declare prose
+50 lines across 34 units to backfill: the 46 prose-only lines in 31 units plus the 4 silent lines in
+3 more, with no unit in both sets — prose-only edits, zero board movement), or declare prose
 sufficient and document that `unmodeled` is not a complete index. Either answer makes the field
 trustworthy; the current split makes it neither. Not enacted here — a cross-cutting signal across
 30-odd units is a STOP-and-propose, not a sweep-time edit.
