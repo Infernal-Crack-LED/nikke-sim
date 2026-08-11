@@ -399,18 +399,20 @@ describe('jill — kit spec', () => {
     });
   });
 
-  describe('J8 — ⚑ DEFECT INSTRUMENT: the burst swap discards her measured fire cadence', () => {
-    // Recorded 2026-08-10 (faithfulness phase-4 batch 4). Her burst is a SAME-WEAPON flavor
-    // swap — the magnum never changes, only its damage flavor — so its shot cadence must stay
-    // her video-MEASURED 2.5 pulls/sec (charFixes.pullsPerSec; 150 rpm, ammo-counter read,
-    // test battery 2 test 4). The engine's swap branch instead reads
-    // `u.swap.pullsPerSec ?? PULLS_PER_SEC[u.swap.weapon ?? u.char.weapon]` and never falls
-    // back to `u.pullsPerSec`, where charFixes puts that measurement — so inside the 10s window
-    // she fires at the AR class default.
+  describe('J8 — burst swap honors her measured fire cadence (fixed 2026-08-10)', () => {
+    // Her burst is a SAME-WEAPON flavor swap — the magnum never changes, only its damage
+    // flavor — so its shot cadence must stay her video-MEASURED 2.5 pulls/sec
+    // (charFixes.pullsPerSec; 150 rpm, ammo-counter read, test battery 2 test 4). The engine's
+    // swap fire-cadence branch (src/engine/sim.ts, the swap basePps resolution) now falls back
+    // to `u.pullsPerSec` for a same-weapon swap (`u.swap.weapon === undefined`) before the
+    // weapon-class default — jill is the roster's only carrier of both a charFixes cadence and
+    // a weaponSwap (verified: no other override intersects `charFixes.pullsPerSec` with a
+    // `weapon`-less `weaponSwap`), so this is behavior-identical for every other unit.
     //
-    // This group MEASURES the gap rather than blessing it. When the fix lands (restate
-    // pullsPerSec 2.5 on her swap, or make the engine's swap branch fall back to u.pullsPerSec)
-    // these two assertions go RED — that is the point; flip them to assert PARITY then.
+    // This group used to DOCUMENT the pre-fix defect (in-swap ~9.3/s, ~4.7x out-of-swap); it now
+    // pins the fixed PARITY behavior against the measured post-fix numbers (control fixture:
+    // liter/crown/jill/helm, boss Fire, focus jill — cadence(in) 2.317/s, cadence(out) 1.975/s,
+    // ratio 1.173).
     const cadence = (window: 'in' | 'out') => {
       const casts = jillBursts(base.events).map((c) => c.frame);
       const inSwap = (f: number) =>
@@ -423,17 +425,43 @@ describe('jill — kit spec', () => {
       return shots.length / secs;
     };
 
-    it('DOCUMENTS THE DEFECT: in-swap cadence is ~4.7x her out-of-swap cadence', () => {
-      // A same-weapon flavor swap cannot change how fast the gun fires, so the faithful
-      // ratio is ~1 (out-of-swap sits below the nominal 2.5/s only by reload downtime, which
-      // the swap window also pays).
+    it('is at PARITY: in-swap cadence sits close to her out-of-swap cadence (not ~4.7x it)', () => {
+      // A same-weapon flavor swap cannot change how fast the gun fires. The two are not
+      // BYTE-equal (in-swap pays a different reload-downtime pattern under J7's forced-reload
+      // ammo dump than the natural out-of-swap reload cycle), but the fixed ratio sits close to
+      // 1 — measured 1.173 — a different order of magnitude from the pre-fix ~4.7.
       const ratio = cadence('in') / cadence('out');
-      expect(ratio).toBeGreaterThan(4);
+      expect(ratio).toBeGreaterThan(1.0);
+      expect(ratio).toBeLessThan(1.4);
     });
 
-    it('quantifies it: ~9.3 shots/sec in the swap vs her measured 2.5/sec nominal', () => {
-      expect(cadence('in')).toBeGreaterThan(8);
+    it('quantifies it: ~2.3 shots/sec in the swap, matching her measured 2.5/sec nominal', () => {
+      expect(cadence('in')).toBeGreaterThan(2.0);
+      expect(cadence('in')).toBeLessThan(2.6);
       expect(cadence('out')).toBeLessThan(2.5);
+    });
+
+    // J9 pins the MECHANISM behind a small (~0.2-2.7%, FB-count-preserving) cast-timing ripple
+    // this fix causes on OTHER B3-alternating units in a shared-chain comp (misc B3s/PI2 —
+    // grave/anis-star/chisato/noir), investigated 2026-08-10 after an owner challenge to the
+    // LOG-not-IMPLEMENT gate: burst gauge IS provably locked for the whole swap window
+    // (addGauge's `fbEndFrame > frame || stage !== 0` early return, sim.ts) — shot COUNT during
+    // the window cannot leak into the shared gauge. What DOES leak is her reload-cycle PHASE: her
+    // flavor swap does not free-refill ammo on exit ("no free reload on exit either", sim.ts
+    // ~3529), so the buggy 12/s cadence burned 7 magazines in her first 10s swap window where the
+    // fixed 2.5/s cadence burns 2 — a different reload-cycle phase at the instant the lock lifts,
+    // which shifts the frame of her own first post-lock shot and therefore the shared gauge's
+    // refill curve by a fraction of a second. This is a REAL mechanic (reload continues ticking
+    // through Full Burst in-game; only gauge CONTRIBUTION is gated) surfacing through an existing
+    // primitive, not a new one this fix introduces — see DECISIONS.md (2026-08-10, jill IMPLEMENT
+    // entry) for the full comp-level trace.
+    it('DOCUMENTS THE MECHANISM: her first swap window completes only a couple reload cycles (not the ~7 the pre-fix cadence forced)', () => {
+      const firstCast = jillBursts(base.events)[0].frame;
+      const inFirstWindow = jillReloads(base.events).filter(
+        (r) => r.frame >= firstCast && r.frame < firstCast + 10 * FPS
+      );
+      expect(inFirstWindow.length).toBeGreaterThanOrEqual(1);
+      expect(inFirstWindow.length).toBeLessThanOrEqual(3);
     });
   });
 });

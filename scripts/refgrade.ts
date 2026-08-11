@@ -8,8 +8,9 @@
 //
 //   npx tsx scripts/refgrade.ts            # print + write the layer into kit-status.json
 //   npx tsx scripts/refgrade.ts --dry      # print only
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { writeJsonArtifact } from '../src/data/json-artifact.js';
 
 const WITHIN = (r: number) => r >= 0.97 && r <= 1.03;
 const MIN_TEAMS = 5;
@@ -104,6 +105,6 @@ for (const u of htUnits
 }
 
 if (!process.argv.includes('--dry')) {
-  writeFileSync(path, JSON.stringify(ht, null, 2) + '\n');
+  await writeJsonArtifact(path, ht);
   console.log('\nwrote data/kit-status.json (reference layer)');
 }
