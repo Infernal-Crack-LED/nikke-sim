@@ -236,6 +236,35 @@ current but not a contract.
 | `maxAmmoFlat`                                         | Flat round-count added on top of `maxAmmoPct`                                                                                                                                                                                          | grave, noir, tove                                              |
 | `hitRatePct`                                          | Core-hit lift via `hrCoreMult` (HRCORE-gated; AR/SMG/SG only)                                                                                                                                                                          | ~14 units (jill, noir, modernia, …)                            |
 | `atkOfMaxHpPct` / `atkOfCasterMaxHpPct` / `casterMaxHpPct` / `targetMaxHpPct` / `highestAllyMaxHpPct` | Flat ATK = % own live Max HP (per-frame re-read) / flat ATK = % the CASTER's live Max HP snapshotted at apply time (granted to others) / grant Max HP = % caster's / target's / the HIGHEST-Max-HP unit's Max HP | anis-star, blanc, cinderella, rouge, trina, maiden-ice-rose, maxwell-ordinary-mechanic, quency, laplace-ultimate-hero, … |
+| `burstSkillAoeDamagePct` / `burstSkillSingleDamagePct` | The Burst-Skill-Damage amps: additive Damage-Up terms read ONLY by a burst-slot `flatDamage` carrying the matching `burstDesc` scope tag (below). ⚑ additive placement follows the "○○ Damage ▲" family rule, unmeasured for these two members | trina (`Aoe` 435.6/5s) / jackal (`Single` 38.91/15s) — the only two carriers |
+
+### The `burstDesc` amp scope tag (effect-level, `flatDamage` only)
+
+`burstDesc: 'allEnemies' | 'singleEnemy'` is the ONLY consumer of the two amps above, and the amps
+are its only effect — so a tag is exactly a claim of amp eligibility, nothing more. Eligibility is
+DERIVED from kit text, not judged: **`npx tsx scripts/census-burst-amp-scope.ts`** decides every
+unit (`--check` gates over-tagging, `--under` emits the worklist, `--near-miss` the edge cases),
+pinned roster-wide by `scripts/tests/census-burst-amp-scope.test.ts`. Three owner rulings
+(2026-08-10, DECISIONS) fix the rule:
+
+1. **LITERAL-ONLY** — the damage block's own scope clause must contain the exact string the amp
+   quotes (`"Affects all enemies"` / `"Affects 1 enemy unit(s)"`). A paraphrase of the same
+   meaning does not qualify. Distinct from the same-day scope-string ruling, which answered
+   whether such clauses TARGET THE BOSS (they do).
+2. **BLOCK-LEVEL** — the literal must sit on the same `■` block as the damage line, not merely
+   somewhere in the burst description. Confirming case `scarlet` (AR/Electric base, a
+   known-working `trina` amp target — NOT `scarlet-black-shadow`, who has no burst damage line);
+   only `sin` differs between the two readings.
+3. **THE STRAY ARTICLE IS FORGIVEN** — "Affects **the** 1 enemy unit(s)…" qualifies, on the
+   assumption the game keys the amp off an internal targeting id rather than the rendered
+   English. **Assumption, not a measurement**; safe because every affected unit is on `jackal`'s
+   side and `jackal` is in no graded comp. See QUEUE.
+
+**40 tag instances live; the untagged-carrier debt is CLEARED.** Board-inert today: the only
+board-active pairing is `liberalio` with `trina` in N3 (0.917 → 0.929). **KNOWN GAP:** `burstDesc`
+is authorable on `flatDamage` only, so a burst-slot `dot`/`stackedNuke` is STRUCTURALLY
+amp-ineligible — `ark-ranger-black`, `diesel-winter-sweets`, `guillotine-winter-slayer`,
+`maiden-ice-rose`, `mana` carry qualifying literals and still cannot be tagged.
 
 ### Unit-level / char-static flags (`charFixes` etc.)
 

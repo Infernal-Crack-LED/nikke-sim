@@ -43,6 +43,8 @@
 | `burstCdr` | 20 | anis-star, arcana, blanc, d-killer-wife, dolla, dorothy, helm-aquamarine, liter, … |
 | `burstEligibility` | 1 | rapi-red-hood |
 | `burstFirst` | 1 | prika |
+| `burstSkillAoeDamagePct` | 1 | trina |
+| `burstSkillSingleDamagePct` | 1 | jackal |
 | `burstSnapshotsPreFb` | 1 | cinderella |
 | `byFinalAtk` | 15 | alice, anis, claire, folkwang, himeno, jackal, liberalio, mast, … |
 | `cast` | 6 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |

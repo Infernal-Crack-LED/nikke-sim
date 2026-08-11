@@ -85,7 +85,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   U28 rider set rather than a unit-local fix.
   [batch-6 findings](2026-08-10-faithfulness-batch6-findings.md).
 
-- **⇒ FAITHFULNESS PASS phase-4 sweep — BATCH 6 IS DONE
+- **⇒ FAITHFULNESS PASS phase-4 sweep — NEXT UP IS BATCH 7; a fresh session starts at
+  [2026-08-10-faithfulness-batch7-START-HERE.md](2026-08-10-faithfulness-batch7-START-HERE.md).**
+  Self-contained: tree state, what the three burst-amp rulings changed, the 15 remaining
+  graded-comp units with per-unit signals (comps / board / note length / history-phrase count), a
+  suggested six, the recurring-defect detector, and the batch-6 lesson about silent holes in
+  instruments. **It SUPERSEDES the batch-6 START-HERE doc** — do not work from that one.
+
+- **⇒ (superseded pointer) BATCH 6 IS DONE
   ([findings](2026-08-10-faithfulness-batch6-findings.md): `grave`, `dorothy-serendipity`,
   `maiden-ice-rose`, `rapi-red-hood`, `neon-vision-eye`, `d-killer-wife`); **15 graded-comp units
   remain**. The next session still starts at
