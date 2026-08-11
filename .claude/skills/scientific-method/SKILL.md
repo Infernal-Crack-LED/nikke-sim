@@ -1,6 +1,6 @@
 ---
 name: scientific-method
-description: The empirical-test gate for the NIKKE sim — premise gate → Fable pre-op plan approval → work → driver review → BLIND Fable post-op → 2-of-2 landing rule → IMPLEMENT / LOG / REJECT → PR-style review of the landed code. Invoke whenever the owner says "use the scientific method + fable pre-op" (or "pre-op this", "get Fable to approve the plan"), and ALWAYS before any empirical test against real in-game data, any engine constant/default change, any measurement-driven override retune, or anything that would stamp a verdict or overturn a DECISIONS entry. This skill is the procedure of record; it drives four durable agents (premise-verifier, preop-judge, postop-judge, implementation-reviewer) so every run is identical.
+description: The empirical-test gate for the NIKKE sim — premise gate → Fable pre-op plan approval → work → driver review → BLIND Fable post-op → 2-of-2 landing rule → IMPLEMENT / LOG / REJECT → PR-style review of the landed code. It resolves UNKNOWNS, so invoke it when the change rests on an answer we do not have: any empirical test against real in-game data, a DERIVED engine constant/default, a measurement-driven override retune, a verdict stamp, a DECISIONS overturn — or whenever the owner says "use the scientific method + fable pre-op". SKIP it when the modeling question is already answered (an owner ruling on game behaviour, a literal kit line, an existing labeled fixture) and only the encoding is in question — those go straight to /code-review instead, because the onus there is on the code being correct, not on the answer being true. This skill is the procedure of record; it drives four durable agents (premise-verifier, preop-judge, postop-judge, implementation-reviewer) so every run is identical.
 ---
 
 # scientific-method — the LLM-as-judge gate for empirical change
@@ -23,11 +23,37 @@ The judge/verifier/reviewer roles are durable agent definitions, not prose to re
 
 ## When to use
 
+**This skill resolves UNKNOWNS. It is not a tax on every engine edit** (owner ruling 2026-08-11).
+The pipeline exists because deriving a value from data invites fitting-to-data; where there is no
+derivation — because the answer is already KNOWN — there is nothing for the judges to gate, and
+running them anyway spends a Fable pre-op and a blind post-op to re-litigate a settled fact.
+
+RUN IT when the change rests on an answer we do not have:
+
 - The owner says **"use the scientific method + fable pre-op"** — that phrase means: run this skill.
 - Any new empirical test against real in-game data (footage, damage screenshots, band reads).
-- Before changing an engine constant or default, or landing a measurement-driven override retune.
-- Before stamping VALIDATED / REFUTED / SUPERSEDED, or overturning a `docs/DECISIONS.md` entry.
+- Changing an engine constant or default **whose value is DERIVED** — from a measurement, a fit, an
+  inference, or a residual you are attributing to a mechanic.
+- A measurement-driven override retune.
+- Stamping VALIDATED / REFUTED / SUPERSEDED, or overturning a `docs/DECISIONS.md` entry.
 - When the P5 discipline-hook guard fires on a plan/measurement/verdict write or agent spawn.
+
+**SKIP IT when the modeling question is already ANSWERED and only the CODE is in question:**
+
+- An **owner ruling** states the game's behaviour ("true damage can core hit", "all three coin
+  statuses co-exist", "stacks refresh unless the kit says otherwise"). The owner plays the game;
+  that is the ground truth, not a hypothesis awaiting footage.
+- The kit text states it literally and the only question is how to encode it.
+- An existing labeled fixture / vitest pin / snapshot already asserts the value.
+
+⇒ **In the SKIP case the work is not ungated — the gate just moves to the code.** Run
+[`/code-review`](../code-review/SKILL.md) on the diff before it merges: cross-family, findings-only.
+**The onus is on the code being correct, not on the answer being true** — the answer is already
+known, so the live risk is a faithful ruling turned into a wrong encoding (wrong bucket, wrong
+trigger, wrong scope, a blast radius nobody costed). `verify.sh` + the unit's spec tests remain
+mandatory either way.
+
+Rule of thumb: _"do we know the answer?"_ — no ⇒ this skill; yes ⇒ encode it, then `/code-review`.
 
 **Not** for: reading a board, drafting findings-only audits (`/audit-kit`), doc upkeep, or mechanical
 probe scaffolding (`/probe-processing`). Findings-only work has no landing to gate.

@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Cross-family POST-OP code review — the diff gets reviewed by a DIFFERENT model family than the one that wrote it, before commit/merge. Kimi-authored code → claude-opus-5 via dispatch-claude.sh; Claude-authored code → kimi-code/k3 via dispatch-kimi.sh; Qwen-authored → claude-opus-5. Invoke ONLY when the owner explicitly requests it (typically for higher-risk changes, after verify.sh is green and, if it ran, the logic-gate post-op) — never automatically. NOT for scientific-method landings — those already have implementation-reviewer.
+description: Cross-family POST-OP code review — the diff gets reviewed by a DIFFERENT model family than the one that wrote it, before commit/merge. Kimi-authored code → claude-opus-5 via dispatch-claude.sh; Claude-authored code → kimi-code/k3 via dispatch-kimi.sh; Qwen-authored → claude-opus-5. Invoke when the owner explicitly requests it (typically for higher-risk changes, after verify.sh is green and, if it ran, the logic-gate post-op) — and ALWAYS, as a standing owner ruling (2026-08-11), on an enactment that SKIPPED /scientific-method because the modeling question was already answered (an owner ruling on game behaviour, a literal kit line, an existing labeled fixture): the gate moves from the answer to the code, so those diffs are reviewed here instead. Otherwise never automatically. NOT for scientific-method landings — those already have implementation-reviewer.
 ---
 
 # code-review — the author never reviews their own diff
@@ -13,6 +13,14 @@ review shares the author's priors and re-derives the same reasoning instead of r
 **Scope:** ordinary engineering changes — features, refactors, fixes. A scientific-method landing uses
 `implementation-reviewer` instead (it reviews against the judges' accepted claim; this skill reviews
 against plain stated intent). Trivial edits (typos, one-liners) may skip.
+
+**Also in scope, and NOT optional (owner ruling 2026-08-11): the enactment of an ALREADY-ANSWERED
+modeling question** — an owner ruling on game behaviour, a literal kit line, a fixture that already
+asserts the value. Those skip `/scientific-method` deliberately, because that pipeline resolves
+UNKNOWNS and there is no unknown left to gate. The risk does not vanish with the unknown, it MOVES:
+a true ruling can still be encoded into the wrong bucket, trigger, scope or target, with a blast
+radius nobody costed. So review the diff here, and tell the reviewer **what the ruling was** — its
+job is "does this code implement that ruling and only that ruling", not "is the ruling true".
 
 ## Routing (reviewer = opposite family of the AUTHOR)
 
