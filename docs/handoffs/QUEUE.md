@@ -75,11 +75,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      state machines, `alice` caster-relative charge speed, the `skillGauge`-fires-twice + charge-B3
      gauge-tempo pair, `chargeCounter` bypassing block gates). Ranked in the ENGINE-WORK ORDER
      below. None of them was touched.
-  4. **The phase-4 TAIL now has its entry doc and its first TWO axes are CLOSED (2026-08-11)** —
+  4. **The phase-4 TAIL is DONE — all six axes closed (2026-08-11)** —
      `docs/handoffs/2026-08-11-faithfulness-tail-plan.md`. Generated-census approach, as the
-     scoping note asked. Axis 1 (kit magnitudes) found zero new defects; axis 2 (`unmodeled`
-     entries vs the kit) found zero stale entries and one open per-unit question (`sugar`). Four
-     unbuilt axes remain; see the item further down.
+     scoping note asked. **No axis found a defect in what the overrides ENCODE**; the two real
+     findings were in the docs ABOUT them (a QUEUE entry calling the shipped `addStack` primitive
+     unbuilt; a plan premise that misremembered the `d-killer-wife` fix). Axis 3 was built and
+     DECLINED with its evidence. Open per-unit questions: `sugar`, `pascal`, `neon-vision-eye`.
   5. **Two primitives landed this session and each has exactly one carrier** —
      `gainPierce.durationShots` (5 carriers, 3 converted) and `convertExcess` (1 carrier). If a
      second `convertExcess` carrier ever appears, revisit the deliberate MAX-on-refresh and the
