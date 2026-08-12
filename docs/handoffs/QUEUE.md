@@ -263,7 +263,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   surfaced (the 5-carrier lifesteal non-emitter ruling and the U28 rider-gauge class) are RULED —
   see DECISIONS 2026-08-10 Tier 0. The §5 proposal it raised is RULED AND ENACTED (owner
   2026-08-11: unmodeled behaviour is recorded under `unmodeled`, never left to prose — 50 heal
-  lines across 34 units; `census-kit-numbers.ts --check` now gates it in verify.sh). **Three things
+  lines across 34 units; `census-kit-numbers.ts --check` now gates it in verify.sh). **Four things
   are open:**
   - **⇒ OPPORTUNISTIC, on the next authorized touch of `kilo.json`:** her burst caveat still says
     "the engine has no HP-basis primitive (effectiveAtk is purely additive)". DECISIONS 2026-08-11

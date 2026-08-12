@@ -29,6 +29,13 @@
 // established `ada` wording — NOT a bare "unmodeled", which would wrongly imply the recovery
 // channel is absent and invite someone to "fix" it by adding a second emitter.
 //
+// SAFETY — SCHEMA ASSUMPTION. Both key scans validate the character AFTER the needle (`: {` /
+// `: [`), not its DEPTH, which is sufficient only because `unmodeled` appears once per file and
+// holds string arrays: no nested object can re-use a slot name as a key, and a mid-string needle
+// can never match (the closing quote is escaped). If the schema ever allows nested objects inside
+// `unmodeled`, or a prose OBJECT before it, these guards need a real depth check and the fixture
+// needs the nested-key cases.
+//
 // SAFETY. It edits the `unmodeled` arrays as TEXT and leaves the rest of each file byte-identical:
 // a whole-file JSON round-trip is NOT safe here (prettier's objectWrap:preserve keeps whatever
 // wrapping the file already has, so re-stringifying would reformat ~94 overrides into a diff that
