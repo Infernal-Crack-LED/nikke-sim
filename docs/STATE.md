@@ -170,6 +170,13 @@ current but not a contract.
 | `stageEnter`             | When a stage-N burst is cast by anyone                               | cinderella, ein, flora, mast-romantic-maid, mint, mihara-bonding-chain, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
 | `bossElement`            | Permanent passive, active only if boss has this element              | eve                                                                                                                       |
 
+**Every trigger above dispatches through `applyBlock`**, so the block-level gates below, `everyN` /
+`everyNOffset` and block `delaySec` bind uniformly. `chargeCounter` was the last exception and was
+routed 2026-08-11 (audit F2.1) via `applyBlock`'s optional `phase` selector — that trigger fires ONE
+effect per activation, `block.effects` being an ordered phase list for it rather than a set. Its
+phase advances only on an activation that LANDED, so a gate- or `everyN`-suppressed activation
+re-offers the same phase instead of skipping it.
+
 ### Block-level gates
 
 | Primitive                          | Meaning                                                                                                                                                               | Users                                                                                |

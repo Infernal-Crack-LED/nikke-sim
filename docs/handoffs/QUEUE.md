@@ -56,24 +56,23 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 1. _(empty — owner fills)_
 
-> **Eligible candidates, for the owner to promote — not self-assigned (2026-08-11).** The three
-> remaining phase-0/1 items in the START HERE block below meet this queue's own bar: each is
-> unblocked and verifiable by a gate that already exists (`verify.sh` / a vitest fixture), with no
-> owner ruling and no recording needed. **[1.4] block-order guard is DONE (2026-08-11).** Remaining:
-> **[0.3] citation sweep**, then **[1.1] `chargeCounter` engine half** (that last one edits
-> `src/engine/sim.ts` ⇒ isolated worktree + its own PR, constraint 8).
+> **(2026-08-11) The three phase-0/1 candidates this note used to offer are all DONE** — see the
+> block below. Nothing is queued; per the header, an empty queue means survey and propose rather
+> than invent work.
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒⇒⇒ START HERE (next session) — ONE remaining PHASE 0/1 item of the faithfulness audit
-  (`docs/handoffs/2026-08-10-faithfulness-pass-audit.md`): [1.1], the `chargeCounter` engine half.**
-  Phase 4 is DONE (graded batches 1–8 + all six tail axes, 2026-08-11), F3/F4 landed in the meantime,
-  and **[1.4] the block-order guard + [0.3] the citation sweep both landed 2026-08-11** (below,
-  branch `audit/phase-0-1`). [1.1] is the only one of the three that touches `src/engine/**`, which
-  is why it was left last. It is still **ordinary tooling work — `verify.sh` + fixtures are the gate,
-  NOT `/scientific-method`** (it touches no damage-model value).
+- **⇒ PHASES 0–1 OF THE FAITHFULNESS AUDIT ARE COMPLETE (2026-08-11)** —
+  `docs/handoffs/2026-08-10-faithfulness-pass-audit.md`. Phase 4 was already done (graded batches
+  1–8 + all six tail axes) and F3/F4 had landed; the three items below were the remainder, and all
+  three landed together on branch `audit/phase-0-1`. Kept here only until that PR merges — then
+  DELETE this whole block, the WHY lives in DECISIONS (three 2026-08-11 Engine/data-architecture
+  entries). **What is left of the audit is phase 2**, the engine fixes ranked by blast radius: F5
+  the gauge-economy batch (ENGINE-WORK ORDER #4, the biggest remaining item), F6 the 5e self-status
+  trio, and phase 3's footage-gated per-unit backlog — all owner- or `/scientific-method`-gated,
+  unlike phases 0–1.
 
-  1. ✅ **[1.4] Block-order guard — LANDED 2026-08-11** (branch `guard/block-order`; DECISIONS,
+  1. ✅ **[1.4] Block-order guard — LANDED 2026-08-11** (branch `audit/phase-0-1`; DECISIONS,
      Engine/data-architecture). ⚑ **The audit's stated minimum viable was the WRONG shape and was
      deliberately not built**: "flag a gate-consuming block whose producer sits earlier in the same
      slot array" would be wrong half the time, because `phantom` DEPENDS on consumer-first and
@@ -95,17 +94,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      docs, and dated session records (14 files) — their citations describe the tree on the day they
      were written. If the owner wants those too, it is a map extension, not new tooling.
      Provenance labels verified unchanged across all 183 units (override prose is machine-read).
-  3. **[1.1] `chargeCounter` gate bypass — the ENGINE half.** `sim.ts` dispatches
-     `chargeCounter` activations straight to `applyEffect` (the `else if (b.trigger.kind ===
-'chargeCounter' && charged)` branch, ~line 4185), never through `applyBlock`, so `requiresCore`
-     / `fbGate` / `bossElementGate` / `resourceGate` / `requiresTargetStatus` / `everyN` / block
-     `delaySec` are all silently ignored on that trigger. The VALIDATOR half already landed and
-     hard-errors on the combination, so this is **behaviour-neutral today (zero gated
-     `chargeCounter` carriers)** — which is exactly why it is cheap now and expensive after the
-     first carrier. When it lands, **drop the validator rule in the same change** — the rule's own
-     comment in `validate-structural.ts` says so. Audit F2.1.
-     ⚠ This one edits `src/engine/sim.ts` ⇒ **CLAUDE.md constraint 8: isolated worktree + its own
-     PR**, never a direct edit on the shared main tree.
+  3. ✅ **[1.1] `chargeCounter` gate bypass — LANDED 2026-08-11** (owner-approved engine edit;
+     isolated worktree + branch `fix/chargecounter-gates`, cross-family `/code-review` CLEAN). Full
+     WHY in DECISIONS, Engine/data-architecture. ⚑ **This item's own description was partly stale
+     when written**: it listed the runtime gates as bypassed, but those had already bound since
+     2026-08-10 — what was actually still skipped is exactly what `CHARGE_COUNTER_BYPASSED` named,
+     `everyN` / `everyNOffset` / `delaySec`. The dispatch now routes through `applyBlock` via an
+     optional `phase` selector (this trigger fires ONE effect per activation — `block.effects` is an
+     ordered phase list for it), and the validator rule went with it in the same change as
+     instructed. Behaviour-neutral by census (all 12 carriers ungated); snapshot byte-unchanged;
+     `scripts/tests/engine/charge-counter-gates.test.ts` pins it, mutation-checked against the
+     pre-change engine.
 
   Everything else from that audit is either landed (F3 burst-skill amp — `burstDesc` scope tag, 51
   carriers; F4 enemy DEF ▼ — `bossDefNow`) or owner/`/scientific-method`-gated (F5 gauge economy —

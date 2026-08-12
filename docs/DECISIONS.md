@@ -3385,6 +3385,34 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-08-11) `chargeCounter` routes through `applyBlock` — the F2.1 bypass is fully closed, and
+  the validator rule that guarded it is REMOVED in the same change.** Owner-approved engine edit;
+  isolated worktree + PR per constraint 8.
+  - **What was still broken.** The 2026-08-10 fix added a direct `blockGatesPass` call so the runtime
+    abort-gates bound on this trigger, but the dispatch still called `applyEffect` itself, so
+    `everyN`, `everyNOffset` and the block-level `delaySec` were silently skipped. The validator
+    hard-errored on that combination precisely so nobody shipped a field that looks live and never
+    runs — and its own comment said to drop the rule when the engine routed the trigger. Done.
+  - **Why it could not route before, and what unblocked it.** `applyBlock` applies ALL of
+    `block.effects`; `chargeCounter` applies ONE — `block.effects` is an ordered PHASE list for this
+    trigger (`scarlet-black-shadow`'s three). `applyBlock` now takes an optional `phase` selector
+    (threaded through the `delaySec` deferral queue as well, so a deferred phase lands as the same
+    phase), and returns whether the activation LANDED.
+  - **The semantic call, which had no carrier to settle it.** The phase advances only on a LANDED
+    activation, so an activation suppressed by a gate or by `everyN` re-offers the same phase rather
+    than skipping it. The alternative (advance on every activation) would silently re-order a
+    carrier's phases across different damage flavors. This is asserted directly, not inferred from a
+    total: her three phases have distinct `atkPct` (283.03 / 565 / 848.03), so the event log reads
+    the phase order back.
+  - **Behaviour-neutral, by census not by assumption.** All 12 shipped `chargeCounter` blocks were
+    scanned for every gate field — zero carry any, so nothing shipped changes; the regression
+    snapshot is byte-unchanged and was NOT regenerated. Eleven of the twelve carry a single effect,
+    where the phase path is trivially the old path.
+  - **A behaviour-neutral change is unfalsifiable without a fixture that exercises what it enabled**,
+    so `scripts/tests/engine/charge-counter-gates.test.ts` covers everyN / everyNOffset / delaySec /
+    the gates / phase integrity, and its 4 new-behaviour assertions were MUTATION-CHECKED: with the
+    engine change stashed they fail, while the 5 preservation assertions pass on both engines.
+
 - **(2026-08-11) Code citations name the SYMBOL, never the line — swept and gated (audit F1 /
   phase 0.3).** 78 bare `file:line` citations rewritten across 28 overrides + 7 durable current-state
   docs; `scripts/sweep-line-citations.ts --check` is now a `verify.sh` step so new ones cannot land.
