@@ -2,6 +2,7 @@
 // (faithfulness audit F1 / phase 0.3).
 //
 //   npx tsx scripts/sweep-line-citations.ts            # report only (exit 1 if anything unmapped)
+//   npx tsx scripts/sweep-line-citations.ts --check    # verify.sh gate: exit 1 on ANY citation in scope
 //   npx tsx scripts/sweep-line-citations.ts --write    # apply
 //
 // WHY. A citation like `sim.ts:2568` rots on the next engine edit and then actively misleads: at the
