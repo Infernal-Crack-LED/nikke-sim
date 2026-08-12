@@ -56,7 +56,50 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 1. _(empty — owner fills)_
 
+> **Eligible candidates, for the owner to promote — not self-assigned (2026-08-11).** The three
+> remaining phase-0/1 items in the START HERE block below meet this queue's own bar: each is
+> unblocked and verifiable by a gate that already exists (`verify.sh` / a vitest fixture), with no
+> owner ruling and no recording needed. Suggested order: **[1.4] block-order guard**, then **[0.3]
+> citation sweep**, then **[1.1] `chargeCounter` engine half** (that last one edits
+> `src/engine/sim.ts` ⇒ isolated worktree + its own PR, constraint 8).
+
 ### Open action items (pointers — attended sessions)
+
+- **⇒⇒⇒ START HERE (next session) — the three remaining PHASE 0/1 items of the faithfulness audit
+  (`docs/handoffs/2026-08-10-faithfulness-pass-audit.md`).** Phase 4 is DONE (graded batches 1–8 +
+  all six tail axes, 2026-08-11) and F3/F4 landed in the meantime, so what is left of phases 0–1 is
+  the list below. All three are **ordinary tooling/doc work — `verify.sh` + fixtures are the gate,
+  NOT `/scientific-method`** (they touch no damage-model value). Do them in this order; they are
+  independent, so a session that only lands one is still a clean session.
+
+  1. **[1.4] Block-order guard — do this FIRST; it is the only one with a live hazard.** Same-frame
+     block ORDER is load-bearing and nothing lints or tests it, so a reorder flips behaviour with a
+     green suite. Two known dependents: `phantom`'s gate-before-inflict, and `d-killer-wife`, whose
+     own caveat says "BLOCK ORDER IS LOAD-BEARING … do not reorder" (her burst inflicts
+     `targetStatus` 'Wipe Out' and a later block in the SAME array reads it on the SAME frame).
+     Minimum viable = a lint in `src/skills/validate-structural.ts` flagging a gate-consuming block
+     whose producer sits earlier in the same slot array, plus a fixture. Audit F2.5.
+  2. **[0.3] `sim.ts:<line>` citation sweep.** 62 bare line-number citations across **27 override
+     files**, plus **35 in `docs/`**. They rot silently on every engine edit and cost a verification
+     pass each time someone follows one. Convention to adopt: name the CODE BLOCK or symbol, not the
+     line (`sim.ts` `bossDefNow()`, not `sim.ts:1694`). Consider a lint so it cannot grow back — the
+     same shape as the guards the tail axes ship. Audit F1 / phase 0.3.
+  3. **[1.1] `chargeCounter` gate bypass — the ENGINE half.** `sim.ts` dispatches
+     `chargeCounter` activations straight to `applyEffect` (the `else if (b.trigger.kind ===
+'chargeCounter' && charged)` branch, ~line 4185), never through `applyBlock`, so `requiresCore`
+     / `fbGate` / `bossElementGate` / `resourceGate` / `requiresTargetStatus` / `everyN` / block
+     `delaySec` are all silently ignored on that trigger. The VALIDATOR half already landed and
+     hard-errors on the combination, so this is **behaviour-neutral today (zero gated
+     `chargeCounter` carriers)** — which is exactly why it is cheap now and expensive after the
+     first carrier. When it lands, **drop the validator rule in the same change** — the rule's own
+     comment in `validate-structural.ts` says so. Audit F2.1.
+     ⚠ This one edits `src/engine/sim.ts` ⇒ **CLAUDE.md constraint 8: isolated worktree + its own
+     PR**, never a direct edit on the shared main tree.
+
+  Everything else from that audit is either landed (F3 burst-skill amp — `burstDesc` scope tag, 51
+  carriers; F4 enemy DEF ▼ — `bossDefNow`) or owner/`/scientific-method`-gated (F5 gauge economy —
+  the biggest remaining item by blast radius, ENGINE-WORK ORDER #4; F6 the 5e self-status trio;
+  phase 3's footage-gated per-unit backlog).
 
 - **⇒⇒ START HERE IF YOU ARE PICKING UP AFTER THE 2026-08-11 SESSION (branch
   `fix/faithfulness-tier0`, PR open).** That branch closed the faithfulness pass end to end and left
