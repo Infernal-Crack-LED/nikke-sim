@@ -482,15 +482,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      and the ruling is now recorded in all four carriers' notes (`modernia`, `nayuta`,
      `neon-blue-ocean`, `neon-vision-eye`). Note `modernia`'s S1 is a `flatDamage` _because_ of
      this asymmetry — closing it retires that workaround.
-- **⇒ ENGINE PRIMITIVE GAP: `addStack`** — no effect increments an existing buff's stack count by N on
-  a trigger. Blocks `flora` S1 ("after 100 normal attacks, all Electric Code allies: increases the
-  stack count of stackable buffs by 1" — trigger `hitCount:100` and target `alliesOfElement` are both
-  expressible, only the EFFECT is missing) and is the same family as `k`'s Tilted Scale stack-ramp
-  (+29 stacks per last bullet, cap 100), which shipped as DOCUMENTED_GAP encoded as a flat
-  `burstCast critRatePct 75` steady-state — correct for the burst window, under-credits the pre-burst
-  ramp and the first burst's build. Magnitude for `flora` depends entirely on which stack-ramp buffs
-  are live on her Electric allies (could be large, could be zero), so it is correctly not estimated.
-  Two carriers is not yet a mandate; log a third before building. Not authorized.
+
+<!-- The `addStack` ENGINE PRIMITIVE GAP entry was removed 2026-08-11: the primitive shipped in
+     42a642de ("Slice C: addStack effect + flora/k carriers"), is implemented at sim.ts
+     `case 'addStack'`, and has 7 carriers (alice-wonderland-bunny, flora, guilty, k, pepper,
+     `rupee` (AR/Iron, not rupee-winter-shopper), `soda` (MG/Fire, not soda-twinkling-bunny)) —
+     including the `flora` S1 the entry named as blocked. Found by
+     scripts/census-held-primitives.ts (tail axis 5), which now guards the whole class. -->
+
 - **⇒ ENGINE PRIMITIVE GAP: windowed damage accumulator** — `trony` S1 "T.Rony Bomber" Cumulative
   Damage Skill (plant on full-charge hit: 5s window, accumulates 50% of her dealt damage, cap 1536%
   of final ATK, explodes as Distributed Damage; burst adds +62.83pp to the collection rate) has no
