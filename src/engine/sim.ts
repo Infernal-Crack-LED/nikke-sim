@@ -1010,6 +1010,8 @@ export function runSim(
     block: Block;
     bKey: string;
     activations: number;
+    // single-effect selection for a chargeCounter block (see applyBlock); undefined = all effects
+    phase?: number;
     resolveFrame: number;
   }> = [];
   // teamAmmo triggers: fire whenever TOTAL ally ammo consumed crosses each block's count
@@ -2276,12 +2278,11 @@ export function runSim(
     });
   }
 
-  // The runtime abort-gates shared by every block dispatch path. Returns false when the
-  // block must not fire at this frame. Extracted from applyBlock (2026-08-10) so the
-  // chargeCounter dispatch — which applies ONE phase effect per activation rather than the
-  // whole block, and therefore cannot route through applyBlock — honors the SAME gates
-  // instead of silently ignoring them (the audit-F2.1 bypass; zero gated chargeCounter
-  // carriers existed, so the routing change is behavior-neutral, regression the control).
+  // The runtime abort-gates. Returns false when the block must not fire at this frame.
+  // Extracted from applyBlock 2026-08-10 so the then-unrouted chargeCounter dispatch could
+  // honor the same gates; since 2026-08-11 that dispatch routes through applyBlock like every
+  // other trigger (applyBlock's `phase` argument), so this has one caller again — kept separate
+  // because the gate set is the part worth reading on its own.
   function blockGatesPass(
     ownerIdx: number,
     block: Block,
@@ -2363,19 +2364,31 @@ export function runSim(
     return true;
   }
 
+  /**
+   * Dispatch one block activation through every gate in order.
+   *
+   * `phase` selects a SINGLE effect instead of the whole block — the chargeCounter trigger's
+   * semantics, where `block.effects` is an ordered list of phases and one fires per activation
+   * (scarlet-black-shadow's 3). Absent = apply all effects, which is every other trigger.
+   *
+   * Returns whether the activation LANDED: false when a gate or `everyN` suppressed it, true when
+   * the effects were applied inline or scheduled by `delaySec`. Only the chargeCounter caller reads
+   * it — it must not advance its phase for an activation whose effect never fired.
+   */
   function applyBlock(
     ownerIdx: number,
     block: Block,
     blockIdx: number,
-    frame: number
-  ) {
+    frame: number,
+    phase?: number
+  ): boolean {
     const owner = units[ownerIdx];
     const bKey = `${ownerIdx}:${block.slot}:${blockIdx}`;
     // Abort-gates are evaluated BEFORE the everyN activation counter, so `everyN`
     // counts only activations that actually pass the gates — e.g. soda's "after casting
     // 3 normal attacks DURING Full Burst": out-of-FB casts must NOT advance the counter.
     if (!blockGatesPass(ownerIdx, block, frame)) {
-      return;
+      return false;
     }
     const activations = (owner.blockActivations.get(bKey) ?? 0) + 1;
     owner.blockActivations.set(bKey, activations);
@@ -2387,7 +2400,7 @@ export function runSim(
         activations < Math.max(off, 1) ||
         (activations - off) % block.everyN !== 0
       ) {
-        return;
+        return false;
       }
     }
     // block-level delay: the trigger has fired and every gate above passed AT THIS FRAME; the
@@ -2399,8 +2412,35 @@ export function runSim(
         block,
         bKey,
         activations,
+        phase,
         resolveFrame: frame + Math.round(block.delaySec * FPS),
       });
+      return true;
+    }
+    applyBlockEffects(ownerIdx, block, bKey, activations, phase, frame);
+    return true;
+  }
+
+  // The effect-application half of applyBlock, shared with the delaySec resolution at the top of
+  // the frame loop so a deferred block applies exactly what an inline one would — including the
+  // single-effect `phase` selection.
+  function applyBlockEffects(
+    ownerIdx: number,
+    block: Block,
+    bKey: string,
+    activations: number,
+    phase: number | undefined,
+    frame: number
+  ) {
+    if (phase !== undefined) {
+      applyEffect(
+        ownerIdx,
+        block,
+        block.effects[phase],
+        `${bKey}:${phase}`,
+        activations,
+        frame
+      );
       return;
     }
     block.effects.forEach((e: EffectDef, ei) =>
@@ -3216,15 +3256,13 @@ export function runSim(
     ) {
       for (const p of pendingBlocks) {
         if (frame >= p.resolveFrame) {
-          p.block.effects.forEach((e: EffectDef, ei) =>
-            applyEffect(
-              p.ownerIdx,
-              p.block,
-              e,
-              `${p.bKey}:${ei}`,
-              p.activations,
-              frame
-            )
+          applyBlockEffects(
+            p.ownerIdx,
+            p.block,
+            p.bKey,
+            p.activations,
+            p.phase,
+            frame
           );
         }
       }
@@ -4200,24 +4238,15 @@ export function runSim(
           : reqs;
         if (charges >= thr) {
           charges = 0;
-          // Runtime abort-gates are honored on this dispatch too (2026-08-10 — before this
-          // they were silently ignored here, the audit-F2.1 bypass; zero gated carriers, so
-          // the change is behavior-neutral and the regression suite is the control).
-          // Ordering mirrors the hitCount path + applyBlock: the charge threshold (the
-          // counter) is consumed regardless of the gates, while the activation count and
-          // the phase (the everyN analogs) advance only when the gates pass.
-          if (blockGatesPass(u.idx, b, frame)) {
-            const bKey = `${u.idx}:${b.slot}:${bi}`;
-            const activations = (u.blockActivations.get(bKey) ?? 0) + 1;
-            u.blockActivations.set(bKey, activations);
-            applyEffect(
-              u.idx,
-              b,
-              b.effects[phase],
-              `${bKey}:${phase}`,
-              activations,
-              frame
-            );
+          // Routed through applyBlock like every other trigger (2026-08-11, audit F2.1) — the
+          // `phase` argument is what makes that possible, since this dispatch fires ONE effect
+          // per activation rather than the whole block. Before it, the runtime abort-gates were
+          // honored here by a direct blockGatesPass call (2026-08-10) but `everyN`,
+          // `everyNOffset` and the block `delaySec` were still silently skipped.
+          // Ordering mirrors the hitCount path: the charge threshold (the counter) is consumed
+          // regardless of the gates, while the phase advances only when the activation LANDED —
+          // a suppressed activation must re-offer the same phase, not skip it.
+          if (applyBlock(u.idx, b, bi, frame, phase)) {
             phase = (phase + 1) % b.effects.length;
           }
         }

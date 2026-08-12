@@ -167,19 +167,6 @@ export const ENEMY_BUFF_STATS = new Set([
 // Warn, don't fail: the carriers are real kit lines kept for fidelity. Keep in sync with 1861.
 export const BOSS_ONLY_BUFF_STATS = new Set(['damageTakenPct']);
 
-// Block fields the chargeCounter dispatch still IGNORES: the runtime abort-gates are honored
-// there since 2026-08-10 (sim.ts blockGatesPass — the audit-F2.1 fix), but the dispatch applies
-// ONE phase effect per activation rather than routing through applyBlock, so the everyN
-// activation counter and the block-level delaySec remain silently skipped on this trigger. No
-// override combines them today (verified roster-wide 2026-08-10), so authoring the combination
-// is an ERROR until the engine supports it: the alternative is a field that looks live in the
-// JSON and never runs.
-export const CHARGE_COUNTER_BYPASSED = [
-  'everyN',
-  'everyNOffset',
-  'delaySec',
-] as const;
-
 // Stat clamps are fixed-at values; rampSec would scale the clamp and is not implemented.
 const CLAMP_STATS = new Set([
   'reloadSpeedClamp',
@@ -495,21 +482,10 @@ export function structuralCheck(
       ) {
         errors.push(`${p}: interval needs sec > 0`);
       }
-      // sim.ts dispatches chargeCounter activations straight to applyEffect — never through
-      // applyBlock — so every runtime gate, everyN, and the block delaySec are silently
-      // ignored on this trigger. Error (not warning): the combination has no carrier and
-      // authoring one would ship a gate that looks live and never runs. If the engine ever
-      // routes chargeCounter through applyBlock, drop this rule in the same change.
-      if (b.trigger?.kind === 'chargeCounter') {
-        const bypassed = CHARGE_COUNTER_BYPASSED.filter(
-          (g) => b[g] !== undefined
-        );
-        if (bypassed.length) {
-          errors.push(
-            `${p}: chargeCounter dispatch bypasses applyBlock — ${bypassed.join(', ')} would be silently IGNORED on this trigger (engine gap, faithfulness audit F2.1); restructure or wait for the engine fix`
-          );
-        }
-      }
+      // (2026-08-11) The chargeCounter bypass rule that used to sit here is GONE, per its own
+      // instruction: sim.ts now routes chargeCounter through applyBlock (its `phase` argument
+      // selects the one phase effect), so everyN / everyNOffset / delaySec are live on this
+      // trigger like any other and authoring them is no longer an error. Audit F2.1, closed.
       if (!b.target?.kind || !TARGETS.has(b.target.kind)) {
         errors.push(`${p}: bad target`);
       }

@@ -149,8 +149,11 @@ describe('structuralCheck — targetStatus placement (the previously-untested ta
   });
 });
 
-describe('structuralCheck — chargeCounter still-bypassed fields (audit F2.1)', () => {
-  it('errors when a chargeCounter block carries everyN or delaySec (still not routed)', () => {
+describe('structuralCheck — chargeCounter is fully routed (audit F2.1, closed 2026-08-11)', () => {
+  it('ACCEPTS everyN + delaySec on a chargeCounter block — the rule that errored here is gone', () => {
+    // The inverse of the assertion this test used to make. sim.ts routes chargeCounter through
+    // applyBlock now, so these fields run like they do on any other trigger; the engine side is
+    // pinned by scripts/tests/engine/charge-counter-gates.test.ts.
     const r = structuralCheck(
       'liter',
       minimal({
@@ -164,9 +167,7 @@ describe('structuralCheck — chargeCounter still-bypassed fields (audit F2.1)',
       }),
       CTX
     );
-    const msg = r.errors.join('\n');
-    expect(msg).toMatch(/chargeCounter dispatch/);
-    expect(msg).toMatch(/everyN, delaySec/);
+    expect(r.errors).toEqual([]);
   });
 
   it('accepts a runtime-gated chargeCounter block (gates honored since the blockGatesPass fix)', () => {
