@@ -116,6 +116,9 @@ describe('chargeCounter — block delaySec is now live (it was silently ignored)
     const delayed = run((b) => {
       b.delaySec = 2;
     });
+    // Equal counts because her last base proc lands well before the final 120 frames. If a future
+    // cadence/duration/fixture change pushes one into the terminal 2s this drops by 1 with no engine
+    // regression — read the frame assertion below as the load-bearing one.
     expect(delayed.count).toBe(base.count);
     expect(delayed.frames[0]).toBe(base.frames[0] + 120);
     expect(delayed.seq).toEqual(base.seq); // deferral preserves the phase, not just the count

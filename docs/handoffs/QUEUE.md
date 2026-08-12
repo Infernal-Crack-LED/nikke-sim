@@ -84,17 +84,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      pass each time someone follows one. Convention to adopt: name the CODE BLOCK or symbol, not the
      line (`sim.ts` `bossDefNow()`, not `sim.ts:1694`). Consider a lint so it cannot grow back — the
      same shape as the guards the tail axes ship. Audit F1 / phase 0.3.
-  3. **[1.1] `chargeCounter` gate bypass — the ENGINE half.** `sim.ts` dispatches
-     `chargeCounter` activations straight to `applyEffect` (the `else if (b.trigger.kind ===
-'chargeCounter' && charged)` branch, ~line 4185), never through `applyBlock`, so `requiresCore`
-     / `fbGate` / `bossElementGate` / `resourceGate` / `requiresTargetStatus` / `everyN` / block
-     `delaySec` are all silently ignored on that trigger. The VALIDATOR half already landed and
-     hard-errors on the combination, so this is **behaviour-neutral today (zero gated
-     `chargeCounter` carriers)** — which is exactly why it is cheap now and expensive after the
-     first carrier. When it lands, **drop the validator rule in the same change** — the rule's own
-     comment in `validate-structural.ts` says so. Audit F2.1.
-     ⚠ This one edits `src/engine/sim.ts` ⇒ **CLAUDE.md constraint 8: isolated worktree + its own
-     PR**, never a direct edit on the shared main tree.
+  3. ✅ **[1.1] `chargeCounter` gate bypass — LANDED 2026-08-11** (owner-approved engine edit;
+     isolated worktree + branch `fix/chargecounter-gates`, cross-family `/code-review` CLEAN). Full
+     WHY in DECISIONS, Engine/data-architecture. ⚑ **This item's own description was partly stale
+     when written**: it listed the runtime gates as bypassed, but those had already bound since
+     2026-08-10 — what was actually still skipped is exactly what `CHARGE_COUNTER_BYPASSED` named,
+     `everyN` / `everyNOffset` / `delaySec`. The dispatch now routes through `applyBlock` via an
+     optional `phase` selector (this trigger fires ONE effect per activation — `block.effects` is an
+     ordered phase list for it), and the validator rule went with it in the same change as
+     instructed. Behaviour-neutral by census (all 12 carriers ungated); snapshot byte-unchanged;
+     `scripts/tests/engine/charge-counter-gates.test.ts` pins it, mutation-checked against the
+     pre-change engine.
 
   Everything else from that audit is either landed (F3 burst-skill amp — `burstDesc` scope tag, 51
   carriers; F4 enemy DEF ▼ — `bossDefNow`) or owner/`/scientific-method`-gated (F5 gauge economy —
