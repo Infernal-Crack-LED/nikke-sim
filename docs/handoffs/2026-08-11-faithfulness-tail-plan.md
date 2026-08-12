@@ -3,12 +3,13 @@
 > **Purpose.** The entry doc QUEUE.md asked for. The faithfulness sweep's phase-4 GRADED slice is
 > complete (batches 1–8 cover all 45 board-graded units); what remains is **the tail** — the 138
 > override files with no board reading. QUEUE's scoping note called for "a GENERATED-CENSUS
-> approach … rather than per-unit reads", and this doc is that method, plus the first axis built,
-> calibrated, run and fully dispositioned.
+> approach … rather than per-unit reads", and this doc is that method plus **all six axes, built,
+> calibrated, run and dispositioned (§6 closes the tail).**
 >
-> **Status: FINDINGS-ONLY.** Nothing here edits an override, the engine, or a shared artifact
-> (CLAUDE.md batch-and-stop). Axis 1 produced ONE batched proposal for the owner (§5) and zero
-> engine changes. Tooling + its fixture are committed (constraint 9).
+> **Status: FINDINGS-ONLY.** Nothing here edits an override or the engine (CLAUDE.md
+> batch-and-stop). Axis 1 produced ONE batched proposal for the owner (§5); axis 5 removed a stale
+> QUEUE entry. Zero engine changes, and **no axis found a defect in what the overrides encode.**
+> Every instrument + its fixture is committed (constraint 9).
 
 ---
 
@@ -100,8 +101,9 @@ unchanged.
 
 Printed by `--skipped`, never silently swallowed:
 
-- **Non-percent quantities** — durations, round/shot counts, stack caps, ammo counts. An entire
-  real defect class (`d-killer-wife`'s round-count Pierce, resolved 2026-08-11) is invisible here.
+- **Non-percent quantities** — durations, round/shot counts, stack caps, ammo counts. Axis 3 was
+  built to cover this and DECLINED (§4b3); note that the `d-killer-wife` round-count Pierce, once
+  cited here as the defect this tier holds, turned out not to be a quantity defect at all.
 - **Qualitative lines** — "Gain Pierce", "Pellet count is fixed at 1", mode swaps.
 - **Wrongness that is present but incorrect** — a number on the wrong stat, target or duration
   reads as clean. This census can only falsify "the model never saw this line".
