@@ -184,8 +184,7 @@ const fbStarts = (evs: SimEvent[]) =>
 const recoveryLandings = (evs: SimEvent[]) =>
   buffs(evs)
     .filter(
-      (b) =>
-        b.casterIdx === ASUKA && b.stat === 'atkPct' && b.value === 96.98
+      (b) => b.casterIdx === ASUKA && b.stat === 'atkPct' && b.value === 96.98
     )
     .map((b) => b.frame)
     .sort((a, b) => a - b);
@@ -268,14 +267,19 @@ describe('sora — kit spec', () => {
       expect(un.skill1.length).toBeGreaterThanOrEqual(1);
       expect(un.skill2.length).toBeGreaterThanOrEqual(1);
       expect(un.burst.length).toBeGreaterThanOrEqual(1);
+      // An entry may carry a trailing " — <why>" annotation (the `ada` convention, now roster-wide
+      // for heal magnitudes after the 2026-08-11 owner ruling — DECISIONS). The GUARD is unchanged
+      // and is what matters: whatever precedes the annotation must be VERBATIM kit prose, so a
+      // fabricated or paraphrased line still fails.
+      const verbatimPart = (entry: string) => entry.split(' — ')[0];
       for (const line of un.skill1) {
-        expect(prose.skill1).toContain(line);
+        expect(prose.skill1).toContain(verbatimPart(line));
       }
       for (const line of un.skill2) {
-        expect(prose.skill2).toContain(line);
+        expect(prose.skill2).toContain(verbatimPart(line));
       }
       for (const line of un.burst) {
-        expect(prose.burst).toContain(line);
+        expect(prose.burst).toContain(verbatimPart(line));
       }
     });
 

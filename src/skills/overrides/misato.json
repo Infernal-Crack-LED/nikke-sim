@@ -57,12 +57,16 @@
     }
   ],
   "unmodeled": {
-    "skill1": [],
+    "skill1": [
+      "Recovers 8.04% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ],
     "skill2": [
       "Only activates when in Shooting Manual status. Affects all allies.\nDamage dealt to Shield ▲ 150% continuously.",
       "Only activates when Shooting Manual is at max stacks. Affects self.\nOutgoing healing ▲ 30.05% continuously."
     ],
-    "burst": []
+    "burst": [
+      "Recovers 5.06% of the skill user's final Max HP every 1 sec for 5 sec continuously. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ]
   },
   "caveats": [
     "skill1 blk1 (Shooting Manual) is the ONLY damage-live line in the kit: hitRatePct feeds the live Hit-Rate→core geometry (UNIGEO uniform-in-circle, DEFAULT since 2026-07-22; CONE_DELTA is the fallback arm). Stacks accrue 1→2→3 over the first ~9-10s of firing (60 hits ≈ 3.0s at the measured ~20 pulls/s frame-quantized SMG cadence, one reload gap included) and hold at 3 at steady state — re-trigger every 60 hits (~3s) refreshes the shared 5s window before it lapses, exactly the NIKKE stack-refresh convention (applyBuff). NOT instant-to-max at t=0.",

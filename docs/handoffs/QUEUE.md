@@ -75,9 +75,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      state machines, `alice` caster-relative charge speed, the `skillGauge`-fires-twice + charge-B3
      gauge-tempo pair, `chargeCounter` bypassing block gates). Ranked in the ENGINE-WORK ORDER
      below. None of them was touched.
-  4. **The phase-4 TAIL is the next big body of work** — 185 override files against 45 graded
-     units. Its scoping note is at the bottom of this file; it wants a generated-census approach and
-     its own entry doc, NOT a batch sweep.
+  4. **The phase-4 TAIL now has its entry doc and its first axis is CLOSED (2026-08-11)** —
+     `docs/handoffs/2026-08-11-faithfulness-tail-plan.md`. Generated-census approach, as the
+     scoping note asked. Axis 1 found zero new defects and left one owner ruling open (the heal
+     magnitude record split) plus five unbuilt axes; see the item further down.
   5. **Two primitives landed this session and each has exactly one carrier** —
      `gainPierce.durationShots` (5 carriers, 3 converted) and `convertExcess` (1 carrier). If a
      second `convertExcess` carrier ever appears, revisit the deliberate MAX-on-refresh and the
@@ -251,14 +252,38 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   bundle as a whole was not re-extracted. A blind-rebuild reviewer reads it as the engine, so a
   re-extract should precede the next blind-rebuild/`/audit-kit` run that uses it.
 
-- **⇒ FAITHFULNESS PASS phase-4 — the GRADED-COMP slice is COMPLETE (batches 1–8 cover all 45
-  board-graded units). What remains is item (c), THE TAIL.** 185 override files against 45 graded
-  units, so the tail is large and its per-unit value is much lower: no ratio to explain and no comp
-  to check inertness against. It wants its own entry doc and probably a GENERATED-CENSUS approach
-  (the pattern that demonstrably works here — `scripts/doc-drift.ts`, the burst-amp census,
-  `lint-target-status.ts`) rather than per-unit reads. The batch-7 START-HERE doc is CLOSED with
-  batch 8. Both roster-wide items the sweep surfaced (the 5-carrier lifesteal
-  non-emitter ruling and the U28 rider-gauge class) are RULED — see DECISIONS 2026-08-10 Tier 0.
+- **⇒ FAITHFULNESS PASS phase-4 TAIL — entry doc landed, AXIS 1 CLOSED. Start at
+  [2026-08-11-faithfulness-tail-plan.md](2026-08-11-faithfulness-tail-plan.md).** The graded slice
+  is complete (batches 1–8, all 45 board-graded units); the tail is the 138 overrides with no board
+  reading, worked by generated census rather than per-unit reads. Axis 1 (kit magnitudes vs the
+  override — `scripts/census-kit-numbers.ts` + its fixture) is built, calibrated against the graded
+  45, run, and every finding dispositioned: **zero new defects**, 14 prose-documented
+  transformations (the doc names the vocabulary), 1 acknowledged-in-prose gap (`kilo`'s HP-basis
+  nuke). The batch-7 START-HERE doc is CLOSED with batch 8, and both roster-wide items the sweep
+  surfaced (the 5-carrier lifesteal non-emitter ruling and the U28 rider-gauge class) are RULED —
+  see DECISIONS 2026-08-10 Tier 0. The §5 proposal it raised is RULED AND ENACTED (owner
+  2026-08-11: unmodeled behaviour is recorded under `unmodeled`, never left to prose — 50 heal
+  lines across 34 units; `census-kit-numbers.ts --check` now gates it in verify.sh). **Four things
+  are open:**
+  - **⇒ OPPORTUNISTIC, on the next authorized touch of `kilo.json`:** her burst caveat still says
+    "the engine has no HP-basis primitive (effectiveAtk is purely additive)". DECISIONS 2026-08-11
+    now carries the narrower true claim — `atkOfMaxHpPct` (sim.ts:1681) IS an HP-basis term, it is
+    just additive and holder-global, so what is missing is a basis-SUBSTITUTION primitive. Reword
+    the parenthetical to match. Not done here: it is a protected file and this pass had no other
+    reason to edit it.
+  - **⇒ OWNER CALL, one line: does the ruling cover `kilo`?** Her burst nuke IS modelled, but off
+    her own ATK rather than the kit's "5% of final Max HP" basis; the basis clause sits in her
+    `caveats` with an estimate and a measurement recipe. Filed as an `unmodeled` entry or left as an approximation —
+    the pass shipped the latter. Both readings written out in DECISIONS 2026-08-11. If filed, it is
+    a hand edit (the backfill script is heal-only).
+  - **Axes A2–A6 proposed, none built** — `unmodeled` entries matching no kit line; non-percent
+    quantity accounting (the tier that held the `d-killer-wife` round-count defect); "fixed at" vs
+    the clamp StatKeys; held-primitive carrier scan; and READ (do not rebuild)
+    `scripts/census-synergy-events.ts`. Tail-plan §4.
+  - **Axis 1's own carried follow-up** — integer magnitudes are near-auto-clean (281 of 282 collide
+    with a duration/count elsewhere in the file), so the axis discriminates almost only on decimals.
+    Disclosed in the doc and by `--skipped`; tightening the matcher is deferred because it needs its
+    own graded-45 re-calibration.
 
 - **Sweep record (batches 1–8, all landed — reference only, nothing open here):**
   [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·

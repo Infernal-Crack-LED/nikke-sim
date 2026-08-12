@@ -71,7 +71,9 @@
     "skill2": [
       "Affects the enemy with the highest final ATK. Taunt for 5 sec."
     ],
-    "burst": []
+    "burst": [
+      "Recovers 65.81% of attack damage as HP over 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ]
   },
   "caveats": [
     "⚑ INTERVAL FIRST-FIRE PHASE (both passives): neither S1 nor S2 carries an activation clause, so both are `interval` triggers on their datamined cooldowns (30s / 20s); the engine convention fires first at t=sec (t=30 / t=20), NOT t=0. The in-game first-fire phase of a cooldown passive is unmeasured for folkwang; recipe: any focus video — does Starting Whistle's shield appear in the opening seconds or only after ~30s? A wrong phase shifts every shielded-trigger consumer's cadence by up to one period.",

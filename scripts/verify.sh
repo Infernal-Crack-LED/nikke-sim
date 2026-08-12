@@ -43,6 +43,11 @@ say "unmodeled-review doc freshness (the second link of overrides -> kit-status.
 # kit-status.json renders to, so it is only meaningful once kit-status.json is known fresh.
 npx tsx scripts/gen-unmodeled-review.ts --check
 
+say "kit-magnitude census (a magnitude the kit prints and the override never mentions — owner ruling: unmodeled behaviour is RECORDED, not left to prose)"
+# Ordered after the unmodeled-review check because it enforces the same field from the other side:
+# that check keeps the generated doc fresh, this one keeps `unmodeled` COMPLETE.
+npx tsx scripts/census-kit-numbers.ts --check | tail -2
+
 say "approved-nickname validation (characters.json nicknames unambiguous)"
 npx tsx scripts/validate-nicknames.ts
 

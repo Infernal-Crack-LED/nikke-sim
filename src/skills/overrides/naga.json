@@ -4,7 +4,9 @@
     "skill1": [
       "Activates after landing 12 normal attack(s). Affects all allies. Restores 14.57% of Cover's Max HP."
     ],
-    "skill2": [],
+    "skill2": [
+      "Recovers 9.58% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ],
     "burst": []
   },
   "caveats": [

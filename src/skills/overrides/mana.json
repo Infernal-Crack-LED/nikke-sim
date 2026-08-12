@@ -6,7 +6,8 @@
       "Activates if the skill user is in Metal γ status when an ally is out of action. Affects 1 incapacitated ally unit(s) with the highest final ATK (except the skill user).",
       "Resurrect with 96% HP.",
       "Activates when an ally is out of action. Affects self.",
-      "Removes Metal γ."
+      "Removes Metal γ.",
+      "Recovers 2.04% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount."
     ],
     "skill2": [],
     "burst": []

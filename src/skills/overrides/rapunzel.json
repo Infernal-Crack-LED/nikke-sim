@@ -56,11 +56,14 @@
     }
   ],
   "unmodeled": {
-    "skill1": [],
+    "skill1": [
+      "Recovers 4.03% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ],
     "skill2": ["Incoming healing ▲ 13.65% for 15 sec."],
     "burst": [
       "■ Affects 1 incapacitated ally unit(s) with the highest final ATK.\nResurrect with 81.67% HP.",
-      "■ Activates when HP falls below 30%. Affects all enemies.\nStun for 1 sec."
+      "■ Activates when HP falls below 30%. Affects all enemies.\nStun for 1 sec.",
+      "Recovers 40.83% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount."
     ]
   },
   "caveats": [
