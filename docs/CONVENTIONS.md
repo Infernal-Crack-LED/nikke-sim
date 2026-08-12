@@ -62,6 +62,35 @@ harnesses that must do this:
   focused unit. Burst-bar full-burst detection near cut-ins is unreliable — count nuke/laser
   signatures. The bar's full-resting render is 83.5% of pixel width; ≥96% is the pre-chain glow.
 
+## Building a static census (kit-text / override sweeps)
+
+Earned by the six phase-4 TAIL axes (2026-08-11,
+`docs/handoffs/2026-08-11-faithfulness-tail-plan.md` §6). Four of the six had a matcher that was
+wrong before it was right, and every one of those was caught by a rule below rather than by
+reading output.
+
+- **Score against an existing labeled slice FIRST — before trusting any output.** The 45
+  board-graded units were read line-by-line by the faithfulness sweep, so they are a free labeled
+  set (the SUFFICIENCY rule: generate no new ground truth). **A census that fires HARDER on the
+  slice already read clean is measuring its own noise.** Four times out of four this was decisive:
+  three times it exposed a broken matcher, once (axis 3) it condemned the axis itself.
+- **A census cannot validate its own RECALL — give it an INDEPENDENT list to score against.** A
+  phrasing the matcher misses is indistinguishable from a clean roster, from the inside. Axis 4
+  used the clamp-carrying overrides as a list of units that MUST have a "fixed at" kit line; that
+  converse check is what revealed the regex missed the verb form ("**Fixes** charge time at 3.2
+  sec"), which was hiding two units.
+- **"Accounted for" must mean the same thing in EVERY census** — encoded, encoded-equivalently, or
+  filed under `unmodeled` (authoritative since the 2026-08-11 owner ruling). Let each axis invent
+  its own definition and two of them will reach opposite verdicts on the same unit.
+- **Kit text is written in BLOCKS, not lines.** A `■` header carries the trigger and target clause
+  and governs the effect lines beneath it; entries and quotes routinely span the whole block.
+  Matching line-by-line is a structural blind spot, not a threshold to tune.
+- **What NO mechanical census can reach is the modeling JUDGEMENT** — "this line looks inert but
+  isn't". That is what the `d-killer-wife` Pierce change actually was (the quantity was correctly
+  recorded before AND after; only its disposition changed). Censuses check that a kit line is
+  REPRESENTED; only the per-unit read checks that the representation is RIGHT. Do not commission an
+  axis on the promise of catching that class.
+
 ## Kit work is test-first
 
 A unit's kit is specified as TESTS before its model changes. Each kit line becomes an assertion group
