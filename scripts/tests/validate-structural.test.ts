@@ -356,8 +356,51 @@ describe('structuralCheck — same-unit status order warning (audit F2.5)', () =
       CTX
     );
     expect(r.errors).toEqual([]);
-    expect(r.warnings.join('\n')).toMatch(
+    const msg = r.warnings.join('\n');
+    expect(msg).toMatch(
       /status "Calling Card": produced .* AND consumed .* ORDER .* load-bearing/
+    );
+    // and it names the ORDER SHIPPED, not just the fact of a pair — this is phantom's shape, where
+    // the gate sits first and the inflicting shot does not itself benefit
+    expect(msg).toMatch(
+      /reads skill1\[0\] → writes skill1\[1\] \(the gate misses that frame\)/
+    );
+  });
+
+  it('warns on the resource family too, naming the same-slot order', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        skill2: [
+          block({ effects: [{ kind: 'resource', name: 'coin', delta: 1 }] }),
+          block({ resourceGate: { name: 'coin', min: 3 } }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors).toEqual([]);
+    expect(r.warnings.join('\n')).toMatch(
+      /resource "coin": adjusted \(skill2\[0\]\) AND gated \(skill2\[1\]\) .* writes skill2\[0\] → reads skill2\[1\]/
+    );
+  });
+
+  it('says so plainly when the pair is cross-slot only (order fixed by the flatten order)', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        skill1: [block({ requiresTargetStatus: 'Hacked' })],
+        burst: [
+          block({
+            target: { kind: 'enemy' },
+            effects: [{ kind: 'targetStatus', name: 'Hacked', durationSec: 5 }],
+          }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors).toEqual([]);
+    expect(r.warnings.join('\n')).toMatch(
+      /status "Hacked": .* cross-slot only, so the ORDER is fixed by the slot flatten order/
     );
   });
 });

@@ -3385,6 +3385,34 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-08-11) Same-slot BLOCK ORDER is guarded by a PINNED CENSUS, not by a lint — because both
+  orders are legitimate (faithfulness audit F2.5, phase 1 item 4).** `requiresTargetStatus` and
+  `resourceGate` are evaluated at TRIGGER time; `targetStatus` and `resource` effects write at APPLY
+  time; blocks resolve in array order (`SLOTS.flatMap`, `src/skills/index.ts`). So when one unit both
+  writes and reads the same name inside ONE slot array, the two blocks' relative position decides
+  whether the gate opens on the frame the value is written — and a reorder flips that with no engine
+  error, no validator error and a green suite.
+  - **Why not a rule.** The audit's own minimum-viable framing was "flag a gate-consuming block whose
+    producer sits earlier in the same slot array". Building it showed that would be wrong half the
+    time: `phantom` DEPENDS on consumer-first (her Calling Card gate sits at `skill1[0]`, the inflict
+    at `skill1[1]`, so the shot that applies the card does not itself benefit), and `d-killer-wife`
+    DEPENDS on producer-first (`burst[0]` inflicts 'Wipe Out', `burst[1]` reads it on the same
+    burstCast frame — her caveat says "do not reorder"). There is no correct order to lint toward,
+    only a load-bearing one to pin.
+  - **What landed.** `blockOrderPairs()` / `blockOrderCensus()` in `src/skills/validate-structural.ts`
+    (pure, same-slot only); the census pinned in `scripts/tests/fixtures/block-order-pairs.json` and
+    asserted by `scripts/tests/block-order-guard.test.ts`; regeneration only via
+    `npx tsx scripts/lint-target-status.ts --update-block-order`; and the `structuralCheck` warning
+    rewritten to name the ORDER SHIPPED rather than merely the existence of a pair.
+  - **Scope, and what it found.** CROSS-slot pairs are excluded — their order is fixed by the slot
+    flatten order and no edit inside a slot array changes it. The `resource`/`resourceGate` family is
+    included: `src/skills/types.ts` documents the identical hazard ("a spend placed AFTER the
+    resource-gated blocks lets those gates read the PRE-spend pool"), and it is where the exposure
+    actually is — **34 pairs across 14 units, of which only 2 are the status family the audit named.**
+    The `same-block` case (one block writes and reads the same name: `e-h`, `mana`, `phantom`,
+    `rouge`, `elegg-boom-and-shock`) is recorded too, so SPLITTING such a block is as loud as
+    reordering one. Behaviour-neutral: nothing in the engine, the overrides or the snapshot changed.
+
 - **(2026-08-03) `noop-rouge-b1` STAYS IN `src/data/squads.ts` — OPTION C, OWNER-CONFIRMED.** Closes
   the `docs/handoffs/closed/2026-08-03-b1b2-comparability-and-squad-layering.md` open call: the
   ranks-layer synthetic (a presence-only no-op Rouge B1 that satisfies `blanc`'s same-squad burst-CDR

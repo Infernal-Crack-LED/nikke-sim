@@ -59,26 +59,31 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > **Eligible candidates, for the owner to promote — not self-assigned (2026-08-11).** The three
 > remaining phase-0/1 items in the START HERE block below meet this queue's own bar: each is
 > unblocked and verifiable by a gate that already exists (`verify.sh` / a vitest fixture), with no
-> owner ruling and no recording needed. Suggested order: **[1.4] block-order guard**, then **[0.3]
-> citation sweep**, then **[1.1] `chargeCounter` engine half** (that last one edits
+> owner ruling and no recording needed. **[1.4] block-order guard is DONE (2026-08-11).** Remaining:
+> **[0.3] citation sweep**, then **[1.1] `chargeCounter` engine half** (that last one edits
 > `src/engine/sim.ts` ⇒ isolated worktree + its own PR, constraint 8).
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒⇒⇒ START HERE (next session) — the three remaining PHASE 0/1 items of the faithfulness audit
+- **⇒⇒⇒ START HERE (next session) — the TWO remaining PHASE 0/1 items of the faithfulness audit
   (`docs/handoffs/2026-08-10-faithfulness-pass-audit.md`).** Phase 4 is DONE (graded batches 1–8 +
-  all six tail axes, 2026-08-11) and F3/F4 landed in the meantime, so what is left of phases 0–1 is
-  the list below. All three are **ordinary tooling/doc work — `verify.sh` + fixtures are the gate,
-  NOT `/scientific-method`** (they touch no damage-model value). Do them in this order; they are
-  independent, so a session that only lands one is still a clean session.
+  all six tail axes, 2026-08-11), F3/F4 landed in the meantime, and **[1.4] the block-order guard
+  landed 2026-08-11** (below), so what is left of phases 0–1 is the list below. Both are **ordinary
+  tooling/doc work — `verify.sh` + fixtures are the gate, NOT `/scientific-method`** (they touch no
+  damage-model value). They are independent, so a session that only lands one is still a clean
+  session.
 
-  1. **[1.4] Block-order guard — do this FIRST; it is the only one with a live hazard.** Same-frame
-     block ORDER is load-bearing and nothing lints or tests it, so a reorder flips behaviour with a
-     green suite. Two known dependents: `phantom`'s gate-before-inflict, and `d-killer-wife`, whose
-     own caveat says "BLOCK ORDER IS LOAD-BEARING … do not reorder" (her burst inflicts
-     `targetStatus` 'Wipe Out' and a later block in the SAME array reads it on the SAME frame).
-     Minimum viable = a lint in `src/skills/validate-structural.ts` flagging a gate-consuming block
-     whose producer sits earlier in the same slot array, plus a fixture. Audit F2.5.
+  1. ✅ **[1.4] Block-order guard — LANDED 2026-08-11** (branch `guard/block-order`; DECISIONS,
+     Engine/data-architecture). ⚑ **The audit's stated minimum viable was the WRONG shape and was
+     deliberately not built**: "flag a gate-consuming block whose producer sits earlier in the same
+     slot array" would be wrong half the time, because `phantom` DEPENDS on consumer-first and
+     `d-killer-wife` on producer-first. There is no order to lint toward, so the shipped guard PINS
+     the order instead (`blockOrderPairs`/`blockOrderCensus` →
+     `scripts/tests/fixtures/block-order-pairs.json` → `scripts/tests/block-order-guard.test.ts`;
+     regenerate only with `npx tsx scripts/lint-target-status.ts --update-block-order`).
+     ⚑ Also: the exposure is **34 pairs across 14 units**, and only 2 are the `targetStatus` family
+     the audit named — the rest are `resource`/`resourceGate`, which carries the identical
+     documented hazard. Behaviour-neutral.
   2. **[0.3] `sim.ts:<line>` citation sweep.** 62 bare line-number citations across **27 override
      files**, plus **35 in `docs/`**. They rot silently on every engine edit and cost a verification
      pass each time someone follows one. Convention to adopt: name the CODE BLOCK or symbol, not the

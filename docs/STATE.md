@@ -188,6 +188,16 @@ current but not a contract.
 | `mode` / `modes`                   | Block active only in the unit's selected kit mode                                                                                                                     | bready, cinderella-crystal-wave, delta-ninja-thief, mint, milk-blooming-bunny, prika |
 | `delaySec` (block-level)           | The block's EFFECTS apply `delaySec` seconds after its TRIGGER fires. Gates + the `everyN` counter evaluate at TRIGGER time; targets and values resolve at LANDING; a landing past the end of the fight never applies. Absent/0 = inline (strict no-op). NOT `flatDamage.delaySec`, which is flight time on one damage effect | flora (S2 True Damage, Burst Stage 2 entry + 2 s)                                    |
 
+**Same-slot block ORDER is load-bearing for two of these gates.** `requiresTargetStatus` and
+`resourceGate` read at TRIGGER time while `targetStatus` / `resource` effects write at APPLY time,
+and blocks resolve in array order (`SLOTS.flatMap` in `src/skills/index.ts`) — so when one unit
+both writes and reads the same name inside ONE slot array, swapping the two blocks flips its
+behaviour with nothing failing. Both orders are legitimate and both ship. The census
+(`npx tsx scripts/lint-target-status.ts --block-order`, 34 pairs / 14 units) is pinned by
+`scripts/tests/fixtures/block-order-pairs.json`, so a reorder is a red test rather than a silent
+change; `structuralCheck` also names the shipped order in a warning. Cross-slot pairs are excluded
+— the slot flatten order fixes those.
+
 ### Targeting selectors (`block.target`)
 
 | Primitive                                                                        | Meaning                                                                               | Users                                                                                                                |

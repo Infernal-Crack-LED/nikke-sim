@@ -201,6 +201,205 @@ export interface StructuralContext {
   squadOf: (slug: string) => string | null | undefined;
 }
 
+/**
+ * One producer/consumer pair inside a SINGLE slot array, with the relative order the file
+ * currently ships. Two families qualify, and both are documented as order-dependent in
+ * src/skills/types.ts:
+ *   status   — a `targetStatus` effect (producer) vs a `requiresTargetStatus` gate (consumer)
+ *   resource — a `resource` delta (producer) vs a `resourceGate` (consumer)
+ * In both, the gate is evaluated at TRIGGER time and the effect written at APPLY time, so two
+ * blocks firing on the SAME frame resolve by their position in the flat block array
+ * (src/skills/index.ts `SLOTS.flatMap`).
+ */
+export interface BlockOrderPair {
+  slot: (typeof SLOTS)[number];
+  family: 'status' | 'resource';
+  name: string;
+  /** index in the slot array of the block that WRITES */
+  producer: number;
+  /** index in the slot array of the block that READS */
+  consumer: number;
+  order: 'producer-first' | 'consumer-first' | 'same-block';
+}
+
+/**
+ * The same-slot half of the block-order census (faithfulness audit F2.5).
+ *
+ * CROSS-slot pairs are deliberately excluded: their order is fixed by the slot flatten order
+ * (skill1 → skill2 → burst) and no edit inside a slot array can change it. Same-slot order is the
+ * one an ordinary reorder silently flips — `phantom` depends on gate-before-inflict (her first
+ * shot misses Calling Card) and `d-killer-wife` on inflict-before-gate (her burst body branch
+ * reads 'Wipe Out' on the frame it lands). Nothing in the engine or the suite noticed a swap
+ * before this census: scripts/tests/block-order-guard.test.ts pins its output.
+ *
+ * `same-block` is the third case: one block both writes and reads the same name (the gate sees
+ * the PRE-write pool). Not reorderable today, but recorded so that SPLITTING such a block into
+ * two is as loud as reordering them.
+ */
+export function blockOrderPairs(override: any): BlockOrderPair[] {
+  const pairs: BlockOrderPair[] = [];
+  for (const slot of SLOTS) {
+    const blocks = override?.[slot];
+    if (!Array.isArray(blocks)) {
+      continue;
+    }
+    const producers: {
+      family: 'status' | 'resource';
+      name: string;
+      i: number;
+    }[] = [];
+    const consumers: typeof producers = [];
+    blocks.forEach((b: any, i: number) => {
+      for (const e of collectEffects(b?.effects, 'targetStatus')) {
+        if (typeof e?.name === 'string') {
+          producers.push({ family: 'status', name: e.name, i });
+        }
+      }
+      for (const e of collectEffects(b?.effects, 'resource')) {
+        if (typeof e?.name === 'string') {
+          producers.push({ family: 'resource', name: e.name, i });
+        }
+      }
+      if (typeof b?.requiresTargetStatus === 'string') {
+        consumers.push({ family: 'status', name: b.requiresTargetStatus, i });
+      }
+      if (typeof b?.resourceGate?.name === 'string') {
+        consumers.push({ family: 'resource', name: b.resourceGate.name, i });
+      }
+    });
+    for (const c of consumers) {
+      for (const p of producers) {
+        if (p.family !== c.family || p.name !== c.name) {
+          continue;
+        }
+        pairs.push({
+          slot,
+          family: c.family,
+          name: c.name,
+          producer: p.i,
+          consumer: c.i,
+          order:
+            p.i === c.i
+              ? 'same-block'
+              : p.i < c.i
+                ? 'producer-first'
+                : 'consumer-first',
+        });
+      }
+    }
+  }
+  // Deterministic order so the pinned fixture is a function of the override's CONTENT, not of
+  // the traversal — otherwise a no-op edit churns the fixture.
+  return pairs.sort(
+    (a, b) =>
+      SLOTS.indexOf(a.slot) - SLOTS.indexOf(b.slot) ||
+      a.family.localeCompare(b.family) ||
+      a.name.localeCompare(b.name) ||
+      a.producer - b.producer ||
+      a.consumer - b.consumer
+  );
+}
+
+/**
+ * Roster-wide form of the above: slug -> its same-slot pairs, slugs sorted, units with no pair
+ * omitted. This is the shape pinned in scripts/tests/fixtures/block-order-pairs.json; keeping it
+ * here (and not in the script) is what lets the test compute the census without executing a CLI.
+ */
+export function blockOrderCensus(
+  overrides: Map<string, any>
+): Record<string, BlockOrderPair[]> {
+  const out: Record<string, BlockOrderPair[]> = {};
+  for (const slug of [...overrides.keys()].sort()) {
+    const pairs = blockOrderPairs(overrides.get(slug));
+    if (pairs.length) {
+      out[slug] = pairs;
+    }
+  }
+  return out;
+}
+
+// The in-file signpost half of the same. One warning per (family, name) the unit both writes and
+// reads, naming the ORDER SHIPPED so the next editor can see what a reorder would change. Emitted
+// for cross-slot pairs too: those cannot be reordered inside a slot array, but MOVING a block
+// between slots reorders them, and the reader deserves to know the pair exists.
+function blockOrderWarnings(override: any, warnings: string[]) {
+  const label = (f: 'status' | 'resource') =>
+    f === 'status'
+      ? { noun: 'status', wrote: 'produced', read: 'consumed' }
+      : { noun: 'resource', wrote: 'adjusted', read: 'gated' };
+  const sites = new Map<
+    string,
+    {
+      family: 'status' | 'resource';
+      name: string;
+      prod: string[];
+      cons: string[];
+    }
+  >();
+  const site = (family: 'status' | 'resource', name: string) => {
+    const key = `${family} ${name}`;
+    let s = sites.get(key);
+    if (!s) {
+      s = { family, name, prod: [], cons: [] };
+      sites.set(key, s);
+    }
+    return s;
+  };
+  for (const slot of SLOTS) {
+    const blocks = override?.[slot];
+    if (!Array.isArray(blocks)) {
+      continue;
+    }
+    blocks.forEach((b: any, bi: number) => {
+      for (const e of collectEffects(b?.effects, 'targetStatus')) {
+        if (typeof e?.name === 'string') {
+          site('status', e.name).prod.push(`${slot}[${bi}]`);
+        }
+      }
+      for (const e of collectEffects(b?.effects, 'resource')) {
+        if (typeof e?.name === 'string') {
+          site('resource', e.name).prod.push(`${slot}[${bi}]`);
+        }
+      }
+      if (typeof b?.requiresTargetStatus === 'string') {
+        site('status', b.requiresTargetStatus).cons.push(`${slot}[${bi}]`);
+      }
+      if (typeof b?.resourceGate?.name === 'string') {
+        site('resource', b.resourceGate.name).cons.push(`${slot}[${bi}]`);
+      }
+    });
+  }
+
+  const pairs = blockOrderPairs(override);
+  for (const { family, name, prod, cons } of sites.values()) {
+    if (!prod.length || !cons.length) {
+      continue;
+    }
+    const { noun, wrote, read } = label(family);
+    const mine = pairs.filter((p) => p.family === family && p.name === name);
+    // Capped: a pool with several earners and several gates (rouge's coin: 6 pairs) would otherwise
+    // bury the warning. The full list is `lint-target-status.ts --block-order`.
+    const SHOWN = 4;
+    const render = (p: BlockOrderPair) =>
+      p.order === 'same-block'
+        ? `${p.slot}[${p.producer}] writes AND reads it (the gate sees the pre-write value)`
+        : p.order === 'producer-first'
+          ? `writes ${p.slot}[${p.producer}] → reads ${p.slot}[${p.consumer}] (the gate opens on the frame it is written)`
+          : `reads ${p.slot}[${p.consumer}] → writes ${p.slot}[${p.producer}] (the gate misses that frame)`;
+    const detail = mine.length
+      ? `${mine.length} same-slot pair(s) whose same-frame ORDER is load-bearing (gate reads at trigger, effect writes at apply): ` +
+        mine.slice(0, SHOWN).map(render).join('; ') +
+        (mine.length > SHOWN
+          ? `; +${mine.length - SHOWN} more (lint-target-status.ts --block-order)`
+          : '') +
+        `. Do not reorder without re-verifying the unit's first-application behavior — the order is pinned by scripts/tests/fixtures/block-order-pairs.json`
+      : `cross-slot only, so the ORDER is fixed by the slot flatten order (skill1 → skill2 → burst) and is load-bearing only if a block moves slots`;
+    warnings.push(
+      `${noun} "${name}": ${wrote} (${prod.join(', ')}) AND ${read} (${cons.join(', ')}) by this unit — ${detail}`
+    );
+  }
+}
+
 // Every effect kind in a block, including kinds nested inside `escalating.steps` — the engine
 // dispatches those through the same applyEffect, so block-level authoring rules must see them too.
 export function collectEffectKinds(
@@ -741,40 +940,14 @@ export function structuralCheck(
     errors.push('kitDescription: must be a non-empty string');
   }
 
-  // Same-unit status producer + consumer: the gate reads at trigger time, the effect writes at
-  // apply time, and both can fire on the same frame — so the ARRAY ORDER of the two blocks is
-  // load-bearing (phantom relies on gate-before-inflict so the first application misses;
-  // d-killer-wife on inflict-before-gate so hers doesn't). Nothing else records that, so flag it
-  // for the next editor rather than let a well-meaning reorder silently flip the unit's behavior.
-  const produced = new Map<string, string>(); // name -> first producing path
-  const consumed = new Map<string, string>(); // name -> first consuming path
-  for (const slot of SLOTS) {
-    const blocks = override[slot];
-    if (!Array.isArray(blocks)) {
-      continue;
-    }
-    blocks.forEach((b: any, bi: number) => {
-      for (const e of collectEffects(b?.effects, 'targetStatus')) {
-        if (typeof e.name === 'string' && !produced.has(e.name)) {
-          produced.set(e.name, `${slot}[${bi}]`);
-        }
-      }
-      if (
-        typeof b?.requiresTargetStatus === 'string' &&
-        !consumed.has(b.requiresTargetStatus)
-      ) {
-        consumed.set(b.requiresTargetStatus, `${slot}[${bi}]`);
-      }
-    });
-  }
-  for (const [name, prodPath] of produced) {
-    const consPath = consumed.get(name);
-    if (consPath) {
-      warnings.push(
-        `status "${name}": produced (${prodPath}) AND consumed (${consPath}) by this unit — same-frame ORDER of these blocks is load-bearing (gate reads at trigger, effect writes at apply); do not reorder without re-verifying the unit's first-application behavior`
-      );
-    }
-  }
+  // Same-unit producer + consumer, both families: the gate reads at trigger time, the effect
+  // writes at apply time, and both can fire on the same frame — so the ARRAY ORDER of the two
+  // blocks is load-bearing (phantom relies on gate-before-inflict so her first application misses;
+  // d-killer-wife on inflict-before-gate so hers does not). Nothing else records that, so name the
+  // ORDER SHIPPED here rather than let a well-meaning reorder silently flip the unit's behavior.
+  // The order itself is pinned by scripts/tests/block-order-guard.test.ts — this warning is the
+  // in-file signpost, the fixture is the gate.
+  blockOrderWarnings(override, warnings);
 
   proseCitationWarnings(override, warnings);
 
