@@ -265,6 +265,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   2026-08-11: unmodeled behaviour is recorded under `unmodeled`, never left to prose — 50 heal
   lines across 34 units; `census-kit-numbers.ts --check` now gates it in verify.sh). **Three things
   are open:**
+  - **⇒ OPPORTUNISTIC, on the next authorized touch of `kilo.json`:** her burst caveat still says
+    "the engine has no HP-basis primitive (effectiveAtk is purely additive)". DECISIONS 2026-08-11
+    now carries the narrower true claim — `atkOfMaxHpPct` (sim.ts:1681) IS an HP-basis term, it is
+    just additive and holder-global, so what is missing is a basis-SUBSTITUTION primitive. Reword
+    the parenthetical to match. Not done here: it is a protected file and this pass had no other
+    reason to edit it.
   - **⇒ OWNER CALL, one line: does the ruling cover `kilo`?** Her burst nuke IS modelled, but off
     her own ATK rather than the kit's "5% of final Max HP" basis; the basis clause sits in her
     `caveats` with an estimate and a measurement recipe. Filed as an `unmodeled` entry or left as an approximation —

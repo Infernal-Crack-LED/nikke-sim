@@ -9,10 +9,16 @@
 // "--check is clean" was never evidence that the splicer works. Caught by the cross-family review
 // (`kimi-code/k3`, 2026-08-11) as a gap in the stated evidence rather than in the code.
 //
-// The adversarial cases below are the ones that would corrupt a protected file silently: a prose
-// mention of the field name before the real key, an entry whose TEXT contains a slot name, and a
-// malformed/absent key. The contract is: splice the right region, or throw loudly — never write
-// the wrong place.
+// The adversarial cases below are the ones that would corrupt a protected file silently: a needle
+// that appears in PROSE at a JSON string boundary, either for the field name or for a slot name.
+// The contract is: splice the right region, or throw loudly — never write the wrong place.
+//
+// MUTATION-VERIFIED, because the first version of this fixture was VACUOUS. It embedded the
+// needles mid-string, where JSON.stringify escapes them, so all 11 cases passed just as happily
+// with both guards reverted to a bare first-match `indexOf`. The current inputs were checked the
+// only way that means anything: revert both guards, run this file, watch the two boundary cases
+// go red (they do — the other 9 stay green, which is the point of keeping them separate). A test
+// written to pin a guard is worth nothing until it has been shown to FAIL without that guard.
 import { describe, expect, it } from 'vitest';
 import {
   entryFor,
@@ -60,42 +66,64 @@ describe('insertEntries — splices the right array', () => {
 });
 
 describe('insertEntries — adversarial keys (the silent-corruption cases)', () => {
-  it('ignores a PROSE mention of the field name before the real key', () => {
-    // A note that quotes the field, as several overrides do when explaining a disposition.
-    const raw = build(
-      { skill1: [], skill2: [], burst: [] },
-      'the line belongs in "unmodeled" rather than an encoded block'
-    );
-    const out = JSON.parse(insertEntries(raw, 'burst', ['x']));
-    expect(out.unmodeled.burst).toEqual(['x']);
-  });
-
-  it('is not fooled by an ENTRY whose text contains a slot name', () => {
+  // THESE INPUTS MUST STRADDLE A JSON STRING BOUNDARY, and that is the whole trick. An earlier
+  // version of this block embedded `"unmodeled"` and `"burst"` MID-string, which JSON.stringify
+  // escapes to \"burst\" — so the raw 7-char needle `"burst"` never appeared and the tests passed
+  // just as happily with both guards reverted to a bare indexOf. (Caught by the cross-family
+  // review, empirically: mutate the script, fixture stayed 11/11 green.) A string ENDING in
+  // `"burst` is different: JSON writes `\"burst"`, whose tail IS the literal needle, so a bare
+  // first-match scan locks onto entry TEXT and splices into the wrong slot with no error at all.
+  it('is not fooled by an ENTRY whose text ends at a slot-name boundary', () => {
     const raw = build({
-      skill1: [],
-      skill2: ['this "burst" mention is entry text, not a key'],
+      skill1: ['a discussion of "burst'],
+      skill2: [],
       burst: [],
     });
     const out = JSON.parse(insertEntries(raw, 'burst', ['x']));
     expect(out.unmodeled.burst).toEqual(['x']);
-    expect(out.unmodeled.skill2).toHaveLength(1);
+    // The bare-indexOf regression lands the entry in a DIFFERENT slot, still valid JSON:
+    expect(out.unmodeled.skill1).toEqual(['a discussion of "burst']);
+    expect(out.unmodeled.skill2).toEqual([]);
+  });
+
+  it('is not fooled by a NOTE ending at the field-name boundary', () => {
+    const raw = JSON.stringify(
+      {
+        note: 'the line belongs under "unmodeled',
+        caveats: ['a caveat containing { a brace'],
+        unmodeled: { skill1: [], skill2: [], burst: [] },
+        skill1: [],
+        skill2: [],
+        burst: [],
+      },
+      null,
+      2
+    );
+    const out = JSON.parse(insertEntries(raw, 'burst', ['x']));
+    expect(out.unmodeled.burst).toEqual(['x']);
+    expect(out.note).toBe('the line belongs under "unmodeled');
   });
 
   it('throws — never guesses — when the field is only mentioned in prose', () => {
     const raw = JSON.stringify(
       {
-        note: 'discussed under "unmodeled" but the field is absent',
+        note: 'discussed under "unmodeled but the field is absent',
         skill1: [],
       },
       null,
       2
     );
-    expect(() => insertEntries(raw, 'skill1', ['x'])).toThrow(/unmodeled/i);
+    // The guard's own message, not any throw: a bare scan fails later and differently.
+    expect(() => insertEntries(raw, 'skill1', ['x'])).toThrow(
+      /no unmodeled field \(or only prose mentions of it\)/
+    );
   });
 
   it('throws when the requested slot key is missing', () => {
     const raw = build({ skill1: [], skill2: [] });
-    expect(() => insertEntries(raw, 'burst', ['x'])).toThrow(/burst/);
+    expect(() => insertEntries(raw, 'burst', ['x'])).toThrow(
+      /unmodeled has no "burst" key/
+    );
   });
 });
 
