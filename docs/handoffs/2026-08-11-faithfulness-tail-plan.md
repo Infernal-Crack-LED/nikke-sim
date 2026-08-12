@@ -3,12 +3,13 @@
 > **Purpose.** The entry doc QUEUE.md asked for. The faithfulness sweep's phase-4 GRADED slice is
 > complete (batches 1–8 cover all 45 board-graded units); what remains is **the tail** — the 138
 > override files with no board reading. QUEUE's scoping note called for "a GENERATED-CENSUS
-> approach … rather than per-unit reads", and this doc is that method, plus the first axis built,
-> calibrated, run and fully dispositioned.
+> approach … rather than per-unit reads", and this doc is that method plus **all six axes, built,
+> calibrated, run and dispositioned (§6 closes the tail).**
 >
-> **Status: FINDINGS-ONLY.** Nothing here edits an override, the engine, or a shared artifact
-> (CLAUDE.md batch-and-stop). Axis 1 produced ONE batched proposal for the owner (§5) and zero
-> engine changes. Tooling + its fixture are committed (constraint 9).
+> **Status: FINDINGS-ONLY.** Nothing here edits an override or the engine (CLAUDE.md
+> batch-and-stop). Axis 1 produced ONE batched proposal for the owner (§5); axis 5 removed a stale
+> QUEUE entry. Zero engine changes, and **no axis found a defect in what the overrides encode.**
+> Every instrument + its fixture is committed (constraint 9).
 
 ---
 
@@ -100,8 +101,9 @@ unchanged.
 
 Printed by `--skipped`, never silently swallowed:
 
-- **Non-percent quantities** — durations, round/shot counts, stack caps, ammo counts. An entire
-  real defect class (`d-killer-wife`'s round-count Pierce, resolved 2026-08-11) is invisible here.
+- **Non-percent quantities** — durations, round/shot counts, stack caps, ammo counts. Axis 3 was
+  built to cover this and DECLINED (§4b3); note that the `d-killer-wife` round-count Pierce, once
+  cited here as the defect this tier holds, turned out not to be a quantity defect at all.
 - **Qualitative lines** — "Gain Pierce", "Pellet count is fixed at 1", mode swaps.
 - **Wrongness that is present but incorrect** — a number on the wrong stat, target or duration
   reads as clean. This census can only falsify "the model never saw this line".
@@ -122,22 +124,16 @@ Printed by `--skipped`, never silently swallowed:
 
 Each is a generated census, each scored against the graded 45 first.
 
-1. **A2 — `unmodeled` entries that match no kit line.** Entries are mostly verbatim kit lines, some
-   annotated ("… — magnitude only: …"); the residue would be entries describing lines the kit no
-   longer prints, which read as live gaps forever. Cheap, and it cleans an input every other pass
-   reads. ⚑ A throwaway scoping probe put the non-verbatim residue at roughly a fifth of ~410
-   entries, but that number came from an ad-hoc matcher that was never committed and is NOT
-   evidence — re-derive it as the first step of building A2, don't plan on it.
-2. **A3 — non-percent quantity accounting.** The complement of axis 1: durations, round counts,
-   stack caps. Higher noise, but it is the tier that held the `d-killer-wife` defect.
-3. **A4 — "fixed at" lines vs the clamp StatKeys** (phase-4 checklist item 7). `reloadSpeedClamp` /
-   `reloadTimeClamp` / `chargeTimeClamp` exist and 8 units carry them; a kit-text census of "is
-   fixed at" phrasings against clamp usage is a small, decisive check.
-4. **A5 — held-primitive carrier scan** (F11). Grep the tail's kit text for the shapes of primitives
-   held for want of carriers (`addStack`, DEF-ranked selectors, empty-magazine effects). Logs new
-   carriers against the gap; does not propose builds.
-5. **A6 — recovery emit/consume**, already served by `scripts/census-synergy-events.ts`. The tail's
-   job is to READ it, not rebuild it.
+1. ~~**A2 — `unmodeled` entries that match no kit line.**~~ **BUILT, RUN, DISPOSITIONED
+   (2026-08-11) — see §4b.** The scoping probe's "roughly a fifth" was re-derived and came out at
+   **2.2%**, an order of magnitude lower, which is exactly why it was marked not-evidence.
+2. ~~**A3 — non-percent quantity accounting.**~~ **BUILT AND DECLINED (2026-08-11) — see §4b3.**
+   Its stated justification ("the tier that held the `d-killer-wife` defect") turned out to be
+   false.
+3. ~~**A4 — "fixed at" lines vs the clamp StatKeys**~~ **BUILT, RUN, CLEAN (2026-08-11) — §4b4.**
+4. ~~**A5 — held-primitive carrier scan** (F11).~~ **BUILT, RUN (2026-08-11) — §4b5.** It found a
+   documented "gap" that had shipped months earlier.
+5. ~~**A6 — recovery emit/consume**~~ **READ, and made decidable (2026-08-11) — §4b6.**
 
 **Carried follow-up on axis 1 itself:** tighten the integer-magnitude case (§3) rather than only
 disclosing it — e.g. require `%`-adjacency when matching an integer in prose, and treat a bare
@@ -145,6 +141,199 @@ integer token inside a structured block as WEAK evidence that still surfaces at 
 instead of clearing the line. Raised by the cross-family review (`kimi-code/k3`, 2026-08-11) as a
 FOLLOW-UP; not done here because it changes matcher semantics and would want its own
 graded-45 re-calibration.
+
+---
+
+## 4b. Axis 2 — `unmodeled` entries vs the kit (BUILT, RUN, DISPOSITIONED)
+
+**Instrument:** `scripts/census-unmodeled-entries.ts` · fixture
+`scripts/tests/census-unmodeled-entries.test.ts`
+
+The converse of axis 1. Axis 1 asks whether every kit magnitude reaches the override; this asks
+whether every `unmodeled` entry still quotes a line the kit actually prints. It matters because the
+2026-08-11 owner ruling made `unmodeled` the authoritative index of what the model skips — so an
+entry describing a line the kit no longer prints reads as a live gap forever, and costs a
+verification pass every time it is re-encountered.
+
+`unmodeled` is **slot-keyed** (`{skill1, skill2, burst}`), which buys a second question for free:
+an entry can be filed under the wrong skill.
+
+| Tier                | Meaning                                                              |
+| ------------------- | -------------------------------------------------------------------- |
+| **UNMATCHED**       | no kit line in the unit's whole kit resembles the entry              |
+| **MAGNITUDE DRIFT** | the entry quotes the line but not the number the kit now prints      |
+| **MISFILED**        | the entry matches a kit line in a DIFFERENT slot than it is filed in |
+| NEAR                | matched by token overlap only — paraphrase, advisory, not a finding  |
+
+### 4b.1 Result — 460 entries, 143 units, 10 findings across 4 units
+
+| Tier                     | Findings       | Disposition                                                     |
+| ------------------------ | -------------- | --------------------------------------------------------------- |
+| UNMATCHED                | 8              | `moran` 1, `neon-vision-eye` 3, `zwei` 4 — all read, all benign |
+| MAGNITUDE DRIFT          | 2              | `sugar` — see below                                             |
+| MISFILED                 | 0              | —                                                               |
+| exact / contained / near | 116 / 289 / 45 | clean                                                           |
+
+**Zero stale entries of the class the axis predicted.** No entry describes a kit line that was
+rebalanced away. What the residue actually is:
+
+- **Kit-text SOURCE DRIFT (`moran`, `zwei`, 5 findings)** — the entries quote blablalink prose (the
+  objective SSOT) and `data/characters.json` (synergy API) does not print those lines. Verified
+  per-unit rather than assumed: `laplace` (RL/Iron, not `laplace-ultimate-hero`) files the _same_
+  "Note: Unable to take cover." entry and it MATCHES, because her API text carries the line while
+  `moran`'s does not. The entries are faithful to the SSOT; the census can only see the API text.
+- **Hand-written bookkeeping (`neon-vision-eye`, 3 findings)** — Firepower-Gauge arithmetic that was
+  never a kit line. One is worth a reviewer's attention on its own terms: an entry filed under
+  `unmodeled` that states the behaviour **is MODELED** ("enacted 2026-08-09, owner faithfulness
+  ruling … as two everyN:3 self burstGenPct blocks"), plus two more marked "ABSORBED into the everyN
+  3 alternation". That is modelled behaviour recorded in the index of unmodelled behaviour. Logged,
+  not enacted — moving it is prose surgery on a graded unit and belongs to her own review.
+- **`sugar` magnitude drift (2 findings)** — both cover-attacked entries quote a "(20% chance)" proc
+  that today's kit text does not print. Unresolved between stale-vs-source-drift, and **board-inert
+  either way**: the v1 boss never attacks, so the trigger never fires. Recorded, not enacted.
+
+### 4b.2 What running it taught — three matcher defects, each a false-positive class
+
+Worth stating because every future axis will hit them:
+
+1. **Kit text is written in BLOCKS, and entries quote blocks.** A `■` header carries the trigger and
+   target clause; the effect lines beneath it belong to it. `naga` files "Activates after 12 normal
+   attack(s). Affects all allies. Restores 14.57% of Cover HP." — a header plus the line under it,
+   and `tia` files a three-line block as one newline-joined entry. Scoring those against individual
+   LINES can never match, so this was a structural blind spot, not a threshold to tune (23 findings
+   → 8).
+2. **There are two annotation conventions**, not one: ` — reason` (122 entries) and a trailing
+   parenthetical (`takina`, `ark-ranger-black`, `tia`, `velvet`). Scoring the reason as quoted text
+   sank all four below any sane floor.
+3. **A containment floor must bind the CONTAINED side**, whichever it is. Both first-run MISFILED
+   findings were a long entry "containing" the line "Affects self." — a clause in nearly every kit
+   in the game — and scoring a perfect match against the wrong slot.
+
+And the one that changed the instrument's shape: **token coverage cannot see a rebalance.** An entry
+quoting a line whose number changed scores 10/11, because a magnitude counts for exactly as much as
+the word "the". Magnitudes are therefore gated separately from words and get their own tier — the
+single most likely way a genuinely stale entry would ever appear.
+
+### 4b.3 Calibration + what it cannot see
+
+Scored against the graded 45 per the method rule of §1: **3.2% of graded entries vs 1.8% of tail** —
+comparable, so the tail output is not the census's own noise. The first run failed this badly (17
+graded vs 6 tail); the matcher was fixed, not the roster.
+
+`--skipped` restates the limits on every run. The load-bearing one: **an entry quoting a real kit
+line, in the right slot, describing behaviour that is in fact MODELLED, is clean here.** This axis
+falsifies "the kit backs this entry as filed"; only the per-unit read falsifies "this line is really
+unmodelled" — which is precisely the `neon-vision-eye` case above, found only because her wording
+happened not to match.
+
+**Not wired into `verify.sh`.** `--check` exists and works, but gating would mean listing the 10 live
+findings in `ACCEPTED` — and two of them (`sugar`, `neon-vision-eye`) are open questions, not
+matcher blind spots. Writing those into an allowlist would be silencing, which is the one thing that
+list must never be for. The fixture is the guard instead: it pins the worklist to its known 4 slugs
+and runs in `verify.sh` via the vitest glob, so a NEW unit going stale goes red while nothing
+asserts the current 10 are correct.
+
+---
+
+## 4b3. Axis 3 — non-percent quantities (BUILT, TESTED, **DECLINED**)
+
+**Instrument:** `scripts/census-kit-quantities.ts` · fixture `scripts/tests/census-kit-quantities.test.ts`
+
+Built TYPED, because a presence check is worthless here: axis 1 measured that 281 of 282 integer
+magnitudes already collide with some duration or count elsewhere in the file, and non-percent
+quantities are small integers almost by definition. So a duration must land in `durationSec`, a
+round count in `durationShots`, a stack cap in `maxStacks`, a trigger count in the `hitCount`
+trigger. 924 quantities parsed across 181 units, 36 unaccounted.
+
+**Declined as a worklist generator.** Three reasons, in increasing order of how decisive:
+
+1. **It fails the §1 calibration rule** — 8.0% of graded-slice quantities read unaccounted vs 2.2%
+   of tail. Firing ~3× harder on the units the sweep read line-by-line means it is measuring
+   authoring style: consolidation and time-averaging are what a careful review PRODUCES.
+   `dorothy-serendipity`'s five "for 3 round(s)" lines fold into one `consolidation` block;
+   `nayuta` folds two riders into one. Both read as missing.
+2. **Recall is poor** — 456 numeric kit lines match no pattern at all. A worklist from a matcher
+   with that coverage cannot support a claim in either direction.
+3. **THE PREMISE WAS WRONG.** §4 justified this axis as "the tier that held the `d-killer-wife`
+   round-count defect". Replaying the census against her pre-fix override (`git show ae0010d6^`)
+   reads **clean** — the "Gain Pierce for 1 shot" line was correctly filed under `unmodeled` the
+   entire time, with a reasoned annotation. The 2026-08-11 change was a **disposition change**, not
+   a repaired omission: the Pierce tag turned out to feed the Damage-Up bucket, so a line that
+   looked inert became worth modeling. The quantity was accounted for before AND after.
+
+That third point generalizes, and it is the most useful thing this axis produced: **the defect
+class the tail keeps hoping to mechanize is a modeling JUDGEMENT — "this line looks inert but
+isn't" — and no accounting census can reach it.** Only the per-unit read can. Every axis here can
+check that a kit line is _represented_; none can check that the representation is _right_.
+
+## 4b4. Axis 4 — "fixed at" lines vs the clamp StatKeys (BUILT, RUN, CLEAN)
+
+**Instrument:** `scripts/census-fixed-at-clamps.ts` · fixture `scripts/tests/census-fixed-at-clamps.test.ts`
+
+Phase-4 checklist item 7. A fixing line OVERRIDES the additive stack rather than adding to it, so
+encoding one as an ordinary buff reads correct at the nominal value and drifts the moment anything
+else touches the same stat. **18 fixing lines across 11 units, all accounted — zero findings.**
+
+Three things it had to learn first, all worth carrying:
+
+- **Accepted encodings are per-FAMILY, not one key.** A weapon-swap that sets its own charge time is
+  already buff-immune (`sim.ts:3711-3714` forces `chargeSpeedPct` to 0 when `u.swap.chargeFrames`
+  is set), so `maxwell-ordinary-mechanic`'s five Overcurrent-staged `chargeTimeSec` values are
+  correct without a clamp — while `nayuta` needs both fields precisely because hers differ (swap
+  charges in 2.13s, kit fixes 1.8).
+- **The subject comes from the block.** Kit text names it once then enumerates ("Charge Time is
+  fixed." then five bare "Stage 3: Fixed at 2 sec." lines).
+- **`unmodeled` counts as accounted.** `liberalio`'s "Gentle Current: Fixes charge time at 1 sec"
+  fires only against a Rapture that is NOT the stage target — impossible on a single boss.
+
+It ships a **RECALL CHECK** that is not decoration: the clamp carriers are an INDEPENDENT list of
+units that must have a fixing line, so running the matcher against them measures recall directly.
+It immediately caught that the first regex missed the verb form entirely — `snow-white-heavy-arms`
+writes "**Fixes** charge time at 3.2 sec", not "is fixed at" — and widening for it then surfaced
+`liberalio`, invisible for the same reason. **A census cannot validate its own recall; give every
+future axis an independent list to score against.**
+
+## 4b5. Axis 5 — held primitives (BUILT, RUN — one real finding)
+
+**Instrument:** `scripts/census-held-primitives.ts` · fixture `scripts/tests/census-held-primitives.test.ts`
+
+**`addStack` was documented as an unbuilt ENGINE PRIMITIVE GAP in QUEUE** — "two carriers is not
+yet a mandate; log a third before building. Not authorized" — while the effect had already shipped
+(`42a642de`), was implemented at `sim.ts` `case 'addStack'`, and had **seven** carriers, including
+the very `flora` S1 the entry named as blocked. The stale entry is removed.
+
+This drift is worth a permanent guard because it is self-perpetuating in the expensive direction: a
+reviewer hits a kit line, looks the primitive up, reads "not built", and files the line as
+unmodelable — without re-checking the tree. **A stale gap manufactures `unmodeled` entries forever,
+and every one of them looks correctly dispositioned.**
+
+The four zero-carrier StatKeys (`hasTrueNormals`, `whileSwapped`, `fireRatePct`,
+`elementDamagePct`) are confirmed still uncarried, so their collapse-or-keep decision is genuinely
+open. The census names its own blind spot: primitives with no schema key — `pascal`'s DEF-ranked
+ally selector, `grave`'s empty-magazine effect, `trony`'s windowed accumulator, the MG
+wind-up-speed modifier — cannot be carrier-counted and still need the per-unit read.
+
+## 4b6. Axis 6 — recovery emit/consume (READ, and made decidable)
+
+**Instrument:** `scripts/census-synergy-events.ts --pairing` · fixture
+`scripts/tests/census-synergy-events.test.ts`
+
+§4 said to READ this instrument rather than rebuild it. Reading the tables alone cannot answer F9's
+question — "does this unit emit exactly the recovery events its kit grants" — because that is a
+claim about the kit TEXT, which the tables never look at. `--pairing` is the cross-check.
+
+**Zero false emits roster-wide** — nothing emits a recovery event its kit does not grant, which is
+the board-relevant direction (a spurious emit feeds `crown`/`asuka` in every comp — the `liter`
+cover-HP trap). The 17 non-emitters split 3 ally-scoped / 14 self-scoped; the self-scoped ones are
+inert by MECHANISM (`fireRecovery` fires only the receiver's own blocks and no carrier owns a
+recovery block), which is the 2026-08-10 ruling's reasoning now checked rather than assumed.
+
+All three ally-scoped are recorded, and they are **not** the same case: `biscuit` and `emma`
+(MG/Fire) have triggers that can never fire on the immortal, never-attacking v1 boss, but
+**`pascal`'s "after firing 10 time(s)" is LIVE** — his heal is unmodeled only because the
+DEF-ranked ally selector is a held primitive. **That is the finding: holding that primitive also
+suppresses a recovery event that would feed `crown`,** so it is not the purely cosmetic hold the
+F11 list implies.
 
 ---
 
@@ -219,10 +408,47 @@ lines in 3 more, no unit in both sets — 50 lines, 34 units, prose-only edits, 
 ## 6. Stop rule
 
 The tail is DONE when each axis above is either built-and-dispositioned or explicitly declined,
-**not** when 138 files have been opened. Axis 1 is closed: instrument committed, fixture pins the
-matcher and the worklist, every finding read. If a future axis fires on a unit, `--explain <slug>`
-gives the kit line, the prose that mentions the magnitude, and the slot's encoded values — which is
-everything the disposition needs.
+**not** when 138 files have been opened. **Axes 1 and 2 are closed** — instrument committed, fixture
+pins the matcher and the worklist, every finding read. Both ship `--explain <slug>`, which gives
+everything a disposition needs without opening the file (axis 1: the kit line, the prose mentioning
+the magnitude, the slot's encoded values; axis 2: the entry, its quoted head, the best-matching kit
+line, and the entry tokens that line lacks).
+
+**ALL SIX AXES ARE NOW CLOSED (2026-08-11): 1, 2, 4, 5, 6 built-and-dispositioned; 3 explicitly
+declined with its evidence committed.** By this doc's own stop rule, the tail is DONE — and it is
+done without opening 138 files.
+
+### What six axes actually produced
+
+| Axis | Population                  | Enacted changes             | Findings left open                       |
+| ---- | --------------------------- | --------------------------- | ---------------------------------------- |
+| A1   | 1,259 kit magnitudes        | 50 filed lines              | 0                                        |
+| A2   | 460 `unmodeled` entries     | 0                           | `sugar`, `neon-vision-eye`               |
+| A3   | 924 quantities              | 0 — declined                | 0                                        |
+| A4   | 18 fixing lines             | 0                           | 0                                        |
+| A5   | 5 keyed primitives          | 1 stale QUEUE entry removed | 0                                        |
+| A6   | 92 heal lines / 45 emitters | 0                           | `pascal` (F11 has a synergy consequence) |
+
+**The tail's structured record is in good shape, and that is the result.** Not one axis found a
+defect in what the overrides encode. What they found instead were defects in the DOCS ABOUT the
+overrides — a QUEUE entry calling a shipped primitive unbuilt (A5), a plan premise that
+misremembered why a unit was fixed (A3) — plus a handful of open per-unit questions.
+
+### The four lessons, for whoever builds a census here next
+
+1. **Score against the graded 45 FIRST.** Every axis whose first run fired hardest on the
+   already-read slice had a broken matcher (A1, A2), except A3 — where it was the axis itself that
+   was broken. Four out of four times, the check was decisive. It costs one flag.
+2. **A census cannot validate its own RECALL.** A phrasing the matcher misses is indistinguishable
+   from a clean roster. Give every axis an INDEPENDENT list to score against — A4's clamp carriers
+   caught that its regex missed the verb form entirely, which was hiding two units.
+3. **"Accounted for" must mean the same thing in every axis** — encoded, encoded-equivalently, or
+   filed under `unmodeled`. A4 and A3 both had to learn this; without it two censuses reach
+   opposite verdicts on the same unit.
+4. **The class none of this reaches is the modeling JUDGEMENT** — "this line looks inert but
+   isn't". That is what the `d-killer-wife` fix actually was (A3), and it is only reachable by the
+   per-unit read. Mechanical censuses check that a kit line is REPRESENTED; they cannot check that
+   the representation is RIGHT. Do not inflate an axis to justify having built it.
 
 `census-kit-numbers.ts --check` now runs in `verify.sh` (§5): a kit magnitude that appears nowhere
 in its override fails the gate. The PROSE-ONLY tier stays advisory on purpose — a magnitude living

@@ -56,7 +56,50 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 1. _(empty — owner fills)_
 
+> **Eligible candidates, for the owner to promote — not self-assigned (2026-08-11).** The three
+> remaining phase-0/1 items in the START HERE block below meet this queue's own bar: each is
+> unblocked and verifiable by a gate that already exists (`verify.sh` / a vitest fixture), with no
+> owner ruling and no recording needed. Suggested order: **[1.4] block-order guard**, then **[0.3]
+> citation sweep**, then **[1.1] `chargeCounter` engine half** (that last one edits
+> `src/engine/sim.ts` ⇒ isolated worktree + its own PR, constraint 8).
+
 ### Open action items (pointers — attended sessions)
+
+- **⇒⇒⇒ START HERE (next session) — the three remaining PHASE 0/1 items of the faithfulness audit
+  (`docs/handoffs/2026-08-10-faithfulness-pass-audit.md`).** Phase 4 is DONE (graded batches 1–8 +
+  all six tail axes, 2026-08-11) and F3/F4 landed in the meantime, so what is left of phases 0–1 is
+  the list below. All three are **ordinary tooling/doc work — `verify.sh` + fixtures are the gate,
+  NOT `/scientific-method`** (they touch no damage-model value). Do them in this order; they are
+  independent, so a session that only lands one is still a clean session.
+
+  1. **[1.4] Block-order guard — do this FIRST; it is the only one with a live hazard.** Same-frame
+     block ORDER is load-bearing and nothing lints or tests it, so a reorder flips behaviour with a
+     green suite. Two known dependents: `phantom`'s gate-before-inflict, and `d-killer-wife`, whose
+     own caveat says "BLOCK ORDER IS LOAD-BEARING … do not reorder" (her burst inflicts
+     `targetStatus` 'Wipe Out' and a later block in the SAME array reads it on the SAME frame).
+     Minimum viable = a lint in `src/skills/validate-structural.ts` flagging a gate-consuming block
+     whose producer sits earlier in the same slot array, plus a fixture. Audit F2.5.
+  2. **[0.3] `sim.ts:<line>` citation sweep.** 62 bare line-number citations across **27 override
+     files**, plus **35 in `docs/`**. They rot silently on every engine edit and cost a verification
+     pass each time someone follows one. Convention to adopt: name the CODE BLOCK or symbol, not the
+     line (`sim.ts` `bossDefNow()`, not `sim.ts:1694`). Consider a lint so it cannot grow back — the
+     same shape as the guards the tail axes ship. Audit F1 / phase 0.3.
+  3. **[1.1] `chargeCounter` gate bypass — the ENGINE half.** `sim.ts` dispatches
+     `chargeCounter` activations straight to `applyEffect` (the `else if (b.trigger.kind ===
+'chargeCounter' && charged)` branch, ~line 4185), never through `applyBlock`, so `requiresCore`
+     / `fbGate` / `bossElementGate` / `resourceGate` / `requiresTargetStatus` / `everyN` / block
+     `delaySec` are all silently ignored on that trigger. The VALIDATOR half already landed and
+     hard-errors on the combination, so this is **behaviour-neutral today (zero gated
+     `chargeCounter` carriers)** — which is exactly why it is cheap now and expensive after the
+     first carrier. When it lands, **drop the validator rule in the same change** — the rule's own
+     comment in `validate-structural.ts` says so. Audit F2.1.
+     ⚠ This one edits `src/engine/sim.ts` ⇒ **CLAUDE.md constraint 8: isolated worktree + its own
+     PR**, never a direct edit on the shared main tree.
+
+  Everything else from that audit is either landed (F3 burst-skill amp — `burstDesc` scope tag, 51
+  carriers; F4 enemy DEF ▼ — `bossDefNow`) or owner/`/scientific-method`-gated (F5 gauge economy —
+  the biggest remaining item by blast radius, ENGINE-WORK ORDER #4; F6 the 5e self-status trio;
+  phase 3's footage-gated per-unit backlog).
 
 - **⇒⇒ START HERE IF YOU ARE PICKING UP AFTER THE 2026-08-11 SESSION (branch
   `fix/faithfulness-tier0`, PR open).** That branch closed the faithfulness pass end to end and left
@@ -75,10 +118,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      state machines, `alice` caster-relative charge speed, the `skillGauge`-fires-twice + charge-B3
      gauge-tempo pair, `chargeCounter` bypassing block gates). Ranked in the ENGINE-WORK ORDER
      below. None of them was touched.
-  4. **The phase-4 TAIL now has its entry doc and its first axis is CLOSED (2026-08-11)** —
+  4. **The phase-4 TAIL is DONE — all six axes closed (2026-08-11)** —
      `docs/handoffs/2026-08-11-faithfulness-tail-plan.md`. Generated-census approach, as the
-     scoping note asked. Axis 1 found zero new defects and left one owner ruling open (the heal
-     magnitude record split) plus five unbuilt axes; see the item further down.
+     scoping note asked. **No axis found a defect in what the overrides ENCODE**; the two real
+     findings were in the docs ABOUT them (a QUEUE entry calling the shipped `addStack` primitive
+     unbuilt; a plan premise that misremembered the `d-killer-wife` fix). Axis 3 was built and
+     DECLINED with its evidence. Open per-unit questions: `sugar`, `pascal`, `neon-vision-eye`.
   5. **Two primitives landed this session and each has exactly one carrier** —
      `gainPierce.durationShots` (5 carriers, 3 converted) and `convertExcess` (1 carrier). If a
      second `convertExcess` carrier ever appears, revisit the deliberate MAX-on-refresh and the
@@ -252,7 +297,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   bundle as a whole was not re-extracted. A blind-rebuild reviewer reads it as the engine, so a
   re-extract should precede the next blind-rebuild/`/audit-kit` run that uses it.
 
-- **⇒ FAITHFULNESS PASS phase-4 TAIL — entry doc landed, AXIS 1 CLOSED. Start at
+- **⇒ FAITHFULNESS PASS phase-4 TAIL — DONE, ALL SIX AXES CLOSED. Start at
   [2026-08-11-faithfulness-tail-plan.md](2026-08-11-faithfulness-tail-plan.md).** The graded slice
   is complete (batches 1–8, all 45 board-graded units); the tail is the 138 overrides with no board
   reading, worked by generated census rather than per-unit reads. Axis 1 (kit magnitudes vs the
@@ -263,24 +308,46 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   surfaced (the 5-carrier lifesteal non-emitter ruling and the U28 rider-gauge class) are RULED —
   see DECISIONS 2026-08-10 Tier 0. The §5 proposal it raised is RULED AND ENACTED (owner
   2026-08-11: unmodeled behaviour is recorded under `unmodeled`, never left to prose — 50 heal
-  lines across 34 units; `census-kit-numbers.ts --check` now gates it in verify.sh). **Four things
-  are open:**
-  - **⇒ OPPORTUNISTIC, on the next authorized touch of `kilo.json`:** her burst caveat still says
+  lines across 34 units; `census-kit-numbers.ts --check` now gates it in verify.sh).
+  **Axis 2** (`unmodeled` entries vs the kit text they quote — `scripts/census-unmodeled-entries.ts`
+  - its mutation-verified fixture) is likewise built, calibrated and fully dispositioned: 460
+    entries, 10 findings across 4 units, **zero stale entries**. The scoping probe's "roughly a fifth"
+    re-derived to 2.2%. Tail-plan §4b. **Six things are open:**
+  * **⇒ OPPORTUNISTIC, on the next authorized touch of `kilo.json`:** her burst caveat still says
     "the engine has no HP-basis primitive (effectiveAtk is purely additive)". DECISIONS 2026-08-11
     now carries the narrower true claim — `atkOfMaxHpPct` (sim.ts:1681) IS an HP-basis term, it is
     just additive and holder-global, so what is missing is a basis-SUBSTITUTION primitive. Reword
     the parenthetical to match. Not done here: it is a protected file and this pass had no other
     reason to edit it.
-  - **⇒ OWNER CALL, one line: does the ruling cover `kilo`?** Her burst nuke IS modelled, but off
+  * **⇒ OWNER CALL, one line: does the ruling cover `kilo`?** Her burst nuke IS modelled, but off
     her own ATK rather than the kit's "5% of final Max HP" basis; the basis clause sits in her
     `caveats` with an estimate and a measurement recipe. Filed as an `unmodeled` entry or left as an approximation —
     the pass shipped the latter. Both readings written out in DECISIONS 2026-08-11. If filed, it is
     a hand edit (the backfill script is heal-only).
-  - **Axes A2–A6 proposed, none built** — `unmodeled` entries matching no kit line; non-percent
-    quantity accounting (the tier that held the `d-killer-wife` round-count defect); "fixed at" vs
-    the clamp StatKeys; held-primitive carrier scan; and READ (do not rebuild)
-    `scripts/census-synergy-events.ts`. Tail-plan §4.
-  - **Axis 1's own carried follow-up** — integer magnitudes are near-auto-clean (281 of 282 collide
+  * **⇒ OPEN QUESTION from axis 2, `sugar`:** both her cover-attacked `unmodeled` entries quote a
+    "(20% chance)" proc that today's `data/characters.json` kit text does not print — either a kit
+    change the entries outlived, or blablalink/synergy-API source drift (the `moran` pattern).
+    **Board-inert either way** (the v1 boss never attacks, so the trigger never fires), so this is a
+    record-accuracy question only. Resolve by reading her blablalink kit text; do not enact from the
+    census alone.
+  * **⇒ OPPORTUNISTIC, on the next authorized touch of `neon-vision-eye.json`:** three of her
+    `unmodeled` entries record behaviour that IS modelled — one says so outright ("is MODELED …
+    enacted 2026-08-09"), two are marked "ABSORBED into the everyN 3 alternation". Since the
+    2026-08-11 ruling made `unmodeled` the authoritative index of what the model SKIPS, that content
+    belongs in `note`/`caveats`. Not done here: graded unit, protected file, and this pass had no
+    other reason to edit it.
+  * ~~Axes A3–A6~~ **ALL CLOSED 2026-08-11 — the phase-4 TAIL IS DONE** (all six axes built and
+    dispositioned or explicitly declined; the stop rule is met without opening 138 files). A4
+    ("fixed at" vs the clamp StatKeys): 18 lines, all accounted. A5 (held primitives): found
+    `addStack` documented as an unbuilt gap while it had shipped with 7 carriers — stale entry
+    removed. A6 (`--pairing`): zero false emits roster-wide. **A3 (non-percent quantities) was
+    built and DECLINED** — it fails the calibration rule ~3:1, has poor recall, and its stated
+    justification was false: replaying it against the pre-fix `d-killer-wife` reads CLEAN, because
+    that line was correctly filed under `unmodeled` all along and the 2026-08-11 fix was a
+    DISPOSITION change, not a repaired omission. Tail-plan §4b3–§4b6 carries the four method
+    lessons. **No axis found a defect in what the overrides ENCODE** — both real findings were in
+    the docs ABOUT them.
+  * **Axis 1's own carried follow-up** — integer magnitudes are near-auto-clean (281 of 282 collide
     with a duration/count elsewhere in the file), so the axis discriminates almost only on decimals.
     Disclosed in the doc and by `--skipped`; tightening the matcher is deferred because it needs its
     own graded-45 re-calibration.
@@ -465,15 +532,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      and the ruling is now recorded in all four carriers' notes (`modernia`, `nayuta`,
      `neon-blue-ocean`, `neon-vision-eye`). Note `modernia`'s S1 is a `flatDamage` _because_ of
      this asymmetry — closing it retires that workaround.
-- **⇒ ENGINE PRIMITIVE GAP: `addStack`** — no effect increments an existing buff's stack count by N on
-  a trigger. Blocks `flora` S1 ("after 100 normal attacks, all Electric Code allies: increases the
-  stack count of stackable buffs by 1" — trigger `hitCount:100` and target `alliesOfElement` are both
-  expressible, only the EFFECT is missing) and is the same family as `k`'s Tilted Scale stack-ramp
-  (+29 stacks per last bullet, cap 100), which shipped as DOCUMENTED_GAP encoded as a flat
-  `burstCast critRatePct 75` steady-state — correct for the burst window, under-credits the pre-burst
-  ramp and the first burst's build. Magnitude for `flora` depends entirely on which stack-ramp buffs
-  are live on her Electric allies (could be large, could be zero), so it is correctly not estimated.
-  Two carriers is not yet a mandate; log a third before building. Not authorized.
+
+<!-- The `addStack` ENGINE PRIMITIVE GAP entry was removed 2026-08-11: the primitive shipped in
+     42a642de ("Slice C: addStack effect + flora/k carriers"), is implemented at sim.ts
+     `case 'addStack'`, and has 7 carriers (alice-wonderland-bunny, flora, guilty, k, pepper,
+     `rupee` (AR/Iron, not rupee-winter-shopper), `soda` (MG/Fire, not soda-twinkling-bunny)) —
+     including the `flora` S1 the entry named as blocked. Found by
+     scripts/census-held-primitives.ts (tail axis 5), which now guards the whole class. -->
+
 - **⇒ ENGINE PRIMITIVE GAP: windowed damage accumulator** — `trony` S1 "T.Rony Bomber" Cumulative
   Damage Skill (plant on full-charge hit: 5s window, accumulates 50% of her dealt damage, cap 1536%
   of final ATK, explodes as Distributed Damage; burst adds +62.83pp to the collection rate) has no
