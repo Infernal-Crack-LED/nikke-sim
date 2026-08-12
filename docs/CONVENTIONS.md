@@ -273,6 +273,16 @@ the single source for "which units use primitive X" — don't restate those coun
 and (c) LINTS `open-questions.md` for a **resolved question still filed under UNANSWERED**. Matching is
 structural — prose mentions in `note`/`caveats`/`unmodeled` deliberately don't count as usage.
 
+**Cite the SYMBOL, never the line — and it is now gated.** A `sim.ts:1694`-style pointer rots on the
+next engine edit and then actively misleads; write the code block or symbol instead (`sim.ts`
+`bossDefNow()`). Enforced by `scripts/sweep-line-citations.ts --check` in `verify.sh` over override
+prose + durable current-state docs. The same script sweeps existing ones (`--write`) via a reviewable
+map. Deliberately NOT swept, and reported by name on every run: CHANGELOG-class docs, generated docs,
+and dated session records (`docs/handoffs/2026-08-10-…`) — their citations describe the tree on the
+day they were written, so rewriting one edits history rather than fixing a pointer. Prose whose
+SUBJECT is a bare citation (this paragraph, the QUEUE item) is exempted by name in the script's
+`KEEP` set.
+
 **When BOTH answers are legitimate, PIN the shipped one — don't lint for a "right" one.** Some
 authoring invariants have no correct value, only a load-bearing one: same-slot block ORDER is the
 worked example (`phantom` needs gate-before-inflict, `d-killer-wife` needs inflict-before-gate, and

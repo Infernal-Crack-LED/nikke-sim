@@ -65,13 +65,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒⇒⇒ START HERE (next session) — the TWO remaining PHASE 0/1 items of the faithfulness audit
-  (`docs/handoffs/2026-08-10-faithfulness-pass-audit.md`).** Phase 4 is DONE (graded batches 1–8 +
-  all six tail axes, 2026-08-11), F3/F4 landed in the meantime, and **[1.4] the block-order guard
-  landed 2026-08-11** (below), so what is left of phases 0–1 is the list below. Both are **ordinary
-  tooling/doc work — `verify.sh` + fixtures are the gate, NOT `/scientific-method`** (they touch no
-  damage-model value). They are independent, so a session that only lands one is still a clean
-  session.
+- **⇒⇒⇒ START HERE (next session) — ONE remaining PHASE 0/1 item of the faithfulness audit
+  (`docs/handoffs/2026-08-10-faithfulness-pass-audit.md`): [1.1], the `chargeCounter` engine half.**
+  Phase 4 is DONE (graded batches 1–8 + all six tail axes, 2026-08-11), F3/F4 landed in the meantime,
+  and **[1.4] the block-order guard + [0.3] the citation sweep both landed 2026-08-11** (below,
+  branch `audit/phase-0-1`). [1.1] is the only one of the three that touches `src/engine/**`, which
+  is why it was left last. It is still **ordinary tooling work — `verify.sh` + fixtures are the gate,
+  NOT `/scientific-method`** (it touches no damage-model value).
 
   1. ✅ **[1.4] Block-order guard — LANDED 2026-08-11** (branch `guard/block-order`; DECISIONS,
      Engine/data-architecture). ⚑ **The audit's stated minimum viable was the WRONG shape and was
@@ -84,11 +84,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      ⚑ Also: the exposure is **34 pairs across 14 units**, and only 2 are the `targetStatus` family
      the audit named — the rest are `resource`/`resourceGate`, which carries the identical
      documented hazard. Behaviour-neutral.
-  2. **[0.3] `sim.ts:<line>` citation sweep.** 62 bare line-number citations across **27 override
-     files**, plus **35 in `docs/`**. They rot silently on every engine edit and cost a verification
-     pass each time someone follows one. Convention to adopt: name the CODE BLOCK or symbol, not the
-     line (`sim.ts` `bossDefNow()`, not `sim.ts:1694`). Consider a lint so it cannot grow back — the
-     same shape as the guards the tail axes ship. Audit F1 / phase 0.3.
+  2. ✅ **[0.3] `sim.ts:<line>` citation sweep — LANDED 2026-08-11.** 78 citations rewritten to name
+     the CODE BLOCK or symbol, across 28 overrides + 7 durable current-state docs, by the committed
+     reviewable-map codemod `scripts/sweep-line-citations.ts`; `--check` is now a `verify.sh` gate so
+     they cannot grow back. ⚑ **The rot was near-total, which is the finding**: of ~40 distinct
+     `sim.ts` lines cited in override prose, nearly all had drifted onto unrelated code (`2568`
+     "flatDamage generates gauge" → a `const fdRampMul`; `1727` "the hit counter adds hitsPerShot" →
+     the burstDesc amp comment), so every one of them was actively misleading, not merely imprecise.
+     ⚑ **Deliberately NOT swept, reported by name on every run**: CHANGELOG-class docs, generated
+     docs, and dated session records (14 files) — their citations describe the tree on the day they
+     were written. If the owner wants those too, it is a map extension, not new tooling.
+     Provenance labels verified unchanged across all 183 units (override prose is machine-read).
   3. **[1.1] `chargeCounter` gate bypass — the ENGINE half.** `sim.ts` dispatches
      `chargeCounter` activations straight to `applyEffect` (the `else if (b.trigger.kind ===
 'chargeCounter' && charged)` branch, ~line 4185), never through `applyBlock`, so `requiresCore`
@@ -164,7 +170,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 - **U28 rider-gauge class — DIRECTION RULED (2026-08-10, Tier 0 / D4), enactment still bundled.**
   `extraHitDamagePct` riders emit no `skillGauge` where an equivalent `flatDamage` instance would
-  (`sim.ts:4053` vs 2568/2605/3803); the omission is a DEFECT, not a modeling choice, so only WHEN
+  (`sim.ts `firePull()`, the `extraHitDamagePct` rider path` vs 2568/2605/3803); the omission is a DEFECT, not a modeling choice, so only WHEN
   is open. All four carriers (`modernia`, `nayuta`, `neon-blue-ocean`, `neon-vision-eye`) now record
   the ruling in their notes. Lands with the batched gauge cluster, whose corrections partially cancel
   — see ENGINE-WORK ORDER item 4 and `2026-08-10-gauge-economy-findings.md`.
@@ -320,7 +326,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     re-derived to 2.2%. Tail-plan §4b. **Six things are open:**
   * **⇒ OPPORTUNISTIC, on the next authorized touch of `kilo.json`:** her burst caveat still says
     "the engine has no HP-basis primitive (effectiveAtk is purely additive)". DECISIONS 2026-08-11
-    now carries the narrower true claim — `atkOfMaxHpPct` (sim.ts:1681) IS an HP-basis term, it is
+    now carries the narrower true claim — `atkOfMaxHpPct` (sim.ts `effectiveAtk()`) IS an HP-basis term, it is
     just additive and holder-global, so what is missing is a basis-SUBSTITUTION primitive. Reword
     the parenthetical to match. Not done here: it is a protected file and this pass had no other
     reason to edit it.
@@ -510,7 +516,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `decomposeCycles` floor was re-derived (its old +2.5s lock term is dead; `excess` now reads the
   refill-from-zero directly).
   Separately logged (do NOT bundle in): a general (non-liberalio) `skillGauge`-fires-twice-per-shot
-  pattern on any `shotFired`-triggered `flatDamage` rider (`sim.ts:2393`) — its correction direction is
+  pattern on any `shotFired`-triggered `flatDamage` rider (`sim.ts `applyEffect()`, the `flatDamage` case`) — its correction direction is
   gauge-DOWN, which would worsen these 4 comps if "fixed" alone; needs its own pre-op pass.
 - **⇒ ENGINE-WORK ORDER (read FIRST before resuming per-kit retunes)** — remaining engine work ranked by
   BLAST RADIUS: items that change the shared math every override is calibrated against come before

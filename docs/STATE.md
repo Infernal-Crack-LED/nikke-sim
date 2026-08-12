@@ -20,7 +20,7 @@
 
 ## 1. Engine feature flags (live defaults)
 
-All engine env reads go through `ENV` (`sim.ts:37`), which is empty in the browser bundle — so **the
+All engine env reads go through `ENV` (`sim.ts`), which is empty in the browser bundle — so **the
 browser always runs these defaults**. Env overrides are for A/B testing only.
 
 | Flag                                                       | Live default                           | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Revert with                                                                                  | Provenance                            |

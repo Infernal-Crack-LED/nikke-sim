@@ -69,7 +69,7 @@ chargeMultiplier column, validating the per-unit values), plus all weapon-swap s
 Vesti: Tactical Upgrade is a custom post-charge volley (4 rockets over ~1s).
 **Fully classified (2026-07-26):** the datamined `input_type` field
 (`role.weapon.shot_detail.input_type`) is now the SSOT — `DOWN_Charge` = autofire,
-`UP` = release-fired (engine `isAutofireCharge()`, sim.ts:155). Tia is `UP` (release-fired).
+`UP` = release-fired (engine `isAutofireCharge()`, sim.ts). Tia is `UP` (release-fired).
 No per-unit flags needed; the old `charFixes.noBoltRecovery` exemptions were removed 2026-07-17
 as redundant (answered-questions U12).
 

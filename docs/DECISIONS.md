@@ -3385,6 +3385,32 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-08-11) Code citations name the SYMBOL, never the line — swept and gated (audit F1 /
+  phase 0.3).** 78 bare `file:line` citations rewritten across 28 overrides + 7 durable current-state
+  docs; `scripts/sweep-line-citations.ts --check` is now a `verify.sh` step so new ones cannot land.
+  - **The rot was near-total, and that is the argument.** Of ~40 distinct `sim.ts` lines cited in
+    override prose, nearly all had drifted onto unrelated code — `2568` ("flatDamage generates
+    gauge") had become a `const fdRampMul`, `1727` ("the hit counter adds hitsPerShot") the
+    burstDesc amp comment, `types.ts:368` (the ownBurstGate canonical example) a `shield` effect
+    type. So each was not merely imprecise but actively misleading, and every reader who followed
+    one paid a verification pass. Each replacement was resolved by finding what the PROSE describes
+    in today's engine, never by trusting the stale number.
+  - **What is deliberately NOT swept, and why.** CHANGELOG-class docs (`DECISIONS.md`,
+    `answered-questions.md`, `probe-runs.md`, the `closed/` archives), generated docs
+    (`unmodeled-entries-review.md` — it follows its source), and DATED session records
+    (`docs/handoffs/2026-08-10-…`). A dated findings doc's citation is a statement about the tree on
+    that date; rewriting it edits history rather than fixing a pointer, the same property that makes
+    CHANGELOG docs append-only. The 14 skipped files are LISTED BY NAME on every run rather than
+    silently dropped. Extending to them later is a map extension, not new tooling.
+  - **Prose whose SUBJECT is a bare citation is exempt** (the CONVENTIONS paragraph teaching the
+    rule, the QUEUE item) — a `KEEP` set in the script, because a codemod that "fixed" the
+    counter-example would delete the thing it teaches.
+  - **Safety properties.** Literal text substitution on raw bytes — overrides are never parsed and
+    re-serialized, which would reformat every file. Provenance labels re-derived and compared across
+    all 183 units before/after: ZERO changed, so the machine-read half of override prose
+    (`kit-status.json` `kitParse.provenance`) is untouched; the one mirror diff is the citation text
+    itself propagating into `frima`'s `unmodeled` entries. `verify.sh` green.
+
 - **(2026-08-11) Same-slot BLOCK ORDER is guarded by a PINNED CENSUS, not by a lint — because both
   orders are legitimate (faithfulness audit F2.5, phase 1 item 4).** `requiresTargetStatus` and
   `resourceGate` are evaluated at TRIGGER time; `targetStatus` and `resource` effects write at APPLY

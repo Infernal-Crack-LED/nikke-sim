@@ -528,7 +528,7 @@ override opts in.
 
 ### 8. `hitRatePct` → core-hit-rate lift — ✅ LIVE BY DEFAULT 2026-07-17
 
-Was engine-inert; now a live core-hit-rate lift (`HRCORE`, sim.ts:830 — a live Hit Rate shrinks the
+Was engine-inert; now a live core-hit-rate lift (`HRCORE`, sim.ts — a live Hit Rate shrinks the
 reticle → higher core fraction; `ENV.HRCORE=0/off` disables for A/B). jill measured core 0.20→0.90.
 OPEN refinements only (not a capability gap): asuka (base, AR/Fire — not asuka-wille)'s saturation
 bracket, quency-escape-queen's cadence + the +1.04 overshoot, slope validation via a measurement (e.g.
