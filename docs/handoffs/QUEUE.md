@@ -83,6 +83,26 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      second `convertExcess` carrier ever appears, revisit the deliberate MAX-on-refresh and the
      passive-trigger-only restriction; both are documented in `src/skills/types.ts`.
 
+- **⇒ B3 DPS RANK AUDIT (2026-08-11) — findings recorded, nothing enacted.**
+  [`docs/b3-dps-rank-audit.md`](../b3-dps-rank-audit.md), regenerate with
+  `npx tsx scripts/audit-b3-ranks.ts --md=docs/b3-dps-rank-audit.md --full`. Compares the sim's
+  Burst-3 DPS chart against the JP community damage lists (`docs/data/ranks/*.csv`, gitignored)
+  with `data/tsareena-build.json` as a weaker third opinion, and cross-checks each flag against
+  the measured board + `data/kit-status.json`. What it left open:
+  1. **`raven` is the single loudest disagreement** (community #4–5, sim #48, consistent across
+     all four control frameworks) and her kit-status already carries two candidate mechanisms —
+     a 22-frame bolt-recovery gap applied to an RL, and `chargeMultiplier: 0` against a datamined
+     `full_charge_damage` of 25000. Both are hypotheses; neither has been tested.
+  2. **15 of the 23 flagged units have NO recorded fight at all** (§7 of the report ranks them —
+     `neon-blue-ocean`, `raven`, `sugar`, `vesti-tactical-upgrade`, `laplace` lead). That is the
+     recording ask this audit generates; route it through `/hand-tune-batches`.
+  3. **`marciana-marine-study` and `ark-ranger-black` match the community almost exactly in the
+     Solo framework and drift 10–15 places under the supported comps** — a statement about how
+     the sim scales them with buffs, not about their solo output.
+  4. **Three community rows could not be scored** — `キリ` resolves to a Burst-2 (`quiry`) on a
+     list that is otherwise all Burst-3, and `プリバティ`/`シュガー`/`ファントム` carry no
+     宝もの marker while the sim runs the Treasure build.
+
 - **⇒ STANDING ASSUMPTION to confirm when convenient — the amp keys off an INTERNAL TARGETING ID,
   not the rendered English.** Owner ruling 2026-08-10 ("it'd be really dumb if it didn't"), which
   forgave the localization's stray article and tagged 6 units (`guilty` ×2, `nero`, `novel`,
