@@ -238,7 +238,11 @@ worktree + `/scientific-method` + owner, one at a time.
 2. **Cross-slug `targetStatus` producer/consumer census** at warn level (F2.2).
 3. **Extract validator structural checks into a pure importable function + tests** (F2.4) — this
    is the enabler for 1–2 and for the review sweep's own tooling.
-4. **Block-order guard** (F2.5): minimum viable = a lint that flags a gate-consuming block
+4. ✅ **LANDED 2026-08-11 — but NOT in the shape proposed here** (DECISIONS, Engine/data-architecture):
+   both orders are legitimate, so a lint has nothing to flag toward. The guard PINS the shipped order
+   in `scripts/tests/fixtures/block-order-pairs.json` instead, and covers `resource`/`resourceGate`
+   too — 32 of the 34 pairs are that family, not `targetStatus`. Original wording follows.
+   **Block-order guard** (F2.5): minimum viable = a lint that flags a gate-consuming block
    preceded-dependency on a same-slot inflicting block; or a per-unit test convention entry.
 5. Recovery-event emit/consume census script (F9) — generated table, same pattern as the
    primitive census.

@@ -56,45 +56,55 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 1. _(empty — owner fills)_
 
-> **Eligible candidates, for the owner to promote — not self-assigned (2026-08-11).** The three
-> remaining phase-0/1 items in the START HERE block below meet this queue's own bar: each is
-> unblocked and verifiable by a gate that already exists (`verify.sh` / a vitest fixture), with no
-> owner ruling and no recording needed. Suggested order: **[1.4] block-order guard**, then **[0.3]
-> citation sweep**, then **[1.1] `chargeCounter` engine half** (that last one edits
-> `src/engine/sim.ts` ⇒ isolated worktree + its own PR, constraint 8).
+> **(2026-08-11) The three phase-0/1 candidates this note used to offer are all DONE** — see the
+> block below. Nothing is queued; per the header, an empty queue means survey and propose rather
+> than invent work.
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒⇒⇒ START HERE (next session) — the three remaining PHASE 0/1 items of the faithfulness audit
-  (`docs/handoffs/2026-08-10-faithfulness-pass-audit.md`).** Phase 4 is DONE (graded batches 1–8 +
-  all six tail axes, 2026-08-11) and F3/F4 landed in the meantime, so what is left of phases 0–1 is
-  the list below. All three are **ordinary tooling/doc work — `verify.sh` + fixtures are the gate,
-  NOT `/scientific-method`** (they touch no damage-model value). Do them in this order; they are
-  independent, so a session that only lands one is still a clean session.
+- **⇒ PHASES 0–1 OF THE FAITHFULNESS AUDIT ARE COMPLETE (2026-08-11)** —
+  `docs/handoffs/2026-08-10-faithfulness-pass-audit.md`. Phase 4 was already done (graded batches
+  1–8 + all six tail axes) and F3/F4 had landed; the three items below were the remainder, and all
+  three landed together on branch `audit/phase-0-1`. Kept here only until that PR merges — then
+  DELETE this whole block, the WHY lives in DECISIONS (three 2026-08-11 Engine/data-architecture
+  entries). **What is left of the audit is phase 2**, the engine fixes ranked by blast radius: F5
+  the gauge-economy batch (ENGINE-WORK ORDER #4, the biggest remaining item), F6 the 5e self-status
+  trio, and phase 3's footage-gated per-unit backlog — all owner- or `/scientific-method`-gated,
+  unlike phases 0–1.
 
-  1. **[1.4] Block-order guard — do this FIRST; it is the only one with a live hazard.** Same-frame
-     block ORDER is load-bearing and nothing lints or tests it, so a reorder flips behaviour with a
-     green suite. Two known dependents: `phantom`'s gate-before-inflict, and `d-killer-wife`, whose
-     own caveat says "BLOCK ORDER IS LOAD-BEARING … do not reorder" (her burst inflicts
-     `targetStatus` 'Wipe Out' and a later block in the SAME array reads it on the SAME frame).
-     Minimum viable = a lint in `src/skills/validate-structural.ts` flagging a gate-consuming block
-     whose producer sits earlier in the same slot array, plus a fixture. Audit F2.5.
-  2. **[0.3] `sim.ts:<line>` citation sweep.** 62 bare line-number citations across **27 override
-     files**, plus **35 in `docs/`**. They rot silently on every engine edit and cost a verification
-     pass each time someone follows one. Convention to adopt: name the CODE BLOCK or symbol, not the
-     line (`sim.ts` `bossDefNow()`, not `sim.ts:1694`). Consider a lint so it cannot grow back — the
-     same shape as the guards the tail axes ship. Audit F1 / phase 0.3.
-  3. **[1.1] `chargeCounter` gate bypass — the ENGINE half.** `sim.ts` dispatches
-     `chargeCounter` activations straight to `applyEffect` (the `else if (b.trigger.kind ===
-'chargeCounter' && charged)` branch, ~line 4185), never through `applyBlock`, so `requiresCore`
-     / `fbGate` / `bossElementGate` / `resourceGate` / `requiresTargetStatus` / `everyN` / block
-     `delaySec` are all silently ignored on that trigger. The VALIDATOR half already landed and
-     hard-errors on the combination, so this is **behaviour-neutral today (zero gated
-     `chargeCounter` carriers)** — which is exactly why it is cheap now and expensive after the
-     first carrier. When it lands, **drop the validator rule in the same change** — the rule's own
-     comment in `validate-structural.ts` says so. Audit F2.1.
-     ⚠ This one edits `src/engine/sim.ts` ⇒ **CLAUDE.md constraint 8: isolated worktree + its own
-     PR**, never a direct edit on the shared main tree.
+  1. ✅ **[1.4] Block-order guard — LANDED 2026-08-11** (branch `audit/phase-0-1`; DECISIONS,
+     Engine/data-architecture). ⚑ **The audit's stated minimum viable was the WRONG shape and was
+     deliberately not built**: "flag a gate-consuming block whose producer sits earlier in the same
+     slot array" would be wrong half the time, because `phantom` DEPENDS on consumer-first and
+     `d-killer-wife` on producer-first. There is no order to lint toward, so the shipped guard PINS
+     the order instead (`blockOrderPairs`/`blockOrderCensus` →
+     `scripts/tests/fixtures/block-order-pairs.json` → `scripts/tests/block-order-guard.test.ts`;
+     regenerate only with `npx tsx scripts/lint-target-status.ts --update-block-order`).
+     ⚑ Also: the exposure is **34 pairs across 14 units**, and only 2 are the `targetStatus` family
+     the audit named — the rest are `resource`/`resourceGate`, which carries the identical
+     documented hazard. Behaviour-neutral.
+  2. ✅ **[0.3] `sim.ts:<line>` citation sweep — LANDED 2026-08-11.** 78 citations rewritten to name
+     the CODE BLOCK or symbol, across 28 overrides + 7 durable current-state docs, by the committed
+     reviewable-map codemod `scripts/sweep-line-citations.ts`; `--check` is now a `verify.sh` gate so
+     they cannot grow back. ⚑ **The rot was near-total, which is the finding**: of ~40 distinct
+     `sim.ts` lines cited in override prose, nearly all had drifted onto unrelated code (`2568`
+     "flatDamage generates gauge" → a `const fdRampMul`; `1727` "the hit counter adds hitsPerShot" →
+     the burstDesc amp comment), so every one of them was actively misleading, not merely imprecise.
+     ⚑ **Deliberately NOT swept, reported by name on every run**: CHANGELOG-class docs, generated
+     docs, and dated session records (14 files) — their citations describe the tree on the day they
+     were written. If the owner wants those too, it is a map extension, not new tooling.
+     Provenance labels verified unchanged across all 183 units (override prose is machine-read).
+  3. ✅ **[1.1] `chargeCounter` gate bypass — LANDED 2026-08-11** (owner-approved engine edit;
+     isolated worktree + branch `fix/chargecounter-gates`, cross-family `/code-review` CLEAN). Full
+     WHY in DECISIONS, Engine/data-architecture. ⚑ **This item's own description was partly stale
+     when written**: it listed the runtime gates as bypassed, but those had already bound since
+     2026-08-10 — what was actually still skipped is exactly what `CHARGE_COUNTER_BYPASSED` named,
+     `everyN` / `everyNOffset` / `delaySec`. The dispatch now routes through `applyBlock` via an
+     optional `phase` selector (this trigger fires ONE effect per activation — `block.effects` is an
+     ordered phase list for it), and the validator rule went with it in the same change as
+     instructed. Behaviour-neutral by census (all 12 carriers ungated); snapshot byte-unchanged;
+     `scripts/tests/engine/charge-counter-gates.test.ts` pins it, mutation-checked against the
+     pre-change engine.
 
   Everything else from that audit is either landed (F3 burst-skill amp — `burstDesc` scope tag, 51
   carriers; F4 enemy DEF ▼ — `bossDefNow`) or owner/`/scientific-method`-gated (F5 gauge economy —
@@ -159,7 +169,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 - **U28 rider-gauge class — DIRECTION RULED (2026-08-10, Tier 0 / D4), enactment still bundled.**
   `extraHitDamagePct` riders emit no `skillGauge` where an equivalent `flatDamage` instance would
-  (`sim.ts:4053` vs 2568/2605/3803); the omission is a DEFECT, not a modeling choice, so only WHEN
+  (`sim.ts `firePull()`, the `extraHitDamagePct` rider path` vs 2568/2605/3803); the omission is a DEFECT, not a modeling choice, so only WHEN
   is open. All four carriers (`modernia`, `nayuta`, `neon-blue-ocean`, `neon-vision-eye`) now record
   the ruling in their notes. Lands with the batched gauge cluster, whose corrections partially cancel
   — see ENGINE-WORK ORDER item 4 and `2026-08-10-gauge-economy-findings.md`.
@@ -315,7 +325,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     re-derived to 2.2%. Tail-plan §4b. **Six things are open:**
   * **⇒ OPPORTUNISTIC, on the next authorized touch of `kilo.json`:** her burst caveat still says
     "the engine has no HP-basis primitive (effectiveAtk is purely additive)". DECISIONS 2026-08-11
-    now carries the narrower true claim — `atkOfMaxHpPct` (sim.ts:1681) IS an HP-basis term, it is
+    now carries the narrower true claim — `atkOfMaxHpPct` (sim.ts `effectiveAtk()`) IS an HP-basis term, it is
     just additive and holder-global, so what is missing is a basis-SUBSTITUTION primitive. Reword
     the parenthetical to match. Not done here: it is a protected file and this pass had no other
     reason to edit it.
@@ -505,7 +515,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `decomposeCycles` floor was re-derived (its old +2.5s lock term is dead; `excess` now reads the
   refill-from-zero directly).
   Separately logged (do NOT bundle in): a general (non-liberalio) `skillGauge`-fires-twice-per-shot
-  pattern on any `shotFired`-triggered `flatDamage` rider (`sim.ts:2393`) — its correction direction is
+  pattern on any `shotFired`-triggered `flatDamage` rider (`sim.ts `applyEffect()`, the `flatDamage` case`) — its correction direction is
   gauge-DOWN, which would worsen these 4 comps if "fixed" alone; needs its own pre-op pass.
 - **⇒ ENGINE-WORK ORDER (read FIRST before resuming per-kit retunes)** — remaining engine work ranked by
   BLAST RADIUS: items that change the shared math every override is calibrated against come before

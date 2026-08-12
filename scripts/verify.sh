@@ -29,6 +29,9 @@ node -e "const d=JSON.parse(require('fs').readFileSync('data/characters.json','u
 say "target-status census (cross-slug producer/consumer names — a typo'd gate silently never opens)"
 npx tsx scripts/lint-target-status.ts
 
+say "code-citation convention (no bare file:line citations — they rot silently and then mislead)"
+npx tsx scripts/sweep-line-citations.ts --check
+
 say "runtime is prose-free (kit parser lives only in scripts/, never in src/ or web/src/)"
 test ! -f src/skills/parser.ts
 if grep -rnE "from ['\"].*(kit-parser|skills/parser)|parseSkill\(" src web/src --include='*.ts' --include='*.tsx'; then

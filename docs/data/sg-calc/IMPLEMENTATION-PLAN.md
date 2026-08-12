@@ -105,7 +105,7 @@ HRCORE already shrinks the reticle with hit rate. In px:
   `HR_CORE_SAT` free parameter (`circle10` vs `1`, currently an owner toggle) becomes a _derived_
   quantity: saturation is simply where `core_D ≥ circle_D_px(hr)`.
 - Cross-check against the pre-registered HRCORE predictions (jill AR +80.78%, chisato SMG +22.37%,
-  sim.ts:723–724) — must stay inside those CIs or better.
+  sim.ts `copiesToGradeCore()`) — must stay inside those CIs or better.
 - Land as an alternate `hrCoreMult` branch under the existing `HRCORE` flag + a sub-flag.
 - **STATUS (2026-07-17):** landed as `ENV.HRCORE_GEO`, but the board cannot currently test it on AR —
   no AR board comp carries live Hit Rate (`HRCORE=0` is byte-identical on all AR units), so this arm
@@ -158,7 +158,7 @@ All three workstreams produce **expected values**; the run-to-run spread is alre
 > These were written 2026-07-17, **two days before the δ-offset cone landed as the live default**
 > (2026-07-19), which silently mooted two of them. Resolved with that context in hand.
 
-- **A + B → RETIRED as SUPERSEDED-BY-CONE.** Code-verified: `acrForHR` (sim.ts:997–1011) returns early
+- **A + B → RETIRED as SUPERSEDED-BY-CONE.** Code-verified: `acrForHR` (sim.ts) returns early
   via `offsetCoreProb` whenever `CONE_DELTA` is on, so AR/SMG/SG **never reach** `acrFor` (A / `ACR_GEO`)
   or `hrCoreMultGeo` (B / `HRCORE_GEO`); and `ACCURACY_CIRCLE_SCALE` covers only `{AR, SMG, SG}`, so
   MG/SR/RL no-op through the geometry too. **Both arms are unreachable under the shipped default.** They

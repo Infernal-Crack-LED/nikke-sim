@@ -273,6 +273,27 @@ the single source for "which units use primitive X" — don't restate those coun
 and (c) LINTS `open-questions.md` for a **resolved question still filed under UNANSWERED**. Matching is
 structural — prose mentions in `note`/`caveats`/`unmodeled` deliberately don't count as usage.
 
+**Cite the SYMBOL, never the line — and it is now gated.** A `sim.ts:1694`-style pointer rots on the
+next engine edit and then actively misleads; write the code block or symbol instead (`sim.ts`
+`bossDefNow()`). Enforced by `scripts/sweep-line-citations.ts --check` in `verify.sh` over override
+prose + durable current-state docs. The same script sweeps existing ones (`--write`) via a reviewable
+map. Deliberately NOT swept, and reported by name on every run: CHANGELOG-class docs, generated docs,
+and dated session records (`docs/handoffs/2026-08-10-…`) — their citations describe the tree on the
+day they were written, so rewriting one edits history rather than fixing a pointer. Prose whose
+SUBJECT is a bare citation (this paragraph, the QUEUE item) is exempted by name in the script's
+`KEEP` set.
+
+**When BOTH answers are legitimate, PIN the shipped one — don't lint for a "right" one.** Some
+authoring invariants have no correct value, only a load-bearing one: same-slot block ORDER is the
+worked example (`phantom` needs gate-before-inflict, `d-killer-wife` needs inflict-before-gate, and
+a lint that preferred either would be wrong half the time). A rule cannot express that; a pinned
+census can. The shape: a pure exported census function → a committed fixture → a test asserting
+parity, so a change is a red test naming the unit instead of a silent behaviour flip
+(`scripts/tests/fixtures/block-order-pairs.json`, regenerated only via
+`scripts/lint-target-status.ts --update-block-order`). **Such a fixture must be mutation-verified in
+its own test file** — assert that perturbing a real input changes the census — otherwise a fixture
+that has quietly stopped seeing anything passes by matching nothing.
+
 **Override prose is current-state — it describes the unit AS MODELED TODAY, nothing else** (owner
 ruling 2026-07-22). An override's `note`/`caveats` record what is implemented, what is deliberately
 unmodeled, what is measurement-gated, and the evidence tier behind each live value. They carry **no

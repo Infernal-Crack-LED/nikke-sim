@@ -129,7 +129,7 @@ confidences, why the decision landed where it did, owner action items, and the H
   owner's measured landing, so the faithful landing mechanically worsens ≤1.0 readings (4 past the
   0.03 revert threshold), moves 27 non-SG units via the SG-landing→burst-gauge coupling, and breaks
   one measured-exact FB count (N5 11→10) — **a measured-truth contradiction that localizes to the
-  landing×gauge composite (sim.ts:2658 scales gauge per landed pellet; gauge values were calibrated
+  landing×gauge composite (sim.ts `firePull()`, the SG per-pellet `gauge` fraction scales gauge per landed pellet; gauge values were calibrated
   against the inflated landing), flagged by the blind judge as the headline reservation.** The
   validation instrument itself is uncalibrated for this change (Q3): the board cannot confirm a
   landing fix while every SG override embeds the old landing. **Owner action items (the promotion
@@ -359,7 +359,7 @@ probes/burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water, a
   re-derive or re-cite it. Full record: `docs/DECISIONS.md` 2026-07-29 "confirmed true" entry.
 - **2026-07-29 — Dot-tick burst-gauge over-count from concurrent stacking DoT instances (found while
   auditing the burst-gen ranking chart): DECISION = LOG (not Implement).** Claim: `skillGauge()` fires
-  unconditionally on every live dot instance's tick (`src/engine/sim.ts:3303`), so a unit whose DoT is
+  unconditionally on every live dot instance's tick (`src/engine/sim.ts's DoT tick loop`), so a unit whose DoT is
   modeled as a stacking/self-refreshing effect (a new independent instance per re-trigger, e.g. raven's
   S1 on `shotFired`) generates N× the intended burst gauge when N instances are concurrently live —
   purely an artifact of how many parallel dot objects encode the damage, not a real per-unit trigger
@@ -478,7 +478,7 @@ probes/burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water, a
   G's genuinely ambiguous 13-14 video read). H0c (liberalio trigger-count semantics) was directly
   tested via `DBG_GAUGE` and found 1:1 with her `hitsPerShot=1` datamine — refuted as the mechanism,
   though it surfaced a SEPARATE, general (not liberalio-specific) `skillGauge`-fires-on-every-
-  `shotFired`-triggered-`flatDamage`-rider double-crediting pattern (`sim.ts:2393`), logged as its own
+  `shotFired`-triggered-`flatDamage`-rider double-crediting pattern (`sim.ts `applyEffect()`, the `flatDamage` case`), logged as its own
   candidate needing an independent pre-op pass (direction is gauge-DOWN if "fixed", which would worsen
   these 4 comps — do not bundle it in).
   **VERDICT: general, board-wide charge-B3 gauge-fill-tempo gap — NOT liberalio-specific, NOT a narrow
@@ -574,7 +574,7 @@ scripts/verify.sh` is RED on 3 asserts in `scripts/tests/units/k.test.ts` — th
   the kit's "Attack speed ▼90%" applies to the swap weapon's own NOMINAL rate (base SMG's datamined
   `rate_of_fire` 1440 RPM × 0.10 = 144 RPM), not to the already-frame-quantized 20.0/s effective SMG
   rate the override had scaled instead (`20.0 × 0.10 = 2`, the derivation this file's main entry
-  originally logged). Run through the engine's own `quantizeToFrames` (sim.ts:224, MEASURED/validated
+  originally logged). Run through the engine's own `quantizeToFrames` (sim.ts `quantizeToFrames()`, MEASURED/validated
   2026-07-23 against real ammo-counter footage for the general mechanism — the identical formula every
   weapon's nominal→effective cadence already uses, and independently pinned by
   `scripts/tests/engine/weapon-swap.test.ts`/`hits-per-shot.test.ts` for the SMG case): 144 RPM = 2.4
