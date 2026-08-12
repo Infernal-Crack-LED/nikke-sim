@@ -30,11 +30,11 @@
 //      ever have caught it. That defect class is a MODELING JUDGEMENT, reachable only by the
 //      per-unit read.
 //
-// WHY THIS EXISTS. Axis 1 audits percent MAGNITUDES and is explicitly blind to everything else —
-// "for 10 sec", "for 3 round(s)", "stacks up to 5 time(s)", "after 12 normal attack(s)". That tier
-// is not cosmetic: it held a real defect (`d-killer-wife`'s round-count Pierce, resolved
-// 2026-08-11), because a buff with the wrong WINDOW is wrong for the whole fight even when its
-// magnitude is perfect.
+// WHY IT WAS PROPOSED. Axis 1 audits percent MAGNITUDES and is explicitly blind to everything else
+// — "for 10 sec", "for 3 round(s)", "stacks up to 5 time(s)", "after 12 normal attack(s)". The
+// reasoning was that a buff with the wrong WINDOW is wrong for the whole fight even when its
+// magnitude is perfect, which is true — but "wrong window" is not the same failure as "window
+// absent", and only the second is mechanically detectable. See the STATUS block above.
 //
 // WHY IT IS TYPED, AND WHY A PRESENCE CHECK WOULD BE WORTHLESS HERE. Axis 1 measured the collision
 // problem directly: 281 of 282 integer magnitudes appear somewhere in their override by accident,

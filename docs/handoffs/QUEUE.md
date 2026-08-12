@@ -253,7 +253,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   bundle as a whole was not re-extracted. A blind-rebuild reviewer reads it as the engine, so a
   re-extract should precede the next blind-rebuild/`/audit-kit` run that uses it.
 
-- **⇒ FAITHFULNESS PASS phase-4 TAIL — entry doc landed, AXES 1 + 2 CLOSED. Start at
+- **⇒ FAITHFULNESS PASS phase-4 TAIL — DONE, ALL SIX AXES CLOSED. Start at
   [2026-08-11-faithfulness-tail-plan.md](2026-08-11-faithfulness-tail-plan.md).** The graded slice
   is complete (batches 1–8, all 45 board-graded units); the tail is the 138 overrides with no board
   reading, worked by generated census rather than per-unit reads. Axis 1 (kit magnitudes vs the
@@ -292,11 +292,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     2026-08-11 ruling made `unmodeled` the authoritative index of what the model SKIPS, that content
     belongs in `note`/`caveats`. Not done here: graded unit, protected file, and this pass had no
     other reason to edit it.
-  * **Axes A3–A6 proposed, none built** — non-percent quantity accounting (the tier that held the
-    `d-killer-wife` round-count defect); "fixed at" vs the clamp StatKeys; held-primitive carrier
-    scan; and READ (do not rebuild) `scripts/census-synergy-events.ts`. Tail-plan §4. Both closed
-    axes found near-zero yield, which is itself the signal — build these to close the question, not
-    expecting defects.
+  * ~~Axes A3–A6~~ **ALL CLOSED 2026-08-11 — the phase-4 TAIL IS DONE** (all six axes built and
+    dispositioned or explicitly declined; the stop rule is met without opening 138 files). A4
+    ("fixed at" vs the clamp StatKeys): 18 lines, all accounted. A5 (held primitives): found
+    `addStack` documented as an unbuilt gap while it had shipped with 7 carriers — stale entry
+    removed. A6 (`--pairing`): zero false emits roster-wide. **A3 (non-percent quantities) was
+    built and DECLINED** — it fails the calibration rule ~3:1, has poor recall, and its stated
+    justification was false: replaying it against the pre-fix `d-killer-wife` reads CLEAN, because
+    that line was correctly filed under `unmodeled` all along and the 2026-08-11 fix was a
+    DISPOSITION change, not a repaired omission. Tail-plan §4b3–§4b6 carries the four method
+    lessons. **No axis found a defect in what the overrides ENCODE** — both real findings were in
+    the docs ABOUT them.
   * **Axis 1's own carried follow-up** — integer magnitudes are near-auto-clean (281 of 282 collide
     with a duration/count elsewhere in the file), so the axis discriminates almost only on decimals.
     Disclosed in the doc and by `--skipped`; tightening the matcher is deferred because it needs its
