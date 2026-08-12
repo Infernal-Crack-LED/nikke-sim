@@ -327,12 +327,16 @@ regression snapshot did not move, because the new path has identical semantics (
 same gate position, expiry checked at read). So the registry now IS exercised by a graded comp, but only
 in its single-status, same-unit, same-frame form. Everything below is what that carrier does NOT reach:
 
-- **`chargeCounter` gate routing — ✅ FIXED 2026-08-10.** The dispatch now runs `blockGatesPass`
-  (the abort-gates extracted from `applyBlock`), so all 8 runtime gates bind on this trigger
-  (`scripts/tests/engine/block-gates.test.ts` chargeCounter cases; behavior-neutral — zero gated
-  carriers existed, regression byte-identical). Still bypassed BY DESIGN of the one-phase-per-
-  activation dispatch: `everyN` / `everyNOffset` / block `delaySec` — `validate-overrides.ts`
-  errors on authoring those with a `chargeCounter` trigger.
+- **`chargeCounter` gate routing — ✅ FULLY CLOSED 2026-08-11.** The dispatch routes through
+  `applyBlock` like every other trigger, so the runtime gates (2026-08-10, `blockGatesPass`) AND
+  `everyN` / `everyNOffset` / block `delaySec` all bind. What made it possible is `applyBlock`'s
+  optional `phase` argument: this trigger fires ONE effect per activation (`block.effects` is an
+  ordered phase list, not a set), which is why it could not route before. The old
+  `validate-overrides.ts` error on `everyN`/`delaySec` + `chargeCounter` is REMOVED — authoring
+  them is now legal. Phase advances only when the activation LANDED, so a suppressed activation
+  re-offers the same phase instead of skipping it. Behaviour-neutral (all 12 carriers ungated,
+  regression byte-identical); pinned by `scripts/tests/engine/charge-counter-gates.test.ts`, whose
+  4 new-behaviour assertions were mutation-checked to fail on the pre-change engine.
 - **A typo'd status name fails SILENTLY** — matching is exact and case/whitespace-sensitive, and the
   failure mode is a block that never fires (a silent under-model, the exact bug class this primitive
   exists to prevent). Note `d-killer-wife` now depends on two string literals agreeing across two
@@ -528,7 +532,7 @@ override opts in.
 
 ### 8. `hitRatePct` → core-hit-rate lift — ✅ LIVE BY DEFAULT 2026-07-17
 
-Was engine-inert; now a live core-hit-rate lift (`HRCORE`, sim.ts:830 — a live Hit Rate shrinks the
+Was engine-inert; now a live core-hit-rate lift (`HRCORE`, sim.ts — a live Hit Rate shrinks the
 reticle → higher core fraction; `ENV.HRCORE=0/off` disables for A/B). jill measured core 0.20→0.90.
 OPEN refinements only (not a capability gap): asuka (base, AR/Fire — not asuka-wille)'s saturation
 bracket, quency-escape-queen's cadence + the +1.04 overshoot, slope validation via a measurement (e.g.

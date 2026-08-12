@@ -70,7 +70,7 @@ behavior) and **per-kit priors** (apply as a starting guess, then verify per uni
    "parser skipped …" notes.
    **DoT-OVERLAP encoding (2026-07-16, Mihara batch, Fable-confirmed in-engine):** the engine APPENDS
    a new independent DoT instance every time a `dot` block fires and NEVER refreshes/dedups/replaces
-   (sim.ts:1026 `dots.push`, ticks independently to each instance's own `endFrame` at 1583-1597). So a
+   (sim.ts `dots.push`, ticks independently to each instance's own `endFrame` at 1583-1597). So a
    long-`durationSec` DoT on a REPEATING trigger MULTIPLIES: a dur-60 DoT re-applied every ~16s accrues
    ~3.7 concurrent instances → ~3.7× over-count. To model a CONTINUOUS / maintained sustained DoT at
    steady-state, encode it as ONE `passive` instance with `durationSec` ≥ the fight length (or ensure any

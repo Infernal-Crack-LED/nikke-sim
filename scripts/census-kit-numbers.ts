@@ -1,0 +1,626 @@
+// census-kit-numbers.ts — roster-wide accounting of every MAGNITUDE the kit text prints
+// against the override that models the unit. The phase-4 TAIL instrument
+// (docs/handoffs/2026-08-11-faithfulness-tail-plan.md).
+//
+//   npx tsx scripts/census-kit-numbers.ts                 # SILENT findings (the worklist)
+//   npx tsx scripts/census-kit-numbers.ts --prose         # + the prose-only tier
+//   npx tsx scripts/census-kit-numbers.ts --all           # every unit, both tiers, with counts
+//   npx tsx scripts/census-kit-numbers.ts --tail          # restrict to units with no board reading
+//   npx tsx scripts/census-kit-numbers.ts --graded        # restrict to the 45 board-graded units
+//   npx tsx scripts/census-kit-numbers.ts --skipped       # what the census could NOT see
+//   npx tsx scripts/census-kit-numbers.ts --json          # machine-readable rows
+//   npx tsx scripts/census-kit-numbers.ts --check         # exit 1 on any SILENT finding
+//   npx tsx scripts/census-kit-numbers.ts --explain <slug> # one unit: kit line + prose + encoded values
+//
+// WHY THIS EXISTS. The faithfulness sweep's per-unit reads (batches 1-8) covered the 45
+// board-graded units; the remaining ~140 have no ratio to explain and no comp to check inertness
+// against, so a per-unit read buys much less there and costs the same. What a tail unit CAN still
+// be caught on, with no board at all, is a kit line the model never actually encodes.
+//
+// THE ONE QUESTION THIS ASKS — and it is deliberately narrow: WHERE does the digit string the kit
+// prints appear in the unit's override file? Two tiers, and the second is the interesting one:
+//
+//   SILENT     — the magnitude appears nowhere in the file: not in an encoded block, not in
+//                `unmodeled`, not in `note`/`caveats` prose. Rare and loud.
+//   PROSE-ONLY — it appears ONLY in `note`/`caveats`: the author saw the line, reasoned about it
+//                in prose, and then neither encoded it nor filed it under `unmodeled`. The
+//                structured record — the half that `kit-status.json` and
+//                `gen-unmodeled-review.ts` read, and the half a reviewer greps — does not carry
+//                it at all.
+//
+// WHY THE PROSE-ONLY TIER IS THE WORKLIST (the historical positive control, checked 2026-08-11).
+// `red-hood`'s Red Wolf "Charge Speed ▲ 100.8%" was found BY HAND during the M8 pass and turned
+// out never to have been modelled — only implied by a swap clamp. Replaying this census against
+// her pre-fix override (`git show 94de2eb2^`) puts her squarely in PROSE-ONLY, not SILENT: 100.8
+// appears exactly once in that file, inside a `note` sentence arguing about the charge window.
+// So the one KNOWN defect of this class would have been caught here — by the prose-only tier. A
+// magnitude that a note discusses and no block encodes is the shape of a line that got reasoned
+// about and then lost, which is why this tier is worth reading unit by unit even though it is the
+// noisier of the two.
+//
+// WHAT A CLEAN ROW DOES *NOT* MEAN. A present number is not evidence of correct encoding — it may
+// sit on the wrong stat, the wrong target, the wrong duration, or in a `note` sentence saying the
+// opposite. This census can only ever falsify "the model never saw this line". Every stronger
+// claim needs the per-unit read. It is a triage instrument, not a verdict.
+//
+// CALIBRATION (2026-08-11, the reason to trust the signal). Run against the 45 units the sweep
+// already read line-by-line, the SILENT tier fires on exactly ONE line roster-wide — `crown`'s
+// heal magnitude, an HP-pool value that is inert by design. A sweep that already found these
+// units clean agrees with the census on 44 of 45, which is what makes a hit in the untouched tail
+// worth opening a file for. The already-reviewed slice IS the labeled set here (the SUFFICIENCY
+// rule): no new ground truth was generated to validate this instrument.
+//
+// WHAT IT CANNOT SEE — printed by `--skipped`, never silently swallowed:
+//   * Non-percent quantities. Durations ("for 10 sec"), round/shot counts ("for 1 shot"), stack
+//     caps ("stacks up to 5 time(s)") and ammo counts carry no `%` and are OUT OF SCOPE. A whole
+//     class of real defects (`d-killer-wife`'s round-count Pierce) is therefore invisible here.
+//   * Purely qualitative lines — "Gain Pierce", "Pellet count is fixed at 1", mode swaps. They
+//     print no magnitude, so they cannot be accounted numerically at all.
+//   * A magnitude the kit prints and the override encodes in a TRANSFORMED form: split per hit,
+//     converted to another unit, folded into a clamp, or time-averaged (the F7 ramp bakes). Those
+//     read as accounted whenever the source number also appears in prose, and as SILENT when it
+//     does not — so a SILENT hit is a question to open the file on, not an accusation. The live
+//     example is `power` skill2: her kit's "Reloads 100% of the magazine" IS encoded, as
+//     `instantReload fraction: 1`, so the digit string "100" never appears and she reads SILENT.
+//     A percent stored as a fraction is invisible to a digit-string matcher by construction.
+//   * INTEGER magnitudes, very nearly as a class. 282 of 1259 kit magnitudes print no decimal
+//     point, and 281 of those 282 appear as a bare digit token SOMEWHERE in their override —
+//     collided with a duration, a stack cap, a trigger count. So an integer magnitude is
+//     effectively auto-clean and this census's discriminative power sits almost entirely on
+//     DECIMAL magnitudes, which are distinctive enough not to collide. The single integer that
+//     survives roster-wide is `power`'s "100", the live SILENT finding. Do not read a clean
+//     integer line as evidence of anything; `--skipped` restates this at every run.
+//   * Any unit whose slug has no `data/characters.json` entry, or whose slot ships empty kit text.
+//
+// `--check` IS WIRED INTO verify.sh (since 2026-08-11) and is the standing guard for the OWNER
+// RULING that produced it: "record all unmodeled behavior as unmodeled rather than leaving it in
+// prose". The four SILENT lines that blocked the wiring are dispositioned — three were inert heal
+// magnitudes, now filed under `unmodeled` across the roster
+// (scripts/backfill-unmodeled-heal-magnitudes.ts), and the fourth is `power`, a matcher blind spot
+// recorded in ACCEPTED_SILENT. From here a kit magnitude that appears nowhere in its override
+// fails the gate, so the class cannot grow back silently.
+//
+// NOTE what the gate does NOT enforce: the PROSE-ONLY tier stays advisory, because a magnitude
+// living only in prose is usually a legitimate TRANSFORMATION (see §2b of the tail plan) rather
+// than a gap — every one of the 32 remaining prose-only units was checked and is modelled in
+// transformed form. Gating that tier would demand `unmodeled` entries for lines that ARE modelled.
+//
+// Self-validating fixture: scripts/tests/census-kit-numbers.test.ts pins the discriminating cases
+// (a condition threshold is not a magnitude; prose-only vs silent; the calibration bound on the
+// graded slice) so a later refactor cannot loosen the matcher without going red.
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+
+const ROOT = new URL('../', import.meta.url);
+const OVERRIDES_DIR = new URL('src/skills/overrides/', ROOT);
+const CHARACTERS = new URL('data/characters.json', ROOT);
+const KIT_STATUS = new URL('data/kit-status.json', ROOT);
+
+export const SLOTS = ['skill1', 'skill2', 'burst'] as const;
+export type Slot = (typeof SLOTS)[number];
+
+// A magnitude is a percent-suffixed number. Everything else the kit prints is out of scope (see
+// the header) — narrow on purpose: percent magnitudes are what the damage model carries, and
+// they are distinctive enough (9.55, 435.6, 1365.92) that presence/absence is a real signal.
+export const MAGNITUDE = /(\d+(?:\.\d+)?)\s*%/g;
+
+// Condition clauses print a percent that is a THRESHOLD, not a magnitude the model owes an
+// encoding for — `chisato`'s "Only when above 70%: ATK ▲ 53.69%" owes 53.69, not 70. They are
+// STRIPPED from the line (not the whole line dropped) so the magnitude beside them still counts,
+// and every strip is reported by `--skipped` so the filter can never quietly widen.
+//
+// HP gates and resource gates only. A PROC CHANCE ("There is a 30% chance of activating") is
+// deliberately NOT stripped: it is a real quantity a model can get wrong — treating a 30% proc as
+// always-on is an over-credit — so it stays auditable like any other magnitude.
+export const CONDITION_CLAUSES: RegExp[] = [
+  /only when (?:above|below)\s*\d+(?:\.\d+)?%/gi,
+  // "HP falls below 90%", "HP drops to 90% or below", "own HP dips below 40%"
+  /(?:own |the caster's |self )?hp (?:dips|falls|drops)\s*(?:below|under|to)\s*\d+(?:\.\d+)?%(?:\s*or (?:below|above|lower|higher))?/gi,
+  // "Activates when above 80% HP", "with over 25% HP", "when below 50% HP"
+  /(?:above|below|over|under)\s*\d+(?:\.\d+)?%\s*hp/gi,
+  // "while this unit's HP is at 90% or above", "HP is above 50%"
+  /hp is\s*(?:at\s*)?(?:above|below|over|under)?\s*\d+(?:\.\d+)?%(?:\s*or (?:above|below|higher|lower))?/gi,
+  // "the HP of anyone in the squad is lower than 15%", "HP percentage is lower than 60%"
+  /(?:is|are)\s*(?:lower|higher|less|greater) than\s*\d+(?:\.\d+)?%/gi,
+  // "the HP of an adjacent ally drops to 90% or below" — same gate with a subject in between
+  /hp of [^.,]{1,40}?\s*(?:dips|falls|drops)\s*(?:below|under|to)\s*\d+(?:\.\d+)?%(?:\s*or (?:below|above|lower|higher))?/gi,
+  // resource gates: "when battery reaches 100%", "when Over Energy reaches 100%"
+  /reaches\s*\d+(?:\.\d+)?%/gi,
+  // resource gates, the other direction: "Deactivation condition: When the battery drops to 0%"
+  /(?:battery|energy|gauge)\s*(?:drops?|falls?|dips)\s*to\s*\d+(?:\.\d+)?%/gi,
+  // "above 50% of max HP" and friends
+  /(?:above|below)\s*\d+(?:\.\d+)?%\s*(?:of )?(?:max )?hp/gi,
+];
+
+export function stripConditions(line: string): {
+  text: string;
+  stripped: string[];
+} {
+  const stripped: string[] = [];
+  let text = line;
+  for (const re of CONDITION_CLAUSES) {
+    text = text.replace(new RegExp(re.source, re.flags), (m) => {
+      stripped.push(m);
+      return ' ';
+    });
+  }
+  return { text, stripped };
+}
+
+/**
+ * Every auditable line of a slot's kit text, with the '■' block marker removed.
+ *
+ * HEADER LINES ARE INCLUDED, and that is load-bearing. A '■' line usually carries only the
+ * trigger and target clause, so an early version of this census skipped the lot — a silent hole a
+ * naive grep caught immediately: 40 header lines print a percent, and four of them print a real
+ * BUFF MAGNITUDE on the same line as the trigger (`aria` skill1 "Critical Damage ▲ 26.99%" and
+ * skill2 "Critical Rate ▲ 7.03%", `neon` (SG/Fire, not the two variants) skill2 "Critical Rate ▲ 45.93% for 2 shots", `yan`
+ * skill1 "Charge Damage ▲ 21.55%"). Dropping them would have made this census structurally blind
+ * to exactly the units whose whole skill is one line — the opposite of what it is for. The
+ * threshold percents that share those lines are handled by CONDITION_CLAUSES, not by discarding
+ * the line.
+ */
+export function auditableLines(kitText: string): string[] {
+  return kitText
+    .split('\n')
+    .map((l) => l.replace(/^\s*■\s*/, '').trim())
+    .filter((l) => l.length > 0);
+}
+
+export function magnitudes(text: string): string[] {
+  return [...text.matchAll(MAGNITUDE)].map((m) => m[1]);
+}
+
+/** Every numeric token in a blob, as the exact digit strings it prints. */
+function numberTokens(blob: string): Set<string> {
+  return new Set([...blob.matchAll(/\d+(?:\.\d+)?/g)].map((m) => m[0]));
+}
+
+/**
+ * HP-restore lines. Their magnitude is inert BY DESIGN — the sim has no HP pool, so a heal's
+ * amount has no engine consumer and only the recovery EVENT is board-relevant (audit F9; the
+ * 5-carrier lifesteal non-emitter ruling, DECISIONS 2026-08-10). They are two thirds of every
+ * finding this census produces, and reporting them beside real damage lines buries the worklist —
+ * so they are CLASSIFIED, not filtered: still counted, still listed under their own heading,
+ * never silently dropped.
+ *
+ * Deliberately keyed on the restore VERB, so a magnitude that merely mentions HP as a BASIS stays
+ * in the worklist: `kilo`'s "damage equal to 1150.84% of the ATK, which is calculated from 5% of
+ * final Max HP" and `soline-frost-ticket`'s "Max HP ▲ number of tickets * 10%" are stat lines,
+ * not heals.
+ */
+export const HEAL_LINE = /\b(?:recovers?|restores?|heals?)\b/i;
+
+/**
+ * The override's PROSE fields — the ones whose numbers are discussion, not encoding. Everything
+ * else in the file counts as structured (see auditUnit).
+ *
+ * `kitDescription` (10 units) belongs here and is easy to miss: it is a human-readable kit summary
+ * that QUOTES magnitudes ("Reload Speed ▲36.96% … for 10s", "528.97%-of-final-ATK missile").
+ * Treating it as structured would mask any line whose magnitude is quoted ONLY there — a latent
+ * silent hole on exactly those 10 units. Today it changes nothing (measured: moving it to the
+ * structured side leaves every FINDING identical — 0 of 183 rows change tier — because every
+ * magnitude those summaries quote
+ * is also encoded in a real block or restated in note/caveats), so this is future protection, not
+ * a live correction. The fixture pins the classification so it cannot drift back.
+ */
+export const PROSE_FIELDS = ['note', 'caveats', 'kitDescription'] as const;
+
+/** Top-level fields that are neither prose nor block arrays — new ones should be reviewed once. */
+const KNOWN_STRUCTURED = new Set([
+  'slug',
+  'skill1',
+  'skill2',
+  'burst',
+  'unmodeled',
+  'resources',
+  'modes',
+  'charFixes',
+  'hasPierce',
+  'pierceModes',
+  'burstSnapshotsPreFb',
+  'consolidation',
+]);
+
+/**
+ * SILENT findings that are KNOWN false positives of the digit-string method, each with the reason
+ * it cannot be matched. `--check` ignores exactly these and fails on anything else, which is what
+ * lets the gate run green while staying meaningful.
+ *
+ * Keep this list tiny and specific. An entry here is a claim that the line IS modelled and the
+ * matcher simply cannot see it — never a way to silence a finding nobody wants to deal with.
+ */
+export const ACCEPTED_SILENT: Array<{
+  slug: string;
+  value: string;
+  why: string;
+}> = [
+  {
+    slug: 'power',
+    value: '100',
+    why: 'skill2 "Reloads 100% of the magazine" IS encoded, as instantReload fraction: 1 — a percent stored as a fraction is invisible to a digit-string matcher',
+  },
+];
+
+export interface LineFinding {
+  slot: Slot;
+  line: string;
+  missing: string[];
+  kind: 'heal' | 'other';
+}
+
+export interface Row {
+  slug: string;
+  graded: boolean;
+  silent: LineFinding[];
+  proseOnly: LineFinding[];
+  /** Loudness: what this row could not account for. */
+  emptySlots: Slot[];
+  conditionsStripped: string[];
+  linesWithoutMagnitude: number;
+  /**
+   * Loudness: top-level override fields this census has never been reviewed against. They are
+   * counted as STRUCTURED (the safe default for encoded data), but a future PROSE field landing
+   * here would silently weaken the prose-only tier, so it is surfaced rather than assumed.
+   */
+  unreviewedFields: string[];
+}
+
+export interface Census {
+  rows: Row[];
+  /** Loudness: override files the census could not read a kit for at all. */
+  noKitText: string[];
+  /** Loudness: override slugs absent from kit-status.json (graded/tail unknown). */
+  noStatusEntry: string[];
+}
+
+export function auditUnit(
+  slug: string,
+  skills: Record<string, string | undefined>,
+  overrideRaw: string,
+  graded: boolean
+): Row {
+  const override = JSON.parse(overrideRaw) as Record<string, unknown>;
+  // Whole-file tokens decide SILENT; structured-only tokens decide PROSE-ONLY.
+  //
+  // The structured side is EVERYTHING EXCEPT the prose fields — a deny-list, not an allow-list.
+  // An allow-list of `skill1/skill2/burst/unmodeled` was the first cut and it is a latent
+  // false-positive source: overrides also encode values in `charFixes` (6 units), `resources`
+  // (24), `modes` (8), `consolidation`, `pierceModes`, `hasPierce`, `burstSnapshotsPreFb`, and the
+  // schema has plainly been growing faster than any enumeration here would be maintained. A
+  // magnitude encoded ONLY in one of those would have been reported as missing. Deny-listing means
+  // a newly-added encoded field is in scope the day it appears.
+  const fileTokens = numberTokens(overrideRaw);
+  const { ...structuredOnly } = override;
+  for (const f of PROSE_FIELDS) {
+    delete structuredOnly[f];
+  }
+  const structured = numberTokens(JSON.stringify(structuredOnly));
+
+  const row: Row = {
+    slug,
+    graded,
+    silent: [],
+    proseOnly: [],
+    emptySlots: [],
+    conditionsStripped: [],
+    linesWithoutMagnitude: 0,
+    unreviewedFields: Object.keys(override).filter(
+      (k) =>
+        !KNOWN_STRUCTURED.has(k) &&
+        !(PROSE_FIELDS as readonly string[]).includes(k)
+    ),
+  };
+
+  for (const slot of SLOTS) {
+    const kitText = skills[slot] ?? '';
+    if (!kitText.trim()) {
+      row.emptySlots.push(slot);
+      continue;
+    }
+    for (const line of auditableLines(kitText)) {
+      const { text, stripped } = stripConditions(line);
+      row.conditionsStripped.push(...stripped);
+      const values = magnitudes(text);
+      if (values.length === 0) {
+        row.linesWithoutMagnitude++;
+        continue;
+      }
+      const kind = HEAL_LINE.test(line) ? 'heal' : 'other';
+      const silent = values.filter((v) => !fileTokens.has(v));
+      if (silent.length > 0) {
+        row.silent.push({ slot, line, missing: silent, kind });
+        continue;
+      }
+      const proseOnly = values.filter((v) => !structured.has(v));
+      if (proseOnly.length > 0) {
+        row.proseOnly.push({ slot, line, missing: proseOnly, kind });
+      }
+    }
+  }
+  return row;
+}
+
+export function census(): Census {
+  const characters = JSON.parse(readFileSync(CHARACTERS, 'utf8')).characters as
+    Record<string, { skills?: Record<string, string> }> | undefined;
+  const status = JSON.parse(readFileSync(KIT_STATUS, 'utf8')).units as Record<
+    string,
+    { board?: unknown }
+  >;
+  const rows: Row[] = [];
+  const noKitText: string[] = [];
+  const noStatusEntry: string[] = [];
+
+  for (const file of readdirSync(OVERRIDES_DIR).sort()) {
+    if (!file.endsWith('.json')) {
+      continue;
+    }
+    const slug = file.replace(/\.json$/, '');
+    const skills = characters?.[slug]?.skills;
+    if (!skills) {
+      noKitText.push(slug);
+      continue;
+    }
+    if (!status[slug]) {
+      noStatusEntry.push(slug);
+    }
+    rows.push(
+      auditUnit(
+        slug,
+        skills,
+        readFileSync(new URL(file, OVERRIDES_DIR), 'utf8'),
+        Boolean(status[slug]?.board)
+      )
+    );
+  }
+  return { rows, noKitText, noStatusEntry };
+}
+
+function printFindings(rows: Row[], key: 'silent' | 'proseOnly'): void {
+  const of = (r: Row, kind: 'heal' | 'other') =>
+    r[key].filter((f) => f.kind === kind);
+
+  const worklist = rows.filter((r) => of(r, 'other').length > 0);
+  for (const r of worklist) {
+    console.log(`  ${r.slug}${r.graded ? '  [graded]' : ''}`);
+    for (const f of of(r, 'other')) {
+      console.log(
+        `      ${f.slot.padEnd(6)} ${f.line.slice(0, 96)}\n             ↳ ${f.missing.join(', ')}`
+      );
+    }
+  }
+  if (worklist.length === 0) {
+    console.log('  (none)');
+  }
+
+  // Counted and named, never dropped: the amount of a heal has no engine consumer, so this
+  // class is expected — but a unit LEAVING it would be a real signal, and that is only visible
+  // if the class stays on screen.
+  const heals = rows.filter((r) => of(r, 'heal').length > 0);
+  if (heals.length > 0) {
+    console.log(
+      `  — plus ${heals.reduce((a, r) => a + of(r, 'heal').length, 0)} HP-restore magnitude(s) across ` +
+        `${heals.length} unit(s), inert by design (no HP pool — only the recovery EVENT is board-relevant): ` +
+        heals.map((r) => `${r.slug}×${of(r, 'heal').length}`).join(', ')
+    );
+  }
+}
+
+/**
+ * Everything needed to disposition ONE unit's findings without opening the file: the kit line,
+ * the prose sentences that mention the missing magnitude, and the slot's encoded values. The
+ * point of the worklist is deciding whether a prose-only number is a legitimate TRANSFORMATION
+ * or a dropped line, and that decision is always made from exactly these three things.
+ */
+function explain(slug: string): void {
+  const characters = JSON.parse(readFileSync(CHARACTERS, 'utf8')).characters;
+  const skills = characters?.[slug]?.skills;
+  if (!skills) {
+    console.error(`census-kit-numbers: no characters.json kit for '${slug}'`);
+    process.exit(2);
+  }
+  const overrideUrl = new URL(`${slug}.json`, OVERRIDES_DIR);
+  if (!existsSync(overrideUrl)) {
+    // Most of the roster has kit text and no override — say so plainly instead of an ENOENT stack.
+    console.error(
+      `census-kit-numbers: '${slug}' has kit text but no override at src/skills/overrides/${slug}.json — nothing to audit against.`
+    );
+    process.exit(2);
+  }
+  const raw = readFileSync(overrideUrl, 'utf8') as string;
+  const override = JSON.parse(raw);
+  const status = JSON.parse(readFileSync(KIT_STATUS, 'utf8')).units;
+  const row = auditUnit(slug, skills, raw, Boolean(status[slug]?.board));
+
+  const prose = [override.note ?? '', ...(override.caveats ?? [])].join(' ');
+  const findings = [...row.silent, ...row.proseOnly];
+  if (findings.length === 0) {
+    console.log(`${slug}: no unaccounted magnitude.`);
+    return;
+  }
+  for (const f of findings) {
+    console.log(`\n${slug} · ${f.slot} · ${f.kind}\n  KIT   ${f.line}`);
+    for (const value of f.missing) {
+      console.log(`  ↳ ${value} — not in any encoded block`);
+      const sentences = prose
+        .split(/(?<=[.;])\s+/)
+        .filter((s) => s.includes(value));
+      for (const s of sentences) {
+        console.log(`      PROSE  …${s.trim().slice(0, 300)}`);
+      }
+      if (sentences.length === 0) {
+        console.log('      PROSE  (nothing — this magnitude is SILENT)');
+      }
+    }
+    const values = [
+      ...new Set(
+        [
+          ...JSON.stringify(override[f.slot] ?? []).matchAll(/\d+(?:\.\d+)?/g),
+        ].map((m) => m[0])
+      ),
+    ];
+    console.log(
+      `  ENCODED VALUES in ${f.slot}: ${values.join(', ') || '(none)'}`
+    );
+  }
+}
+
+function main(): void {
+  const argv = process.argv.slice(2);
+  const explainAt = argv.indexOf('--explain');
+  if (explainAt !== -1) {
+    const slug = argv[explainAt + 1];
+    if (!slug || slug.startsWith('--')) {
+      console.error('census-kit-numbers: --explain needs a slug');
+      process.exit(2);
+    }
+    explain(slug);
+    return;
+  }
+  const known = new Set([
+    '--prose',
+    '--all',
+    '--tail',
+    '--graded',
+    '--skipped',
+    '--json',
+    '--check',
+  ]);
+  const unknown = argv.filter((a) => !known.has(a));
+  if (unknown.length > 0) {
+    console.error(
+      `census-kit-numbers: unrecognised argument(s): ${unknown.join(', ')}\n` +
+        `expected any of: ${[...known].join(' ')}`
+    );
+    process.exit(2);
+  }
+
+  const { rows: allRows, noKitText, noStatusEntry } = census();
+  const rows = argv.includes('--tail')
+    ? allRows.filter((r) => !r.graded)
+    : argv.includes('--graded')
+      ? allRows.filter((r) => r.graded)
+      : allRows;
+
+  if (argv.includes('--json')) {
+    console.log(JSON.stringify({ rows, noKitText, noStatusEntry }, null, 2));
+    return;
+  }
+
+  if (argv.includes('--skipped')) {
+    console.log('WHAT THIS CENSUS COULD NOT SEE');
+    console.log(
+      `  ${rows.reduce((a, r) => a + r.linesWithoutMagnitude, 0)} kit line(s) print no percent magnitude (qualitative lines, ` +
+        'durations and counts — out of scope by construction)'
+    );
+    const conds = rows.flatMap((r) => r.conditionsStripped);
+    console.log(
+      `  ${conds.length} condition clause(s) stripped before matching (a threshold percent is not a magnitude):`
+    );
+    [...new Set(conds.map((c) => c.trim().toLowerCase()))]
+      .sort()
+      .forEach((c) => console.log(`      ${c}`));
+    const empties = rows.flatMap((r) =>
+      r.emptySlots.map((s) => `${r.slug}.${s}`)
+    );
+    console.log(`  ${empties.length} slot(s) with empty kit text`);
+    if (empties.length > 0) {
+      console.log(`      ${empties.join(', ')}`);
+    }
+    console.log(
+      `  ${noKitText.length} override(s) with no characters.json kit at all${
+        noKitText.length ? `: ${noKitText.join(', ')}` : ''
+      }`
+    );
+    console.log(
+      `  ${noStatusEntry.length} override(s) absent from kit-status.json (graded/tail unknown, counted as tail)${
+        noStatusEntry.length ? `: ${noStatusEntry.join(', ')}` : ''
+      }`
+    );
+    const unreviewed = [
+      ...new Set(rows.flatMap((r) => r.unreviewedFields)),
+    ].sort();
+    console.log(
+      `  ${unreviewed.length} unreviewed top-level override field(s) — counted as STRUCTURED; if any is PROSE it weakens the prose-only tier${
+        unreviewed.length ? `: ${unreviewed.join(', ')}` : ''
+      }`
+    );
+    const integers = rows
+      .flatMap((r) => [...r.silent, ...r.proseOnly])
+      .flatMap((f) => f.missing)
+      .filter((v) => !v.includes('.'));
+    console.log(
+      `  integer magnitudes have near-zero presence signal (a bare digit collides with durations, ` +
+        `counts and stack caps elsewhere in the file) — this census's discriminative power is ` +
+        `almost entirely on DECIMAL magnitudes; ${integers.length} of the findings above are integers`
+    );
+    return;
+  }
+
+  const silentUnits = rows.filter((r) => r.silent.length > 0);
+  const proseUnits = rows.filter((r) => r.proseOnly.length > 0);
+
+  console.log(
+    `SILENT — the kit prints this magnitude and the override never mentions it (${silentUnits.length} unit(s), ` +
+      `${silentUnits.reduce((a, r) => a + r.silent.length, 0)} line(s)):`
+  );
+  printFindings(rows, 'silent');
+
+  if (argv.includes('--prose') || argv.includes('--all')) {
+    console.log(
+      `\nPROSE-ONLY — mentioned in note/caveats but neither encoded nor filed under unmodeled ` +
+        `(${proseUnits.length} unit(s), ${proseUnits.reduce((a, r) => a + r.proseOnly.length, 0)} line(s)):`
+    );
+    printFindings(rows, 'proseOnly');
+  }
+
+  const graded = rows.filter((r) => r.graded);
+  const tail = rows.filter((r) => !r.graded);
+  console.log(
+    `\n${rows.length} unit(s) audited · ${graded.length} graded / ${tail.length} tail · ` +
+      `SILENT ${graded.filter((r) => r.silent.length).length} graded + ${tail.filter((r) => r.silent.length).length} tail · ` +
+      `PROSE-ONLY ${graded.filter((r) => r.proseOnly.length).length} graded + ${tail.filter((r) => r.proseOnly.length).length} tail`
+  );
+  console.log(
+    'A clean row means the number is PRESENT somewhere in the file — never that it is correctly ' +
+      'encoded. Run --skipped for what this census cannot see.'
+  );
+  if (!argv.includes('--prose') && !argv.includes('--all')) {
+    console.log(
+      'PROSE-ONLY is the tail worklist — the one known defect of this class (`red-hood` M8) sat ' +
+        'there, not in SILENT. Run --prose to read it.'
+    );
+  }
+
+  if (argv.includes('--check')) {
+    const accepted = (slug: string, value: string) =>
+      ACCEPTED_SILENT.some((a) => a.slug === slug && a.value === value);
+    const unexpected = rows.flatMap((r) =>
+      r.silent
+        .filter((f) => f.missing.some((v) => !accepted(r.slug, v)))
+        .map((f) => `${r.slug} ${f.slot}: ${f.line} [${f.missing.join(', ')}]`)
+    );
+    if (ACCEPTED_SILENT.length > 0) {
+      console.log(
+        `\n${ACCEPTED_SILENT.length} accepted SILENT line(s) (known matcher blind spots, not gaps): ` +
+          ACCEPTED_SILENT.map((a) => `${a.slug} ${a.value}`).join(', ')
+      );
+    }
+    if (unexpected.length > 0) {
+      console.error(
+        `\n${unexpected.length} kit magnitude(s) the override never mentions — record the line under ` +
+          `\`unmodeled\` (owner ruling 2026-08-11: unmodeled behaviour is recorded, not left to prose), ` +
+          `or add it to ACCEPTED_SILENT with the reason it cannot be matched:\n    ` +
+          unexpected.join('\n    ')
+      );
+      process.exitCode = 1;
+    }
+  }
+}
+
+if (
+  process.argv[1] &&
+  import.meta.url.endsWith(process.argv[1].split('/').pop()!)
+) {
+  main();
+}

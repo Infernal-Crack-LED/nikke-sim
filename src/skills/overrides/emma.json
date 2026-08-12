@@ -42,7 +42,10 @@
     "skill2": [
       "■ Activates when above 90% HP. Affects all allies.\nIncoming healing ▲ 13.33% continuously."
     ],
-    "burst": []
+    "burst": [
+      "Recover HP equal to 39.6% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.",
+      "Recover 39.6% of attack damage as HP over 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ]
   },
   "caveats": [
     "⚑ HoT tick granularity: the burst's lifesteal line is stated 'over 5 sec' with NO per-second clause, so ticks:5/intervalSec:1 is an ESTIMATE (marciana's 'over 3 sec' precedent). Tick count is the only thing that block contributes (no HP pool), and it directly scales how many times a teammate's on-recovery consumer fires per emma burst — over-stating ticks over-credits that teammate.",

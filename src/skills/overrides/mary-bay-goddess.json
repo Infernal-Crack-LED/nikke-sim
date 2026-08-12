@@ -7,7 +7,11 @@
     "cadence: pullsPerSec / reloadFrames 111 / bolt-gap-vs-autofire are unverified datamine values affecting her OWN shots only (parser baseline)"
   ],
   "unmodeled": {
-    "skill1": [],
+    "skill1": [
+      "Once: Recovers 1.05% of the skill user's final Max HP every 1 sec for 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.",
+      "Twice: Recovers 3.69% of the skill user's final Max HP every 1 sec for 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.",
+      "Three times: Recovers 6.86% of the skill user's final Max HP every 1 sec for 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ],
     "skill2": [],
     "burst": []
   },

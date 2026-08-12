@@ -426,8 +426,13 @@ describe('naga — kit spec', () => {
     it('documents the cover restore as skipped (cover-object repair, not a unit heal)', () => {
       const ov = withPatchedOverride('naga', () => {}) as any;
       expect(ov.unmodeled.skill1.join(' ')).toContain('Cover');
-      // the S2 heal and self-Pierce are NOW MODELED — their slots are empty
-      expect(ov.unmodeled.skill2).toEqual([]);
+      // The S2 heal EVENT and the self-Pierce are modelled. Since the 2026-08-11 owner ruling
+      // (DECISIONS — unmodeled behaviour is recorded, not left to prose) the S2 heal's MAGNITUDE
+      // is filed: the amount has no engine consumer (no HP pool), only the event does.
+      expect(ov.unmodeled.skill2.join(' ')).toContain(
+        'Recovers 9.58% of the skill user'
+      );
+      expect(ov.unmodeled.skill2.length).toBe(1);
       expect(ov.unmodeled.burst).toEqual([]);
     });
   });

@@ -56,7 +56,60 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 1. _(empty — owner fills)_
 
+> **(2026-08-11) The three phase-0/1 candidates this note used to offer are all DONE** — see the
+> block below. Nothing is queued; per the header, an empty queue means survey and propose rather
+> than invent work.
+
 ### Open action items (pointers — attended sessions)
+
+- **⇒ PHASES 0–1 OF THE FAITHFULNESS AUDIT ARE COMPLETE (2026-08-11)** —
+  `docs/handoffs/2026-08-10-faithfulness-pass-audit.md`. Phase 4 was already done (graded batches
+  1–8 + all six tail axes) and F3/F4 had landed; the three items below were the remainder, and all
+  three landed together on branch `audit/phase-0-1`. Kept here only until that PR merges — then
+  DELETE this whole block, the WHY lives in DECISIONS (three 2026-08-11 Engine/data-architecture
+  entries). **What is left of the audit is phase 2**, the engine fixes ranked by blast radius: F5
+  the gauge-economy batch (ENGINE-WORK ORDER #4, the biggest remaining item), F6 the 5e self-status
+  trio, and phase 3's footage-gated per-unit backlog — all owner- or `/scientific-method`-gated,
+  unlike phases 0–1.
+
+  1. ✅ **[1.4] Block-order guard — LANDED 2026-08-11** (branch `audit/phase-0-1`; DECISIONS,
+     Engine/data-architecture). ⚑ **The audit's stated minimum viable was the WRONG shape and was
+     deliberately not built**: "flag a gate-consuming block whose producer sits earlier in the same
+     slot array" would be wrong half the time, because `phantom` DEPENDS on consumer-first and
+     `d-killer-wife` on producer-first. There is no order to lint toward, so the shipped guard PINS
+     the order instead (`blockOrderPairs`/`blockOrderCensus` →
+     `scripts/tests/fixtures/block-order-pairs.json` → `scripts/tests/block-order-guard.test.ts`;
+     regenerate only with `npx tsx scripts/lint-target-status.ts --update-block-order`).
+     ⚑ Also: the exposure is **34 pairs across 14 units**, and only 2 are the `targetStatus` family
+     the audit named — the rest are `resource`/`resourceGate`, which carries the identical
+     documented hazard. Behaviour-neutral.
+  2. ✅ **[0.3] `sim.ts:<line>` citation sweep — LANDED 2026-08-11.** 78 citations rewritten to name
+     the CODE BLOCK or symbol, across 28 overrides + 7 durable current-state docs, by the committed
+     reviewable-map codemod `scripts/sweep-line-citations.ts`; `--check` is now a `verify.sh` gate so
+     they cannot grow back. ⚑ **The rot was near-total, which is the finding**: of ~40 distinct
+     `sim.ts` lines cited in override prose, nearly all had drifted onto unrelated code (`2568`
+     "flatDamage generates gauge" → a `const fdRampMul`; `1727` "the hit counter adds hitsPerShot" →
+     the burstDesc amp comment), so every one of them was actively misleading, not merely imprecise.
+     ⚑ **Deliberately NOT swept, reported by name on every run**: CHANGELOG-class docs, generated
+     docs, and dated session records (14 files) — their citations describe the tree on the day they
+     were written. If the owner wants those too, it is a map extension, not new tooling.
+     Provenance labels verified unchanged across all 183 units (override prose is machine-read).
+  3. ✅ **[1.1] `chargeCounter` gate bypass — LANDED 2026-08-11** (owner-approved engine edit;
+     isolated worktree + branch `fix/chargecounter-gates`, cross-family `/code-review` CLEAN). Full
+     WHY in DECISIONS, Engine/data-architecture. ⚑ **This item's own description was partly stale
+     when written**: it listed the runtime gates as bypassed, but those had already bound since
+     2026-08-10 — what was actually still skipped is exactly what `CHARGE_COUNTER_BYPASSED` named,
+     `everyN` / `everyNOffset` / `delaySec`. The dispatch now routes through `applyBlock` via an
+     optional `phase` selector (this trigger fires ONE effect per activation — `block.effects` is an
+     ordered phase list for it), and the validator rule went with it in the same change as
+     instructed. Behaviour-neutral by census (all 12 carriers ungated); snapshot byte-unchanged;
+     `scripts/tests/engine/charge-counter-gates.test.ts` pins it, mutation-checked against the
+     pre-change engine.
+
+  Everything else from that audit is either landed (F3 burst-skill amp — `burstDesc` scope tag, 51
+  carriers; F4 enemy DEF ▼ — `bossDefNow`) or owner/`/scientific-method`-gated (F5 gauge economy —
+  the biggest remaining item by blast radius, ENGINE-WORK ORDER #4; F6 the 5e self-status trio;
+  phase 3's footage-gated per-unit backlog).
 
 - **⇒⇒ START HERE IF YOU ARE PICKING UP AFTER THE 2026-08-11 SESSION (branch
   `fix/faithfulness-tier0`, PR open).** That branch closed the faithfulness pass end to end and left
@@ -75,9 +128,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      state machines, `alice` caster-relative charge speed, the `skillGauge`-fires-twice + charge-B3
      gauge-tempo pair, `chargeCounter` bypassing block gates). Ranked in the ENGINE-WORK ORDER
      below. None of them was touched.
-  4. **The phase-4 TAIL is the next big body of work** — 185 override files against 45 graded
-     units. Its scoping note is at the bottom of this file; it wants a generated-census approach and
-     its own entry doc, NOT a batch sweep.
+  4. **The phase-4 TAIL is DONE — all six axes closed (2026-08-11)** —
+     `docs/handoffs/2026-08-11-faithfulness-tail-plan.md`. Generated-census approach, as the
+     scoping note asked. **No axis found a defect in what the overrides ENCODE**; the two real
+     findings were in the docs ABOUT them (a QUEUE entry calling the shipped `addStack` primitive
+     unbuilt; a plan premise that misremembered the `d-killer-wife` fix). Axis 3 was built and
+     DECLINED with its evidence. Open per-unit questions: `sugar`, `pascal`, `neon-vision-eye`.
   5. **Two primitives landed this session and each has exactly one carrier** —
      `gainPierce.durationShots` (5 carriers, 3 converted) and `convertExcess` (1 carrier). If a
      second `convertExcess` carrier ever appears, revisit the deliberate MAX-on-refresh and the
@@ -133,7 +189,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 - **U28 rider-gauge class — DIRECTION RULED (2026-08-10, Tier 0 / D4), enactment still bundled.**
   `extraHitDamagePct` riders emit no `skillGauge` where an equivalent `flatDamage` instance would
-  (`sim.ts:4053` vs 2568/2605/3803); the omission is a DEFECT, not a modeling choice, so only WHEN
+  (`sim.ts `firePull()`, the `extraHitDamagePct` rider path` vs 2568/2605/3803); the omission is a DEFECT, not a modeling choice, so only WHEN
   is open. All four carriers (`modernia`, `nayuta`, `neon-blue-ocean`, `neon-vision-eye`) now record
   the ruling in their notes. Lands with the batched gauge cluster, whose corrections partially cancel
   — see ENGINE-WORK ORDER item 4 and `2026-08-10-gauge-economy-findings.md`.
@@ -271,14 +327,60 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   bundle as a whole was not re-extracted. A blind-rebuild reviewer reads it as the engine, so a
   re-extract should precede the next blind-rebuild/`/audit-kit` run that uses it.
 
-- **⇒ FAITHFULNESS PASS phase-4 — the GRADED-COMP slice is COMPLETE (batches 1–8 cover all 45
-  board-graded units). What remains is item (c), THE TAIL.** 185 override files against 45 graded
-  units, so the tail is large and its per-unit value is much lower: no ratio to explain and no comp
-  to check inertness against. It wants its own entry doc and probably a GENERATED-CENSUS approach
-  (the pattern that demonstrably works here — `scripts/doc-drift.ts`, the burst-amp census,
-  `lint-target-status.ts`) rather than per-unit reads. The batch-7 START-HERE doc is CLOSED with
-  batch 8. Both roster-wide items the sweep surfaced (the 5-carrier lifesteal
-  non-emitter ruling and the U28 rider-gauge class) are RULED — see DECISIONS 2026-08-10 Tier 0.
+- **⇒ FAITHFULNESS PASS phase-4 TAIL — DONE, ALL SIX AXES CLOSED. Start at
+  [2026-08-11-faithfulness-tail-plan.md](2026-08-11-faithfulness-tail-plan.md).** The graded slice
+  is complete (batches 1–8, all 45 board-graded units); the tail is the 138 overrides with no board
+  reading, worked by generated census rather than per-unit reads. Axis 1 (kit magnitudes vs the
+  override — `scripts/census-kit-numbers.ts` + its fixture) is built, calibrated against the graded
+  45, run, and every finding dispositioned: **zero new defects**, 14 prose-documented
+  transformations (the doc names the vocabulary), 1 acknowledged-in-prose gap (`kilo`'s HP-basis
+  nuke). The batch-7 START-HERE doc is CLOSED with batch 8, and both roster-wide items the sweep
+  surfaced (the 5-carrier lifesteal non-emitter ruling and the U28 rider-gauge class) are RULED —
+  see DECISIONS 2026-08-10 Tier 0. The §5 proposal it raised is RULED AND ENACTED (owner
+  2026-08-11: unmodeled behaviour is recorded under `unmodeled`, never left to prose — 50 heal
+  lines across 34 units; `census-kit-numbers.ts --check` now gates it in verify.sh).
+  **Axis 2** (`unmodeled` entries vs the kit text they quote — `scripts/census-unmodeled-entries.ts`
+  - its mutation-verified fixture) is likewise built, calibrated and fully dispositioned: 460
+    entries, 10 findings across 4 units, **zero stale entries**. The scoping probe's "roughly a fifth"
+    re-derived to 2.2%. Tail-plan §4b. **Six things are open:**
+  * **⇒ OPPORTUNISTIC, on the next authorized touch of `kilo.json`:** her burst caveat still says
+    "the engine has no HP-basis primitive (effectiveAtk is purely additive)". DECISIONS 2026-08-11
+    now carries the narrower true claim — `atkOfMaxHpPct` (sim.ts `effectiveAtk()`) IS an HP-basis term, it is
+    just additive and holder-global, so what is missing is a basis-SUBSTITUTION primitive. Reword
+    the parenthetical to match. Not done here: it is a protected file and this pass had no other
+    reason to edit it.
+  * **⇒ OWNER CALL, one line: does the ruling cover `kilo`?** Her burst nuke IS modelled, but off
+    her own ATK rather than the kit's "5% of final Max HP" basis; the basis clause sits in her
+    `caveats` with an estimate and a measurement recipe. Filed as an `unmodeled` entry or left as an approximation —
+    the pass shipped the latter. Both readings written out in DECISIONS 2026-08-11. If filed, it is
+    a hand edit (the backfill script is heal-only).
+  * **⇒ OPEN QUESTION from axis 2, `sugar`:** both her cover-attacked `unmodeled` entries quote a
+    "(20% chance)" proc that today's `data/characters.json` kit text does not print — either a kit
+    change the entries outlived, or blablalink/synergy-API source drift (the `moran` pattern).
+    **Board-inert either way** (the v1 boss never attacks, so the trigger never fires), so this is a
+    record-accuracy question only. Resolve by reading her blablalink kit text; do not enact from the
+    census alone.
+  * **⇒ OPPORTUNISTIC, on the next authorized touch of `neon-vision-eye.json`:** three of her
+    `unmodeled` entries record behaviour that IS modelled — one says so outright ("is MODELED …
+    enacted 2026-08-09"), two are marked "ABSORBED into the everyN 3 alternation". Since the
+    2026-08-11 ruling made `unmodeled` the authoritative index of what the model SKIPS, that content
+    belongs in `note`/`caveats`. Not done here: graded unit, protected file, and this pass had no
+    other reason to edit it.
+  * ~~Axes A3–A6~~ **ALL CLOSED 2026-08-11 — the phase-4 TAIL IS DONE** (all six axes built and
+    dispositioned or explicitly declined; the stop rule is met without opening 138 files). A4
+    ("fixed at" vs the clamp StatKeys): 18 lines, all accounted. A5 (held primitives): found
+    `addStack` documented as an unbuilt gap while it had shipped with 7 carriers — stale entry
+    removed. A6 (`--pairing`): zero false emits roster-wide. **A3 (non-percent quantities) was
+    built and DECLINED** — it fails the calibration rule ~3:1, has poor recall, and its stated
+    justification was false: replaying it against the pre-fix `d-killer-wife` reads CLEAN, because
+    that line was correctly filed under `unmodeled` all along and the 2026-08-11 fix was a
+    DISPOSITION change, not a repaired omission. Tail-plan §4b3–§4b6 carries the four method
+    lessons. **No axis found a defect in what the overrides ENCODE** — both real findings were in
+    the docs ABOUT them.
+  * **Axis 1's own carried follow-up** — integer magnitudes are near-auto-clean (281 of 282 collide
+    with a duration/count elsewhere in the file), so the axis discriminates almost only on decimals.
+    Disclosed in the doc and by `--skipped`; tightening the matcher is deferred because it needs its
+    own graded-45 re-calibration.
 
 - **Sweep record (batches 1–8, all landed — reference only, nothing open here):**
   [batch 1](2026-08-10-faithfulness-batch1-findings.md) ·
@@ -433,7 +535,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `decomposeCycles` floor was re-derived (its old +2.5s lock term is dead; `excess` now reads the
   refill-from-zero directly).
   Separately logged (do NOT bundle in): a general (non-liberalio) `skillGauge`-fires-twice-per-shot
-  pattern on any `shotFired`-triggered `flatDamage` rider (`sim.ts:2393`) — its correction direction is
+  pattern on any `shotFired`-triggered `flatDamage` rider (`sim.ts `applyEffect()`, the `flatDamage` case`) — its correction direction is
   gauge-DOWN, which would worsen these 4 comps if "fixed" alone; needs its own pre-op pass.
 - **⇒ ENGINE-WORK ORDER (read FIRST before resuming per-kit retunes)** — remaining engine work ranked by
   BLAST RADIUS: items that change the shared math every override is calibrated against come before
@@ -460,15 +562,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      and the ruling is now recorded in all four carriers' notes (`modernia`, `nayuta`,
      `neon-blue-ocean`, `neon-vision-eye`). Note `modernia`'s S1 is a `flatDamage` _because_ of
      this asymmetry — closing it retires that workaround.
-- **⇒ ENGINE PRIMITIVE GAP: `addStack`** — no effect increments an existing buff's stack count by N on
-  a trigger. Blocks `flora` S1 ("after 100 normal attacks, all Electric Code allies: increases the
-  stack count of stackable buffs by 1" — trigger `hitCount:100` and target `alliesOfElement` are both
-  expressible, only the EFFECT is missing) and is the same family as `k`'s Tilted Scale stack-ramp
-  (+29 stacks per last bullet, cap 100), which shipped as DOCUMENTED_GAP encoded as a flat
-  `burstCast critRatePct 75` steady-state — correct for the burst window, under-credits the pre-burst
-  ramp and the first burst's build. Magnitude for `flora` depends entirely on which stack-ramp buffs
-  are live on her Electric allies (could be large, could be zero), so it is correctly not estimated.
-  Two carriers is not yet a mandate; log a third before building. Not authorized.
+
+<!-- The `addStack` ENGINE PRIMITIVE GAP entry was removed 2026-08-11: the primitive shipped in
+     42a642de ("Slice C: addStack effect + flora/k carriers"), is implemented at sim.ts
+     `case 'addStack'`, and has 7 carriers (alice-wonderland-bunny, flora, guilty, k, pepper,
+     `rupee` (AR/Iron, not rupee-winter-shopper), `soda` (MG/Fire, not soda-twinkling-bunny)) —
+     including the `flora` S1 the entry named as blocked. Found by
+     scripts/census-held-primitives.ts (tail axis 5), which now guards the whole class. -->
+
 - **⇒ ENGINE PRIMITIVE GAP: windowed damage accumulator** — `trony` S1 "T.Rony Bomber" Cumulative
   Damage Skill (plant on full-charge hit: 5s window, accumulates 50% of her dealt damage, cap 1536%
   of final ATK, explodes as Distributed Damage; burst adds +62.83pp to the collection rate) has no

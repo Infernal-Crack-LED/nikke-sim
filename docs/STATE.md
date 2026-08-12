@@ -20,7 +20,7 @@
 
 ## 1. Engine feature flags (live defaults)
 
-All engine env reads go through `ENV` (`sim.ts:37`), which is empty in the browser bundle — so **the
+All engine env reads go through `ENV` (`sim.ts`), which is empty in the browser bundle — so **the
 browser always runs these defaults**. Env overrides are for A/B testing only.
 
 | Flag                                                       | Live default                           | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Revert with                                                                                  | Provenance                            |
@@ -170,6 +170,13 @@ current but not a contract.
 | `stageEnter`             | When a stage-N burst is cast by anyone                               | cinderella, ein, flora, mast-romantic-maid, mint, mihara-bonding-chain, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
 | `bossElement`            | Permanent passive, active only if boss has this element              | eve                                                                                                                       |
 
+**Every trigger above dispatches through `applyBlock`**, so the block-level gates below, `everyN` /
+`everyNOffset` and block `delaySec` bind uniformly. `chargeCounter` was the last exception and was
+routed 2026-08-11 (audit F2.1) via `applyBlock`'s optional `phase` selector — that trigger fires ONE
+effect per activation, `block.effects` being an ordered phase list for it rather than a set. Its
+phase advances only on an activation that LANDED, so a gate- or `everyN`-suppressed activation
+re-offers the same phase instead of skipping it.
+
 ### Block-level gates
 
 | Primitive                          | Meaning                                                                                                                                                               | Users                                                                                |
@@ -187,6 +194,16 @@ current but not a contract.
 | `teamHas` (+`.slugs`/`.sameSquad`) | Static team-composition gate (element/class/weapon/burst/named slugs/same-squad). `.sameSquad` resolves membership from the curated squad map `src/data/squads.ts` and fails closed on unmapped owners | blanc (`.sameSquad`), eunhwa-tactical-upgrade, noir (`.slugs` — migration pending)   |
 | `mode` / `modes`                   | Block active only in the unit's selected kit mode                                                                                                                     | bready, cinderella-crystal-wave, delta-ninja-thief, mint, milk-blooming-bunny, prika |
 | `delaySec` (block-level)           | The block's EFFECTS apply `delaySec` seconds after its TRIGGER fires. Gates + the `everyN` counter evaluate at TRIGGER time; targets and values resolve at LANDING; a landing past the end of the fight never applies. Absent/0 = inline (strict no-op). NOT `flatDamage.delaySec`, which is flight time on one damage effect | flora (S2 True Damage, Burst Stage 2 entry + 2 s)                                    |
+
+**Same-slot block ORDER is load-bearing for two of these gates.** `requiresTargetStatus` and
+`resourceGate` read at TRIGGER time while `targetStatus` / `resource` effects write at APPLY time,
+and blocks resolve in array order (`SLOTS.flatMap` in `src/skills/index.ts`) — so when one unit
+both writes and reads the same name inside ONE slot array, swapping the two blocks flips its
+behaviour with nothing failing. Both orders are legitimate and both ship. The census
+(`npx tsx scripts/lint-target-status.ts --block-order`, 34 pairs / 14 units) is pinned by
+`scripts/tests/fixtures/block-order-pairs.json`, so a reorder is a red test rather than a silent
+change; `structuralCheck` also names the shipped order in a warning. Cross-slot pairs are excluded
+— the slot flatten order fixes those.
 
 ### Targeting selectors (`block.target`)
 

@@ -62,6 +62,35 @@ harnesses that must do this:
   focused unit. Burst-bar full-burst detection near cut-ins is unreliable — count nuke/laser
   signatures. The bar's full-resting render is 83.5% of pixel width; ≥96% is the pre-chain glow.
 
+## Building a static census (kit-text / override sweeps)
+
+Earned by the six phase-4 TAIL axes (2026-08-11,
+`docs/handoffs/2026-08-11-faithfulness-tail-plan.md` §6). Four of the six had a matcher that was
+wrong before it was right, and every one of those was caught by a rule below rather than by
+reading output.
+
+- **Score against an existing labeled slice FIRST — before trusting any output.** The 45
+  board-graded units were read line-by-line by the faithfulness sweep, so they are a free labeled
+  set (the SUFFICIENCY rule: generate no new ground truth). **A census that fires HARDER on the
+  slice already read clean is measuring its own noise.** Four times out of four this was decisive:
+  three times it exposed a broken matcher, once (axis 3) it condemned the axis itself.
+- **A census cannot validate its own RECALL — give it an INDEPENDENT list to score against.** A
+  phrasing the matcher misses is indistinguishable from a clean roster, from the inside. Axis 4
+  used the clamp-carrying overrides as a list of units that MUST have a "fixed at" kit line; that
+  converse check is what revealed the regex missed the verb form ("**Fixes** charge time at 3.2
+  sec"), which was hiding two units.
+- **"Accounted for" must mean the same thing in EVERY census** — encoded, encoded-equivalently, or
+  filed under `unmodeled` (authoritative since the 2026-08-11 owner ruling). Let each axis invent
+  its own definition and two of them will reach opposite verdicts on the same unit.
+- **Kit text is written in BLOCKS, not lines.** A `■` header carries the trigger and target clause
+  and governs the effect lines beneath it; entries and quotes routinely span the whole block.
+  Matching line-by-line is a structural blind spot, not a threshold to tune.
+- **What NO mechanical census can reach is the modeling JUDGEMENT** — "this line looks inert but
+  isn't". That is what the `d-killer-wife` Pierce change actually was (the quantity was correctly
+  recorded before AND after; only its disposition changed). Censuses check that a kit line is
+  REPRESENTED; only the per-unit read checks that the representation is RIGHT. Do not commission an
+  axis on the promise of catching that class.
+
 ## Kit work is test-first
 
 A unit's kit is specified as TESTS before its model changes. Each kit line becomes an assertion group
@@ -243,6 +272,27 @@ its override no longer structurally references — and for exact `N units` count
 the single source for "which units use primitive X" — don't restate those counts in prose, link it;
 and (c) LINTS `open-questions.md` for a **resolved question still filed under UNANSWERED**. Matching is
 structural — prose mentions in `note`/`caveats`/`unmodeled` deliberately don't count as usage.
+
+**Cite the SYMBOL, never the line — and it is now gated.** A `sim.ts:1694`-style pointer rots on the
+next engine edit and then actively misleads; write the code block or symbol instead (`sim.ts`
+`bossDefNow()`). Enforced by `scripts/sweep-line-citations.ts --check` in `verify.sh` over override
+prose + durable current-state docs. The same script sweeps existing ones (`--write`) via a reviewable
+map. Deliberately NOT swept, and reported by name on every run: CHANGELOG-class docs, generated docs,
+and dated session records (`docs/handoffs/2026-08-10-…`) — their citations describe the tree on the
+day they were written, so rewriting one edits history rather than fixing a pointer. Prose whose
+SUBJECT is a bare citation (this paragraph, the QUEUE item) is exempted by name in the script's
+`KEEP` set.
+
+**When BOTH answers are legitimate, PIN the shipped one — don't lint for a "right" one.** Some
+authoring invariants have no correct value, only a load-bearing one: same-slot block ORDER is the
+worked example (`phantom` needs gate-before-inflict, `d-killer-wife` needs inflict-before-gate, and
+a lint that preferred either would be wrong half the time). A rule cannot express that; a pinned
+census can. The shape: a pure exported census function → a committed fixture → a test asserting
+parity, so a change is a red test naming the unit instead of a silent behaviour flip
+(`scripts/tests/fixtures/block-order-pairs.json`, regenerated only via
+`scripts/lint-target-status.ts --update-block-order`). **Such a fixture must be mutation-verified in
+its own test file** — assert that perturbing a real input changes the census — otherwise a fixture
+that has quietly stopped seeing anything passes by matching nothing.
 
 **Override prose is current-state — it describes the unit AS MODELED TODAY, nothing else** (owner
 ruling 2026-07-22). An override's `note`/`caveats` record what is implemented, what is deliberately

@@ -1,0 +1,305 @@
+{
+  "_README": "PINNED same-slot producer/consumer ORDER per unit (faithfulness audit F2.5). Same-frame block order is load-bearing and the engine cannot notice a swap, so this fixture is the guard: scripts/tests/block-order-guard.test.ts fails when a shipped override reorders one of these pairs. A diff here is NEVER incidental — re-verify the unit before regenerating with `npx tsx scripts/lint-target-status.ts --update-block-order`.",
+  "pairs": {
+    "d-killer-wife": [
+      {
+        "slot": "burst",
+        "family": "status",
+        "name": "Wipe Out",
+        "producer": 0,
+        "consumer": 1,
+        "order": "producer-first"
+      }
+    ],
+    "e-h": [
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "scrap",
+        "producer": 0,
+        "consumer": 0,
+        "order": "same-block"
+      }
+    ],
+    "elegg-boom-and-shock": [
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "ghost",
+        "producer": 0,
+        "consumer": 1,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "ghost",
+        "producer": 0,
+        "consumer": 2,
+        "order": "producer-first"
+      },
+      {
+        "slot": "burst",
+        "family": "resource",
+        "name": "ghost",
+        "producer": 0,
+        "consumer": 0,
+        "order": "same-block"
+      },
+      {
+        "slot": "burst",
+        "family": "resource",
+        "name": "ghost",
+        "producer": 0,
+        "consumer": 1,
+        "order": "producer-first"
+      },
+      {
+        "slot": "burst",
+        "family": "resource",
+        "name": "ghost",
+        "producer": 1,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "burst",
+        "family": "resource",
+        "name": "ghost",
+        "producer": 1,
+        "consumer": 1,
+        "order": "same-block"
+      }
+    ],
+    "exia": [
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "hackingCode",
+        "producer": 0,
+        "consumer": 2,
+        "order": "producer-first"
+      }
+    ],
+    "guillotine-winter-slayer": [
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "heroLevel",
+        "producer": 3,
+        "consumer": 1,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "heroLevel",
+        "producer": 3,
+        "consumer": 2,
+        "order": "consumer-first"
+      }
+    ],
+    "laplace-ultimate-hero": [
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "oeStage",
+        "producer": 0,
+        "consumer": 1,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "oeStage",
+        "producer": 0,
+        "consumer": 2,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "oeStage",
+        "producer": 0,
+        "consumer": 3,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "oeStage",
+        "producer": 0,
+        "consumer": 4,
+        "order": "producer-first"
+      }
+    ],
+    "mana": [
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "sigma",
+        "producer": 1,
+        "consumer": 1,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "sigma",
+        "producer": 3,
+        "consumer": 1,
+        "order": "consumer-first"
+      }
+    ],
+    "mica-snow-buddy": [
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "tidyingUp",
+        "producer": 0,
+        "consumer": 1,
+        "order": "producer-first"
+      }
+    ],
+    "pepper": [
+      {
+        "slot": "burst",
+        "family": "resource",
+        "name": "refreshHeart",
+        "producer": 1,
+        "consumer": 3,
+        "order": "producer-first"
+      }
+    ],
+    "phantom": [
+      {
+        "slot": "skill1",
+        "family": "status",
+        "name": "Calling Card",
+        "producer": 1,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "thiefsDagger",
+        "producer": 0,
+        "consumer": 0,
+        "order": "same-block"
+      }
+    ],
+    "rouge": [
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "coin",
+        "producer": 1,
+        "consumer": 1,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "coin",
+        "producer": 1,
+        "consumer": 2,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "coin",
+        "producer": 1,
+        "consumer": 4,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "coin",
+        "producer": 3,
+        "consumer": 1,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "coin",
+        "producer": 3,
+        "consumer": 2,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "coin",
+        "producer": 3,
+        "consumer": 4,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "shieldBursts",
+        "producer": 2,
+        "consumer": 3,
+        "order": "producer-first"
+      }
+    ],
+    "rupee-winter-shopper": [
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "shopping",
+        "producer": 1,
+        "consumer": 6,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "shopping",
+        "producer": 3,
+        "consumer": 6,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "shopping",
+        "producer": 5,
+        "consumer": 6,
+        "order": "producer-first"
+      }
+    ],
+    "sin": [
+      {
+        "slot": "burst",
+        "family": "resource",
+        "name": "burstUses",
+        "producer": 3,
+        "consumer": 2,
+        "order": "consumer-first"
+      }
+    ],
+    "soda-twinkling-bunny": [
+      {
+        "slot": "burst",
+        "family": "resource",
+        "name": "goldenChip",
+        "producer": 3,
+        "consumer": 1,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "burst",
+        "family": "resource",
+        "name": "goldenChip",
+        "producer": 3,
+        "consumer": 2,
+        "order": "consumer-first"
+      }
+    ]
+  }
+}

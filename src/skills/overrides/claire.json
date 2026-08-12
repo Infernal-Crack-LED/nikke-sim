@@ -55,9 +55,14 @@
     }
   ],
   "unmodeled": {
-    "skill1": [],
+    "skill1": [
+      "Green Herb: Recovers 2.86% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ],
     "skill2": [],
-    "burst": ["Removes 1 debuff(s)."]
+    "burst": [
+      "Removes 1 debuff(s).",
+      "Restores 34.35% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ]
   },
   "caveats": [
     "⚑ CADENCE TUPLE (ALWAYS-⚑): pullsPerSec / reloadFrames 141 / chargeFrames 60 shipped from datamine (ammo 6); RL charge cycle ≈ 1 shot/s + 141f reload gap every 6 rounds — plausible, NOT escalated. Affects her OWN shots only, and therefore the cadence of the S1 3rd-full-charge recovery channel (a wrong cadence rescales that channel's feed into teammates' on-recovery consumers); recipe: rounds/min + reload gap from any focus video.",

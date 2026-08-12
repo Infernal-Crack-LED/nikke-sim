@@ -635,7 +635,13 @@ describe('U1-U2 — unmodeled lines are documented, not dropped or fabricated', 
       'Incoming healing ▲ 45.7% for 10 sec'
     );
     expect(shipped.unmodeled?.skill2?.join(' ')).toContain('Taunt for 5 sec');
-    expect(shipped.unmodeled?.burst ?? []).toEqual([]);
+    // Her burst lifesteal's recovery EVENT is modelled (ticks:10 — the thing consumers read);
+    // its 65.81% MAGNITUDE is filed here by the 2026-08-11 owner ruling (DECISIONS — unmodeled
+    // behaviour is recorded, not left to prose), because the amount has no engine consumer.
+    expect(shipped.unmodeled?.burst?.join(' ')).toContain(
+      'Recovers 65.81% of attack damage as HP'
+    );
+    expect(shipped.unmodeled?.burst?.length).toBe(1);
     expect(shipped.ignored).toBeUndefined();
   });
 

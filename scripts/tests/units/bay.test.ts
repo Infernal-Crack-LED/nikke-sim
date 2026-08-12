@@ -320,7 +320,10 @@ describe('B4/U — the seven unmodelable lines are documented, not dropped or fa
   });
 
   it('all seven gap lines live verbatim in `unmodeled` (never an `ignored` drop)', () => {
-    expect(shipped.unmodeled?.skill1?.length).toBe(1);
+    // skill1 also carries her "Recovers 4% of the skill user's final Max HP." magnitude, filed by
+    // the 2026-08-11 owner ruling (unmodeled behaviour is recorded, not left to prose —
+    // DECISIONS). The recovery EVENT is modelled; the amount has no engine consumer.
+    expect(shipped.unmodeled?.skill1?.length).toBe(2);
     expect(shipped.unmodeled?.skill2?.length).toBe(3);
     expect(shipped.unmodeled?.burst?.length).toBe(3);
     expect(shipped.unmodeled.skill1.join(' ')).toContain(

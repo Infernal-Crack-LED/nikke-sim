@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 157 | 38.3% |
-| Missing engine primitive / trigger | 93 | 22.7% |
-| Other / see caveats | 92 | 22.4% |
-| Out-of-domain / parser unsupported | 30 | 7.3% |
-| Weapon-state / shot-count approximation | 11 | 2.7% |
-| Partless boss | 10 | 2.4% |
-| Self-status / stack gate | 8 | 2.0% |
-| RNG / probabilistic | 6 | 1.5% |
+| Defensive / HP / shield / aggro | 207 | 45.0% |
+| Missing engine primitive / trigger | 93 | 20.2% |
+| Other / see caveats | 92 | 20.0% |
+| Out-of-domain / parser unsupported | 30 | 6.5% |
+| Weapon-state / shot-count approximation | 11 | 2.4% |
+| Partless boss | 10 | 2.2% |
+| Self-status / stack gate | 8 | 1.7% |
+| RNG / probabilistic | 6 | 1.3% |
 | Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **410** | 100.0% |
+| **Total** | **460** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (157)
+### Defensive / HP / shield / aggro (207)
 
 **A2** (a2)
 
@@ -48,9 +48,13 @@
 
 **Alice: Wonderland Bunny** (alice-wonderland-bunny)
 
+- **skill1:** Recovers 7.4% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1 (both lines fire 'after landing 60 normal attacks', one ■ header → one hitCount:60 trigger each): (1) team heal EVENT — 'Recovers 7.4% of the skill user's final Max HP': the heal effect emits a recovery event to all allies with no HP amount modeled (engine design), feeding recovery-trigger consumers (e.g
 - **burst:** ■ Activates when Carrot Party is at max stacks. Affects all allies.
 Incoming healing ▲ 150% for 15 sec. (no healing-received channel — no HP pool at scope; the activation gate references the inert Carrot Party stack count)
   - *Why:* UNMODELED: the burst's 'when Carrot Party is at max stacks → Incoming healing ▲150% for 15 sec' (no healing-received channel exists)
+- **burst:** Restores 27% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst: reenterStage stage 1 + team heal event ('Restores 27% of the skill user's final Max HP', amount unmodeled by engine design)
 
 **Anchor** (anchor)
 
@@ -61,7 +65,11 @@ Incoming healing ▲ 150% for 15 sec. (no healing-received channel — no HP poo
 
 - **skill1:** Once: Potency of HP ▲ 30.96% for 5 sec.
   - *Why:* skill1: tier-1 'Potency of HP' is a value-0 placeholder kept only for escalating tier order (heal potency has no engine stat)
+- **skill1:** Recovers 3.04% of the skill user's Max HP every 1 sec for 8 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1: the 8-tick regen (every 1s for 8s) now emits 8 timed recovery events (heal ticks:8) — on-recovery consumers (Crown-type) stay refreshed across the whole window (engine gap #1 fix, 2026-07-17)
 - **burst:** Storage: Stores excess healing received by the skill user, up to 60.19% of their Max HP. Lasts for 25 sec.
+  - *Why:* burst: healing Storage (60.19% Max HP overheal buffer) is unmodeled — defensive, no engine vocabulary; deliberately not encoded as a shield event
+- **burst:** Recovers 40.18% of the skill user's Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
   - *Why:* burst: healing Storage (60.19% Max HP overheal buffer) is unmodeled — defensive, no engine vocabulary; deliberately not encoded as a shield event
 
 **Anis** (anis)
@@ -82,14 +90,25 @@ Incoming healing ▲ 150% for 15 sec. (no healing-received channel — no HP poo
 
 - **skill1:** Damage dealt to Shield ▲ 601.01% continuously.
   - *Why:* S1: shield-damage 601.01% → unmodeled (no shield-damage StatKey in types.ts; scope-lock partless boss never shields — inert)
+- **burst:** Recovers 3.16% of attack damage as HP over 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst: 'Gain Pierce for 25 sec' modeled as a timed gainPierce:25s burstCast effect (gauntlet FIX 2026-07-24; was the permanent top-level hasPierce flag — pierce currently inert vs the v1 boss either way); lifesteal modeled as one recovery event at cast, real effect ticks over 10s (tick cadence measurement-gated)
+
+**Asuka: WILLE** (asuka-wille)
+
+- **skill2:** Effect 3: Constantly recovers 3.77% of the skill user's final Max HP every 1 sec over 3 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill2: the 3.77%-Max-HP heal is a 3-tick self recovery emitter (ticks:3/intervalSec:1) but is damage-INERT in the sim (self-targeted, asuka-wille has no recovery block; verified removing it moves no total) — encoded for kit completeness / future recovery synergy
 
 **Avistar** (avistar)
 
+- **skill1:** Recovers 3.52% of the skill user's final Max HP as HP every 1 sec for 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1(self-heal): a real unit-HP heal but SELF-targeted and offensively inert (no HP pool; fires only her own nonexistent recovery triggers) — modeled for recovery-event fidelity, moves no board damage.
 - **skill2:** ■ Activates when entering Full Burst while in Stargazer status with over 25% HP. Affects self. Current HP ▼ 20% — UNMODELED: v1 has no HP pool, so the self HP drain (and its >25% HP gate) move no damage and feed no mechanic; Avistar has no low-HP offensive gate.
   - *Why:* The S2 self line (L4) 'while in Stargazer status with over 25% HP → self: Current HP ▼20%' is UNMODELED (no HP pool in v1; the self-drain and its >25% HP gate move no damage)
 
 **Bay (Treasure)** (bay)
 
+- **skill1:** Recovers 4% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1 Treasure heal magnitude (4% of the skill user's final Max HP) is event-only — the 'heal' effect emits ONE recovery event per full charge with no HP amount (v1 has no HP pool). The line is modeled solely for its TANDEM value: it fires allies' 'recovery' triggers every bay shot.
 - **skill2:** Activates when using Burst Skill, only if self is alive. Affects self's cover. Proportionally shares damage taken continuously.
   - *Why:* skill2/burst are EMPTY by construction, not by omission: every line there is out-of-domain for the DPS sim — cover is not an entity the sim models (damage-share onto cover, cover-HP HoT, cover rebuild, cover Max HP), the boss deals no damage (ally Damage Taken ▼ 8.87% has nothing to reduce), and the cover-destroyed gates can never be satisfied at scope. All seven lines live VERBATIM in unmodeled.
 - **skill2:** Activates when Full Burst ends. Affects self. Continuously recovers Cover's HP equal to 2.88% of the skill user's final Max HP every 1 sec for 5 sec.
@@ -110,15 +129,23 @@ Deals 14.96% of final ATK as additional damage.
 
 **Biscuit** (biscuit)
 
+- **skill1:** Constantly recovers 1.53% of the skill user's final Max HP every 1 sec for 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1: the heal-over-time IS modeled (heal ticks:10 intervalSec:1) as an Attacker-scoped recovery stream — it feeds Attacker 'on-recovery' consumers (e.g. asuka) but, being Attacker-scoped, never the Defender consumer Crown.
 - **skill2:** Recovers 23.26% of the skill user's final Max HP. Activates 2 time(s) per battle. — UNMODELED (inert): a genuine unit heal, BUT it shares skill2's un-fireable HP-below-50% trigger (no HP pool in v1), so it can never legitimately fire either. NOT encoded on an invented proxy trigger — doing so would spuriously drive a Defender ally's on-recovery kit (Crown-class over-credit); the faithful disposition is UNMODELED + verbatim record.
   - *Why:* S2 ('when a Defender ally's HP falls below 50%') stays UNMODELED: v1 has no HP pool / damage-taken model (immortal boss), so the HP-threshold trigger is indeterminate and can never legitimately fire — both the invincibility and the 23.26% heal share that un-fireable trigger (fable concurred)
 - **burst:** Affects 2 random ally unit(s) whose cover has been destroyed. Rebuild Cover with 93.6% HP. — UNMODELED (inert): restores COVER HP, not a unit's HP; no sim cover-HP representation (same NO-OP class as liter S2, owner ruling 2026-07-21). Emits no unit-recovery event, so it must not trigger recovery-consumer teammates.
   - *Why:* burst: the cover-rebuild line is an inert NO-OP in v1 (no cover representation).
+- **burst:** Recovers 55.44% of attack damage as HP over 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst: ATK buff AND lifesteal heal are Supporter-class-scoped (alliesOfClass Supporter), reaching biscuit herself plus any other Supporter. The lifesteal is a Supporter recovery stream; no Supporter 'on-recovery' consumer exists in the current roster, so the channel is faithfully encoded but presently inert (it does NOT feed the Attacker probe asuka, nor the Defender Crown).
 
 **Blanc** (blanc)
 
+- **skill2:** Constantly recovers 3.68% of the skill user's final Max HP every 1 sec for 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill2/burst: heals now emit their real per-second ticks (heal ticks:5 for the 5s S2 HoT, ticks:8 for the 8s burst HoT) — on-recovery consumers (Crown-type) stay refreshed across each window (engine gap #1 fix, 2026-07-17)
 - **burst:** Gain Indomitability for 10 sec.
   - *Why:* SKIPS (burst line 2, target = 1 lowest-remaining-HP ally except self): 'Gain Indomitability for 10 sec.' — genuinely-skippable survival (revive/death-immunity class; boss lethality unmodeled); 'Max HP ▲ 31.68% for 10 sec.' — now modeled via targetMaxHpPct (own-% basis) + alliesLowestHp TargetDef (theme-13, 2026-07-17); offensively inert (e3 rule)
+- **burst:** Constantly recovers 3.84% of the skill user's final Max HP every 1 sec for 8 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill2/burst: heals now emit their real per-second ticks (heal ticks:5 for the 5s S2 HoT, ticks:8 for the 8s burst HoT) — on-recovery consumers (Crown-type) stay refreshed across each window (engine gap #1 fix, 2026-07-17)
 
 **Chisato** (chisato)
 
@@ -140,6 +167,13 @@ Decoy: Creates an avatar with 96% of the skill user's final Max HP. This effect 
 
 - **skill2:** Activates at the start of battle and when using Burst Skill. Affects self. Creates a Decoy avatar with 70.34% of the caster's Max HP, continuously.
   - *Why:* See unit note / caveats
+
+**Claire** (claire)
+
+- **skill1:** Green Herb: Recovers 2.86% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* Heal MAGNITUDES (skill1 2.86% of caster final Max HP; burst 34.35% of caster final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount (v1 has no HP pool). Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers (asuka/crown 'when recovery takes effect').
+- **burst:** Restores 34.35% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* Heal MAGNITUDES (skill1 2.86% of caster final Max HP; burst 34.35% of caster final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount (v1 has no HP pool). Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers (asuka/crown 'when recovery takes effect').
 
 **Clay** (clay)
 
@@ -167,6 +201,8 @@ ATK ▼ 19.93% for 10 sec. — enemy ATK ▼ is dropped at dispatch: no incoming
   - *Why:* See unit note / caveats
 - **skill2:** Attract: Taunts all enemies for 5 sec.
   - *Why:* See unit note / caveats
+- **skill2:** Restores HP equal to 5.23% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* Modeled as two blocks: (A) her own Relax self-heal every 860 hits (emits a heal event to self), and (B) a 'recovery' trigger that grants the team +20.99% AD 7s
 
 **D** (d)
 
@@ -186,6 +222,8 @@ ATK ▼ 19.93% for 10 sec. — enemy ATK ▼ is dropped at dispatch: no incoming
   - *Why:* WITH-DEFENDER mode — Ninjutsu Injection 'recovers 11.22% of attack damage as HP continuously' modeled as an event-only heal to SELF on shotFired (per-pull ≈ continuous; amount unmodeled — heal is event-only; kept per hard rules 2-3 so any recovery consumer works); Camouflage unmodeled (single-target-immunity, defensive vs partless boss); Ninjutsu IFAK ('every 4 sec while in Injection … all allies healed for the stored amount') modeled as heal → allies on interval sec:4 (the engine's timed-interval trigger {kind:'interval', sec:4}, first fire t=4 — same primitive as snow-white S2a / helm-aquamarine), which fires teammate `recovery` triggers (Crown-style consumers, hard rule 2); the 4s storage DELAY + the 165.28%-of-ATK stored-amount cap are unmodeled (heal has no magnitude)
 - **skill2:** Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.
   - *Why:* WITH-DEFENDER mode — Ninjutsu Injection 'recovers 11.22% of attack damage as HP continuously' modeled as an event-only heal to SELF on shotFired (per-pull ≈ continuous; amount unmodeled — heal is event-only; kept per hard rules 2-3 so any recovery consumer works); Camouflage unmodeled (single-target-immunity, defensive vs partless boss); Ninjutsu IFAK ('every 4 sec while in Injection … all allies healed for the stored amount') modeled as heal → allies on interval sec:4 (the engine's timed-interval trigger {kind:'interval', sec:4}, first fire t=4 — same primitive as snow-white S2a / helm-aquamarine), which fires teammate `recovery` triggers (Crown-style consumers, hard rule 2); the 4s storage DELAY + the 165.28%-of-ATK stored-amount cap are unmodeled (heal has no magnitude)
+- **skill2:** Effect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill2/burst: shields and heals are event-only (no HP pools) — the shield-size and IFAK-accumulation ▲20.13% riders therefore have no modeled effect
 - **burst:** Next shield's HP ▲ 20.13% for 10 sec.
   - *Why:* See unit note / caveats
 - **burst:** Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec.
@@ -203,6 +241,10 @@ ATK ▼ 19.93% for 10 sec. — enemy ATK ▼ is dropped at dispatch: no incoming
 - **skill1:** ■ There is a 5% chance to activate when attacked. Affects all allies.
 Recovers 10.77% of the skill user's final Max HP as HP.
   - *Why:* Heal MAGNITUDES (skill1 10.77% of the caster's final Max HP; burst 39.6% of the caster's final Max HP instant + 39.6% of attack damage lifesteal) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount, and v1 has no HP pool. Both burst lines are implemented for their TANDEM value only (they fire allies' 'recovery' triggers).
+- **burst:** Recover HP equal to 39.6% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* ⚑ HoT tick granularity: the burst's lifesteal line is stated 'over 5 sec' with NO per-second clause, so ticks:5/intervalSec:1 is an ESTIMATE (marciana's 'over 3 sec' precedent). Tick count is the only thing that block contributes (no HP pool), and it directly scales how many times a teammate's on-recovery consumer fires per emma burst — over-stating ticks over-credits that teammate.
+- **burst:** Recover 39.6% of attack damage as HP over 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* ⚑ HoT tick granularity: the burst's lifesteal line is stated 'over 5 sec' with NO per-second clause, so ticks:5/intervalSec:1 is an ESTIMATE (marciana's 'over 3 sec' precedent). Tick count is the only thing that block contributes (no HP pool), and it directly scales how many times a teammate's on-recovery consumer fires per emma burst — over-stating ticks over-credits that teammate.
 
 **Emma: Tactical Upgrade** (emma-tactical-upgrade)
 
@@ -224,17 +266,21 @@ Recovers 10.77% of the skill user's final Max HP as HP.
   - *Why:* skill1 (Incoming Healing) ⚑ inert: 'Incoming Healing ▲ 4% continuously, stacks 5x' — no incomingHealingPct stat and no HP pool, so it scales only heals received (unmodeled). ESTIMATE: damage-neutral. RECIPE: none for DPS (would need an HP pool + incomingHealingPct stat). TIER: inert/out-of-domain.
 - **skill1:** ■ Activates when entering Burst Stage 2. Affects all allies in the Peace of Mind state. Max HP ▲ 15.01% of the skill user's max HP (without restoring HP) for 2 sec. — the Max HP STAT is not granted (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct, e3 video rule; 'without restoring HP' so no recovery event). Its CONSEQUENCE is modeled: the 86.95% HP fraction it forces, and the return to max HP 2 sec later, are what the skill2 blocks' `stageEnter{stage:2}` (+ `delaySec: 2`) triggers stand in for.
   - *Why:* skill1 (Max HP grant) ⚑ modeled by consequence: 'entering Burst Stage 2 -> Peace-of-Mind allies Max HP ▲ 15.01% of caster Max HP for 2 sec (without restoring HP)'. The Max HP stat itself is not granted (offensively inert — ally-granted Max HP does not feed a teammate's atkOfMaxHpPct, e3 video rule — and it emits no recovery event). It is not damage-neutral, though: it is the mechanism that drives the whole S2 chain, which is modeled on `stageEnter{stage:2}` and `stageEnter{stage:2}` + `delaySec: 2` in the skill2 blocks.
+- **burst:** Restores HP equal to 10.45% of the skill user's final max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst/skill1 heals: the HP MAGNITUDES (burst 10.45%, HoT 1%/s) are not modeled (no HP pool) — only the recovery EVENT cadence is, which is what recovery-consumer teammates key off. The interval:1 HoT phase starts at t=1s (engine interval convention 'first at t=sec'); a t=0 first tick would add one extra early recovery event, immaterial to steady-state consumer uptime.
 
 **Folkwang** (folkwang)
 
 - **skill2:** Affects the enemy with the highest final ATK. Taunt for 5 sec.
   - *Why:* See unit note / caveats
+- **burst:** Recovers 65.81% of attack damage as HP over 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* ⚑ HoT TICK COUNT (burst lifesteal): 'Recovers 65.81% of attack damage as HP over 10 sec.' is MODELED as a heal HoT — ticks:10 intervalSec:1 — on the SAME top-2 final-ATK target set as the burst shield, per the marciana convention: marciana's S1 carries the identical construction ('Recovers 10.95% of attack damage as HP over 3 sec.') and her owner-landed gauntlet override encodes it as heal ticks:3/intervalSec:1 with a ⚑-estimated tick count. The tick count (one per second across the 'over 10 sec' window) is the ESTIMATE — in game the recovery is damage-linked and continuous, not clock-ticked; the events exist for their TANDEM value only (they fire the recipients' 'recovery' triggers, crown-type 'when recovery takes effect'). The 65.81% MAGNITUDE is recorded here and NOT modeled — the heal effect carries no HP amount (v1 has no HP pool). Driver initially ruled this line UNMODELED on ada/tia lifesteal-skip precedent; revised to MODEL on 2026-08-03 when the S2b (claude-fable-5), S5 and S6 (claude-opus-5) blind reviewers all converged on the HoT encoding and the marciana precedent was confirmed as the nearest intra-repo analog (ada's skip is pre-gauntlet and residual-flagged in her own gauntlet; alice's lifesteal carries an unmodelable <80%-HP gate that folkwang's line does not have).
 
 **Frima (Treasure)** (frima)
 
-- **skill2:** Activates when attacking with Full Charge. Affects all allies. Max HP ▲ 6.09% for 4 sec. — offensively INERT: v1 has no HP pool and ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 video rule; effectiveAtk counts only OWN-kit maxHpFlat, casterIdx === u.idx, sim.ts:1513), and frima has no HP scaling of her own — blanc/moran precedent.
+- **skill2:** Activates when attacking with Full Charge. Affects all allies. Max HP ▲ 6.09% for 4 sec. — offensively INERT: v1 has no HP pool and ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 video rule; effectiveAtk counts only OWN-kit maxHpFlat, casterIdx === u.idx, sim.ts `liveMaxHp()`), and frima has no HP scaling of her own — blanc/moran precedent.
   - *Why:* ⚑ Wake Up trigger proxy (low): the kit gates the 6-FC count on the target being at MAX Sleepy stacks; the sim counts every full charge (chargeCounter:6) because there is no 'target at N stacks' block-gate primitive (the Sleepy defPct stacks themselves ARE encoded on the enemy DEF channel — only the max-stack PRECONDITION is proxied). Faithful where it matters: stacks accrue 1/FC hit and max at 5, so the 6th FC always lands on a max-stack target while stacks hold; the proxy would over-fire ONLY if Sleepy stacks lapsed mid-count (a >10s firing pause — boss transitions/downtime, unmodeled in the continuous scope-lock fight). Estimate: damage-neutral at scope (near-permanent uptime either way). Recipe: a 'target at N stacks' block gate reading the live stack count would enact the precondition exactly; popup-read Wake Up icon uptime in a frima focus recording.
-- **burst:** Affects all allies. Max HP ▲ 30.26% for 4 sec. — offensively INERT, same as the S2 Max HP line (no HP pool; ally-granted Max HP excluded from atkOfMaxHpPct conversions, sim.ts:1513).
+- **burst:** Affects all allies. Max HP ▲ 30.26% for 4 sec. — offensively INERT, same as the S2 Max HP line (no HP pool; ally-granted Max HP excluded from atkOfMaxHpPct conversions, sim.ts `liveMaxHp()`).
   - *Why:* See unit note / caveats
 
 **Grave** (grave)
@@ -243,6 +289,18 @@ Recovers 10.77% of the skill user's final Max HP as HP.
   - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
 - **burst:** Prediction: Current HP ▼ 1% every 1 sec, lasts for 10 sec (self HP cost; no HP pool is modeled, no damage channel)
   - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
+
+**Guillotine: Winter Slayer** (guillotine-winter-slayer)
+
+- **skill1:** Hero Level Up Reward: Recovers 2.44% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1: the two level-up reward blocks are capped at 10 firings by resourceGate {heroLevel max 10}. The cap is load-bearing kit arithmetic (EXP cap 100 ÷ 10 per level = 10 level-ups = Level 1 → 11, so no 11th reward); uncapped, the hitCount-30 trigger fires ~56 times per fight.
+
+**Helm (Treasure)** (helm)
+
+- **skill1:** Recovers 0.59% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* The 0.59% Max HP full-charge heal is MODELED as a `heal` event (event-only, no HP value) — NOT defensive-noise: it emits a recovery event to all allies every full charge (~1.5s), driving Crown's 'when recovery takes effect -> team ATK +20.99%' to near-permanent uptime (skipping it left every Crown+Helm team ~15% cold)
+- **burst:** Recovers 54.45% of attack damage as HP for 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst: the 10 sec recovery window is emitted as 10 ticks at 1 sec (the engine's heal-over-time primitive). The real mechanic is attack-driven lifesteal, so the TICK CADENCE is an approximation — only the window LENGTH and the fact that on-recovery consumers stay refreshed across it are kit-literal
 
 **Jackal** (jackal)
 
@@ -329,9 +387,20 @@ ATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destr
   - *Why:* See unit note / caveats
 - **burst:** Incoming healing ▲ 41.02% for 10 sec.
   - *Why:* burst: the 'during indomitability' incoming-healing rider is unmodeled — its gate is permanently closed at scope lock (the only indomitability source is itself unmodeled) and no heal amounts exist to amplify (⚑4)
+- **burst:** Recover 34.02% of attack damage as HP over 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst: the 34.02% recovery is event-only (no HP amounts modeled); 'over 10 sec' = ticks:10/intervalSec:1 so a recovery consumer stays refreshed across the whole window (helm H8 precedent); self-targeted — she has no recovery trigger of her own
+
+**Mana** (mana)
+
+- **skill1:** Recovers 2.04% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1: hitCount-10 team heal is an event-only synergy hook (Crown-style recovery consumers); it adds no damage alone but is a live cross-unit channel when a recovery consumer is present.
 
 **Marciana** (marciana)
 
+- **skill1:** Recovers 10.95% of attack damage as HP over 3 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/skill2 slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* Heal MAGNITUDES (skill1 10.95% of attack damage; skill2 28.11% of caster final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount, and v1 has no HP pool. Both lines are implemented for their TANDEM value only (they fire allies' 'recovery' triggers).
+- **skill2:** Recovers 28.11% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/skill2 slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* Heal MAGNITUDES (skill1 10.95% of attack damage; skill2 28.11% of caster final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount, and v1 has no HP pool. Both lines are implemented for their TANDEM value only (they fire allies' 'recovery' triggers).
 - **burst:** Storage: Stores excess healing received by the skill user, up to 27.87% of their Max HP. Lasts for 10 sec.
   - *Why:* See unit note / caveats
 
@@ -342,8 +411,21 @@ ATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destr
 
 **Mary** (mary)
 
+- **skill1:** Recovers 8.4% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* Heal MAGNITUDES (skill1 8.4% / burst 39.6% of the skill user's final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount, and v1 has no HP pool. Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers (helm H2 precedent 'a heal is an event, not a number'; flora/marciana/sakura-suzuhara healer-lineage precedent).
 - **skill2:** Activates when entering Full Burst. Affects all allies. Incoming healing ▲ 23.78% for 15 sec.
   - *Why:* (L2) S2 'Nursing' — 'entering Full Burst → all allies Incoming healing ▲ 23.78% for 15 sec' → UNMODELED (verbatim below): there is no incomingHealingPct StatKey and no HP pool for healing received to scale — doubly inert, damage-neutral (flora S1 / marciana S1 / sakura-suzuhara L2 precedent)
+- **burst:** Recovers 39.6% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* Heal MAGNITUDES (skill1 8.4% / burst 39.6% of the skill user's final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount, and v1 has no HP pool. Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers (helm H2 precedent 'a heal is an event, not a number'; flora/marciana/sakura-suzuhara healer-lineage precedent).
+
+**Mary: Bay Goddess** (mary-bay-goddess)
+
+- **skill1:** Once: Recovers 1.05% of the skill user's final Max HP every 1 sec for 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1: heal MAGNITUDE escalation (1.05/3.69/6.86% of the skill user's final Max HP) is event-only — no HP pool is modeled, so the ramp has no damage observable; the escalating[3×heal] structure preserves the recovery-event COUNT ramp (5/10/15 per target) that drives on-recovery consumers
+- **skill1:** Twice: Recovers 3.69% of the skill user's final Max HP every 1 sec for 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1: heal MAGNITUDE escalation (1.05/3.69/6.86% of the skill user's final Max HP) is event-only — no HP pool is modeled, so the ramp has no damage observable; the escalating[3×heal] structure preserves the recovery-event COUNT ramp (5/10/15 per target) that drives on-recovery consumers
+- **skill1:** Three times: Recovers 6.86% of the skill user's final Max HP every 1 sec for 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1: heal MAGNITUDE escalation (1.05/3.69/6.86% of the skill user's final Max HP) is event-only — no HP pool is modeled, so the ramp has no damage observable; the escalating[3×heal] structure preserves the recovery-event COUNT ramp (5/10/15 per target) that drives on-recovery consumers
 
 **Mast** (mast)
 
@@ -371,9 +453,13 @@ ATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destr
 
 **Misato** (misato)
 
+- **skill1:** Recovers 8.04% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1 blk2 heal MAGNITUDE (8.04% of caster final Max HP) is recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount (v1 has no HP pool). Implemented for its TANDEM value only — it fires the target's 'recovery' triggers (Crown-type). Target 'alliesLowestHp count:1' is indeterminate without an HP pool → the engine's documented LEFTMOST-ALLY stand-in (types.ts); the spec test slots misato rightmost so crown observes the channel.
 - **skill2:** Only activates when in Shooting Manual status. Affects all allies.
 Damage dealt to Shield ▲ 150% continuously.
   - *Why:* skill2 is EMPTY by design: both lines are UNMODELED (verbatim above). L1 'Damage dealt to Shield ▲150%' needs a boss shield bar the sim never models (no shieldDamage StatKey; out of domain, same class as helm's partsDamagePct) and a 'requires own Shooting Manual buff active' gate the block schema has no primitive for (requiresTargetStatus is boss-side; requiresShielded is shield-receipt). L2 'Outgoing healing ▲30.05%' scales heal AMOUNTS that are themselves unmodeled (no outgoing-healing StatKey) and needs the max-stacks variant of the same gate. Both are offensively inert in the sim's domain — skips, not approximations; do NOT re-express them as generic damage/heal-count buffs (nearest-wrong models per S2b).
+- **burst:** Recovers 5.06% of the skill user's final Max HP every 1 sec for 5 sec continuously. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst heal MAGNITUDE (5.06% of caster final Max HP per tick) is NOT modeled — same event-only 'heal' channel. ticks:5/intervalSec:1 = first tick at cast, then +1s..+4s: five recovery events per ally per cast keep on-recovery consumers refreshed across the whole 5s window (blanc convention). Trigger is burstCast (HER own Burst I cast, cd 40s) — NOT fullBurstEnter, which would fire on rotations where another Burst I casts.
 
 **Moran (Treasure)** (moran)
 
@@ -415,6 +501,8 @@ Max HP ▲ 10.09% for 10 sec.
 
 - **skill1:** Activates after landing 12 normal attack(s). Affects all allies. Restores 14.57% of Cover's Max HP.
   - *Why:* See unit note / caveats
+- **skill2:** Recovers 9.58% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill2: the 9.58% heal is modeled as a recovery-feed EVENT only (tandem rule — fires teammates' on-recovery triggers); the HP MAGNITUDE (9.58% of caster final Max HP) is not encoded — the engine heal effect carries no HP amount (gauntlet 2026-07-25, prika precedent). 'lowest HP%' resolves to the leftmost 2 allies (v1 has no HP pool — documented stand-in; damage-inert except via the recovery feed)
 
 **Nayuta** (nayuta)
 
@@ -444,6 +532,11 @@ Max HP ▲ 10.09% for 10 sec.
 - **burst:** Affects all allies. Invulnerable for 3 sec.
   - *Why:* Burst 'Invulnerable for 3 sec' UNMODELED: v1 models no HP pool / death / incoming damage. Deliberately NOT encoded as a `shield` effect (the nearest-primitive trap, S2b-flagged): a shield encoding would open the targets' shieldedUntilFrame windows and fire teammates' 'shielded' triggers / requiresShielded gates — fabricating a synergy surface the kit never grants. Invulnerability is a distinct named mechanic from Shield in kit vocabulary (marciana's Storage precedent).
 
+**Noise** (noise)
+
+- **burst:** Constantly recovers 2.47% of the skill user's final Max HP every 1 sec for 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst heal: the HP MAGNITUDE (2.47% of caster final Max HP per tick) is not modeled (no HP pool) — only the per-second recovery EVENT cadence (ticks:10 over 10s) is, which is what recovery-consumer teammates (crown-type) key off. The heal-over-time emits its first recovery event immediately, then 9 more at 1s intervals (≈10 events spanning ~9s per cast).
+
 **Pascal** (pascal)
 
 - **skill1:** ■ Activates after firing 10 time(s). Affects 1 ally unit(s) with the highest final DEF. 
@@ -452,12 +545,18 @@ Recovers 6.28% of the skill user's final Max HP as HP.
 - **skill2:** ■ Activates when entering Burst Stage 1. Affects 3 ally unit(s) with the lowest remaining HP.
 Incoming healing ▲ 38.4% for 10 sec.
   - *Why:* skill2 ⚑3 (UNMODELED — inert): 'Incoming healing ▲ 38.4% for 10 sec' on the 3 lowest-remaining-HP allies at Burst Stage 1 entry. No incomingHealingPct StatKey exists and heal effects carry no HP amount, so the amplifier multiplies nothing — damage-neutral by construction (sakura-suzuhara's S2 is the identical line and the binding precedent). ESTIMATE: zero damage impact in v1; in game it amplifies the recipients' received healing for 10s per chain. RECIPE: none for DPS — would need an HP pool + an incomingHealingPct stat; the nearest-wrong proxy (a HEAL on stageEnter:1) is pinned RED by the spec: it would spuriously emit recovery events at every chain start and feed on-recovery consumers. TIER: inert/out-of-domain.
+- **burst:** Recovers 55.29% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst: the heal is event-only — the 55.29%-of-final-Max-HP magnitude is unrecordable in v1 (no HP amounts), and 'the skill user's final Max HP' scaling has no carrier; the block's observable is the recovery events it emits to the leftmost-3 allies on her cast frame (pinned via asuka's S1 consumer in the spec fixture)
 
 **Pepper** (pepper)
 
 - **skill1:** ■ Activates when the last bullet hits the target. Affects all allies.
 Refresh Heart: Incoming healing ▲ 6.53%, stacks up to 5 time(s) and lasts for 15 sec.
   - *Why:* (S1b) 'Refresh Heart: Incoming healing ▲ 6.53%, stacks up to 5, lasts 15 sec' = SPLIT: the stack COUNT is load-bearing — the burst's conditional heal gates on 'Refresh Heart at max stacks' — so the stacks are IMPLEMENTED as the `refreshHeart` resource pool (initial 0, max 5, +1 per lastBullet)
+- **skill1:** Restores HP equal to 4.45% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* No HP pool: the heal primitive emits the recovery event channel only (the amount is unmodeled by construction, same convention as helm/crown); 'lowest HP%' resolves to the LEFTMOST ally (documented v1 stand-in, types.ts alliesLowestHp — indeterminate without an HP pool)
+- **burst:** Restores HP equal to 27.22% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst: the 1237.5% nuke carries burstDesc:'singleEnemy'. Her damage block reads '■ Affects the 1 enemy unit(s) with the highest final ATK.'; pepper is one of the three units that spell the same clause both ways inside their own kit — one article off the literal jackal's amp names ('skills with "Affects 1 enemy unit(s)" in the description'), and that article is a LOCALIZATION artifact, not a targeting rule: seven clause bodies are attested both ways across the roster and pepper, rapi (AR/Fire base) and maiden-ice-rose each use both spellings of the SAME clause in their own kit. Owner ruling 2026-08-10: the game is ASSUMED to key the amp off an internal targeting id rather than the rendered English, so the stray 'the' does not block eligibility. Assumption, not a measurement — safe today because jackal shares no graded comp, so the tag is board-inert (full A/B diff byte-identical); a popup read of an amped nuke would confirm it. ⚑ the amp's additive Damage-Up placement is unmeasured. Decidable by `npx tsx scripts/census-burst-amp-scope.ts`.
 
 **Poli (Treasure)** (poli)
 
@@ -491,9 +590,13 @@ DEF ▲ 11.34% of the skill user's DEF for 5 sec. — caster-basis flat DEF add:
 
 **Rapunzel** (rapunzel)
 
+- **skill1:** Recovers 4.03% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* Heal MAGNITUDES (skill1 4.03% / burst 40.83% of the skill user's final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with NO HP amount, and v1 has no HP pool. Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers (Crown-type 'when recovery takes effect' consumers).
 - **burst:** ■ Activates when HP falls below 30%. Affects all enemies.
 Stun for 1 sec.
   - *Why:* ⚑ burst enemy STUN (all enemies 1s when an ally falls below 30% HP) is UNMODELED — there is no HP pool to gate the 'below 30%' threshold and no enemy-action model for the stun to interrupt (the boss deals no damage and its actions don't gate ally DPS). Status-gate + inert in a DPS sim.
+- **burst:** Recovers 40.83% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* Heal MAGNITUDES (skill1 4.03% / burst 40.83% of the skill user's final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with NO HP amount, and v1 has no HP pool. Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers (Crown-type 'when recovery takes effect' consumers).
 
 **Rapunzel: Pure Grace** (rapunzel-pure-grace)
 
@@ -536,6 +639,11 @@ Restores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec c
 Taunts for 5 sec.
   - *Why:* skill1: the taunt line ('landing a Full Charge attack during Full Burst → Taunts for 5 sec') is UNMODELED verbatim — the sim has no targeting/aggro model and v1 models no damage taken by allies, so a taunt moves nothing observable. Nearest-wrong encoding rejected: targetStatus is the ENEMY-status channel (a boss status) — a taunt is self-aggro, not a boss status; forcing it through that channel would be a fake model.
 
+**Rupee: Winter Shopper** (rupee-winter-shopper)
+
+- **burst:** Recovers 50.47% of attack damage as HP over 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* ⚑ MEASUREMENT-GATED (no-lapse approximation, power/rupee-base precedent): the shopping POOL never decays (no timer-decay primitive) while the Shopping BUFF lapses 20s after its last refresh. In a DOUBLE-B1 comp (the kit's home — her re-entry exists to field one), every chain carries ≥4 burst casts, stacks reach the 4-cap during chain 1, and at each Full Burst END the stacks applied during the just-ended chain are still live (20s duration > the ~10s cast→FB-end span), so the pool and the buff AGREE at every gate-read moment — exact there. In a SOLE-B1 comp on a 40s chain cycle (3 casts/chain), the real buff ramps only to 3 and lapses between chains, so the real gate NEVER opens, but the pool crosses 4 during chain 2 and the sim's gate over-fires from the 2nd FB end onward. ESTIMATE: over-credits a 7.9% gauge-fill window for 5s after each FB end in sole-B1 comps only — a few-percent-of-the-gauge timing nudge on the next chain, zero in any double-B1 comp. RECIPE: a sole-B1 rws focus recording — does the gauge-speed buff icon appear after Full Burst ends? TIER: override-only (a decaying-pool / buff-stack-read primitive would remove the divergence).
+
 **Sakura** (sakura)
 
 - **burst:** Damage dealt by Wind Code enemies ▼ 90.72% for 30 sec. Activates 1 time(s) per battle.
@@ -546,6 +654,8 @@ Taunts for 5 sec.
 - **skill2:** ■ Activates after landing 60 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.
 Incoming healing ▲ 15.18% for 10 sec.
   - *Why:* skill2 (Incoming healing ▲ 15.18% / 10s): UNMODELED verbatim — v1's heal effects carry no HP amount and the schema has no healing-received stat (validate-overrides STATS), so the amplifier multiplies nothing; damage-neutral. Nearest-wrong rejected: encoding it as a 'heal' effect every 60 hits would spuriously emit recovery events at SMG cadence and feed on-recovery consumers (crown-class kits) — a massive over-credit. It is a stat buff on the recipients, not a heal; pinned silent by the spec's negative assertions.
+- **burst:** Recovers 10.03% of the skill user's final Max HP every 1 sec for 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst: the heal is recovery-EVENT cadence only — the 10.03%-of-caster-final-Max-HP magnitude is inherently unmodeled (no HP pool); only the window shape is kit-literal ('every 1 sec for 10 sec' → ticks:10 intervalSec:1, the type comment's documented HoT shape; helm precedent). The burst has NO damage component (datamined ulti skill_type SetBuff, no hurt values) and is damage-inert; its observable is the recovery stream driving teammate 'recovery' triggers.
 
 **Scarlet** (scarlet)
 
@@ -561,6 +671,8 @@ Incoming healing ▲ 15.18% for 10 sec.
 
 - **skill2:** Twice: Incoming healing ▲ 51% for 5 sec. — the escalation step-2 payload has no carrier: the schema has no incoming-healing StatKey and heals are event-only (nero grumpy-cat ruling). The escalation GATE is still encoded (the 'burstUses' pool advances on every own cast), so steps 1 and 3 fire on exactly the casts the kit says they fire on.
   - *Why:* skill2: the burst-usage escalation is a 'burstUses' resource pool (+1 per own burstCast, gates read the PRE-increment value); the step-2 payload (Incoming healing ▲51%) is unmodeled for the missing StatKey, but the gate still advances — steps 1 and 3 fire on exactly the right casts
+- **skill2:** Once: Recover 15.3% of attack damage as HP for 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill2: the burst-usage escalation is a 'burstUses' resource pool (+1 per own burstCast, gates read the PRE-increment value); the step-2 payload (Incoming healing ▲51%) is unmodeled for the missing StatKey, but the gate still advances — steps 1 and 3 fire on exactly the right casts
 
 **Snow Crane** (snow-crane)
 
@@ -568,6 +680,10 @@ Incoming healing ▲ 15.18% for 10 sec.
   - *Why:* ⚑ The Proof-of-Violation → Terminated-Contract cascade (S1b + S2c) is UNMODELED whole: (1) the engine's 'recovery' trigger has no SOURCE filter — the kit's 'recovery not coming from this unit' clause is inexpressible, and since her own S2a/burst heals target all allies INCLUDING herself, counting all recoveries would self-stack Proof of Violation and flip Terminated Contract in EVERY comp (the nearest-wrong model, which is worse than none); (2) there is no self-status channel for ERA / Terminated Contract membership; (3) S2c's regen is unbounded ('continuously') and heal ticks are finite. The payload is sustain-only and damage-inert. Recipe: needs a recoveryFromOther trigger (or HP-pool modeling), then a PoV resource pool (0..3) + resourceGate-gated ERA/S2a + a bounded regen.
 - **skill2:** ■ Activates when Proof of Violation reaches max stacks. Affects self. Terminated Contract: Gains immunity to Proof of Violation continuously. Recovers 0.24% of the skill user's final Max HP as HP every 1 sec continuously.
   - *Why:* ⚑ The Proof-of-Violation → Terminated-Contract cascade (S1b + S2c) is UNMODELED whole: (1) the engine's 'recovery' trigger has no SOURCE filter — the kit's 'recovery not coming from this unit' clause is inexpressible, and since her own S2a/burst heals target all allies INCLUDING herself, counting all recoveries would self-stack Proof of Violation and flip Terminated Contract in EVERY comp (the nearest-wrong model, which is worse than none); (2) there is no self-status channel for ERA / Terminated Contract membership; (3) S2c's regen is unbounded ('continuously') and heal ticks are finite. The payload is sustain-only and damage-inert. Recipe: needs a recoveryFromOther trigger (or HP-pool modeling), then a PoV resource pool (0..3) + resourceGate-gated ERA/S2a + a bounded regen.
+- **skill2:** Recovers 1.32% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* ⚑ The Proof-of-Violation → Terminated-Contract cascade (S1b + S2c) is UNMODELED whole: (1) the engine's 'recovery' trigger has no SOURCE filter — the kit's 'recovery not coming from this unit' clause is inexpressible, and since her own S2a/burst heals target all allies INCLUDING herself, counting all recoveries would self-stack Proof of Violation and flip Terminated Contract in EVERY comp (the nearest-wrong model, which is worse than none); (2) there is no self-status channel for ERA / Terminated Contract membership; (3) S2c's regen is unbounded ('continuously') and heal ticks are finite. The payload is sustain-only and damage-inert. Recipe: needs a recoveryFromOther trigger (or HP-pool modeling), then a PoV resource pool (0..3) + resourceGate-gated ERA/S2a + a bounded regen.
+- **burst:** Recovers 44.68% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* Heal MAGNITUDES (S2a 1.32% / burst 44.68% of the skill user's final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount (v1 has no HP pool). Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers.
 
 **Snow White: Heavy Arms** (snow-white-heavy-arms)
 
@@ -578,15 +694,26 @@ Incoming healing ▲ 15.18% for 10 sec.
 - **burst:** ■ Affects all destructible projectiles. Deals 41.9% of final ATK as damage.
   - *Why:* UNMODELED / inert: DEF ▲ 42.24% (defensive, no HP pool); Lock-On targeting and the Max-Lock-On / max-ammo caps beyond the ammo counts used above (single boss); parts-damage buckets (partless boss); Fully-Active use-count bookkeeping and its normal-attack removal condition (the sim always full-charges); the burst's 41.9% to destructible projectiles (none vs a single boss)
 
+**Soda** (soda)
+
+- **skill2:** Restores HP equal to 3.23% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill2: heal magnitudes 3.23% / 12.71% of the skill user's final Max HP are amount-less by engine design (no HP pool) — carried verbatim in the note, not fudged into fake numbers
+- **skill2:** Restores HP equal to 12.71% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill2: heal magnitudes 3.23% / 12.71% of the skill user's final Max HP are amount-less by engine design (no HP pool) — carried verbatim in the note, not fudged into fake numbers
+
 **Soline: Frost Ticket** (soline-frost-ticket)
 
 - **skill2:** Recovers 12.27% of the skill user's final Max HP as HP.
   - *Why:* (S2 blk1, whole block) squad-HP<15% emergency heal (12.27% caster Max HP, ticket ▼1) — a HEAL (hard-rule-2 class) parked in unmodeled DELIBERATELY: the schema has no HP-threshold TriggerDef and the sim models no incoming boss damage, so the trigger is STRUCTURALLY UNREACHABLE in v1 (NOT measurement-gated); wiring it to any available trigger would FABRICATE recovery events (measured > fudge)
+- **burst:** Recovers 32.26% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* (BURST) 'Recovers 32.26% of the skill user's final Max HP as HP' to all allies → `heal` event on `burstCast`/allies (hard rule 2 / prior 8): fires every rotation she casts (B1 opener) and drives any teammate 'when recovery takes effect' consumer (Crown-style); HP amount is event-only by engine design (no HP pool modeled)
 
 **Sora** (sora)
 
 - **skill2:** Storage: Stores excess healing received by the skill user, up to 5.36% of their Max HP. Stacks up to 5 time(s) and lasts for 15 sec.
   - *Why:* (R2) overheal-storage resource — UNMODELED K2 Storage (5.36% Max HP per stack, 5 stacks, 15s): estimate = damage-neutral as worded (the prose names no consumption — stores only; survivability utility); recipe = HP-amount modeling + overheal detection + a per-caster storage pool (also unlocks K1's outgoing-healing amplifier, which only has something to scale once heal amounts exist); Tier 2
+- **burst:** Recovers 52.27% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst: the heal is event-only — the 52.27%-of-final-Max-HP magnitude is unrecordable in v1 (no HP amounts), and 'final Max HP' scaling has no carrier; the block's observable is the recovery events it emits to allies on her cast frame
 
 **Sugar (Treasure)** (sugar)
 
@@ -1112,7 +1239,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 **Leona** (leona)
 
 - **skill1:** ■ Activates after 15 normal attack(s). Affects all allies with a Shotgun.
-  - *Why:* MODEL: (S1-Roar) 'after 5 normal attacks' — engine hitCount adds hitsPerShot=10 per PULL (sim.ts:1727), so 5 pulls = count:50; allies critRatePct 2.62, durationSec 5, maxStacks 5
+  - *Why:* MODEL: (S1-Roar) 'after 5 normal attacks' — engine hitCount adds hitsPerShot=10 per PULL (sim.ts `firePull()`, the `hitCounters` increment), so 5 pulls = count:50; allies critRatePct 2.62, durationSec 5, maxStacks 5
 
 **Liberalio** (liberalio)
 
@@ -1381,13 +1508,13 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 **Crust** (crust)
 
 - **skill1:** Activates when attacking with Full Charge and self is in Maillard status. Affects all allies.
-  - *Why:* skill1: which stance (Blanching vs Maillard) is active is a user-selectable mode (default Blanching — the sim's RL always full-charges, sim.ts:3121, so Blanching is the only reachable stance; Maillard models the alternate tap-fire / distributed-team playstyle and overrides the sim's default cadence) — the stance-entry attack-pattern triggers (3 normal non-Full-Charge vs 3 Full Charges held >1s) are not simulated; pick the mode matching the real team's play pattern
+  - *Why:* skill1: which stance (Blanching vs Maillard) is active is a user-selectable mode (default Blanching — the sim's RL always full-charges, sim.ts's charge-release path, `isAutofireCharge`, so Blanching is the only reachable stance; Maillard models the alternate tap-fire / distributed-team playstyle and overrides the sim's default cadence) — the stance-entry attack-pattern triggers (3 normal non-Full-Charge vs 3 Full Charges held >1s) are not simulated; pick the mode matching the real team's play pattern
 - **skill1:** Maillard Duration ▲ 2.5 sec.
-  - *Why:* skill1: which stance (Blanching vs Maillard) is active is a user-selectable mode (default Blanching — the sim's RL always full-charges, sim.ts:3121, so Blanching is the only reachable stance; Maillard models the alternate tap-fire / distributed-team playstyle and overrides the sim's default cadence) — the stance-entry attack-pattern triggers (3 normal non-Full-Charge vs 3 Full Charges held >1s) are not simulated; pick the mode matching the real team's play pattern
+  - *Why:* skill1: which stance (Blanching vs Maillard) is active is a user-selectable mode (default Blanching — the sim's RL always full-charges, sim.ts's charge-release path, `isAutofireCharge`, so Blanching is the only reachable stance; Maillard models the alternate tap-fire / distributed-team playstyle and overrides the sim's default cadence) — the stance-entry attack-pattern triggers (3 normal non-Full-Charge vs 3 Full Charges held >1s) are not simulated; pick the mode matching the real team's play pattern
 - **skill1:** Activates when attacking with Full Charge and self is in Blanching status. Affects all allies.
-  - *Why:* skill1: which stance (Blanching vs Maillard) is active is a user-selectable mode (default Blanching — the sim's RL always full-charges, sim.ts:3121, so Blanching is the only reachable stance; Maillard models the alternate tap-fire / distributed-team playstyle and overrides the sim's default cadence) — the stance-entry attack-pattern triggers (3 normal non-Full-Charge vs 3 Full Charges held >1s) are not simulated; pick the mode matching the real team's play pattern
+  - *Why:* skill1: which stance (Blanching vs Maillard) is active is a user-selectable mode (default Blanching — the sim's RL always full-charges, sim.ts's charge-release path, `isAutofireCharge`, so Blanching is the only reachable stance; Maillard models the alternate tap-fire / distributed-team playstyle and overrides the sim's default cadence) — the stance-entry attack-pattern triggers (3 normal non-Full-Charge vs 3 Full Charges held >1s) are not simulated; pick the mode matching the real team's play pattern
 - **skill1:** Blanching Duration ▲ 2.5 sec.
-  - *Why:* skill1: which stance (Blanching vs Maillard) is active is a user-selectable mode (default Blanching — the sim's RL always full-charges, sim.ts:3121, so Blanching is the only reachable stance; Maillard models the alternate tap-fire / distributed-team playstyle and overrides the sim's default cadence) — the stance-entry attack-pattern triggers (3 normal non-Full-Charge vs 3 Full Charges held >1s) are not simulated; pick the mode matching the real team's play pattern
+  - *Why:* skill1: which stance (Blanching vs Maillard) is active is a user-selectable mode (default Blanching — the sim's RL always full-charges, sim.ts's charge-release path, `isAutofireCharge`, so Blanching is the only reachable stance; Maillard models the alternate tap-fire / distributed-team playstyle and overrides the sim's default cadence) — the stance-entry attack-pattern triggers (3 normal non-Full-Charge vs 3 Full Charges held >1s) are not simulated; pick the mode matching the real team's play pattern
 - **skill1:** Removes Blanching.
   - *Why:* UNMODELED (all in `unmodeled`, no silent drops): S1 L1/L2 'Duration ▲2.5 sec' (a buff-duration-extension maintenance line — the stance ATK buff is modeled at saturated uptime, so extending its duration moves no damage; no generic duration-extend primitive); S1 'Removes Blanching'/'Removes Maillard' (mutual exclusivity enforced STRUCTURALLY by the single selected mode); S2 'Affects all allies not in Reliable Cooking status' (no-refresh gate — the engine has no 'apply only if absent' target filter; the model refreshes instead, inert while defPct is inert) and 'Removes 1 debuff' (no cleanse primitive; the scope-lock boss applies no ally debuffs)
 - **skill1:** Removes Maillard.

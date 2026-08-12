@@ -29,6 +29,9 @@ node -e "const d=JSON.parse(require('fs').readFileSync('data/characters.json','u
 say "target-status census (cross-slug producer/consumer names — a typo'd gate silently never opens)"
 npx tsx scripts/lint-target-status.ts
 
+say "code-citation convention (no bare file:line citations — they rot silently and then mislead)"
+npx tsx scripts/sweep-line-citations.ts --check
+
 say "runtime is prose-free (kit parser lives only in scripts/, never in src/ or web/src/)"
 test ! -f src/skills/parser.ts
 if grep -rnE "from ['\"].*(kit-parser|skills/parser)|parseSkill\(" src web/src --include='*.ts' --include='*.tsx'; then
@@ -42,6 +45,11 @@ say "unmodeled-review doc freshness (the second link of overrides -> kit-status.
 # Ordered AFTER the kit-status check on purpose: this compares the committed doc against what
 # kit-status.json renders to, so it is only meaningful once kit-status.json is known fresh.
 npx tsx scripts/gen-unmodeled-review.ts --check
+
+say "kit-magnitude census (a magnitude the kit prints and the override never mentions — owner ruling: unmodeled behaviour is RECORDED, not left to prose)"
+# Ordered after the unmodeled-review check because it enforces the same field from the other side:
+# that check keeps the generated doc fresh, this one keeps `unmodeled` COMPLETE.
+npx tsx scripts/census-kit-numbers.ts --check | tail -2
 
 say "approved-nickname validation (characters.json nicknames unambiguous)"
 npx tsx scripts/validate-nicknames.ts

@@ -9,7 +9,57 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-11, latest) The two round-count Pierce carriers, closed: `d-killer-wife` was a real
+- **(2026-08-11, latest) Unmodeled behaviour is RECORDED under `unmodeled`, never left to prose.**
+  - **The ruling (owner):** _"We should record all unmodeled behavior as unmodeled rather than
+    leaving it in prose."_ Asked and answered off the phase-4 tail pass's §5 proposal
+    ([2026-08-11-faithfulness-tail-plan.md](handoffs/2026-08-11-faithfulness-tail-plan.md)).
+  - **What raised it — tier: a committed instrument over the whole roster, not a sample.**
+    `scripts/census-kit-numbers.ts` showed the record was half-populated and, worse, split
+    per-LINE rather than per-unit: of 92 heal-magnitude kit lines across 62 units, 42 were
+    structurally recorded, 46 sat in `note`/`caveats` prose only, and 4 appeared nowhere in their
+    override. The same file would file one heal line and silently drop its others (`biscuit` filed
+    her skill2 heal and not her skill1/burst ones), so no per-unit spot check could have found it.
+  - **Why it matters although it moves zero damage.** A heal's AMOUNT has no engine consumer (no HP
+    pool) — the board cannot see any of this. What it changes is whether `unmodeled` can be TRUSTED
+    as the index of what the model skips, which is exactly how `data/kit-status.json`,
+    `scripts/gen-unmodeled-review.ts` and every reviewer's grep read it. Half-populated, it
+    under-reports; complete, it is an answer.
+  - **Enacted:** 50 heal-magnitude lines across 34 units, via
+    `scripts/backfill-unmodeled-heal-magnitudes.ts` (idempotent, re-runnable after a roster sync),
+    and nothing else. Entries use the `ada` wording — they record that the
+    AMOUNT is unmodeled while the recovery EVENT is modelled, so a later reader does not "fix" a
+    filed line by adding a second emitter. **Inert BY MECHANISM, not by fixture:** `unmodeled` has
+    no engine consumer at all — `src/engine/sim.ts` never reads the field (it is carried onto the
+    parsed skill at `src/skills/index.ts:122` and read only by `validate-structural.ts` and the
+    docs tooling), so no comp or enabling teammate could expose it. The untouched regression
+    snapshot is corroboration, not the claim.
+  - **Scope limit, deliberate:** a magnitude that lives only in prose is usually a legitimate
+    TRANSFORMATION, not a gap — every remaining prose-only line was checked and is modelled in
+    transformed form (`nayuta` 150 + 380.46 → one 530.46 rider; `takina` 140.49 × 10/15 = 93.66;
+    `mihara-bonding-chain` 12 × 25.08; `soda-twinkling-bunny` 52.04 + 85.02). Filing those under
+    `unmodeled` would assert something false. The ruling binds unmodeled BEHAVIOUR; transformed
+    encodings are modelled behaviour.
+  - **⇒ ONE READING LEFT OPEN FOR THE OWNER — `kilo`, drafted and then DROPPED.** Her burst nuke IS
+    modelled and fires (`flatDamage 1150.84`, `requiresShielded`), but off her own final ATK
+    instead of the kit's "ATK … calculated from 5% of final Max HP" basis, because no HP-basis
+    SUBSTITUTION primitive exists. (HP-basis terms do exist — `effectiveAtk`'s `atkOfMaxHpPct`
+    conversion and `stackedNuke`'s `hpPct` — but `atkOfMaxHpPct` is ADDITIVE and applies to the
+    whole ATK stat, where her kit replaces the basis for one line.) The basis clause is therefore
+    unmodelled and lives only in her `caveats`,
+    with an explicit estimate and a measurement recipe. Under the ruling's plain text ("record ALL unmodeled
+    behavior…") that is arguably prose-recorded unmodelled behaviour and should be filed; under the
+    reading this pass shipped, an APPROXIMATION of a modelled line is not "behaviour left in prose"
+    — and the `ada` amount/event wording does not fit a basis substitution anyway. **Shipped: not
+    filed.** If the owner draws the line the other way it is a hand edit, not a re-run — the
+    backfill script is heal-only by construction. Raised by the cross-family review
+    (`kimi-code/k3`, 2026-08-11) as the owner's call, not the reviewer's.
+  - **The standing guard:** `census-kit-numbers.ts --check` runs in `verify.sh`, so a kit magnitude
+    that appears nowhere in its override now fails the gate. One accepted blind spot — `power`'s
+    "Reloads 100% of the magazine", genuinely encoded as `instantReload fraction: 1`, which a
+    digit-string matcher cannot see — is recorded with its reason in `ACCEPTED_SILENT` and pinned
+    by a test that fails if it ever stops firing.
+
+- **(2026-08-11) The two round-count Pierce carriers, closed: `d-killer-wife` was a real
   gap, `dorothy-serendipity` was a false positive — and the premise BOTH rested on was wrong.**
   - **The shared premise, REFUTED — tier: the mechanics SSOT plus the engine source, not a
     measurement.** No fight was recorded for this and none was needed; the claim is settled
@@ -3334,6 +3384,88 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   attribution across units is forbidden — it burned us twice. — u8 processing; owner corrections.
 
 ## Engine/data-architecture decisions
+
+- **(2026-08-11) `chargeCounter` routes through `applyBlock` — the F2.1 bypass is fully closed, and
+  the validator rule that guarded it is REMOVED in the same change.** Owner-approved engine edit;
+  isolated worktree + PR per constraint 8.
+  - **What was still broken.** The 2026-08-10 fix added a direct `blockGatesPass` call so the runtime
+    abort-gates bound on this trigger, but the dispatch still called `applyEffect` itself, so
+    `everyN`, `everyNOffset` and the block-level `delaySec` were silently skipped. The validator
+    hard-errored on that combination precisely so nobody shipped a field that looks live and never
+    runs — and its own comment said to drop the rule when the engine routed the trigger. Done.
+  - **Why it could not route before, and what unblocked it.** `applyBlock` applies ALL of
+    `block.effects`; `chargeCounter` applies ONE — `block.effects` is an ordered PHASE list for this
+    trigger (`scarlet-black-shadow`'s three). `applyBlock` now takes an optional `phase` selector
+    (threaded through the `delaySec` deferral queue as well, so a deferred phase lands as the same
+    phase), and returns whether the activation LANDED.
+  - **The semantic call, which had no carrier to settle it.** The phase advances only on a LANDED
+    activation, so an activation suppressed by a gate or by `everyN` re-offers the same phase rather
+    than skipping it. The alternative (advance on every activation) would silently re-order a
+    carrier's phases across different damage flavors. This is asserted directly, not inferred from a
+    total: her three phases have distinct `atkPct` (283.03 / 565 / 848.03), so the event log reads
+    the phase order back.
+  - **Behaviour-neutral, by census not by assumption.** All 12 shipped `chargeCounter` blocks were
+    scanned for every gate field — zero carry any, so nothing shipped changes; the regression
+    snapshot is byte-unchanged and was NOT regenerated. Eleven of the twelve carry a single effect,
+    where the phase path is trivially the old path.
+  - **A behaviour-neutral change is unfalsifiable without a fixture that exercises what it enabled**,
+    so `scripts/tests/engine/charge-counter-gates.test.ts` covers everyN / everyNOffset / delaySec /
+    the gates / phase integrity, and its 4 new-behaviour assertions were MUTATION-CHECKED: with the
+    engine change stashed they fail, while the 5 preservation assertions pass on both engines.
+
+- **(2026-08-11) Code citations name the SYMBOL, never the line — swept and gated (audit F1 /
+  phase 0.3).** 78 bare `file:line` citations rewritten across 28 overrides + 7 durable current-state
+  docs; `scripts/sweep-line-citations.ts --check` is now a `verify.sh` step so new ones cannot land.
+  - **The rot was near-total, and that is the argument.** Of ~40 distinct `sim.ts` lines cited in
+    override prose, nearly all had drifted onto unrelated code — `2568` ("flatDamage generates
+    gauge") had become a `const fdRampMul`, `1727` ("the hit counter adds hitsPerShot") the
+    burstDesc amp comment, `types.ts:368` (the ownBurstGate canonical example) a `shield` effect
+    type. So each was not merely imprecise but actively misleading, and every reader who followed
+    one paid a verification pass. Each replacement was resolved by finding what the PROSE describes
+    in today's engine, never by trusting the stale number.
+  - **What is deliberately NOT swept, and why.** CHANGELOG-class docs (`DECISIONS.md`,
+    `answered-questions.md`, `probe-runs.md`, the `closed/` archives), generated docs
+    (`unmodeled-entries-review.md` — it follows its source), and DATED session records
+    (`docs/handoffs/2026-08-10-…`). A dated findings doc's citation is a statement about the tree on
+    that date; rewriting it edits history rather than fixing a pointer, the same property that makes
+    CHANGELOG docs append-only. The 14 skipped files are LISTED BY NAME on every run rather than
+    silently dropped. Extending to them later is a map extension, not new tooling.
+  - **Prose whose SUBJECT is a bare citation is exempt** (the CONVENTIONS paragraph teaching the
+    rule, the QUEUE item) — a `KEEP` set in the script, because a codemod that "fixed" the
+    counter-example would delete the thing it teaches.
+  - **Safety properties.** Literal text substitution on raw bytes — overrides are never parsed and
+    re-serialized, which would reformat every file. Provenance labels re-derived and compared across
+    all 183 units before/after: ZERO changed, so the machine-read half of override prose
+    (`kit-status.json` `kitParse.provenance`) is untouched; the one mirror diff is the citation text
+    itself propagating into `frima`'s `unmodeled` entries. `verify.sh` green.
+
+- **(2026-08-11) Same-slot BLOCK ORDER is guarded by a PINNED CENSUS, not by a lint — because both
+  orders are legitimate (faithfulness audit F2.5, phase 1 item 4).** `requiresTargetStatus` and
+  `resourceGate` are evaluated at TRIGGER time; `targetStatus` and `resource` effects write at APPLY
+  time; blocks resolve in array order (`SLOTS.flatMap`, `src/skills/index.ts`). So when one unit both
+  writes and reads the same name inside ONE slot array, the two blocks' relative position decides
+  whether the gate opens on the frame the value is written — and a reorder flips that with no engine
+  error, no validator error and a green suite.
+  - **Why not a rule.** The audit's own minimum-viable framing was "flag a gate-consuming block whose
+    producer sits earlier in the same slot array". Building it showed that would be wrong half the
+    time: `phantom` DEPENDS on consumer-first (her Calling Card gate sits at `skill1[0]`, the inflict
+    at `skill1[1]`, so the shot that applies the card does not itself benefit), and `d-killer-wife`
+    DEPENDS on producer-first (`burst[0]` inflicts 'Wipe Out', `burst[1]` reads it on the same
+    burstCast frame — her caveat says "do not reorder"). There is no correct order to lint toward,
+    only a load-bearing one to pin.
+  - **What landed.** `blockOrderPairs()` / `blockOrderCensus()` in `src/skills/validate-structural.ts`
+    (pure, same-slot only); the census pinned in `scripts/tests/fixtures/block-order-pairs.json` and
+    asserted by `scripts/tests/block-order-guard.test.ts`; regeneration only via
+    `npx tsx scripts/lint-target-status.ts --update-block-order`; and the `structuralCheck` warning
+    rewritten to name the ORDER SHIPPED rather than merely the existence of a pair.
+  - **Scope, and what it found.** CROSS-slot pairs are excluded — their order is fixed by the slot
+    flatten order and no edit inside a slot array changes it. The `resource`/`resourceGate` family is
+    included: `src/skills/types.ts` documents the identical hazard ("a spend placed AFTER the
+    resource-gated blocks lets those gates read the PRE-spend pool"), and it is where the exposure
+    actually is — **34 pairs across 14 units, of which only 2 are the status family the audit named.**
+    The `same-block` case (one block writes and reads the same name: `e-h`, `mana`, `phantom`,
+    `rouge`, `elegg-boom-and-shock`) is recorded too, so SPLITTING such a block is as loud as
+    reordering one. Behaviour-neutral: nothing in the engine, the overrides or the snapshot changed.
 
 - **(2026-08-03) `noop-rouge-b1` STAYS IN `src/data/squads.ts` — OPTION C, OWNER-CONFIRMED.** Closes
   the `docs/handoffs/closed/2026-08-03-b1b2-comparability-and-squad-layering.md` open call: the

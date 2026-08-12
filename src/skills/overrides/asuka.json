@@ -3,7 +3,9 @@
   "unmodeled": {
     "skill1": ["Damage dealt to Shield ▲ 601.01% continuously."],
     "skill2": [],
-    "burst": []
+    "burst": [
+      "Recovers 3.16% of attack damage as HP over 10 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+    ]
   },
   "caveats": [
     "skill1: ATK ▲96.98% is recovery-triggered — needs a heal landing on her (teammate healer, or her own burst lifesteal); a healer-less team that never Full-Bursts gains it never",
