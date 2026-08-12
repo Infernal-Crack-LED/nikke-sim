@@ -122,12 +122,9 @@ Printed by `--skipped`, never silently swallowed:
 
 Each is a generated census, each scored against the graded 45 first.
 
-1. **A2 — `unmodeled` entries that match no kit line.** Entries are mostly verbatim kit lines, some
-   annotated ("… — magnitude only: …"); the residue would be entries describing lines the kit no
-   longer prints, which read as live gaps forever. Cheap, and it cleans an input every other pass
-   reads. ⚑ A throwaway scoping probe put the non-verbatim residue at roughly a fifth of ~410
-   entries, but that number came from an ad-hoc matcher that was never committed and is NOT
-   evidence — re-derive it as the first step of building A2, don't plan on it.
+1. ~~**A2 — `unmodeled` entries that match no kit line.**~~ **BUILT, RUN, DISPOSITIONED
+   (2026-08-11) — see §4b.** The scoping probe's "roughly a fifth" was re-derived and came out at
+   **2.2%**, an order of magnitude lower, which is exactly why it was marked not-evidence.
 2. **A3 — non-percent quantity accounting.** The complement of axis 1: durations, round counts,
    stack caps. Higher noise, but it is the tier that held the `d-killer-wife` defect.
 3. **A4 — "fixed at" lines vs the clamp StatKeys** (phase-4 checklist item 7). `reloadSpeedClamp` /
@@ -145,6 +142,97 @@ integer token inside a structured block as WEAK evidence that still surfaces at 
 instead of clearing the line. Raised by the cross-family review (`kimi-code/k3`, 2026-08-11) as a
 FOLLOW-UP; not done here because it changes matcher semantics and would want its own
 graded-45 re-calibration.
+
+---
+
+## 4b. Axis 2 — `unmodeled` entries vs the kit (BUILT, RUN, DISPOSITIONED)
+
+**Instrument:** `scripts/census-unmodeled-entries.ts` · fixture
+`scripts/tests/census-unmodeled-entries.test.ts`
+
+The converse of axis 1. Axis 1 asks whether every kit magnitude reaches the override; this asks
+whether every `unmodeled` entry still quotes a line the kit actually prints. It matters because the
+2026-08-11 owner ruling made `unmodeled` the authoritative index of what the model skips — so an
+entry describing a line the kit no longer prints reads as a live gap forever, and costs a
+verification pass every time it is re-encountered.
+
+`unmodeled` is **slot-keyed** (`{skill1, skill2, burst}`), which buys a second question for free:
+an entry can be filed under the wrong skill.
+
+| Tier                | Meaning                                                              |
+| ------------------- | -------------------------------------------------------------------- |
+| **UNMATCHED**       | no kit line in the unit's whole kit resembles the entry              |
+| **MAGNITUDE DRIFT** | the entry quotes the line but not the number the kit now prints      |
+| **MISFILED**        | the entry matches a kit line in a DIFFERENT slot than it is filed in |
+| NEAR                | matched by token overlap only — paraphrase, advisory, not a finding  |
+
+### 4b.1 Result — 460 entries, 143 units, 10 findings across 4 units
+
+| Tier                     | Findings       | Disposition                                                     |
+| ------------------------ | -------------- | --------------------------------------------------------------- |
+| UNMATCHED                | 8              | `moran` 1, `neon-vision-eye` 3, `zwei` 4 — all read, all benign |
+| MAGNITUDE DRIFT          | 2              | `sugar` — see below                                             |
+| MISFILED                 | 0              | —                                                               |
+| exact / contained / near | 116 / 289 / 45 | clean                                                           |
+
+**Zero stale entries of the class the axis predicted.** No entry describes a kit line that was
+rebalanced away. What the residue actually is:
+
+- **Kit-text SOURCE DRIFT (`moran`, `zwei`, 5 findings)** — the entries quote blablalink prose (the
+  objective SSOT) and `data/characters.json` (synergy API) does not print those lines. Verified
+  per-unit rather than assumed: `laplace` (RL/Iron, not `laplace-ultimate-hero`) files the _same_
+  "Note: Unable to take cover." entry and it MATCHES, because her API text carries the line while
+  `moran`'s does not. The entries are faithful to the SSOT; the census can only see the API text.
+- **Hand-written bookkeeping (`neon-vision-eye`, 3 findings)** — Firepower-Gauge arithmetic that was
+  never a kit line. One is worth a reviewer's attention on its own terms: an entry filed under
+  `unmodeled` that states the behaviour **is MODELED** ("enacted 2026-08-09, owner faithfulness
+  ruling … as two everyN:3 self burstGenPct blocks"), plus two more marked "ABSORBED into the everyN
+  3 alternation". That is modelled behaviour recorded in the index of unmodelled behaviour. Logged,
+  not enacted — moving it is prose surgery on a graded unit and belongs to her own review.
+- **`sugar` magnitude drift (2 findings)** — both cover-attacked entries quote a "(20% chance)" proc
+  that today's kit text does not print. Unresolved between stale-vs-source-drift, and **board-inert
+  either way**: the v1 boss never attacks, so the trigger never fires. Recorded, not enacted.
+
+### 4b.2 What running it taught — three matcher defects, each a false-positive class
+
+Worth stating because every future axis will hit them:
+
+1. **Kit text is written in BLOCKS, and entries quote blocks.** A `■` header carries the trigger and
+   target clause; the effect lines beneath it belong to it. `naga` files "Activates after 12 normal
+   attack(s). Affects all allies. Restores 14.57% of Cover HP." — a header plus the line under it,
+   and `tia` files a three-line block as one newline-joined entry. Scoring those against individual
+   LINES can never match, so this was a structural blind spot, not a threshold to tune (23 findings
+   → 8).
+2. **There are two annotation conventions**, not one: ` — reason` (122 entries) and a trailing
+   parenthetical (`takina`, `ark-ranger-black`, `tia`, `velvet`). Scoring the reason as quoted text
+   sank all four below any sane floor.
+3. **A containment floor must bind the CONTAINED side**, whichever it is. Both first-run MISFILED
+   findings were a long entry "containing" the line "Affects self." — a clause in nearly every kit
+   in the game — and scoring a perfect match against the wrong slot.
+
+And the one that changed the instrument's shape: **token coverage cannot see a rebalance.** An entry
+quoting a line whose number changed scores 10/11, because a magnitude counts for exactly as much as
+the word "the". Magnitudes are therefore gated separately from words and get their own tier — the
+single most likely way a genuinely stale entry would ever appear.
+
+### 4b.3 Calibration + what it cannot see
+
+Scored against the graded 45 per the method rule of §1: **3.2% of graded entries vs 1.8% of tail** —
+comparable, so the tail output is not the census's own noise. The first run failed this badly (17
+graded vs 6 tail); the matcher was fixed, not the roster.
+
+`--skipped` restates the limits on every run. The load-bearing one: **an entry quoting a real kit
+line, in the right slot, describing behaviour that is in fact MODELLED, is clean here.** This axis
+falsifies "the kit backs this entry as filed"; only the per-unit read falsifies "this line is really
+unmodelled" — which is precisely the `neon-vision-eye` case above, found only because her wording
+happened not to match.
+
+**Not wired into `verify.sh`.** `--check` exists and works, but gating would mean listing the 10 live
+findings in `ACCEPTED` — and two of them (`sugar`, `neon-vision-eye`) are open questions, not
+matcher blind spots. Writing those into an allowlist would be silencing, which is the one thing that
+list must never be for. The fixture is the guard instead: it pins the worklist to its known 4 slugs
+and runs in `verify.sh` via the vitest glob, so a NEW unit going stale goes red while nothing
+asserts the current 10 are correct.
 
 ---
 
@@ -219,10 +307,22 @@ lines in 3 more, no unit in both sets — 50 lines, 34 units, prose-only edits, 
 ## 6. Stop rule
 
 The tail is DONE when each axis above is either built-and-dispositioned or explicitly declined,
-**not** when 138 files have been opened. Axis 1 is closed: instrument committed, fixture pins the
-matcher and the worklist, every finding read. If a future axis fires on a unit, `--explain <slug>`
-gives the kit line, the prose that mentions the magnitude, and the slot's encoded values — which is
-everything the disposition needs.
+**not** when 138 files have been opened. **Axes 1 and 2 are closed** — instrument committed, fixture
+pins the matcher and the worklist, every finding read. Both ship `--explain <slug>`, which gives
+everything a disposition needs without opening the file (axis 1: the kit line, the prose mentioning
+the magnitude, the slot's encoded values; axis 2: the entry, its quoted head, the best-matching kit
+line, and the entry tokens that line lacks).
+
+**Remaining: A3, A4, A5, A6 (§4).** Two notes for whoever builds them, both earned rather than
+assumed:
+
+- **Score against the graded 45 FIRST.** Both axes' first runs fired hardest on the slice already
+  read clean, and in both cases the matcher was wrong, not the roster. This check costs one flag
+  and has now caught a defect twice out of twice.
+- **Expect the yield to be low, and let that be the finding.** Two axes over 1,259 magnitudes and
+  460 entries produced zero enacted changes and one open per-unit question. That is evidence the
+  structured record is in good shape, and it is a real result — the tail's own scoping estimate for
+  axis 2 was ~10× too high. Do not inflate an axis to justify having built it.
 
 `census-kit-numbers.ts --check` now runs in `verify.sh` (§5): a kit magnitude that appears nowhere
 in its override fails the gate. The PROSE-ONLY tier stays advisory on purpose — a magnitude living

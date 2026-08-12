@@ -75,10 +75,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      state machines, `alice` caster-relative charge speed, the `skillGauge`-fires-twice + charge-B3
      gauge-tempo pair, `chargeCounter` bypassing block gates). Ranked in the ENGINE-WORK ORDER
      below. None of them was touched.
-  4. **The phase-4 TAIL now has its entry doc and its first axis is CLOSED (2026-08-11)** —
+  4. **The phase-4 TAIL now has its entry doc and its first TWO axes are CLOSED (2026-08-11)** —
      `docs/handoffs/2026-08-11-faithfulness-tail-plan.md`. Generated-census approach, as the
-     scoping note asked. Axis 1 found zero new defects and left one owner ruling open (the heal
-     magnitude record split) plus five unbuilt axes; see the item further down.
+     scoping note asked. Axis 1 (kit magnitudes) found zero new defects; axis 2 (`unmodeled`
+     entries vs the kit) found zero stale entries and one open per-unit question (`sugar`). Four
+     unbuilt axes remain; see the item further down.
   5. **Two primitives landed this session and each has exactly one carrier** —
      `gainPierce.durationShots` (5 carriers, 3 converted) and `convertExcess` (1 carrier). If a
      second `convertExcess` carrier ever appears, revisit the deliberate MAX-on-refresh and the
@@ -252,7 +253,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   bundle as a whole was not re-extracted. A blind-rebuild reviewer reads it as the engine, so a
   re-extract should precede the next blind-rebuild/`/audit-kit` run that uses it.
 
-- **⇒ FAITHFULNESS PASS phase-4 TAIL — entry doc landed, AXIS 1 CLOSED. Start at
+- **⇒ FAITHFULNESS PASS phase-4 TAIL — entry doc landed, AXES 1 + 2 CLOSED. Start at
   [2026-08-11-faithfulness-tail-plan.md](2026-08-11-faithfulness-tail-plan.md).** The graded slice
   is complete (batches 1–8, all 45 board-graded units); the tail is the 138 overrides with no board
   reading, worked by generated census rather than per-unit reads. Axis 1 (kit magnitudes vs the
@@ -263,24 +264,40 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   surfaced (the 5-carrier lifesteal non-emitter ruling and the U28 rider-gauge class) are RULED —
   see DECISIONS 2026-08-10 Tier 0. The §5 proposal it raised is RULED AND ENACTED (owner
   2026-08-11: unmodeled behaviour is recorded under `unmodeled`, never left to prose — 50 heal
-  lines across 34 units; `census-kit-numbers.ts --check` now gates it in verify.sh). **Four things
-  are open:**
-  - **⇒ OPPORTUNISTIC, on the next authorized touch of `kilo.json`:** her burst caveat still says
+  lines across 34 units; `census-kit-numbers.ts --check` now gates it in verify.sh).
+  **Axis 2** (`unmodeled` entries vs the kit text they quote — `scripts/census-unmodeled-entries.ts`
+  - its mutation-verified fixture) is likewise built, calibrated and fully dispositioned: 460
+    entries, 10 findings across 4 units, **zero stale entries**. The scoping probe's "roughly a fifth"
+    re-derived to 2.2%. Tail-plan §4b. **Six things are open:**
+  * **⇒ OPPORTUNISTIC, on the next authorized touch of `kilo.json`:** her burst caveat still says
     "the engine has no HP-basis primitive (effectiveAtk is purely additive)". DECISIONS 2026-08-11
     now carries the narrower true claim — `atkOfMaxHpPct` (sim.ts:1681) IS an HP-basis term, it is
     just additive and holder-global, so what is missing is a basis-SUBSTITUTION primitive. Reword
     the parenthetical to match. Not done here: it is a protected file and this pass had no other
     reason to edit it.
-  - **⇒ OWNER CALL, one line: does the ruling cover `kilo`?** Her burst nuke IS modelled, but off
+  * **⇒ OWNER CALL, one line: does the ruling cover `kilo`?** Her burst nuke IS modelled, but off
     her own ATK rather than the kit's "5% of final Max HP" basis; the basis clause sits in her
     `caveats` with an estimate and a measurement recipe. Filed as an `unmodeled` entry or left as an approximation —
     the pass shipped the latter. Both readings written out in DECISIONS 2026-08-11. If filed, it is
     a hand edit (the backfill script is heal-only).
-  - **Axes A2–A6 proposed, none built** — `unmodeled` entries matching no kit line; non-percent
-    quantity accounting (the tier that held the `d-killer-wife` round-count defect); "fixed at" vs
-    the clamp StatKeys; held-primitive carrier scan; and READ (do not rebuild)
-    `scripts/census-synergy-events.ts`. Tail-plan §4.
-  - **Axis 1's own carried follow-up** — integer magnitudes are near-auto-clean (281 of 282 collide
+  * **⇒ OPEN QUESTION from axis 2, `sugar`:** both her cover-attacked `unmodeled` entries quote a
+    "(20% chance)" proc that today's `data/characters.json` kit text does not print — either a kit
+    change the entries outlived, or blablalink/synergy-API source drift (the `moran` pattern).
+    **Board-inert either way** (the v1 boss never attacks, so the trigger never fires), so this is a
+    record-accuracy question only. Resolve by reading her blablalink kit text; do not enact from the
+    census alone.
+  * **⇒ OPPORTUNISTIC, on the next authorized touch of `neon-vision-eye.json`:** three of her
+    `unmodeled` entries record behaviour that IS modelled — one says so outright ("is MODELED …
+    enacted 2026-08-09"), two are marked "ABSORBED into the everyN 3 alternation". Since the
+    2026-08-11 ruling made `unmodeled` the authoritative index of what the model SKIPS, that content
+    belongs in `note`/`caveats`. Not done here: graded unit, protected file, and this pass had no
+    other reason to edit it.
+  * **Axes A3–A6 proposed, none built** — non-percent quantity accounting (the tier that held the
+    `d-killer-wife` round-count defect); "fixed at" vs the clamp StatKeys; held-primitive carrier
+    scan; and READ (do not rebuild) `scripts/census-synergy-events.ts`. Tail-plan §4. Both closed
+    axes found near-zero yield, which is itself the signal — build these to close the question, not
+    expecting defects.
+  * **Axis 1's own carried follow-up** — integer magnitudes are near-auto-clean (281 of 282 collide
     with a duration/count elsewhere in the file), so the axis discriminates almost only on decimals.
     Disclosed in the doc and by `--skipped`; tightening the matcher is deferred because it needs its
     own graded-45 re-calibration.
