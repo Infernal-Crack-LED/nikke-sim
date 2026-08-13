@@ -5384,7 +5384,12 @@ export function App({ user }: { user: AuthUser | null }) {
           overrides[chargeChar]?.charFixes?.noBoltRecovery)
           ? 0
           : RELEASE_LATENCY_FRAMES;
-      const allRows = chargeFrameBreakpoints(baseFrames);
+      // No OL stat can roll more than 4 lines on a single build, so drop any
+      // breakpoint that would need a 5th charge-speed line at this tier —
+      // mirrors ammoBreakpoints' linesNeeded <= 4 cap below.
+      const allRows = chargeFrameBreakpoints(baseFrames).filter(
+        (r) => Math.ceil(r.csNeeded / bpTv.chargespd) <= 4
+      );
       // Deep breakpoints need charge speed most teams never reach; hide them
       // behind a toggle so the default view stays actionable.
       const REACHABLE_CS = 50;
@@ -5416,14 +5421,16 @@ export function App({ user }: { user: AuthUser | null }) {
           card = buildChargeTable(
             baseFrames,
             chc ? chc.name : 'Generic (1.0s)',
-            chargeLatency
+            chargeLatency,
+            bpTv.chargespd,
+            bpTier
           );
           slug = chargeChar;
         } else {
           if (!amc) {
             return 'unsupported';
           }
-          card = buildAmmoTable(ammoBase, amc.name);
+          card = buildAmmoTable(ammoBase, amc.name, bpTv.ammo, bpTier);
           slug = ammoChar;
         }
         const url = slug ? data.characters[slug]?.imageUrl : null;
