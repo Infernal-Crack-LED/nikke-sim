@@ -37,6 +37,22 @@
     {
       "slot": "skill1",
       "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
         "kind": "fullBurstEnd"
       },
       "target": {
@@ -52,6 +68,22 @@
     {
       "slot": "skill1",
       "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
         "kind": "passive"
       },
       "target": {
@@ -60,10 +92,14 @@
       "effects": [
         {
           "kind": "dot",
-          "atkPct": 301,
+          "atkPct": 25.08,
           "durationSec": 999,
           "intervalSec": 1,
-          "flavor": "sustained"
+          "flavor": "sustained",
+          "perResource": {
+            "name": "ensnaring",
+            "mult": 25.08
+          }
         }
       ]
     }
@@ -86,6 +122,24 @@
           "durationSec": 10
         }
       ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 40
+      },
+      "fbGate": "inFb",
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        }
+      ]
     }
   ],
   "burst": [
@@ -100,12 +154,36 @@
       "effects": [
         {
           "kind": "dot",
-          "atkPct": 700,
+          "atkPct": 1001,
           "durationSec": 10,
           "intervalSec": 1,
           "flavor": "sustained"
         }
       ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": -20
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "name": "ensnaring",
+      "initial": 0,
+      "min": 0,
+      "max": 20
     }
   ]
 }
