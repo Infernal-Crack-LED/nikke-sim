@@ -5432,3 +5432,44 @@ ceiling, the `band` dump channel, the backend-selector tie-break, the representa
 and two pre-committed measurement passes). Their WHY exists only in the measurement log. Writing
 those entries now would mean inferring another session's rationale from its numbers, so they are
 **flagged for the owner rather than reconstructed** — see `docs/handoffs/QUEUE.md`.
+
+## Infographic branding: the nikkesim.app mark moved to the card's top-right corner (2026-08-13)
+
+**Tier: OWNER RULING (visual/product).** No measurement is involved — this is how the cards look.
+
+**The ruling (owner, 2026-08-13):** every infographic carries "the same nikkesim.app + icon in the
+top right corner ... that the nikke cards have", instead of the muted grey footer line plus a small
+icon inline with the title. It generalizes the 2026-07-28 unit-card ruling to the whole card set,
+for the same reason that one gave: the title row is where the eye already is, while the footer was
+the least legible text on the card at timeline scale.
+
+**What that forced, and how it was resolved.** A card's `footer` field was carrying two unrelated
+things at once — the nikkesim.app URL, and a NOTE beside it (the sim's standing caveats, or the
+`simmed <date>` provenance stamp `src/server/card-from-build.ts` appends so a card drawn from a
+stored snapshot says when that snapshot was produced). Moving "the footer" wholesale would have
+dropped the second. `theme.ts splitFooter` separates them: the URL segment becomes the top-right
+wordmark (so `/charge`, `/ranks`, `/resources` still deep-link rather than collapsing to the bare
+domain), and any remainder keeps a small `drawFooterNote` line, drawn ONLY when non-empty. Cards
+whose descriptor is nothing but their URL now have no footer line at all, which is why the bottom
+bands shrank (58→30, 44→24, 40→22) rather than sitting empty.
+
+**The architectural invariant survives the move.** The centralization plan's point (§2, "the
+advertising goal has an architectural consequence") was that no renderer can ship an unmarked image
+by forgetting the mark. `drawWatermark` was the single footer path enforcing that; `drawBrandMark`
+is now the single top-right path, and `footer` still only picks WHICH nikkesim.app path is named,
+never whether the mark appears.
+
+**Two consequences worth knowing.** (1) `core/siteIcon.ts` was DELETED, not kept: its measured
+cap-height plate geometry existed solely to size an icon sitting inline with a title, and no card
+does that any more — the mark uses `drawContained` at a fixed 40px, the unit card's own geometry.
+(2) The `*_TITLE_INK_REGION` blank-text guards now start at `padX` instead of past the icon. That is
+safe for the reason the guard exists: the vacuous-guard bug was a region satisfiable by ICON pixels
+alone, and the mark is now at the opposite end of the card from the title. `infographics-golden.test.ts`
+pins the separation per card, and sizes its canvas to the mark's real position so the check can't
+pass by drawing the icon off-canvas.
+
+**Companion change in bakery-bot** (`infographics/2026-08-13-image-outside-embed`): the bot stopped
+posting cards inside embeds. An embed caps its image at the embed column's width — a 900px chart
+rendered unreadably small — while Discord renders attachments above embeds at full message width.
+Cards now ship as plain attachments with the embed as a caption below, its mark reduced to the
+author line's ~24px icon since the card above already carries the full-size one.
