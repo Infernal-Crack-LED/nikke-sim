@@ -355,10 +355,20 @@ describe('helm-aquamarine — kit spec', () => {
       // "Each subsequent effect triggers all effects before it" = the escalating ladder, datamined.
       expect(esc.steps.map((s: any) => s.seconds)).toEqual([1.82, 2.2, 2.6]);
     });
-    it('DISCRIMINATING (trigger): fullBurstEnter (5 activations) ≠ burstCast (10) — burstCast over-accelerates', () => {
-      // re-keying the refund to burstCast applies it twice as often → strictly more of this unit's casts
-      // (deterministic: 10 under the faithful fullBurstEnter keying vs 12 under burstCast).
-      expect(haBursts(s1bBurstCast.events).length).toBeGreaterThan(casts);
+    it('DISCRIMINATING (trigger): the refund fires per FULL BURST, not per burst CAST', () => {
+      // `burstCdr` emits NO event — it mutates burstCdFrames directly — so the refund is observed
+      // through the rotation it accelerates. Measured TEAM-WIDE, not on this unit's own casts: her
+      // own total saturates at 10 under both keyings since the 10s chain timeout landed
+      // (2026-08-13), while the extra refunds still buy the team an extra cast.
+      const teamCasts = (evs: SimEvent[]) =>
+        evs.filter((e) => e.kind === 'burstCast').length;
+      const faithful = teamCasts(base.events);
+      const wrong = teamCasts(s1bBurstCast.events);
+      expect(faithful, 'no casts at all — fixture is stale').toBeGreaterThan(0);
+      expect(
+        wrong,
+        'burstCast keying must refund more often and buy the team strictly more casts'
+      ).toBeGreaterThan(faithful);
     });
     it('DISCRIMINATING (escalating): a flat always-2.6 encoding refunds less total CDR → strictly lower 180s total', () => {
       // the ramping ladder reaches 1.82+2.2+2.6 = 6.62s/FB from the 3rd entry, far more total refund than

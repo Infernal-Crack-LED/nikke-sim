@@ -54,31 +54,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
-1. **⚠ The stage RESERVE horizon (120f) has NO automated pin — its calibration case is in no
-   committed comp.** Discovered while splitting the reserve from the chain timeout (DECISIONS
-   2026-08-13): widening the reserve back to 600f — the exact mistake DECISIONS 2026-07-21 was
-   written to correct — leaves EVERY graded Full-Burst count green and every damage snapshot
-   byte-identical. The measured truth that discriminates it is two alternating 40s-CD Burst IIIs,
-   where a 10s horizon reserves the leftmost and double-casts it: `sakura-bloom-in-summer` slot 3 /
-   `cinderella` slot 4, sim 6/4 vs the footage's burst-colour-verified 5/5. A liter/crown/
-   sakura-bloom-in-summer/cinderella reconstruction does NOT reproduce it (5/4 under both horizons),
-   so the original was a specific 5-unit team not recorded in `experiment.ts`. Recover the comp from
-   the 2026-07-21 session record and commit it as a graded fixture, or the next session to touch
-   rotation can silently revert a footage-calibrated constant with a fully green gate.
-
-1. **⇒ OWNER QUESTION (blocks nothing else) — `velvet`'s S2 team buff: which premise is wrong?**
-   Her S2 activates "when attacking with Full Charge during Full Burst", and the owner ruled her
-   burst swap does **not** full-charge. Encoding that (`swapGate: 'unswapped'` beside the shipped
-   `fbGate: 'inFb'`) takes the line from 135 applications to **ZERO** in her control fixture — her
-   10s swap opens ~1s before Full Burst and covers essentially all of it, and the ~1s unswapped tail
-   is shorter than one charge cycle — so her signature support line becomes dead code in every comp
-   she is built for. Either the swap/FB alignment is wrong, or the assumption that she must be the
-   one bursting is (a teammate-opened Full Burst she is not swapped for would feed it fine).
-   **No measurement resolves this** — both readings are internally consistent, and the graded slice
-   is byte-identical either way (`T5 wind-weak`: she never casts there). Put it to the owner as an
-   either/or; do not enact. Parked as a skipped assertion in `scripts/tests/units/velvet.test.ts`;
-   context in [2026-08-12-takina-laplace-swap-engine-work.md](2026-08-12-takina-laplace-swap-engine-work.md) §4.
-
 1. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
    economy landing (DECISIONS) made her colder, not warmer: the faithful custom weapon fires 12
    uncharged shots where the old estimate fired 7 that inherited her SR ×2.5 `chargeMultiplier`.
