@@ -75,13 +75,30 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `DOT_CRIT` default is OFF (it flipped OFF→ON 2026-07-21), and her note contradicted its own
      opening on whether the SG core bands are HR-contaminated (they are not — her read is what
      proved them clean; the live SG lever is LANDING at range, U27).
-   - **Measurement-gated ⚑, footage-blocked** — do NOT enact from the desk: `noir` (the reload
-     tension, the only substantive open item in batch 7), `chisato` (core-on-true-damage, an ENGINE
-     fidelity question), `rouge` (coin exclusivity; Shield-Coin interaction), `prika` (the Pierce
-     hold, owner-held), `ada` (Special Modification shot count), `guillotine-winter-slayer` (normal
-     fire reads ~26% off), `mint` (solo mode has ZERO real-fight anchor), `ade-agent-bunny`
-     (Spy-Lens gate rests on stacks REFRESHING), `mihara-bonding-chain` (the 12-stack rebuild
-     average is her single fitted number). `takina`'s is already item 4 below.
+   - **Measurement-gated ⚑ — TWO still open, not nine (re-verified 2026-08-13).** The batch docs
+     are dated 2026-08-10 and the **2026-08-11 M-list triage (`ae7fba26`) overtook most of them**,
+     so this list read as nine open recording asks when seven were already settled. Verified
+     per-unit against enactment commits and the overrides themselves, not against the batch docs:
+     - **`noir` — OPEN.** The reload tension (recon ~0.6–0.9s vs datamined 62f ≈ 1.03s). Folded
+       into the ongoing SG investigation per owner direction (M7) and cross-referenced from the SG
+       owner-ask doc §5b: she is the SG-landing anchor, so the same footage serves both.
+     - **`chisato` — OPEN, and narrower than batch 7 framed it.** The flavor/economy split landed
+       (`cbd950af`) and true damage CRITTING is owner-ruled in-game-confirmed. What is left is
+       only **whether true damage should CORE** — an ENGINE-fidelity question outside her
+       override's domain, large because SMG `coreMult` is 250.
+     - CLOSED by enactment: `ada` (maxShots 1 — the kit-literal reading won), `prika` (Pierce),
+       `rouge` (M10 coin CO-EXISTENCE, which turned out to be a model defect, not a measurement),
+       all in `de84bbd4`; `ade-agent-bunny` by the M6 ruling that stacks REFRESH unless a kit says
+       otherwise (`e4d305f9`) — that was exactly the counterfactual batch 8 wanted ruled out.
+     - CLOSED by refutation: **`guillotine-winter-slayer`'s "~26% hot" was refuted three ways**
+       (M1). Her board reads 1.0238, inside ±3%; the figure traced to two old unit-level readings
+       from another context, and `12 / 1.26 ≈ 9.5/s` was an arithmetic coincidence promoted to a
+       suspect. Do not re-open it from the batch-8 wording.
+     - HELD, not open: `mint` (M12 confirmed the shipped `singing` model; her solo magnitudes stay
+       unanchored **by disposition**) and `mihara-bonding-chain` (the 12-stack average is still the
+       one fitted number in her file, but "do not turn it without a measurement" IS the recorded
+       ruling, and the engine has no stack-currency primitive to replace it with).
+       `takina`'s is item 4 below and is still open.
    - **Held primitives, logged not built** (F11 discipline — one carrier each): `moran` S1
      DEF ▲/stack, `maxwell` `byFinalAtk`, `helm`'s held tag. Leave held; the log is the point.
    - **Encode-consistency candidates**: `anis` and `mica` both keep an `attacked`-N line unmodeled
