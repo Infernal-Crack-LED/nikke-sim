@@ -9,7 +9,33 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-13, latest) A burst chain has ONE clock, not two: it lives 10s, and any unit that comes
+- **(2026-08-13, latest) True damage is a FLAVOR, not a property change — so what may CORE depends on
+  the SOURCE, weapon vs skill. Engine already conformant; recorded as a pin, no code change.**
+  - **The ruling (owner, 2026-08-13).** "True damage just functions like pierce where it changes the
+    flavor of the damage, not the properties of the damage. If a WEAPON is dealing true damage, it can
+    crit and core. If a SKILL is dealing true damage, it can crit but not core." Stated generally —
+    it governs **every** `trueFlavor` weapon swap, not only the `chisato` case that surfaced it.
+  - **Why this was open.** `chisato`'s override carried an escalated ⚑ — "whether true damage should
+    CORE is an ENGINE-fidelity question out of this override's domain", large because SMG `coreMult`
+    is 250. It was filed as footage-gated (batch 7). It was not: it was an owner-knowledge question,
+    and asking cost nothing.
+  - **The engine already implements exactly this, by two independent paths** (verified 2026-08-13, not
+    assumed). WEAPON: `trueFlavor: !!u.swap?.trueNormals || u.hasTrueNormals` rides the normal-fire
+    path, so those shots crit and core like any other normal — correct per the ruling. SKILL: dot /
+    rider / flatDamage instances core ONLY via an explicit per-effect `coreRate` or the `XCORE` A/B
+    env, and a field-form scan finds **zero** overrides pairing `flavor:'true'` with a `coreRate` —
+    so skill-sourced true damage does not core. Crit was already settled (2026-07-25, in-game
+    confirmed): true damage CAN crit, both paths.
+  - **Consequence: no code change, and that is the finding.** The ⚑ closes as CONFORMANT rather than
+    as a fix. The risk this leaves is silent DRIFT — nothing stopped a future override from setting a
+    `coreRate` on a true-flavored skill effect, which is precisely the shape the ruling forbids — so
+    the rule is now pinned by a test rather than by prose. Carriers of the weapon path today:
+    `chisato`, `clay`, `eunhwa-tactical-upgrade`, `frima`, `jill`, `laplace`, `takina`.
+  - **Method note worth keeping.** Two of this session's "footage-blocked" items dissolved on being
+    asked about instead of measured. The 2026-08-11 M-list triage recorded the same lesson in its own
+    words — "ask the owner before asking for a camera".
+
+- **(2026-08-13) A burst chain has ONE clock, not two: it lives 10s, and any unit that comes
   off cooldown inside it may fill it.**
   - **The rulings (owner, 2026-08-13).** An unfinished burst chain takes **10 seconds** to time out.
     The timeout and the auto's filler-wait horizon "should be two separate constants". And: "a unit

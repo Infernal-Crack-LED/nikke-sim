@@ -97,6 +97,16 @@ export type TriggerDef =
       countInFb?: number;
       countInFbStage?: number;
       perPull?: boolean; // true = count trigger PULLS (1 per shot), false/omitted = count landed PELLETS (`hitsPerShot` per shot). The SG 10× lever.
+      // WHICH attacks advance the counter. Default 'always' — every normal attack accrues, and the
+      // block's gates (fbGate/swapGate/…) are checked only when a threshold is CROSSED, so a
+      // crossing the gate blocks still SPENDS its N. That is right for a kit worded "every N normal
+      // attacks, [effect] during Full Burst" (the counting is unconditional; only the effect is
+      // scoped) and WRONG for one worded "landing N normal attack(s) DURING Full Burst", where
+      // out-of-window attacks should not count at all.
+      // 'gated' = accrue ONLY while the block's own gates pass, i.e. the kit's scope applies to the
+      // COUNTING. Opt-in per unit, read off the kit's wording — there is no way to infer which
+      // reading a kit means from the block shape alone, so this is authored, never defaulted.
+      countScope?: 'always' | 'gated';
     } // fires every `count` cumulative hits; `countInFb` overrides the threshold DURING Full Burst (RRH rocket meter: 120 out of burst → 60 in her FB). `countInFbStage` SCOPES that override: it then applies ONLY during the 10s window after the owner's OWN burst cast at that stage (prose "▼N for 10 sec" granted by that cast — RRH's ▼60 is a Stage-3 line, owner ruling 2026-08-04), NOT any team FB window; without it the any-FB-state convention stays (SWID)
   | {
       kind: 'chargeCounter';
@@ -324,10 +334,14 @@ export type EffectDef =
       intervalSec?: number;
       noRange?: boolean;
       noFb?: boolean;
-      crit?: boolean; // this DoT's ticks roll crit at the caster's sheet rate — opt-in ONLY where MEASURED
-      // (isabel's ~14.7s periodic hit: ~15-25% of fires observed critting; docs/probe-data/isabel-sg-band.json).
-      // Overrides the global DOT_CRIT gate (which stays default-OFF): most DoTs are validated NON-crit
-      // (jill's acid tick video-confirmed at 99.7% non-crit; mihara's Ensnaring validated at 1.03 non-crit).
+      crit?: boolean; // this DoT's ticks roll crit at the caster's sheet rate. Sets the tick's crit
+      // behaviour EXPLICITLY, overriding the global DOT_CRIT gate in either direction — and that gate
+      // has defaulted ON since 2026-07-21 (sim.ts `DOT_CRIT = ENV.DOTCRIT !== 'off'`; DECISIONS), so
+      // `crit:false` is the meaningful OPT-OUT for a DoT measured non-crit and `crit:true` is an
+      // explicit pin that does not depend on the default. Measured anchors both ways: isabel's ~14.7s
+      // periodic hit crits (3 of 11 fires, crit = non-crit ×1.5 exactly;
+      // docs/probe-data/isabel-sg-band.json), while jill's acid tick is video-confirmed 99.7%
+      // non-crit and mihara-bonding-chain's Ensnaring validated at 1.03 non-crit.
       flavor?:
         | 'distributed'
         | 'sustained'

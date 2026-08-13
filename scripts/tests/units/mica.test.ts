@@ -22,7 +22,7 @@
 //
 // Kit (blablalink prose, data/characters.json → characters.mica.skills, lvl 10):
 //   S1 ■ attacked 20× → self:
-//        DEF ▲39.18% for 10S                                              [UNMODELED — M1]
+//        DEF ▲39.18% for 10S                                     [ENCODED, DORMANT — M1]
 //   S2 ■ 2 allies with the highest final ATK (20s cooldown, no activation clause):
 //        Max Ammunition Capacity ▲2 round(s) for 10 sec                        [FAITHFUL — M4]
 //        DEF ▲19.89% for 10 sec                                                [FAITHFUL — M5]
@@ -33,15 +33,20 @@
 // Mica is a wind-element B1 SUPPORTER whose kit splits into three families:
 //
 //   • M1 (the whole S1 sentence) is gated on "attacked 20 times" — a counter of hits
-//     RECEIVED. The sim has NO incoming-damage model (the `attacked` trigger primitive
-//     exists — makima/yulha encode theirs — but the v1 boss never acts, so nothing feeds
-//     it), the counter never accrues and the line never fires.
-//     The effect side (self DEF ▲39.18%) would be damage-INERT even if it fired (self DEF
-//     never feeds damage dealt). admi carries the IDENTICAL "attacked 20 time(s)" S1
-//     archetype and jackal/maiden/noise/yulha the family — all ruled UNMODELED + ⚑.
-//     The omission is pinned by ABSENCE (no defPct 39.18 anywhere) and by the
-//     attacks-misread counterfactual (hitCount:20 on her OWN shots) which DOES apply the
-//     buff — proving the shipped zero is a choice, not a stale fixture.
+//     RECEIVED — and is ENCODED kit-verbatim on the `attacked` trigger (owner ruling
+//     2026-08-13: encode it for family consistency even though it is inert today).
+//     It is dormant BY MECHANISM: the engine's ONLY caller of recordAttack is the
+//     `manualAttacks` test hook, so no production comp can advance the counter, and the
+//     effect side (self DEF ▲39.18%) would be damage-INERT even if it fired (self DEF
+//     never feeds damage dealt).
+//     Family state, verified against the tree rather than assumed — an earlier version of
+//     this header had it backwards on three units. ENCODED: makima/20, admi/20, jackal/10,
+//     yulha/30, anis/40, mica/20. Still UNMODELED: maiden, noise, rapi — the remaining
+//     follow-up, deliberately not swept here.
+//     Dormancy is pinned from BOTH sides, since "no buff appears" alone would also be what
+//     a broken encoding looks like: the block ships with the kit's shape and emits zero
+//     applications normally, but firing 20 attacks through the hook DOES apply it. The
+//     attacks-misread counterfactual (hitCount:20 on her OWN shots) stays red.
 //   • M4/M5 (S2) is the kit's load-bearing channel: a 20s-CD skill with NO activation
 //     clause = interval:20 (the CD-driven skill2 convention — poli/himeno precedent; first
 //     fire at t=20s, 50% duty cycle: 10s window every 20s), targeting the 2 allies with
@@ -301,20 +306,49 @@ describe('mica — kit spec', () => {
     });
   });
 
-  describe('M1 — S1 (attacked-20× → self DEF ▲39.18%) is genuinely unmodeled', () => {
-    it('is recorded VERBATIM in the override unmodeled block', () => {
+  describe('M1 — S1 (attacked-20× → self DEF ▲39.18%) is encoded, and dormant', () => {
+    it('is ENCODED kit-verbatim on the attacked trigger, not parked in unmodeled', () => {
       const ov = loadOverride('mica') as any;
-      const joined = ov.unmodeled.skill1.join('\n');
-      expect(joined).toContain('Activates when attacked 20 time(s)');
-      expect(joined).toContain('DEF ▲ 39.18% for 10S.');
+      expect(ov.unmodeled.skill1).toEqual([]);
+      expect(ov.skill1).toEqual([
+        {
+          slot: 'skill1',
+          trigger: { kind: 'attacked', count: 20 },
+          target: { kind: 'self' },
+          effects: [
+            { kind: 'buff', stat: 'defPct', value: 39.18, durationSec: 10 },
+          ],
+        },
+      ]);
     });
 
-    it('applies NO defPct 39.18 anywhere — the attacked-20x counter can never accrue in-sim', () => {
+    it('applies NO defPct 39.18 anywhere — the attacked-20x counter never accrues in-sim', () => {
       expect(
         buffs(base.events).filter(
           (b) => b.stat === 'defPct' && b.value === 39.18
         )
       ).toHaveLength(0);
+    });
+
+    it('DORMANT-NOT-BROKEN: feeding 20 attacks via the manualAttacks hook DOES fire it', () => {
+      const events: SimEvent[] = [];
+      runComp({
+        slugs: [...SLUGS],
+        bossElement: null,
+        focusSlug: 'mica',
+        unitLimits: { mica: { stars: 3, core: 0 } },
+        cfg: {
+          manualAttacks: SLUGS.map((_, i) =>
+            i === MICA ? Array.from({ length: 20 }, (_, k) => 60 + k) : []
+          ),
+          onEvent: (e) => events.push(e),
+        },
+      });
+      const fired = buffs(events).filter(
+        (b) => b.stat === 'defPct' && b.value === 39.18
+      );
+      expect(fired.length).toBe(1);
+      expect(fired[0].targetIdx).toBe(MICA);
     });
 
     it('the omission is a choice: the attacks-misread (hitCount:20) counterfactual applies the buff', () => {

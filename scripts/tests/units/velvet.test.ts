@@ -290,6 +290,21 @@ const cfProcNoGate = withPatchedOverride('velvet', (ov: any) => {
     throw new Error('velvet S2 hitCount proc block missing — fixture is stale');
   }
 });
+/** V4 count-SCOPE counterfactual: drop `countScope:'gated'` so the counter accrues over ALL normal
+ *  attacks again and only the FIRING is gated — the pre-2026-08-13 engine semantics. In FIXTURE_OFF
+ *  that leaks one proc her kit never grants ("landing 50 normal attack(s) DURING Full Burst"). */
+const cfProcCumulative = withPatchedOverride('velvet', (ov: any) => {
+  let hit = 0;
+  for (const b of ov.skill2) {
+    if (isS2Proc(b)) {
+      delete b.trigger.countScope;
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error('velvet S2 hitCount countScope missing — fixture is stale');
+  }
+});
 /** V4 nearest-wrong (threshold/effect): lower hitCount 50 → 5 so the proc fires in-FB (proves the encoding). */
 const cfProcCount5 = withPatchedOverride('velvet', (ov: any) => {
   let hit = 0;
@@ -373,6 +388,7 @@ const s1NoGate = run({ velvet: cfS1NoGate });
 // the team buff cannot fire at all in the sole-B2 fixture, so a counterfactual run there would be
 // vacuously zero for both the shipped encoding and the nearest-wrong reading.
 const procNoGate = run({ velvet: cfProcNoGate });
+const procCumulative = runOff({ velvet: cfProcCumulative });
 const procCount5 = run({ velvet: cfProcCount5 });
 const burstFbEnter = run({ velvet: cfBurstFbEnter });
 const burstDur3 = run({ velvet: cfBurstDur3 });
@@ -567,25 +583,35 @@ describe('velvet — kit spec', () => {
         ...new Set(selfBuffs.map((b) => b.expiresFrame! - b.frame)),
       ]).toEqual([5 * FPS]);
     });
-    // ⚑ PINNED DIVERGENCE, off-B2 mode. Her SR lands 36 in-FB shots across the fight (7.2 per
-    // window), so the KIT-LITERAL reading — "landing 50 normal attack(s) during Full Burst" counts
-    // only in-FB attacks — fires ZERO procs here. The engine's hitCount counter is cumulative over
-    // ALL normal attacks and only GATES the firing, so her 100th overall shot crosses 50 while a
-    // Full Burst happens to be live and pays out once. The two readings converge when swap shots
-    // dominate (55 vs 54 in the sole-B2 fixture) and diverge at low volume like this. Engine-wide
-    // hitCount semantics, not a velvet encoding choice — pinned so it cannot drift silently.
-    it('PIN: her SR stays under the in-FB threshold, and cumulative counting leaks exactly one proc', () => {
+    // off-B2 mode, and the sharpest test of the count SCOPE. Her SR lands 36 in-FB shots across the
+    // fight (7.2 per window), so the kit-literal reading of "landing 50 normal attack(s) DURING
+    // Full Burst" — only in-FB attacks count — never reaches 50 and fires ZERO procs.
+    // Her trigger carries `countScope:'gated'`, so that is what ships (engine item 6, 2026-08-13).
+    // This assertion previously pinned ONE proc: the counter used to accrue over ALL normal
+    // attacks and gate only the FIRING, so her 100th overall shot crossed 50 while a Full Burst
+    // happened to be live and paid out. That leak is the defect the count scope fixes, and this
+    // fixture is where it was visible — the two readings converge when swap shots dominate
+    // (55 vs 54 in the sole-B2 fixture) and diverge only at low volume like this.
+    it('the kit-literal scope fires ZERO procs — her SR never lands 50 attacks inside Full Burst', () => {
       const inFbShots = velDamage(off.events).filter(
         (d) =>
           d.srcSlot === 'normal' &&
           offWins.some(([a, z]) => d.frame >= a && d.frame <= z)
       ).length;
-      expect(inFbShots).toBeLessThan(50); // kit-literal reading: zero procs
+      expect(inFbShots).toBeLessThan(50);
       const hits = velDamage(off.events).filter(
         (d) => d.srcSlot === 'skill2' && d.atkPct > 100
       );
-      expect(hits.length).toBe(1); // engine's cumulative counter: one
-      expect(offVelBuffs(off.events, 'attackDamagePct', 15.03).length).toBe(1);
+      expect(hits.length).toBe(0);
+      expect(offVelBuffs(off.events, 'attackDamagePct', 15.03).length).toBe(0);
+    });
+    // DISCRIMINATING: the pre-fix semantics as an explicit counterfactual, so the ZERO above is
+    // provably the count SCOPE's doing and not just a quiet fixture.
+    it('DISCRIMINATING: cumulative counting (countScope dropped) leaks exactly one proc here', () => {
+      const hits = velDamage(procCumulative.events).filter(
+        (d) => d.srcSlot === 'skill2' && d.atkPct > 100
+      );
+      expect(hits.length).toBe(1);
     });
     it('DISCRIMINATING (gate): dropping inFb lets the threshold proc OUT of FB too — the gate suppresses those', () => {
       const hits = procHits(procNoGate.events);

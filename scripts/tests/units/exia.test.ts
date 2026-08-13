@@ -44,8 +44,10 @@
 //
 // Why each assertion discriminates:
 //   X3  a removed-block run must leave her reload gaps untouched — proven behaviourally by the
-//       shot COUNT (faster reloads → more pulls in 180s). "Fixed at" clamp semantics are NOT
-//       encoded (additive buff); inert here — no other reload buffer in the fixture (⚑).
+//       shot COUNT (faster reloads → more pulls in 180s). "Fixed at" clamp semantics ARE encoded,
+//       via the dedicated `reloadSpeedClamp` stat that the reload-frame path prefers over any
+//       additive `reloadSpeedPct` buff. What these assertions cannot discriminate is clamp vs
+//       additive: no other reload buff exists in this fixture, so the two coincide here (⚑).
 //   X4  the ramp is the discriminator: an INSTANT-MAX counterfactual (+140% from shot 1) and a
 //       NO-STACKS counterfactual (+0% forever) both produce a FLAT magazine-0 baseAtk sequence;
 //       only the live perResource pool rises for six pulls and then holds. baseAtk (ATK after
