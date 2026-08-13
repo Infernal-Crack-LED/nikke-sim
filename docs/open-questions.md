@@ -591,14 +591,19 @@ divergences remain at the same call site. **They are not the same kind of open:*
    documented rule (`burst-gauge.md` §5, every skill/additional-damage impact generates) and the one
    MEASURED function rider (`maiden-ice-rose`, `burst-gauge.md`:145 — a visible second bar sub-step
    per pull) already answered the direction. → DECISIONS 2026-08-13.
-   **Board effect: none — but by two different strengths of reason** (census:
-   `scripts/battery/u28-gauge-ab.ts --lock-census`). A field-form sweep finds exactly four carriers,
-   one rider each, all `burstCast`-triggered: `nayuta` 10s, `neon-vision-eye` 10s, `neon-blue-ocean`
-   7s are inert **by mechanism** (a rider granted by the stage-3 cast that opens a 10s Full Burst
-   closes inside the lock in any comp); `modernia` 15s is inert **by measurement only** — her window
-   outlives Full Burst by ~4.6s, yet 0 emissions reach the bar across two comp shapes and 0 under the
-   `ROTMODEL=floor` arm that manufactures a post-FB stage-0 gap. Her tail is the discriminator if a
-   future comp ever moves.
+   **Board effect: none, BY MECHANISM** (census: `scripts/battery/u28-gauge-ab.ts --lock-census`, 0
+   unlocked emissions in every comp run). A field-form sweep finds exactly four carriers, one rider
+   each, all `burstCast`-triggered — but the covering argument is PER-CARRIER, keyed to burst stage:
+   `neon-vision-eye` (10s) and `neon-blue-ocean` (7s) are Burst III, so the granting cast opens a 10s
+   FB 22f later and the window is strictly inside it; `modernia` (15s) is Burst III whose same
+   `burstCast` grants `fullBurstExtend: 5`, so her window closes inside her OWN 15.37s FB; `nayuta`
+   (10s) is Burst **II** and opens no FB at all — the `stage !== 0` half of the lock covers her, and
+   on a chain collapse her rider's 600f expiry coincides exactly with `stageExpireFrame`, a zero-frame
+   hole (⚑ default-only: `CHAIN_TIMEOUT=120` would open a real 8s one). ⚑ Two write-ups of this got it
+   wrong in opposite directions — do not re-derive `modernia` against a nominal 10s FB (reads as a
+   false 4.6s exposed tail), and do not extend the Burst-III argument to `nayuta`. What would expose
+   the emission: a rider window outliving the Full Burst its own cast opens, or a chain expiring while
+   a window is live.
    **Residual (the half still open):** `extraHitDamagePct` is a SUMMED stat dealt as ONE impact, so
    two riders on one unit would emit once where two `flatDamage` riders emit twice. No unit carries
    two today; fixing it means the stat stops being summed.

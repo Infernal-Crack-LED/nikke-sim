@@ -33,10 +33,11 @@ T1 wind-weak, N3 scarlet/liberalio iron), each under-counting measured full burs
 
 - **U28 rider-encoding asymmetry — ENCODED.** `extraHitDamagePct` now emits `skillGauge` per impact,
   like an equivalent `flatDamage` rider. Answered, not measured: `docs/data/burst-gauge.md` §5 plus
-  the `maiden-ice-rose` solo anchor (12.55%/pull = 910 weapon + 364 rider). Board movement zero —
-  `scripts/battery/u28-gauge-ab.ts --lock-census` shows the ≤10s riders (`nayuta`,
-  `neon-vision-eye`, `neon-blue-ocean`) sit inside the chain+FB gauge lock by mechanism and
-  `modernia`'s 15s by measurement only. **This also answers the 2026-08-10 "re-run the arm in the
+  the `maiden-ice-rose` solo anchor (12.55%/pull = 910 weapon + 364 rider). Board movement zero BY
+  MECHANISM — `scripts/battery/u28-gauge-ab.ts --lock-census` shows every carrier's rider window
+  closes inside the chain+FB gauge lock, by a per-carrier argument keyed to burst stage (`modernia`'s
+  15s against her own `fullBurstExtend: 5`, not the nominal 10s; `nayuta` is Burst II and is covered
+  by the chain lock, not by any Full Burst of her own). Full reasoning: DECISIONS 2026-08-13. **This also answers the 2026-08-10 "re-run the arm in the
   refill-bound charge-B3 shape before generalizing" caveat:** T5 wind-weak (`nayuta`) is 55/55
   locked, and the other three disabled comps seat no `extraHitDamagePct` carrier at all — so U28 is
   not part of their shortfall.

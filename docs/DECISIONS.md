@@ -3656,22 +3656,49 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
     `shotFired` → `flatDamage` block. Per the 2026-08-11 owner ruling (answered question ⇒ encode +
     `/code-review`, the onus on the code not the answer), `skillGauge(u, frame)` now fires at the
     `extraHitDamagePct` call site in `firePull`.
-  - **Its board movement is ZERO, and the two reasons are of DIFFERENT strength — the distinction is
-    the point.** A field-form sweep of all 67 overrides finds exactly four carriers, each holding
-    exactly ONE rider, each a `burstCast`-triggered buff: `nayuta` 10s, `neon-vision-eye` 10s,
-    `neon-blue-ocean` 7s, `modernia` 15s. `addGauge` is locked for the burst chain and Full Burst.
-    - **Three are inert BY MECHANISM.** A rider granted by the stage-3 cast that opens a 10s Full
-      Burst, lasting ≤10s, closes no later than that Full Burst does (FB starts 22f after the cast, so
-      even the 10s pair are strictly inside). No comp can expose them; no consumer exists roster-wide.
-    - **`modernia` is inert BY MEASUREMENT, not by mechanism** — her 15s outlives Full Burst by ~4.6s,
-      so a stage-0 gap in which she is both buffed and firing WOULD reach the bar. None occurs:
-      2103/2103 emissions locked in the `liter`/`crown` control comp (her rider windows measured
-      13.3–15.0s, i.e. the full duration, all covered by FB plus the chain that follows it), and
-      50,795/50,795 across the N2 comp (`d-killer-wife`/`naga`/`chisato`/`ein` — a different shape
-      seating neither `liter` nor `crown`). It survives an adversarial arm too: under `ROTMODEL=floor`,
-      which forcibly inserts a 2.5s post-FB chain-open block and so manufactures the stage-0 gap, still
-      0 emissions reach the bar. **The discriminator, if a future comp ever moves:** a post-FB gap
-      where `modernia` is firing with her rider live.
+  - **Its board movement is ZERO, BY MECHANISM — no comp shape can expose it.** A field-form sweep of
+    every file in `src/skills/overrides/` (185 of them) finds exactly four carriers, each holding
+    exactly ONE rider, each a `burstCast`-triggered buff: `modernia` 15s, `nayuta` 10s,
+    `neon-vision-eye` 10s, `neon-blue-ocean` 7s. `addGauge` is locked for the burst chain and Full
+    Burst, and every window closes inside that lock — **but the argument is PER-CARRIER and turns on
+    the unit's BURST STAGE, which is exactly where this entry went wrong twice before it was right:**
+    - `neon-vision-eye` / `neon-blue-ocean` — Burst III, so the cast granting the rider IS the cast
+      that opens a 10s Full Burst 22f later. Window strictly inside.
+    - `modernia` — Burst III, and the apparent exception at 15s. She is not one: the SAME `burstCast`
+      also grants `fullBurstExtend: 5`, so HER Full Burst runs cast+22f .. cast+15.37s and her rider
+      closes inside her own extended window.
+    - `nayuta` — **Burst II**, so her cast opens the STAGE-3 window, not a Full Burst; the
+      `stage !== 0` half of the lock is what covers her, not `fbEndFrame`. If the chain completes she
+      is locked through Full Burst. If it COLLAPSES, `stageExpireFrame` (her cast +
+      `CHAIN_TIMEOUT_FRAMES`, 600f) coincides exactly with her rider's own 600f expiry, and buffs die
+      on `expiresFrame <= frame` while the stage resets on `frame >= stageExpireFrame` — so the
+      exposure hole is exactly ZERO frames. ⚑ That coincidence is DEFAULT-ONLY: under the
+      `CHAIN_TIMEOUT=120` A/B arm the chain dies 8s before her rider does and she would generate.
+    - Empirical confirmation (`--lock-census`): 0 unlocked emissions everywhere — `modernia`
+      2103/2103 in the `liter`/`crown` control comp and 2001/2001 in N2
+      (`d-killer-wife`/`naga`/`chisato`/`ein`, seating neither `liter` nor `crown`; the same comp
+      under `experiment.ts`'s default 25-seed MC reads 50,795/50,795), `neon-blue-ocean` 2044/2044,
+      `neon-vision-eye` 21/21, `nayuta` 55/55. ⚑ `nayuta`'s coverage is thin on purpose-worth-noting
+      grounds: her rider never fires in the control shape (`crown` takes every B2 cast), so T5
+      wind-weak is her only row and the mechanism argument is doing the real work for her.
+    - **TWO caught errors worth keeping, because both are the same mistake: assuming the nominal
+      rotation instead of reading the carrier's own.** (i) The first write-up demoted `modernia` to
+      "inert by measurement only", reasoning that her 15s rider "outlives Full Burst by ~4.6s" —
+      arithmetic against a 10s Full Burst she never has. The census's flat 15.0s emission windows are
+      HER EXTENDED FULL BURST, not a rider spilling past one. (ii) The correction then over-generalised
+      the other way — "every window closes inside the Full Burst its own cast opens" — which is false
+      for `nayuta`, who is Burst **II** and opens no Full Burst at all. Both were caught by the
+      cross-family code review (kimi-code/k3), neither by the author; the second was introduced BY the
+      fix for the first, which is the usual way a correction pass goes wrong.
+      **So: reason about a carrier against the rotation its OWN cast produces.** Two cheap checks,
+      both of which settle it in one command: `characters.json` `burst` for the stage, and
+      `ROT=1 SEEDS=1 ONLY="N2 modernia wind" npx tsx scripts/experiment.ts` for the Full Burst
+      lengths — the ones `modernia` casts run 15.0s (6.2→21.2, 46.8→61.8, 86.7→101.7, 126.4→141.4,
+      165.5→180.5), the ones she does not run 10.0s (28.7→38.7, 69.6→79.6, 108.4→118.4,
+      148.8→158.8). `fullBurstExtend` carriers today: `d`, `isabel`, `mihara`, `modernia`,
+      `soda-twinkling-bunny`, `vesti`.
+    - **What would actually expose the emission:** a carrier whose rider window outlives the Full
+      Burst its own cast opens (none today), or a chain that expires mid-window.
     - Both readings hold in the refill-bound "charge-B3" comps the 2026-08-10 handoff asked to re-check
       before generalizing: T5 wind-weak (`nayuta`) 55/55 locked; the other three disabled comps seat no
       `extraHitDamagePct` carrier at all, so U28 cannot be part of their shortfall.

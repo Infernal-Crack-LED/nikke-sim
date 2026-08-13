@@ -4295,12 +4295,25 @@ export function runSim(
       //
       // DBG_RIDERGAUGE=1 taps this emission site (slug / frame / whether `addGauge`'s chain+FB lock
       // swallows it). `scripts/battery/u28-gauge-ab.ts --lock-census` reads it, and is why this line
-      // moves no comp: `nayuta`/`neon-vision-eye` (10s) and `neon-blue-ocean` (7s) hold riders granted
-      // by the stage-3 cast that opens a 10s Full Burst, so their windows close inside it BY
-      // MECHANISM; `modernia`'s 15s outlives FB by ~4.6s and is covered only BY MEASUREMENT (0 of
-      // 2103 + 50,795 emissions reach the bar across two comp shapes, and 0 under the ROTMODEL=floor
-      // arm that manufactures a post-FB stage-0 gap). Her tail is the one thing that could ever move:
-      // a post-FB gap where she is firing with the rider live.
+      // moves no comp: every carrier's rider window closes inside the lock BY MECHANISM. The argument
+      // is PER-CARRIER and depends on the unit's burst stage — do not collapse it into one sentence:
+      //   * neon-vision-eye (10s) and neon-blue-ocean (7s) are Burst III, so the cast that grants the
+      //     rider IS the cast that opens a 10s Full Burst starting 22f later — window strictly inside.
+      //   * modernia (15s) is Burst III too and looks like an exception; she is not. The SAME
+      //     `burstCast` grants `fullBurstExtend: 5`, so HER Full Burst runs cast+22f .. cast+15.37s
+      //     (ROT=1 log: her FBs run 15.0s, everyone else's 10.0s). Never reason about her against the
+      //     nominal 10s.
+      //   * nayuta (10s) is Burst II — her cast opens the STAGE-3 window, not a Full Burst, so the
+      //     `stage !== 0` half of the lock is what covers her, not `fbEndFrame`. If the chain
+      //     completes she is locked through Full Burst; if it COLLAPSES, `stageExpireFrame` is her
+      //     cast + CHAIN_TIMEOUT_FRAMES (600f) and her rider expires at cast + 600f, and since buffs
+      //     die on `expiresFrame <= frame` while the stage resets on `frame >= stageExpireFrame`, the
+      //     exposure hole is exactly ZERO frames. ⚑ That coincidence is default-only: under the
+      //     `CHAIN_TIMEOUT=120` A/B arm the chain collapses 8s before her rider expires and she WOULD
+      //     generate. Her rider is also dormant in the control shape (crown takes every B2 cast), so
+      //     the T5 wind-weak census row is her only empirical coverage.
+      // What WOULD expose the emission generally: a rider window that outlives the Full Burst its own
+      // cast opens (none today), or a chain that expires while a window is still live.
       if (ENV.DBG_RIDERGAUGE) {
         console.error(
           `[u28] ${u.char.slug} f=${frame} locked=${fbEndFrame > frame || stage !== 0}`
