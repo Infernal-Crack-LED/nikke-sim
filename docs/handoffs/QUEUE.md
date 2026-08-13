@@ -107,13 +107,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
        `types.ts` documents a resource-scaled DoT naming her Ensnaring, and `sim.ts`'s dot tick
        recomputes `atkPct = resources[name] × mult` with the comment "(mihara Ensnaring)" — and
        **zero** overrides used it. The engine half landed; the override was never migrated.
-       Work is DONE and parked on branch `mihara/ensnaring-live-pool`, deliberately NOT merged:
-       it is correct in structure but **blocked on QUEUE item 6**. A live pool moves her
-       1.034 → 1.182 HOT (±5% 14→13, ±8% 25→24) because generation runs ~5× too fast — 127
-       stack-gains in 180s where "+1 per 40 normals DURING Full Burst" implies roughly 25 — which
-       is item 6's `hitCount` scope defect exactly. Land the two TOGETHER (compensating-errors
-       rule), then re-read her board; the expected direction after the item-6 fix is that she cools
-       well below 1.182.
+       **LANDED 2026-08-13** together with item 6. Her Ensnaring is now a live
+       `resources.ensnaring` [0..20] pool driving a `perResource` DoT; no fitted stack number
+       remains. **She is now FIT-EXPOSED and that is the open follow-up:** 1.034 → 1.179 HOT on 2
+       graded comps (board ±5% 14→13, ±8% 25→24), full-burst count UNCHANGED at 11 vs measured 11,
+       so it is magnitude and not rotation. The retired 12-stack average sat BELOW what the kit's
+       own generation produces (~13.4 time-average), so removing it revealed an over-model
+       elsewhere in her kit — LOCALIZE that; do not restore the average. Same class as item 5
+       (`snow-white-heavy-arms`). Note the earlier hypothesis that item 6 explained her heat was
+       WRONG and is recorded as such: the fix moved her only 1.182 → 1.179, because her pool is
+       cap-bound and the 20 ceiling absorbs the over-generation.
        `takina`'s is item 4 below and is still open.
    - **Held primitives, logged not built** (F11 discipline — one carrier each): `moran` S1
      DEF ▲/stack, `maxwell` `byFinalAtk`, `helm`'s held tag. Leave held; the log is the point.
@@ -162,7 +165,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    change. Same class as the 2026-07-21 rotation-fix exposure: the fix is right, the unit's fit was
    standing on the bug. Re-tune her against her existing recordings; do NOT restore the old timing.
 
-6. **⚑ `hitCount` counts attacks the kit would not count (engine-wide, surfaced via `velvet`).** The
+6. **DONE 2026-08-13 — the option landed; 16 carriers remain UNMIGRATED, which is the open part.**
+   `countScope?: 'always' | 'gated'` on the hitCount trigger; `'gated'` accrues only while the
+   block's own gates pass (reuses `blockGatesPass`, so it honours every gate, not just `fbGate`).
+   Default `'always'` keeps the roster byte-identical — the block shape cannot distinguish the two
+   kit readings, only the WORDING can, so migration is authored per unit. Migrated 2 of 24 gated
+   blocks: `velvet` ×2 and `mihara-bonding-chain`. **Still to triage, one kit-wording read each:**
+   `asuka-wille`, `elegg`, `guillotine`, `guillotine-winter-slayer`, `kurumi`,
+   `laplace-ultimate-hero`, `marciana-marine-study`, `mica-snow-buddy`, `modernia`, `moran`,
+   `power`, `privaty-unkind-maid`, `rei-ayanami-tentative-name`, `rem`, `rouge`. The test to apply:
+   does the kit scope the COUNTING ("landing N normal attack(s) **during X**") or only the EFFECT
+   ("every N normal attacks, [effect] during X")? Only the former takes `'gated'`.
+   _Original entry, kept for the shape of the defect:_ The
    trigger's counter accrues on EVERY normal attack and the gate (`fbGate` etc.) is applied at
    FIRING time, so a threshold crossing that the gate blocks still SPENDS its N. For a kit line
    worded "landing 50 normal attack(s) **during Full Burst**", out-of-FB attacks should not advance
