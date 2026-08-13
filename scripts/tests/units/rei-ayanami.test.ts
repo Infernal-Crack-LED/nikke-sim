@@ -358,7 +358,10 @@ describe('rei-ayanami — kit spec', () => {
         reiBursts(base.events).length
       );
       for (const c of reiBursts(base.events)) {
-        expect(entries.some((f) => f < c.frame && c.frame - f <= 60)).toBe(
+        // within the chain's LIFE (10s, CHAIN_TIMEOUT_FRAMES), not one 30f chain gap: a Burst III
+        // that comes off cooldown mid-chain fills it, so the entry can lead its cast by seconds
+        // (measured here: crown enters stage 3 at 7651, rei-ayanami casts at 8228 — 577f later).
+        expect(entries.some((f) => f < c.frame && c.frame - f <= 600)).toBe(
           true
         );
       }

@@ -478,7 +478,9 @@ describe('snow-white-heavy-arms — kit spec', () => {
       expect(dursOf(atk)).toEqual([10 * FPS]);
       expect(atk.map((b) => b.frame).sort((a, b) => a - b)).toEqual(entries);
       for (const f of castFrames(base.events)) {
-        expect(entries.some((e) => e < f && f - e <= 60)).toBe(true);
+        // within the chain's LIFE (10s), not one 30f gap — a B3 coming off cooldown mid-chain
+        // still fills it, so an entry may lead its cast by seconds (owner ruling 2026-08-13).
+        expect(entries.some((e) => e < f && f - e <= 600)).toBe(true);
       }
     });
     it('DISCRIMINATING (duration): 5s (nearest-wrong) is not the prose 10s', () => {
