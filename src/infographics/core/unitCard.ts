@@ -36,6 +36,7 @@ import {
   roundRect,
   fitText,
   wrapText,
+  drawContained,
   PORTRAIT_CROP_TOP,
 } from './canvas2d.js';
 import {
@@ -46,6 +47,8 @@ import {
   TEXT_DIM,
   rankColor,
   WATERMARK,
+  drawBrandMark,
+  splitFooter,
 } from './theme.js';
 import type { UnitCardModel, RankTile, BarChart } from './unitCardData.js';
 
@@ -124,7 +127,7 @@ export interface UnitCardData {
   portrait?: unknown; // pre-loaded character art
   icons?: UnitCardIcons;
   siteIcon?: unknown; // nikkesim-icon.png, the second (prominent) mark
-  footer?: string; // descriptor ADDED to the watermark; can never replace it
+  footer?: string; // which nikkesim.app path the mark names; can never remove it
 }
 
 // Ink-guard geometry (see node/render.ts assertTitleInk). MUST cover text and
@@ -159,36 +162,9 @@ function panel(ctx: Canvas2DLike, r: Rect, radius = 12): void {
   ctx.fill();
 }
 
-// Draw an image contained in a box, preserving its aspect ratio and centring it.
-// Icons are not uniformly square (code_* is 63×73, burst_1 is 17×37), so a
-// stretch-to-fit would distort the artwork.
-function drawContained(ctx: Canvas2DLike, img: unknown, r: Rect): void {
-  const im = img as {
-    naturalWidth?: number;
-    naturalHeight?: number;
-    width?: number;
-    height?: number;
-  };
-  const iw = im.naturalWidth ?? im.width ?? r.w;
-  const ih = im.naturalHeight ?? im.height ?? r.h;
-  if (!iw || !ih) {
-    return;
-  }
-  const scale = Math.min(r.w / iw, r.h / ih);
-  const w = iw * scale;
-  const h = ih * scale;
-  ctx.drawImage(
-    img,
-    0,
-    0,
-    iw,
-    ih,
-    r.x + (r.w - w) / 2,
-    r.y + (r.h - h) / 2,
-    w,
-    h
-  );
-}
+// drawContained (aspect-preserving fit into a box — icons are not uniformly
+// square, so a stretch-to-fit would distort the artwork) lives in canvas2d.ts:
+// the mark's icon draw shares it with every other card.
 
 // Character art, square-cropped and element-ringed. Degrades to a tinted box
 // with the name's initial — the existing path, kept because ~all pre-release
@@ -277,24 +253,17 @@ function drawTitle(
   //
   // The icon scales with the variant — a fixed 40px read as an afterthought on
   // the portrait canvas, where everything around it is roughly 1.6× larger.
-  const logo = big ? 60 : 40;
-  const markSize = big ? 22 : 15;
-  ctx.font = `700 ${markSize}px ${FONT}`;
-  const wordW = ctx.measureText(WATERMARK).width;
-  let markRight = r.x + r.w;
-  if (d.siteIcon) {
-    drawContained(ctx, d.siteIcon, {
-      x: markRight - logo,
-      y: r.y + (big ? 4 : 2),
-      w: logo,
-      h: logo,
-    });
-    markRight -= logo + (big ? 12 : 8);
-  }
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#5b9dff'; // --accent
-  ctx.fillText(WATERMARK, markRight - wordW, r.y + (big ? 36 : 26));
-  const nameMax = markRight - wordW - 20 - textX;
+  const markLeft = drawBrandMark(ctx, {
+    right: r.x + r.w,
+    top: r.y + (big ? 4 : 2),
+    text: splitFooter(d.footer, WATERMARK).mark,
+    icon: d.siteIcon,
+    iconSize: big ? 60 : 40,
+    fontSize: big ? 22 : 15,
+    gap: big ? 12 : 8,
+    baselineOffset: big ? 32 : 24,
+  });
+  const nameMax = markLeft - 20 - textX;
 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';

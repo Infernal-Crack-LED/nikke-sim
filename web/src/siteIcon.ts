@@ -1,6 +1,6 @@
 // Cached loader for the site's nikkesim-icon.png mark — the small logo drawn
-// beside the title on every share/preview card (dps chart, table card, unit
-// card watermark). Node rasterizes the same source PNG via sharp
+// in the top-right corner of every share/preview card, beside the nikkesim.app
+// wordmark (core/theme.ts drawBrandMark). Node rasterizes the same source PNG via sharp
 // (src/server/app.ts); this is its browser twin, served from web/public/ at
 // the root. Mirrors teamShare.ts's ensureRoboto load-once-cache pattern:
 // resolves null on any failure (or outside a real browser, e.g. JSDOM smoke)

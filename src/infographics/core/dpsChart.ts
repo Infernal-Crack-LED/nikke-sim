@@ -20,13 +20,15 @@ import {
   BAR_LABEL_GAP,
   PORTRAIT_CROP_TOP,
 } from './canvas2d.js';
-import { FONT, ELEMENT_COLORS, drawWatermark } from './theme.js';
-import { windowRows } from './window.js';
 import {
-  siteIconSizeFor,
-  siteIconTopFor,
-  TITLE_CAP_HEIGHT,
-} from './siteIcon.js';
+  FONT,
+  ELEMENT_COLORS,
+  drawBrandMark,
+  drawFooterNote,
+  splitFooter,
+  brandMarkIconRect,
+} from './theme.js';
+import { windowRows } from './window.js';
 
 // Relative-normalized score against the POPULATION #1's dps (`DpsChartData.topDps`
 // — never the rendered window's max): the population #1 is 1.000 in EVERY image,
@@ -69,31 +71,28 @@ export interface DpsChartData {
   bars: DpsBar[]; // sorted desc; full population when `window` is set, else the exact rows to draw
   window?: DpsWindow;
   compare?: DpsCompare | null;
-  icon?: unknown; // optional canvas-drawable image drawn beside the title
-  footer?: string; // descriptor added to the watermark footer (theme.ts)
+  icon?: unknown; // the nikkesim.app mark's icon, drawn top-right
+  footer?: string; // which nikkesim.app path the mark names + any note (theme.ts)
 }
 
 export const CHART_W = 900;
 const PAD_X = 36;
 const HEAD_H = 118;
 const ROW_H = 52;
-const FOOT_H = 44;
+// Bottom pad — only the footer NOTE lands here now (see tableCard.ts's FOOT_H).
+const FOOT_H = 24;
 const COMPARE_H = 52;
 const TITLE_BASELINE_Y = 50;
 const TITLE_FONT_SIZE = 26;
-// The icon plate is scaled so its measured bar content (not its own bounding
-// box) spans the title's cap height — see core/siteIcon.ts for why.
-const ICON = siteIconSizeFor(TITLE_CAP_HEIGHT[TITLE_FONT_SIZE]); // site icon square, drawn beside the title
 
-// Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. Starts at
-// the title's textX (padX + ICON + 12; 26px title, baseline y 50).
-export const DPS_TITLE_ICON = {
-  x: PAD_X,
-  y: siteIconTopFor(TITLE_BASELINE_Y, ICON),
-  size: ICON,
-} as const;
+// The mark's icon y — hung so it reads level with a 26px title on baseline 50.
+const MARK_TOP = 10;
+
+// Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. The
+// title starts at padX now that the mark sits top-right.
+export const DPS_TITLE_ICON = brandMarkIconRect(CHART_W, PAD_X, MARK_TOP);
 export const DPS_TITLE_INK_REGION = {
-  x: PAD_X + ICON + 12,
+  x: PAD_X,
   y: 24,
   w: 420,
   h: 36,
@@ -132,17 +131,27 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
   ctx.fillStyle = '#5b9dff';
   ctx.fillRect(0, 0, W, 5);
 
-  // icon + title + subtitle
+  // the nikkesim.app mark (top-right), then title + subtitle
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  let textX = padX;
-  if (data.icon) {
-    ctx.drawImage(data.icon, DPS_TITLE_ICON.x, DPS_TITLE_ICON.y, ICON, ICON);
-    textX = padX + ICON + 12;
-  }
+  const { mark, note } = splitFooter(
+    data.footer,
+    'nikke-sim · expected-value crits · scope-lock basis · partless boss'
+  );
+  const markLeft = drawBrandMark(ctx, {
+    right: W - padX,
+    top: MARK_TOP,
+    text: mark,
+    icon: data.icon,
+  });
+  const textX = padX;
   ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 ${TITLE_FONT_SIZE}px ${FONT}`;
-  ctx.fillText(data.title, textX, TITLE_BASELINE_Y);
+  ctx.fillText(
+    fitText(ctx, data.title, markLeft - 16 - textX),
+    textX,
+    TITLE_BASELINE_Y
+  );
   if (data.subtitle) {
     ctx.fillStyle = '#8b93a3';
     ctx.font = `400 16px ${FONT}`;
@@ -150,11 +159,8 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
   }
   ctx.fillStyle = '#8b93a3';
   ctx.font = `400 13px ${FONT}`;
-  ctx.fillText(
-    'relative to #1 DPS (1.00 = top) · 180s · nikke-sim',
-    textX,
-    102
-  );
+  // (no '· nikke-sim' tail — the mark above states it, in the accent, larger)
+  ctx.fillText('relative to #1 DPS (1.00 = top) · 180s', textX, 102);
   // §6.6: a windowed chart states its window in the header — this is what makes
   // "labels normalized to population #1, bars scaled to window max" unambiguous.
   if (windowed) {
@@ -292,14 +298,7 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
     ctx.fillText(relScore(c.dps, data.topDps), W - padX, y + 32);
   }
 
-  // footer — the mandatory watermark final pass (theme.ts): `footer` only adds
-  // a descriptor; it can never remove or replace the nikkesim.app mark.
-  drawWatermark(
-    ctx,
-    padX,
-    H - 18,
-    12,
-    data.footer,
-    'nikke-sim · expected-value crits · scope-lock basis · partless boss'
-  );
+  // footer — the descriptor's NOTE only; the mandatory mark is in the title row
+  // (theme.ts drawBrandMark).
+  drawFooterNote(ctx, padX, H - 9, 12, note);
 }

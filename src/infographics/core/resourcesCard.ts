@@ -15,7 +15,10 @@ import {
   TEXT_PRIMARY,
   TEXT_SECONDARY,
   TEXT_DIM,
-  drawWatermark,
+  drawBrandMark,
+  drawFooterNote,
+  splitFooter,
+  brandMarkIconRect,
 } from './theme.js';
 import {
   BOSS_TABLES,
@@ -26,11 +29,6 @@ import {
   type ModuleBoss,
   type StageDrops,
 } from './resourcesData.js';
-import {
-  siteIconSizeFor,
-  siteIconTopFor,
-  TITLE_CAP_HEIGHT,
-} from './siteIcon.js';
 
 // Icons are passed in ALREADY LOADED (platform-free like the rest of core/):
 // the Node host rasterizes them via node/icons.ts, the browser hands over
@@ -62,7 +60,7 @@ export interface ResSectionData {
 export interface ResourcesCardData {
   title: string;
   subtitle?: string;
-  icon?: unknown; // the nikkesim.app mark, drawn beside the title like every other card
+  icon?: unknown; // the nikkesim.app mark's icon, drawn top-right like every other card
   sections: ResSectionData[]; // one per BOSS_TABLES entry, in that order
   footer?: string;
 }
@@ -177,10 +175,8 @@ const PAD_X = 32;
 const HEAD_H = 96; // icon + title + subtitle band, matches tableCard's HEAD_H
 const TITLE_BASELINE_Y = 44;
 const TITLE_FONT_SIZE = 24;
-// The icon plate is scaled so its measured bar content (not its own bounding
-// box) spans the title's cap height — see core/siteIcon.ts for why.
-const ICON = siteIconSizeFor(TITLE_CAP_HEIGHT[TITLE_FONT_SIZE]);
-const FOOT_H = 40;
+// Bottom pad — only the footer NOTE lands here now (see tableCard.ts's FOOT_H).
+const FOOT_H = 22;
 
 const SECTION_TOP_GAP = 20; // space above a section's heading
 const HEADING_H = 24; // heading line height
@@ -204,14 +200,11 @@ export function resourcesCardHeight(sectionCount: number): number {
 }
 
 // Ink-guard geometry (see node/render.ts assertTitleInk / tableCard.ts's
-// TABLE_TITLE_INK_REGION comment) — starts at the title's textX, past the icon.
-export const RESOURCES_TITLE_ICON = {
-  x: PAD_X,
-  y: siteIconTopFor(TITLE_BASELINE_Y, ICON),
-  size: ICON,
-} as const;
+// TABLE_TITLE_INK_REGION comment) — starts at the title's textX, which is padX
+// now that the mark sits top-right.
+export const RESOURCES_TITLE_ICON = brandMarkIconRect(RESOURCES_CARD_W, PAD_X);
 export const RESOURCES_TITLE_INK_REGION = {
-  x: PAD_X + ICON + 12,
+  x: PAD_X,
   y: 16,
   w: 340,
   h: 34,
@@ -314,20 +307,20 @@ export function drawResourcesCard(
 
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  let textX = PAD_X;
-  if (data.icon) {
-    ctx.drawImage(
-      data.icon,
-      RESOURCES_TITLE_ICON.x,
-      RESOURCES_TITLE_ICON.y,
-      ICON,
-      ICON
-    );
-    textX = PAD_X + ICON + 12;
-  }
+  const { mark, note } = splitFooter(data.footer, 'nikke-sim');
+  const markLeft = drawBrandMark(ctx, {
+    right: W - PAD_X,
+    text: mark,
+    icon: data.icon,
+  });
+  const textX = PAD_X;
   ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 ${TITLE_FONT_SIZE}px ${FONT}`;
-  ctx.fillText(data.title, textX, TITLE_BASELINE_Y);
+  ctx.fillText(
+    fitText(ctx, data.title, markLeft - 16 - textX),
+    textX,
+    TITLE_BASELINE_Y
+  );
   if (data.subtitle) {
     ctx.fillStyle = '#8b93a3';
     ctx.font = `400 14px ${FONT}`;
@@ -340,5 +333,7 @@ export function drawResourcesCard(
     y += SECTION_H;
   });
 
-  drawWatermark(ctx, PAD_X, H - 16, 12, data.footer, 'nikke-sim');
+  // footer — the descriptor's NOTE only; the mandatory mark is in the title row
+  // (theme.ts drawBrandMark).
+  drawFooterNote(ctx, PAD_X, H - 8, 12, note);
 }

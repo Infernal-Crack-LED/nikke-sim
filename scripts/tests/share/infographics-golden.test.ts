@@ -194,10 +194,13 @@ describe('assertTitleInk regions are not satisfiable by the site icon alone', ()
     it(`${card}: icon-only canvas fails the ink guard`, async () => {
       const icon = await decodeToCanvas(SITE_ICON);
       expect(icon, 'site icon must decode for this test').not.toBeNull();
-      const canvas = createCanvas(600, 120);
+      // Wide enough to hold the mark's icon at its real top-right position —
+      // an off-canvas draw would make the guard pass for the wrong reason.
+      const W = Math.max(600, iconRect.x + iconRect.size + 8);
+      const canvas = createCanvas(W, 120);
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = '#101216';
-      ctx.fillRect(0, 0, 600, 120);
+      ctx.fillRect(0, 0, W, 120);
       ctx.drawImage(
         icon!,
         iconRect.x,

@@ -8,13 +8,14 @@ import {
   fitText,
   PORTRAIT_CROP_TOP,
 } from './canvas2d.js';
-import { FONT, drawWatermark } from './theme.js';
-import { windowRows } from './window.js';
 import {
-  siteIconSizeFor,
-  siteIconTopFor,
-  TITLE_CAP_HEIGHT,
-} from './siteIcon.js';
+  FONT,
+  drawBrandMark,
+  drawFooterNote,
+  splitFooter,
+  brandMarkIconRect,
+} from './theme.js';
+import { windowRows } from './window.js';
 
 export interface TableColumn {
   header: string;
@@ -50,8 +51,8 @@ export interface TableCardData {
   // slices with the §6.6 window): a row carrying a color draws every cell in
   // it. The olsim before/after card marks changed lines with the accent.
   rowColors?: (string | null)[];
-  footer?: string; // descriptor added to the watermark footer (theme.ts)
-  icon?: unknown; // optional canvas-drawable image drawn beside the title
+  footer?: string; // which nikkesim.app path the mark names + any note (theme.ts)
+  icon?: unknown; // the nikkesim.app mark's icon, drawn top-right
   portrait?: unknown; // optional character portrait drawn top-right
 }
 
@@ -60,23 +61,24 @@ const PAD_X = 32;
 const HEAD_H = 96;
 const COL_HEADER_H = 36;
 const ROW_H = 38;
-const FOOT_H = 40;
+// Bottom pad. Only the footer NOTE lands here (theme.ts splitFooter) — the
+// mark itself is up in the title row — and most cards have no note at all, so
+// this is a plain margin rather than the old 40px watermark band.
+const FOOT_H = 22;
 const TITLE_BASELINE_Y = 44;
 const TITLE_FONT_SIZE = 24;
-// The icon plate is scaled so its measured bar content (not its own bounding
-// box) spans the title's cap height — see core/siteIcon.ts for why.
-const ICON = siteIconSizeFor(TITLE_CAP_HEIGHT[TITLE_FONT_SIZE]); // site icon square, drawn beside the title
 const HEADER_ICON = 16; // per-column icon square, drawn beside a column header
+// The portrait's square + the gap the mark keeps clear of it.
+const PORTRAIT_SIZE = 64;
+const PORTRAIT_GAP = 16;
 
-// Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. Starts at
-// the title's textX (padX + ICON + 12; 24px title, baseline y 44).
-export const TABLE_TITLE_ICON = {
-  x: PAD_X,
-  y: siteIconTopFor(TITLE_BASELINE_Y, ICON),
-  size: ICON,
-} as const;
+// Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. The
+// title starts at padX now that the mark sits top-right, and TABLE_TITLE_ICON
+// is the mark's icon in its no-portrait position (a portrait shifts it left,
+// which only makes the guard's separation wider).
+export const TABLE_TITLE_ICON = brandMarkIconRect(TABLE_W, PAD_X);
 export const TABLE_TITLE_INK_REGION = {
-  x: PAD_X + ICON + 12,
+  x: PAD_X,
   y: 16,
   w: 340,
   h: 34,
@@ -118,23 +120,22 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
   ctx.fillStyle = '#5b9dff';
   ctx.fillRect(0, 0, W, 5);
 
-  // icon + title + subtitle
+  // the nikkesim.app mark (top-right), then title + subtitle
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  let textX = padX;
-  if (data.icon) {
-    ctx.drawImage(
-      data.icon,
-      TABLE_TITLE_ICON.x,
-      TABLE_TITLE_ICON.y,
-      ICON,
-      ICON
-    );
-    textX = padX + ICON + 12;
-  }
+  const { mark, note } = splitFooter(data.footer, 'nikke-sim');
+  // A per-unit table already puts the character's portrait in the corner, so
+  // the mark steps left of it rather than over it.
+  const markLeft = drawBrandMark(ctx, {
+    right: W - padX - (data.portrait ? PORTRAIT_SIZE + PORTRAIT_GAP : 0),
+    text: mark,
+    icon: data.icon,
+  });
+  const textX = padX;
+  const textMaxW = markLeft - 16 - textX;
   ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 ${TITLE_FONT_SIZE}px ${FONT}`;
-  ctx.fillText(data.title, textX, TITLE_BASELINE_Y);
+  ctx.fillText(fitText(ctx, data.title, textMaxW), textX, TITLE_BASELINE_Y);
   if (data.subtitle) {
     ctx.fillStyle = '#8b93a3';
     ctx.font = `400 14px ${FONT}`;
@@ -143,7 +144,7 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
 
   // character portrait (top-right corner)
   if (data.portrait) {
-    const PS = 64;
+    const PS = PORTRAIT_SIZE;
     const px = W - padX - PS;
     const py = 12;
     const im = data.portrait as {
@@ -251,16 +252,18 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
     });
   });
 
-  // footer — the mandatory watermark final pass (theme.ts): `footer` only adds
-  // a descriptor; it can never remove or replace the nikkesim.app mark.
+  // footer — the descriptor's NOTE only; the mandatory mark is in the title row
+  // (theme.ts drawBrandMark). Most tables have no note and draw nothing here.
   // (Right-aligned window note per §6.6 when rendering a population slice.)
-  drawWatermark(ctx, padX, H - 16, 12, data.footer, 'nikke-sim');
+  drawFooterNote(ctx, padX, H - 8, 12, note);
   if (windowed) {
     ctx.textAlign = 'right';
+    ctx.fillStyle = '#8b93a3';
+    ctx.font = `400 12px ${FONT}`;
     ctx.fillText(
       `rows ${win.start + 1}–${win.start + rows.length} of ${win.total}`,
       W - padX,
-      H - 16
+      H - 8
     );
   }
 }

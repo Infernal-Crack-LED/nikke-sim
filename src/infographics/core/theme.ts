@@ -1,12 +1,11 @@
 // Shared visual theme for every infographic — font family, palette, and the
-// MANDATORY nikkesim.app watermark. The watermark is the architectural point of
+// MANDATORY nikkesim.app mark. The mark is the architectural point of
 // the centralization (docs/handoffs/2026-07-27-infographics-centralization-plan.md
-// §2 "The advertising goal has an architectural consequence"): every card's footer
-// is drawn through drawWatermark as the FINAL pass, so the mark can never be
-// removed or replaced by a caller — the per-card `footer` field only ADDS a
-// descriptor in front of (or instead of, when it already carries the mark) the
-// card's default descriptor.
-import { type Canvas2DLike } from './canvas2d.js';
+// §2 "The advertising goal has an architectural consequence"): every card draws
+// it through drawBrandMark, so it can never be removed or replaced by a caller —
+// the per-card `footer` field only picks WHICH nikkesim.app path the mark names
+// and adds a descriptor note.
+import { type Canvas2DLike, drawContained } from './canvas2d.js';
 
 // Single font family for every infographic. Node hosts MUST register the Roboto
 // faces before drawing (src/infographics/node/fonts.ts — it throws if
@@ -51,34 +50,124 @@ export const rankColor = (rank: number | null): string =>
     ? TEXT_DIM
     : (RANK_COLORS.find((b) => rank <= b.max)?.color ?? TEXT_DIM);
 
+// The accent blue the mark's wordmark is drawn in — the same --accent the site
+// header, the cards' top rule and every bar fill use.
+export const ACCENT = '#5b9dff';
+
 // The non-optional mark. Present on every rendered image, exactly once.
 export const WATERMARK = 'nikkesim.app';
 
-// The footer line a card renders: the caller's descriptor (`footer` field) or
-// the card's default, with the mark guaranteed. A descriptor that already
-// carries the mark (e.g. 'nikkesim.app/charge') is used as-is — never
-// duplicated, never stripped.
-export function watermarkText(
+// A card's `footer` descriptor carries two different things, and they end up in
+// two different places: the nikkesim.app URL (which the top-right mark names)
+// and any NOTE beside it — the sim caveats a card states by default, or the
+// "simmed <date>" provenance stamp a stored-snapshot card adds
+// (src/server/card-from-build.ts). Split them so the mark stays a clean
+// wordmark and the note keeps its own small line.
+//
+// A descriptor segment carrying the mark ('nikkesim.app/charge') becomes the
+// wordmark as-is, so a card can advertise its own page rather than the bare
+// domain; anything else is note. 'nikke-sim' is the pre-mark spelling the
+// default descriptors still use, and reads as the mark, not as a note.
+export function splitFooter(
   descriptor: string | undefined,
   fallback: string
-): string {
-  const base = descriptor ?? fallback;
-  return base.includes(WATERMARK) ? base : `${base} · ${WATERMARK}`;
+): { mark: string; note: string } {
+  const segments = (descriptor ?? fallback).split(' · ');
+  const markAt = segments.findIndex(
+    (s) => s.includes(WATERMARK) || s === 'nikke-sim'
+  );
+  return {
+    mark:
+      markAt < 0 || segments[markAt] === 'nikke-sim'
+        ? WATERMARK
+        : segments[markAt],
+    note: segments.filter((_, i) => i !== markAt).join(' · '),
+  };
 }
 
-// Draw the mandatory watermark footer line. This is the ONLY way cards draw
-// their footer — it always draws the mark, so no renderer (present or future)
-// can ship an unwatermarked image by forgetting it.
-export function drawWatermark(
+// Mark geometry, matching the unit card's (core/unitCard.ts drawTitle, owner
+// 2026-07-28): the wordmark in accent blue with the site icon to its right,
+// hung off the card's top-right corner. It sits where the eye already is —
+// the title row — instead of in the muted grey footer line it replaced, which
+// was the least legible text on the card at timeline scale.
+const MARK_ICON = 40; // site icon square
+const MARK_FONT = 15; // wordmark size
+const MARK_GAP = 8; // wordmark → icon
+export const MARK_ICON_TOP = 6; // icon's y, from the card's top edge
+// The wordmark's baseline relative to the icon's top. The unit card's own
+// offset (icon at r.y + 2, baseline at r.y + 26), so both marks hang against
+// their icon identically.
+const MARK_BASELINE = 24;
+
+// Draw the mandatory mark at a card's top-right corner. This is the ONLY way
+// cards draw it, so no renderer (present or future) can ship an unmarked image
+// by forgetting it. `icon` is optional — a host with no icon loaded (the
+// browser preview) thins the mark to its wordmark rather than dropping it.
+//
+// Returns the mark's LEFT edge, so the caller can clamp a title that would
+// otherwise run under it.
+export function drawBrandMark(
+  ctx: Canvas2DLike,
+  o: {
+    right: number; // the mark's right edge (usually W - padX)
+    top?: number; // icon's y; defaults to MARK_ICON_TOP
+    text?: string; // defaults to the bare WATERMARK
+    icon?: unknown;
+    // Size overrides — the unit card's portrait variant draws everything ~1.6×
+    // larger, where the default mark reads as an afterthought.
+    iconSize?: number;
+    fontSize?: number;
+    gap?: number;
+    baselineOffset?: number; // wordmark baseline, from `top`
+  }
+): number {
+  const top = o.top ?? MARK_ICON_TOP;
+  const text = o.text ?? WATERMARK;
+  const iconSize = o.iconSize ?? MARK_ICON;
+  let right = o.right;
+  if (o.icon) {
+    drawContained(ctx, o.icon, {
+      x: right - iconSize,
+      y: top,
+      w: iconSize,
+      h: iconSize,
+    });
+    right -= iconSize + (o.gap ?? MARK_GAP);
+  }
+  ctx.font = `700 ${o.fontSize ?? MARK_FONT}px ${FONT}`;
+  ctx.textAlign = 'left';
+  ctx.fillStyle = ACCENT;
+  const left = right - ctx.measureText(text).width;
+  ctx.fillText(text, left, top + (o.baselineOffset ?? MARK_BASELINE));
+  return left;
+}
+
+// The mark's icon rect for a card of width `W` with horizontal padding `padX` —
+// exported geometry so the ink-guard callers (node/render.ts assertTitleInk and
+// its tests) derive the icon's position from the same numbers the renderer uses.
+export function brandMarkIconRect(
+  W: number,
+  padX: number,
+  top: number = MARK_ICON_TOP
+): { x: number; y: number; size: number } {
+  return { x: W - padX - MARK_ICON, y: top, size: MARK_ICON };
+}
+
+// Draw a card's footer NOTE (see splitFooter) — the caveats/provenance line
+// that is not the mark. Drawn only when there is one: a card whose descriptor
+// is nothing but its URL gets no footer line at all.
+export function drawFooterNote(
   ctx: Canvas2DLike,
   x: number,
   y: number,
   fontSize: number,
-  descriptor: string | undefined,
-  fallback: string
+  note: string
 ): void {
+  if (!note) {
+    return;
+  }
   ctx.fillStyle = TEXT_SECONDARY;
   ctx.font = `400 ${fontSize}px ${FONT}`;
   ctx.textAlign = 'left';
-  ctx.fillText(watermarkText(descriptor, fallback), x, y);
+  ctx.fillText(note, x, y);
 }

@@ -19,12 +19,14 @@ import {
   BAR_LABEL_GAP,
   PORTRAIT_CROP_TOP,
 } from './canvas2d.js';
-import { FONT, ELEMENT_COLORS, drawWatermark } from './theme.js';
 import {
-  siteIconSizeFor,
-  siteIconTopFor,
-  TITLE_CAP_HEIGHT,
-} from './siteIcon.js';
+  FONT,
+  ELEMENT_COLORS,
+  drawBrandMark,
+  drawFooterNote,
+  splitFooter,
+  brandMarkIconRect,
+} from './theme.js';
 
 export interface RankChartBar {
   key: string; // slug + profile (a profiled unit appears twice on one board)
@@ -55,28 +57,26 @@ export interface RankChartData {
   title: string;
   subtitle?: string;
   bars: RankChartBar[];
-  icon?: unknown; // optional canvas-drawable image drawn beside the title
-  footer?: string; // descriptor added to the watermark footer (theme.ts)
+  icon?: unknown; // the nikkesim.app mark's icon, drawn top-right
+  footer?: string; // which nikkesim.app path the mark names + any note (theme.ts)
 }
 
 export const RANK_CHART_W = 900;
 const PAD_X = 36;
 const HEAD_H = 100;
 const ROW_H = 64; // taller than dpsChart's 52 — rows can carry a sub-line AND a value-sub
-const FOOT_H = 44;
+// Bottom pad — only the footer NOTE lands here now (see tableCard.ts's FOOT_H).
+const FOOT_H = 24;
 const TITLE_BASELINE_Y = 50;
 const TITLE_FONT_SIZE = 26;
-// The icon plate is scaled so its measured bar content (not its own bounding
-// box) spans the title's cap height — see core/siteIcon.ts for why.
-const ICON = siteIconSizeFor(TITLE_CAP_HEIGHT[TITLE_FONT_SIZE]);
 
-export const RANK_TITLE_ICON = {
-  x: PAD_X,
-  y: siteIconTopFor(TITLE_BASELINE_Y, ICON),
-  size: ICON,
-} as const;
+// The mark's icon y — hung so it reads level with a 26px title on baseline 50.
+const MARK_TOP = 10;
+
+// Ink-guard geometry — the title starts at padX now that the mark sits top-right.
+export const RANK_TITLE_ICON = brandMarkIconRect(RANK_CHART_W, PAD_X, MARK_TOP);
 export const RANK_TITLE_INK_REGION = {
-  x: PAD_X + ICON + 12,
+  x: PAD_X,
   y: 24,
   w: 420,
   h: 36,
@@ -104,17 +104,27 @@ export function drawRankChart(ctx: Canvas2DLike, data: RankChartData): void {
   ctx.fillStyle = '#5b9dff';
   ctx.fillRect(0, 0, W, 5);
 
-  // icon + title + subtitle
+  // the nikkesim.app mark (top-right), then title + subtitle
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  let textX = padX;
-  if (data.icon) {
-    ctx.drawImage(data.icon, RANK_TITLE_ICON.x, RANK_TITLE_ICON.y, ICON, ICON);
-    textX = padX + ICON + 12;
-  }
+  const { mark, note } = splitFooter(
+    data.footer,
+    'nikke-sim · scope-lock basis · partless boss'
+  );
+  const markLeft = drawBrandMark(ctx, {
+    right: W - padX,
+    top: MARK_TOP,
+    text: mark,
+    icon: data.icon,
+  });
+  const textX = padX;
   ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 ${TITLE_FONT_SIZE}px ${FONT}`;
-  ctx.fillText(data.title, textX, TITLE_BASELINE_Y);
+  ctx.fillText(
+    fitText(ctx, data.title, markLeft - 16 - textX),
+    textX,
+    TITLE_BASELINE_Y
+  );
   if (data.subtitle) {
     ctx.fillStyle = '#8b93a3';
     ctx.font = `400 16px ${FONT}`;
@@ -122,14 +132,7 @@ export function drawRankChart(ctx: Canvas2DLike, data: RankChartData): void {
   }
 
   if (bars.length === 0) {
-    drawWatermark(
-      ctx,
-      padX,
-      H - 18,
-      12,
-      data.footer,
-      'nikke-sim · scope-lock basis · partless boss'
-    );
+    drawFooterNote(ctx, padX, H - 9, 12, note);
     return;
   }
 
@@ -261,12 +264,7 @@ export function drawRankChart(ctx: Canvas2DLike, data: RankChartData): void {
     ctx.textAlign = 'left';
   });
 
-  drawWatermark(
-    ctx,
-    padX,
-    H - 18,
-    12,
-    data.footer,
-    'nikke-sim · scope-lock basis · partless boss'
-  );
+  // footer — the descriptor's NOTE only; the mandatory mark is in the title row
+  // (theme.ts drawBrandMark).
+  drawFooterNote(ctx, padX, H - 9, 12, note);
 }
