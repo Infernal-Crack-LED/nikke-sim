@@ -9,6 +9,42 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-13, latest) `velvet` has TWO mutually exclusive modes, and she is built to play as the
+  OFF-B2 — her burst weapon is a 60-round/sec machine gun.**
+  - **The rulings (owner, 2026-08-13).** Velvet "functions differently depending on which B2 uses
+    their burst, and she is intended primarily to be the OFF B2". When she does NOT cast, the first
+    block of S2 applies: the team buff (ATK 25.2% of her ATK + Charge Damage 100.8%, 3s) re-applied
+    on every sniper shot. When she DOES cast, the second block applies instead: she switches to a
+    machine gun with **no wind-up, 60 rounds/sec, no ammo and no reload**, lasting **10s from her
+    own activation** (so it ends before Full Burst does), and **every buff she holds is
+    self-targeted**. Separately: her ammo pouch is **NOT literal ammo** — it is a build/consume
+    stack resource, and it never touches her magazine.
+  - **Why the two blocks cannot overlap.** The MG cannot full-charge, so "Activates when attacking
+    with Full Charge during Full Burst" is unreachable while swapped (`swapGate:'unswapped'`). Going
+    the other way, her SR lands only 36 in-FB shots across a fight (7.2 per window) against the
+    50-hit threshold of the second block. So each mode has exactly one live block.
+  - **What the sim had.** The swap inherited her SR charge cycle and 6-round magazine — ~9 shots per
+    window with a reload in the middle — which left the 50-hit proc (400.92% of final ATK + self
+    Attack Damage 15.03%/5s) pinned at ZERO. That proc is the entire payout of her own burst. With
+    the MG it fires 55 times a fight, ~11 per Full Burst window, off ~2740 in-FB swap shots.
+  - **No engine change was needed.** The `chargeTimeSec` null-check and the sameWeapon/economy split
+    landed the day before (see the 2026-08-12 swap-economy entry), and `PULLS_PER_SEC.MG = 60` was
+    already documented as reachable only via a swap INTO MG, since the wind-up ladder is gated on
+    the BASE weapon. Her swap is authored `weapon:'MG'`, `pullsPerSec:60`, `chargeTimeSec:0`,
+    `maxAmmo:999`.
+  - **Board impact: none.** The regression snapshot is byte-identical — velvet appears in no graded
+    comp, and her only recording (T5 wind-weak) is one she never casts in. The change is judged on
+    kit faithfulness, pinned by her spec test, which now runs TWO fixtures: the sole-B2 comp for the
+    swapped mode and a crown-as-second-B2 comp for the unswapped mode, where she casts zero bursts.
+  - **⚑ Left open deliberately.** The engine's `hitCount` counter is cumulative over ALL normal
+    attacks and only GATES the firing, so it diverges from the kit-literal "during Full Burst"
+    counting at low volume — 1 proc vs 0 in the off-B2 fixture (they converge, 55 vs 54, once swap
+    shots dominate). Both counts are pinned in her spec so the divergence cannot drift silently.
+    Closing it needs an in-FB-scoped counter on the trigger, which is cross-cutting across every
+    hitCount carrier — filed, not made here.
+  - **Evidence tier.** Owner ruling on game behaviour ⇒ the modeling question was ANSWERED, so
+    `/scientific-method` does not apply (CLAUDE.md: known answer ⇒ encode + `/code-review`).
+
 - **(2026-08-12, latest) A weapon swap's damage FLAVOR and its ammo ECONOMY are independent — and
   `takina`'s burst gun is a real weapon, not a re-flavored sniper.**
   - **The rulings (owner, 2026-08-12).** `takina`'s burst swaps to a CUSTOM weapon: it deals the
