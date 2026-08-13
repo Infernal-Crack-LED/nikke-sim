@@ -11,6 +11,7 @@
 //   GET /api/v1/img/dps.png?cell&element&unit|units → 302 to .../dps.<hash>.png
 //   GET /api/v1/img/table/max-ammo.png?unit=<slug>     → 302 to .../table.<hash>.png
 //   GET /api/v1/img/table/charge-speed.png[?unit=<slug>] → 302 to .../table.<hash>.png
+//   GET /api/v1/img/doll.png[?rarity=R|SR&from=<0-14>]     → 302 to .../doll.<hash>.png
 //   POST /api/v1/img/render                  → 200 {"url","imageUrl","pageUrl"?}
 //
 // `?id=` is a SHARED CONFIG id (src/server/config-store.ts): the server reads
@@ -70,12 +71,15 @@ import {
   renderDpsChartPng,
   renderTableCardPng,
   renderResourcesCardPng,
+  renderDollCardPng,
   type DpsArtifact,
 } from './dps-table-cards.js';
+import { buildDollPlan, dollCardData, type DollData } from '../doll/card.js';
 
 // Cached dynamic renders: `<type>.<hash16>.png` — nothing else is servable
 // from the cache dir.
-const CACHE_FILE = /^(team|roster|dps|table|resources)\.[0-9a-f]{16}\.png$/;
+const CACHE_FILE =
+  /^(team|roster|dps|table|resources|doll)\.[0-9a-f]{16}\.png$/;
 
 export const API_PREFIX = '/api/v1/img/';
 
@@ -95,6 +99,10 @@ export interface ApiContext {
   // dpschart.json location for the dps.png route (default <distDir>/dpschart.json).
   // Injectable for tests, like distDir/cacheDir.
   dpsChartPath?: string;
+  // data/doll-{economy,super-success}.json, parsed. Absent ⇒ the doll route
+  // 404s the way a missing dps artifact does: a server-side gap, not a bad
+  // request. app.ts loads them; tests may inject or omit.
+  doll?: DollData;
 }
 
 // Rate limiting lives in CLOUDFLARE, not in this process (plan §6.3/§6.4: edge
@@ -360,7 +368,34 @@ async function resolveRender(
         render: () => Promise.resolve(renderResourcesCardPng(resData)),
       };
     }
+    case 'doll': {
+      // resolveSpec 404s before this when the data files are missing.
+      const data = dollCardData(
+        dollPlan(ctx.doll as DollData, spec.rarity, spec.from)
+      );
+      data.icon = ctx.icon ?? undefined;
+      return {
+        file,
+        spec,
+        render: () => Promise.resolve(renderDollCardPng(data)),
+      };
+    }
   }
+}
+
+// A solved doll plan, memoized per (rarity, from). Planning runs a shadow-price
+// calibration and a 20k-trial Monte Carlo — ~350ms, and the calibration is the
+// same work for every card — so a cold cache after a restart shouldn't redo it
+// once per tier. Deterministic, so caching it changes nothing but the clock.
+const dollPlans = new Map<string, ReturnType<typeof buildDollPlan>>();
+function dollPlan(data: DollData, rarity: 'R' | 'SR', from: number) {
+  const key = `${rarity}.${from}`;
+  let plan = dollPlans.get(key);
+  if (!plan) {
+    plan = buildDollPlan(data.economy, data.proc, rarity, from);
+    dollPlans.set(key, plan);
+  }
+  return plan;
 }
 
 // The ONE request pipeline every dynamic route shares: request-shaped input
@@ -447,6 +482,10 @@ async function resolveSpec(
     data = { cells: Object.keys(art.cells), units: Object.keys(art.units) };
   } else if (kind === 'table') {
     data = { units: Object.keys(ctx.chars) };
+  } else if (kind === 'doll' && !ctx.doll) {
+    // Same shape as the dps artifact miss: the request is fine, the server
+    // just can't answer it, so 404 rather than 400.
+    return { error: 'doll data unavailable', status: 404 };
   }
   const parsed = parseRenderSpec(input, data);
   if (!parsed.ok) {
@@ -646,6 +685,17 @@ export function registerImgApi(app: Hono, ctx: ApiContext): void {
     '/api/v1/img/resources.png',
     handleDynamicGet(
       (c) => ({ kind: 'resources', tier: c.req.query('tier') }),
+      ctx
+    )
+  );
+  app.get(
+    '/api/v1/img/doll.png',
+    handleDynamicGet(
+      (c) => ({
+        kind: 'doll',
+        rarity: c.req.query('rarity'),
+        from: c.req.query('from'),
+      }),
       ctx
     )
   );

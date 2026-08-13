@@ -313,6 +313,31 @@ describe('POST /api/v1/img/render — happy paths + GET parity', () => {
       'resources'
     );
   });
+
+  it('doll specs render and match GET doll.png (default + explicit)', async () => {
+    // No params = the /doll page's own default view: an SR doll from phase 0.
+    const bare = await expectRendered(
+      { kind: 'doll' },
+      '/api/v1/img/doll.png',
+      'doll'
+    );
+    expect(
+      await expectRendered(
+        { kind: 'doll', rarity: 'SR', from: 0 },
+        '/api/v1/img/doll.png?rarity=SR&from=0',
+        'doll'
+      ),
+      'spelling the defaults out must address the same card'
+    ).toBe(bare);
+    // A different plan is different content, so a different address.
+    expect(
+      await expectRendered(
+        { kind: 'doll', rarity: 'R', from: 7 },
+        '/api/v1/img/doll.png?rarity=R&from=7',
+        'doll'
+      )
+    ).not.toBe(bare);
+  });
 });
 
 describe('POST /api/v1/img/render — request validation', () => {
@@ -378,6 +403,11 @@ describe('POST /api/v1/img/render — request validation', () => {
       ],
       [{ kind: 'resources', tier: 0 }, 'tier must be an integer 1-9'],
       [{ kind: 'resources', tier: 10 }, 'tier must be an integer 1-9'],
+      [{ kind: 'doll', rarity: 'SSR' }, 'rarity must be R or SR'],
+      [{ kind: 'doll', from: -1 }, 'from must be an integer 0-14'],
+      // 15 is the max phase: a plan starting there has no steps to draw.
+      [{ kind: 'doll', from: 15 }, 'from must be an integer 0-14'],
+      [{ kind: 'doll', from: 2.5 }, 'from must be an integer 0-14'],
     ];
     for (const [spec, error] of cases) {
       const res = await postRender(JSON.stringify(spec));
