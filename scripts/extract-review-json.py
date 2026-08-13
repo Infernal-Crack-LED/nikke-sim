@@ -89,7 +89,7 @@ def main() -> int:
         envelope = None
     source = (
         envelope['result']
-        if isinstance(envelope, dict) and 'result' in envelope
+        if isinstance(envelope, dict) and isinstance(envelope.get('result'), str)
         else raw
     )
 
@@ -99,7 +99,11 @@ def main() -> int:
         # json.loads above, falls through to `source = raw`, and then extract()'s raw_decode happily
         # returns the ENVELOPE itself — it ignores trailing garbage. Unwrap that case rather than
         # writing session metadata to disk as if it were a verdict.
-        if isinstance(obj, dict) and 'result' in obj and 'verdict' not in obj:
+        if (
+            isinstance(obj, dict)
+            and isinstance(obj.get('result'), str)
+            and 'verdict' not in obj
+        ):
             obj = extract(obj['result'])
     except ValueError as e:
         print(f'{args.log_path}: {e}', file=sys.stderr)

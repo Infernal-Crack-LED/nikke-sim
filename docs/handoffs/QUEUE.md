@@ -206,3 +206,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    silently. Fix shape: a count-scope option on the trigger (count only while the gate passes).
    Cross-cutting across every hitCount carrier ⇒ needs its own blast-radius pass, which is why it
    was filed rather than made.
+
+7. **The cross-family bridges validate reply SYNTAX, not reply SHAPE — a valid-JSON non-verdict is
+   written as a result file with a ✓.** `scripts/kit-autonomy/dispatch-kimi.sh` (~~:202) and
+   `dispatch-claude.sh` (~~:170) gate on `jq empty`, so a reply like `{"foo":"bar"}` passes, gets
+   `model` stamped, and lands as `$OUT` looking exactly like a real verdict. The rescue path
+   (`scripts/extract-review-json.py`) got a `verdict` shape check on 2026-08-13, so the guarantee now
+   holds on one of the two paths that can produce a result file. Fix shape: the same check in both
+   bridges before the `model` injection. Surfaced as a FOLLOW-UP by the round-4 code review of the
+   U28 branch (`scratchpad/gates/2026-08-13-u28-gauge/result-r4.json`); filed rather than made
+   because it was outside that diff's intent and the bridges are shared by every gate skill.
