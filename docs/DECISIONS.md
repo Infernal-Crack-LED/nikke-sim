@@ -29,9 +29,13 @@ lives. Newest first within each section.
     triggers are one chain step apart and are the easy confusion; `trigger-kinds.test.ts` pins the
     lead directly.
   - **Two consequences, both direct readings of the ruling.**
-    1. An entry-keyed buff is now live for the cast it precedes — `cinderella` resolves her burst
-       damage pre-Full-Burst (`burstSnapshotsPreFb`), and the engine applied stage blocks AFTER that
-       resolution, so her own "entering Burst Stage 3" self-buff had been missing her own nuke.
+    1. An entry-keyed buff now applies one chain step earlier (30f) and on stalled entries, so it is
+       live for strictly more of the window it feeds. NOTE what this is NOT: it does not newly add a
+       same-cast stage buff to a burst nuke. The old dispatch already ran stage blocks BEFORE the
+       caster's own `burstCast` blocks, and no shipped override sets `burstSnapshotsPreFb: true`
+       (`cinderella`, the only unit that names the flag, ships it FALSE and her spec's G1 pin proves
+       her nuke already snapshotted her own same-cast stage-3 conversion). An earlier draft of this
+       entry claimed the change fixed a missing nuke buff — that was wrong and is corrected here.
     2. A chain that REACHES a stage and then expires (no eligible unit off cooldown) still ENTERED
        it, so entries outnumber casts wherever chains stall — in the maxwell-ordinary-mechanic
        fixture, 10 stage-3 entries against 5 B3 casts, the other five expiring at 25.9s, 62.0s, …

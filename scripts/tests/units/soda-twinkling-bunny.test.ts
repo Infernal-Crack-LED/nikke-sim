@@ -401,6 +401,33 @@ describe('soda-twinkling-bunny — kit spec', () => {
         'flat +2 reached 15s — not discriminating'
       ).toBeLessThan(15);
     });
+
+    // Her extension rides `stageEnter:3`, which fires whenever the chain REACHES stage 3 — including
+    // rotations where no Burst III is off cooldown and the chain then EXPIRES (owner ruling
+    // 2026-08-13). The grant lands in a PENDING pool consumed at the next Full Burst, so a stalled
+    // entry's +5s would otherwise carry onto a LATER window and stack with that window's own grant
+    // (measured [15,20,20,20] before the pool was cleared on expiry). One window can only ever be
+    // extended by its own entry: no window may exceed the ladder's 15s ceiling.
+    it('PIN: an entry whose chain EXPIRES does not carry its extension onto a later Full Burst', () => {
+      const events: SimEvent[] = [];
+      runComp({
+        slugs: ['liter', 'crown', SODA],
+        bossElement: null,
+        focusSlug: SODA,
+        cfg: { onEvent: (e) => events.push(e) },
+      });
+      const entries = events.filter(
+        (e) => e.kind === 'burstCast' && e.stage === 2
+      ).length;
+      const wins = fbWindows(events);
+      // non-vacuous: the fixture must actually stall (more stage-3 entries than Full Bursts)
+      expect(entries, 'no stage-3 entries').toBeGreaterThan(wins.length);
+      const durs = wins.map((f) => +((f.endFrame - f.frame) / FPS).toFixed(2));
+      expect(
+        Math.max(...durs),
+        `a Full Burst absorbed more than one extension: ${durs.join(', ')}`
+      ).toBeLessThanOrEqual(15);
+    });
   });
 
   describe('STB6 — S2 in-FB rider deals 130% (⚑ recording-derived) to 1 enemy, inside Full Burst only', () => {

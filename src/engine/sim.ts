@@ -3191,8 +3191,9 @@ export function runSim(
   // "entering Burst Stage X" means "the burst gauge is full and it is now time to activate burst X",
   // so the chain reads gauge full -> enter stage 1 -> any B1 activates -> enter stage 2 -> any B2
   // activates -> enter stage 3 -> any B3 activates -> enter Full Burst. Entry therefore leads the
-  // stage-N CAST by the measured 30f chain gap; a kit line keyed to it is live for that cast, which
-  // is what a unit like cinderella (burst damage snapshotted pre-FB) depends on for her own nuke.
+  // stage-N CAST by the measured 30f chain gap, so a kit line keyed to it is live for that cast with
+  // room to spare. (It was ALREADY live for it: this dispatch has always preceded the caster's own
+  // burstCast blocks. The gain here is the 30f lead plus the stalled-chain entries below.)
   // NOT the same event as `stageCast` — that one fires when a stage-N burst is USED, one step later
   // in the chain ("when an ally uses a Burst Skill", carried by rupee-winter-shopper).
   const fireStageEnter = (newStage: 1 | 2 | 3, atFrame: number) => {
@@ -3384,6 +3385,14 @@ export function runSim(
       );
       stage = 0;
       stageExpireFrame = Infinity;
+      // A "Full Burst Duration ▲ N sec" granted by a stage ENTRY belongs to the Full Burst that
+      // entry was leading to. If the chain dies before reaching one, there is no window to extend
+      // and the grant dies with it — otherwise the pending pool carries it onto a LATER Full Burst
+      // and stacks with that window's own grant (soda-twinkling-bunny read FB durations
+      // [15,20,20,20] instead of [15,15,15,15]: three windows absorbing two +5s grants each).
+      // Correct under BOTH readings of the stalled-entry question — an extension for a Full Burst
+      // that never happened cannot belong to a different one.
+      pendingFbExtendSec = 0;
     }
     // Burst casts are BLOCKED while the boss is off-screen during a range transition
     // (user, 2026-07-13): if a transition lands mid-chain, the next cast waits out the
@@ -3563,7 +3572,7 @@ export function runSim(
             }
           });
         }
-        // PREFB only — snapshot the Full-Burst extension AFTER this cast's stageEnter/burstCast
+        // PREFB only — snapshot the Full-Burst extension AFTER this cast's stageCast/burstCast
         // blocks have contributed (2026-07-22). A "Full Burst Duration ▲ N sec" granted by the very
         // cast that opens the window belongs to THAT window; taking the snapshot before the blocks
         // ran pushed every extension onto the NEXT full burst, so the first FB of a fight ran the

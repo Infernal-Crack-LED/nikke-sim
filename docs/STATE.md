@@ -167,7 +167,7 @@ current but not a contract.
 | `shotFired`              | Every owner trigger pull                                             | ~21 units (cinderella, soda-twinkling-bunny, prika, milk-blooming-bunny, …)                                               |
 | `lastBullet`             | On owner's last bullet / reload start                                | anis-sparkling-summer, helm, privaty                                                                                      |
 | `recovery` / `shielded`  | When owner receives a heal / shield event                            | asuka, crown / flora, naga                                                                                                |
-| `stageEnter`             | When the chain REACHES stage N — gauge-full (N=1) or the stage-(N-1) cast (N=2,3) | cinderella, ein, flora, mast-romantic-maid, mint, mihara-bonding-chain, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
+| `stageEnter`             | When the chain REACHES stage N — gauge-full (N=1) or the stage-(N-1) cast (N=2,3) | 12 units (cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, neon-blue-ocean, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny) |
 | `stageCast`              | When a stage-N burst is CAST by anyone — one chain step after `stageEnter` | rupee-winter-shopper                                                                                        |
 | `bossElement`            | Permanent passive, active only if boss has this element              | eve                                                                                                                       |
 

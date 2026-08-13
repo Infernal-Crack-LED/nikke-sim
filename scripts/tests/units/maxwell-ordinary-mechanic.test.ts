@@ -347,6 +347,12 @@ describe('maxwell-ordinary-mechanic — kit spec', () => {
       ]).toEqual([5 * FPS]);
     });
 
+    // The trigger is CHAIN-scoped, not caster-scoped, and this fixture isolates that: with crown as
+    // a second Burst II, crown wins EVERY stage-2 cast (equal 20s cooldowns, and the first-ready
+    // reduce keeps the leftmost on ties — crown is slot 1, mom slot 2), so mom casts ZERO bursts.
+    // The entry-keyed line still fires on all 10 of crown's rotations; a burstCast-keyed misreading
+    // fires nothing at all. Both frame-sets are also revert-catching: entries sit on the STAGE-2
+    // cast frames, where the old cast-frame semantics put them on the stage-3 (ada) frames.
     it('DISCRIMINATING: with a second B2 present, stageEnter follows the CHAIN and burstCast follows MOM', () => {
       // mom sits in slot 2 of this 4-unit fixture, not slot 1 as in `base`
       const momBuffs4 = (evs: SimEvent[]) =>
@@ -357,11 +363,27 @@ describe('maxwell-ordinary-mechanic — kit spec', () => {
       const right = distinctFrames(momBuffs4(twoB2.events));
       const wrong = distinctFrames(momBuffs4(twoB2OnBurstCast.events));
       const momCasts = burstFrames(twoB2.events, SLUG);
-      // the burstCast misreading fires on mom's own casts only…
-      expect(wrong).toEqual(momCasts);
-      // …while the entry trigger also covers the rotations crown took, where mom cast nothing
-      expect(right.length).toBeGreaterThan(wrong.length);
-      expect(right).not.toEqual(wrong);
+      const stage2Casts = [
+        ...new Set(
+          twoB2.events
+            .filter(
+              (e): e is BurstCast => e.kind === 'burstCast' && e.stage === 2
+            )
+            .map((e) => e.frame)
+        ),
+      ].sort((a, b) => a - b);
+      const stage3Casts = burstFrames(twoB2.events, 'ada');
+      // fixture sanity — mom is shut out of stage 2 entirely, so the two readings cannot coincide
+      expect(momCasts.length, 'mom must cast ZERO here').toBe(0);
+      expect(stage2Casts.length, 'no stage-2 casts').toBeGreaterThan(0);
+      expect(stage3Casts.length, 'no stage-3 casts').toBeGreaterThan(0);
+      expect(stage2Casts).not.toEqual(stage3Casts);
+      // the entry trigger fires on every rotation the CHAIN reached stage 3 — crown's cast frames…
+      expect(right).toEqual(stage2Casts);
+      // …which is NOT where the old cast-frame semantics put it (the stage-3 caster's frames)
+      expect(right).not.toEqual(stage3Casts);
+      // …while a caster-keyed misreading fires nothing, because mom never casts here
+      expect(wrong).toEqual([]);
     });
   });
 
