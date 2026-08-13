@@ -3656,7 +3656,10 @@ export function runSim(
       if (u.swap && frame >= u.swap.untilFrame) {
         const wasFlavorSwap = u.swap.sameWeapon; // same-weapon flavor swap → no free reload on exit either;
         // a REAL weapon change hands the base weapon back with a FULL magazine (owner ruling 2026-08-12,
-        // takina: "when the swap ends she returns to the sniper with its magazine restored to full")
+        // takina: "when the swap ends she returns to the sniper with its magazine restored to full").
+        // SCOPE: this is the TIMED expiry path only. The uses-based `maxShots` exit (see firePull)
+        // deliberately runs no refill — maxwell's override documents resuming her base weapon empty
+        // and paying one reload per window — so the two exits differ ON PURPOSE, not by omission.
         u.swap = null;
         if (!wasFlavorSwap) {
           u.ammo = maxAmmo(u, frame);
@@ -4270,7 +4273,10 @@ export function runSim(
     });
 
     // uses-based weapon-swap termination (MEASURED 2026-07-14): the swap ends right after
-    // its Nth shot fires — checked AFTER block dispatch so swapGate effects ride this shot
+    // its Nth shot fires — checked AFTER block dispatch so swapGate effects ride this shot.
+    // NO exit refill here, unlike the timed-expiry path in the per-unit FSM: a swap that ends
+    // because it ran out of USES leaves the base weapon as it was, which is what maxwell's
+    // `maxAmmo: 1` railgun is modeled on (she resumes empty and pays one base reload per window).
     if (u.swap?.maxShots != null) {
       u.swap.shotsFired = (u.swap.shotsFired ?? 0) + 1;
       if (u.swap.shotsFired >= u.swap.maxShots) {

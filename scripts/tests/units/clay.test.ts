@@ -187,10 +187,10 @@ const burstTrueSelfOnly = withPatchedOverride('clay', (ov) => {
   b.target = { kind: 'self' };
 });
 /** C4 reference: the self true-normals line removed entirely (the frima noWakeUp reference).
- *  NOTE: stripping only the trueNormals FLAG would turn the effect into a REAL weapon swap,
- *  which the engine loads with a fresh magazine (free refill) — a counterfactual artifact that
- *  can outweigh the flavor payoff depending on cast timing. Removing the line is the faithful
- *  "burst without its self conversion" model, and its delta is exactly the flavor payoff. */
+ *  Removing the whole line — rather than flipping a flag — is the faithful "burst without its self
+ *  conversion" model, so its delta is exactly the flavor payoff and nothing else. (Since 2026-08-12
+ *  the magazine refill keys on `sameWeapon`, which this swap carries, so stripping `trueNormals`
+ *  alone would no longer smuggle a free reload into the counterfactual either.) */
 const noTrueNormals = withPatchedOverride('clay', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasKind(b, 'weaponSwap'));
