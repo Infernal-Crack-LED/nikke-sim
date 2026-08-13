@@ -67,7 +67,8 @@
       "slot": "skill2",
       "trigger": {
         "kind": "hitCount",
-        "count": 50
+        "count": 50,
+        "countScope": "gated"
       },
       "target": {
         "kind": "enemy"
@@ -84,7 +85,8 @@
       "slot": "skill2",
       "trigger": {
         "kind": "hitCount",
-        "count": 50
+        "count": 50,
+        "countScope": "gated"
       },
       "target": {
         "kind": "self"
@@ -129,7 +131,7 @@
     }
   ],
   "caveats": [
-    "skill2: the hitCount:50 counter accrues on EVERY normal attack, and a threshold crossing the inFb gate then blocks still spends its 50 — so shots the kit would not count ('landing 50 normal attacks during Full Burst') still advance the counter. Engine-wide hitCount semantics, not velvet-specific. The two readings CONVERGE while swap shots dominate — cumulative counting fires 55 procs in the sole-B2 fixture against the in-FB-only reading's 2740/50 = 54, since both reduce to in-FB shots ÷ 50 — and DIVERGE at low volume: unswapped she lands only 36 in-FB shots in a fight, so the kit-literal reading fires zero while the cumulative counter leaks exactly one (her 100th overall shot crosses 50 with a Full Burst live). Both counts are pinned in her spec test; closing the gap needs an in-FB-scoped counter on the hitCount trigger, which is a cross-cutting engine change filed for the owner rather than made here.",
+    "skill2: the hitCount:50 trigger carries countScope:'gated', the kit-literal reading of 'landing 50 normal attack(s) during Full Burst' — only in-FB attacks advance the counter. Her spec pins it from both sides: 54 procs in the sole-B2 fixture (where swap shots dominate and the two readings converge, 55 vs 54), and ZERO in the off-B2 fixture, where she lands only 36 in-FB shots all fight. The counterfactual with the scope dropped leaks exactly one proc there, which is the engine-wide defect the scope option fixes (QUEUE item 6, landed 2026-08-13) rather than anything velvet-specific (her 100th overall shot crosses 50 with a Full Burst live). Both counts are pinned in her spec test; closing the gap needs an in-FB-scoped counter on the hitCount trigger, which is a cross-cutting engine change filed for the owner rather than made here.",
     "burst: the swap's per-shot damage is the kit's flat 7% of final ATK, and MG banding means her swap shots take MG range/core treatment rather than the SR's — faithful to a real weapon change, but kit-silent.",
     "burst: her MG generates NO burst gauge \u2014 real weapon changes contribute nothing (owner ruling 2026-08-13, engine-wide in shotGauge). Before that ruling every 1-frame MG round was credited her SNIPER's per-shot energy (5.6, a charged SR shot) because gaugePerShot keys off the unit's own weapon, refilling the whole bar in 0.3s once a stalled chain lifted the gauge lock mid-swap. \u26a1 Her Full Bursts still land 90-126 frames earlier than under the old SR-economy swap, and that is NOT the gauge: it is the RELOAD-CYCLE PHASE ripple (isolated by A/B \u2014 the shift is identical with and without the gauge fix). The MG carries its own magazine and hands the SR back full, so her reloads go 10 \u2192 0 and her first post-swap SR shot lands 30f earlier, moving her own gauge contribution once the lock lifts. Same faithful-collateral class as jill (DECISIONS 2026-08-10); do not re-tune gauge to chase it."
   ]

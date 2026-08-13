@@ -4311,6 +4311,19 @@ export function runSim(
         // landed pellets (`hitsPerShot`). Defaults to the historical pellet-count semantics so
         // existing overrides stay byte-identical until they opt in.
         const increment = b.trigger.perPull ? 1 : u.char.hitsPerShot;
+        // COUNT SCOPE. Default 'always': every normal attack accrues and the gates are only
+        // consulted when a threshold is crossed — so a crossing the gate blocks still SPENDS its
+        // N. Correct for "every N normal attacks, [effect] during Full Burst" (only the EFFECT is
+        // scoped), wrong for "landing N normal attack(s) DURING Full Burst", where out-of-window
+        // attacks must not count at all. `countScope:'gated'` accrues only while the block's own
+        // gates pass, so the kit's scope applies to the COUNTING as well. Opt-in per unit: the
+        // block shape cannot distinguish the two readings, only the kit's wording can.
+        if (
+          b.trigger.countScope === 'gated' &&
+          !blockGatesPass(u.idx, b, frame)
+        ) {
+          return;
+        }
         let c = (u.hitCounters.get(key) ?? 0) + increment;
         while (c >= threshold) {
           c -= threshold;

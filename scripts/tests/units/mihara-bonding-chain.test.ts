@@ -5,25 +5,29 @@
 // loaded from disk. `withPatchedOverride` appears ONLY to build COUNTERFACTUALS (the nearest wrong
 // model each assertion must discriminate against) — never to supply the encoding under test.
 //
-// Her kit is a two-currency STACK engine that the override models as steady-state THROUGHPUT (the
-// shipped `note` is the source of truth for the decomposition):
+// Her kit is a two-currency STACK engine. Ensnaring is modeled as a LIVE POOL (owner ruling
+// 2026-08-13: model the stacks, do not average them); Restraint stays throughput, since it is
+// charged and fully dumped in one motion and never sits at a partial level that anything reads:
 //   - Restraint Chains: charged to 10 at battle start and refilled to 10 at each Full Burst end
 //     after her own burst, then the S1 "specific timing" attack DUMPS all of them (one 50.06% hit
 //     per chain) → modeled as a 500.6% (10 × 50.06%) flatDamage dump at start + once per rotation.
-//   - Ensnaring Chains: 25.08%/s sustained DoT stacking to 20; her burst CANCELS it to 0 and it
-//     rebuilds (+10 from the next Restraint dump, +1 per 40 normals in FB) to the cap just before
-//     her next burst → time-weighted rebuild average ≈ 12 stacks = 301%/s permanent baseline.
-//   - Burst Dragging Chain: mirrors the 20 Ensnaring stacks (20 × 50.05% = 1001%/s) for 10s, then
-//     CANCELS Ensnaring. Because the burst REPLACES the baseline rather than stacking with it, the
-//     override emits the DELTA 700%/s (1001 − 301) for 10s — so the burst window totals the correct
-//     1001%/s with NO double-count. The naive "1001 on top of 301" over-counts (the ⚑ in the note).
+//   - Ensnaring Chains: 25.08%/s sustained DoT stacking to 20, held in `resources.ensnaring`
+//     [0..20]. The DoT carries `perResource {ensnaring, 25.08}`, so every tick is recomputed as
+//     the CURRENT stack count × 25.08 — it climbs while stacks build, holds at 501.6%/s at the
+//     cap, and reads zero after her burst cancels. Generation: +10 on each Restraint dump, +1 per
+//     40 normals during Full Burst (`countScope:'gated'`, so out-of-FB normals do not advance it).
+//   - Burst Dragging Chain: mirrors the 20 Ensnaring stacks (20 × 50.05% = 1001%/s) for 10s and
+//     CANCELS Ensnaring (a −20 resource block, clamped to 0). The no-double-count property is
+//     STRUCTURAL: the baseline reads the now-zero pool and stops contributing by itself, so the
+//     burst ships its true 1001%/s. The superseded model shipped a 700 DELTA (1001 − 301) purely
+//     to subtract a static baseline it could not switch off.
 //
 // Kit (blablalink prose, data/characters.json → characters['mihara-bonding-chain'].skills):
 //   S1 ■ battle start → self: charge Restraint Chains by 10 (cap 10)                          [M1]
 //      ■ Full Burst ends if she just burst → self: charge Restraint Chains by 10 (cap 10)      [M1]
 //      ■ random enemy @ specific timing: 50.06% final ATK × every Restraint Chain, ▼1 each     [M1]
 //      ■ same enemies: Ensnaring Chains 25.08% final ATK sustained /1s, stack ≤20, unremovable [M2]
-//   S2 ■ 40 normals in FB on an Ensnared target → target: Ensnaring stacks ▲1   (FOLDED into M2 avg)
+//   S2 ■ 40 normals in FB on an Ensnared target → target: Ensnaring stacks ▲1      [M2 generation]
 //      ■ when incapacitated → Ensnared targets: Ensnaring ▲20    (UNMODELED inert — boss no dmg)[M5]
 //      ■ enemy neutralized while Ensnared → self: Restraint ▲1   (UNMODELED inert — boss lives) [M5]
 //      ■ entering Burst Stage 3 → self: Sustained Damage ▲59.98% for 10s                       [M4]
@@ -36,11 +40,15 @@
 //       start AND once per Full Burst end (she is the sole B3 in the fixture, so Full Burst end ==
 //       her burst end — the "if she just bursted" gate is exact here, not the benign multi-B3
 //       over-fire the kit-status finding flags).
-//   M2  the baseline is the calibrated 12-stack rebuild average 301%/s, NOT the old permanent-20
-//       reading 501.6%/s (which read 1.19–1.51 hot vs the real T3 sample) and NOT a single 25.08%
-//       stack (the raw parser miss). It is permanent (ticks the whole fight), not burst-gated.
-//   M3  THE decomposition: the burst DoT is the 700%/s DELTA, not the naive 1001%/s stacked on top
-//       of the baseline. Shipped total must sit BELOW the naive double-count counterfactual.
+//   M2  the baseline is LIVE, and "live" is the part a test can get wrong by passing: a single
+//       fixed magnitude is what BOTH superseded models look like, so the assertions check that the
+//       per-tick magnitude VARIES, that every value is a whole number of 25.08 stacks within the
+//       kit's 20 cap, that it reaches 501.6%/s, and that it does not survive the burst cancel at
+//       full strength. Discriminated against the flat 301%/s average it replaced AND the old
+//       permanent-20 reading 501.6%/s (which read 1.19–1.51 hot vs the real T3 sample).
+//   M3  the burst DoT is the FULL 1001%/s, with no double-count because the cancel zeroes the pool
+//       underneath it. The counterfactual is the burst WITHOUT its cancel block: the live baseline
+//       keeps ticking through the mirror window and the shipped total must sit below it.
 //   M4  the stage-3 buff is the L10 value 59.98% for exactly 10s, fires once per stage-3 ENTRY (the
 //       stage-2 cast frame — entries outnumber her own bursts, since a chain that reaches stage 3
 //       and then expires still entered it), and is
@@ -107,17 +115,31 @@ const mbcHot20Stack = withPatchedOverride(SLUG, (ov) => {
   if (!dot) {
     throw new Error('mbc S1 baseline dot missing — fixture is stale');
   }
+  delete dot.perResource;
   dot.atkPct = 501.6;
 });
-/** M3: the NAIVE double-count — burst Dragging Chain at the full 1001%/s on top of the baseline. */
-const mbcNaiveBurst = withPatchedOverride(SLUG, (ov) => {
-  const dot = ov.burst
+/** M2 nearest-wrong: the SUPERSEDED flat 301%/s average (12 × 25.08) — a static baseline that
+ *  cannot drop to zero when her burst cancels Ensnaring, nor climb to the 20-stack cap. */
+const mbcFlatAverage = withPatchedOverride(SLUG, (ov) => {
+  const dot = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((e: any) => e.kind === 'dot');
   if (!dot) {
-    throw new Error('mbc burst dot missing — fixture is stale');
+    throw new Error('mbc S1 baseline dot missing — fixture is stale');
   }
-  dot.atkPct = 1001;
+  delete dot.perResource;
+  dot.atkPct = 301;
+});
+/** M3: the NAIVE double-count — the burst mirror at 1001%/s WITHOUT cancelling Ensnaring, so the
+ *  live baseline keeps ticking underneath it. This is what the old 700 DELTA existed to avoid. */
+const mbcNaiveBurst = withPatchedOverride(SLUG, (ov) => {
+  const before = ov.burst.length;
+  ov.burst = ov.burst.filter(
+    (b: any) => !b.effects.some((e: any) => e.kind === 'resource')
+  );
+  if (ov.burst.length !== before - 1) {
+    throw new Error('mbc burst Ensnaring cancel missing — fixture is stale');
+  }
 });
 /** M4: the stage-3 sustained-damage buff removed entirely (proves it is live). */
 const mbcNoS2Buff = withPatchedOverride(SLUG, (ov) => {
@@ -136,6 +158,7 @@ const mbcNoS2Buff = withPatchedOverride(SLUG, (ov) => {
 const base = run();
 const singleChain = run({ [SLUG]: mbcSingleChain });
 const hot20 = run({ [SLUG]: mbcHot20Stack });
+const flatAvg = run({ [SLUG]: mbcFlatAverage });
 const naiveBurst = run({ [SLUG]: mbcNaiveBurst });
 const noS2Buff = run({ [SLUG]: mbcNoS2Buff });
 
@@ -190,22 +213,19 @@ describe('mihara-bonding-chain — kit spec', () => {
     });
   });
 
-  describe('M2 — S1 Ensnaring baseline: calibrated 12-stack rebuild average, 301%/s permanent', () => {
-    const ticks = mbcDmg(base.events, 'skill1', 301);
+  describe('M2 — S1 Ensnaring baseline: a LIVE stack pool, 25.08%/s per stack', () => {
+    // The DoT reads her `ensnaring` pool every tick (perResource), so its atkPct is not one number:
+    // it climbs as stacks build, holds at the 20 cap, and drops to zero the instant her burst
+    // cancels Ensnaring. Owner ruling 2026-08-13: model the stacks, do not average them.
+    const ticks = mbcDmg(base.events, 'skill1').filter(
+      (d) => d.atkPct !== 500.6
+    );
 
-    it('is 301%/s (12 × 25.08), not the hot 501.6%/s 20-stack nor a single 25.08% stack', () => {
-      expect([...new Set(ticks.map((d) => d.atkPct))]).toEqual([301]);
-    });
-
-    it('is permanent (ticks the whole fight), not burst-gated', () => {
+    it('ticks the whole fight (permanent), not burst-gated', () => {
       expect(
         ticks.length,
         'a permanent 1/s DoT should tick ~180× over the fight'
       ).toBeGreaterThanOrEqual(170);
-      expect(
-        ticks.length,
-        'permanent baseline must vastly out-number the burst dumps'
-      ).toBeGreaterThan(mbcDmg(base.events, 'skill1', 500.6).length * 5);
       expect(ticks[0].sec, 'first tick should land early').toBeLessThan(3);
       expect(
         ticks[ticks.length - 1].sec,
@@ -213,23 +233,71 @@ describe('mihara-bonding-chain — kit spec', () => {
       ).toBeGreaterThan(FIGHT_SEC - 5);
     });
 
-    it('DISCRIMINATING: the old 20-stack baseline (501.6%/s) over-counts vs shipped', () => {
+    it('is LIVE: the per-tick magnitude varies, and every value is a whole number of 25.08 stacks', () => {
+      const values = [...new Set(ticks.map((d) => d.atkPct))];
+      expect(
+        values.length,
+        'a live pool must produce more than one tick magnitude — one value means it is still averaged'
+      ).toBeGreaterThan(1);
+      for (const v of values) {
+        const stacks = v / 25.08;
+        expect(
+          Math.abs(stacks - Math.round(stacks)),
+          `tick ${v} is not a whole number of 25.08 stacks`
+        ).toBeLessThan(1e-6);
+        expect(Math.round(stacks)).toBeLessThanOrEqual(20); // the kit's cap
+      }
+    });
+
+    it('reaches the 20-stack cap (501.6%/s) and is cancelled to zero by her burst', () => {
+      const maxTick = Math.max(...ticks.map((d) => d.atkPct));
+      expect(maxTick).toBeCloseTo(501.6, 6);
+      // after a burst cancels Ensnaring the pool is 0, so the DoT contributes nothing — the tick
+      // either carries atkPct 0 or is not emitted at all. Either way no full-strength tick may
+      // survive inside the mirror window.
+      const firstBurst = mbcBursts(base.events)[0];
+      const inWindow = ticks.filter(
+        (t) =>
+          t.frame > firstBurst.frame && t.frame <= firstBurst.frame + 3 * FPS
+      );
+      for (const t of inWindow) {
+        expect(
+          t.atkPct,
+          `Ensnaring tick at ${t.sec.toFixed(1)}s survived the burst cancel`
+        ).toBeLessThan(501.6);
+      }
+    });
+
+    it('DISCRIMINATING: the superseded flat 301%/s average reads a single magnitude, and differs in total', () => {
+      const flatTicks = mbcDmg(flatAvg.events, 'skill1', 301);
+      expect([...new Set(flatTicks.map((d) => d.atkPct))]).toEqual([301]);
+      expect(
+        base.totals[SLUG],
+        'the live pool must not coincidentally equal the flat average it replaced'
+      ).not.toBe(flatAvg.totals[SLUG]);
+    });
+
+    it('DISCRIMINATING: a static 20-stack baseline (501.6%/s) over-counts vs the live pool', () => {
       expect([
         ...new Set(mbcDmg(hot20.events, 'skill1', 501.6).map((d) => d.atkPct)),
       ]).toEqual([501.6]);
       expect(
         base.totals[SLUG],
-        'shipped 12-stack avg must read below the hot 20-stack model'
+        'shipped live pool must read below a permanently-capped 20-stack model'
       ).toBeLessThan(hot20.totals[SLUG]);
     });
   });
 
-  describe('M3 — Burst Dragging Chain: the 700%/s DELTA for 10s (decomposed, no double-count)', () => {
-    const ticks = mbcDmg(base.events, 'burst', 700);
+  describe('M3 — Burst Dragging Chain: the FULL 1001%/s for 10s, with Ensnaring cancelled', () => {
+    const ticks = mbcDmg(base.events, 'burst', 1001);
     const bursts = mbcBursts(base.events);
 
-    it('is the 700%/s delta (1001 − 301), not the naive full 1001%/s', () => {
-      expect([...new Set(ticks.map((d) => d.atkPct))]).toEqual([700]);
+    // Dragging Chain mirrors the 20 Ensnaring stacks (20 × 50.05 = 1001%/s) and CANCELS Ensnaring.
+    // With a live pool the cancel is structural — the baseline reads the now-zero pool and stops
+    // contributing on its own — so the burst ships its true kit magnitude. The superseded model
+    // shipped 700 (= 1001 − 301) purely to subtract a static baseline it could not switch off.
+    it('is the full kit magnitude 1001%/s, not the superseded 700 delta', () => {
+      expect([...new Set(ticks.map((d) => d.atkPct))]).toEqual([1001]);
       expect(ticks.length, 'no Dragging Chain tick landed').toBeGreaterThan(0);
     });
 
@@ -253,15 +321,26 @@ describe('mihara-bonding-chain — kit spec', () => {
       }
     });
 
-    it('DISCRIMINATING: the naive 1001%/s-on-top double-count over-counts vs shipped', () => {
-      expect([
-        ...new Set(
-          mbcDmg(naiveBurst.events, 'burst', 1001).map((d) => d.atkPct)
-        ),
-      ]).toEqual([1001]);
+    it('DISCRIMINATING: without the cancel, Ensnaring keeps ticking under the mirror and double-counts', () => {
+      // Same 1001%/s burst, but the resource block that zeroes Ensnaring is removed. The pool stays
+      // at its cap through the window, so the baseline pays out on top of the mirror — exactly the
+      // over-count the kit's "burst cancels Ensnaring" clause prevents.
+      const stillTicking = mbcDmg(naiveBurst.events, 'skill1')
+        .filter((d) => d.atkPct !== 500.6)
+        .filter((d) => {
+          const c = mbcBursts(naiveBurst.events)[0];
+          return d.frame > c.frame && d.frame <= c.frame + 10 * FPS;
+        });
+      // Not pinned at the 20-stack cap: whether she has capped by her FIRST burst is a property of
+      // this fixture's rotation, not of the kit. The claim under test is that the baseline keeps
+      // paying out AT ALL underneath the mirror, which is what the cancel exists to stop.
+      expect(
+        stillTicking.some((d) => d.atkPct > 0),
+        'without the cancel the live baseline should keep ticking through the mirror window'
+      ).toBe(true);
       expect(
         base.totals[SLUG],
-        'decomposed 700 delta must read below the naive double-count'
+        'the shipped cancel must read below the uncancelled double-count'
       ).toBeLessThan(naiveBurst.totals[SLUG]);
     });
   });

@@ -97,6 +97,16 @@ export type TriggerDef =
       countInFb?: number;
       countInFbStage?: number;
       perPull?: boolean; // true = count trigger PULLS (1 per shot), false/omitted = count landed PELLETS (`hitsPerShot` per shot). The SG 10× lever.
+      // WHICH attacks advance the counter. Default 'always' — every normal attack accrues, and the
+      // block's gates (fbGate/swapGate/…) are checked only when a threshold is CROSSED, so a
+      // crossing the gate blocks still SPENDS its N. That is right for a kit worded "every N normal
+      // attacks, [effect] during Full Burst" (the counting is unconditional; only the effect is
+      // scoped) and WRONG for one worded "landing N normal attack(s) DURING Full Burst", where
+      // out-of-window attacks should not count at all.
+      // 'gated' = accrue ONLY while the block's own gates pass, i.e. the kit's scope applies to the
+      // COUNTING. Opt-in per unit, read off the kit's wording — there is no way to infer which
+      // reading a kit means from the block shape alone, so this is authored, never defaulted.
+      countScope?: 'always' | 'gated';
     } // fires every `count` cumulative hits; `countInFb` overrides the threshold DURING Full Burst (RRH rocket meter: 120 out of burst → 60 in her FB). `countInFbStage` SCOPES that override: it then applies ONLY during the 10s window after the owner's OWN burst cast at that stage (prose "▼N for 10 sec" granted by that cast — RRH's ▼60 is a Stage-3 line, owner ruling 2026-08-04), NOT any team FB window; without it the any-FB-state convention stays (SWID)
   | {
       kind: 'chargeCounter';

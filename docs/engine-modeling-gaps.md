@@ -63,7 +63,7 @@
 | `everyN` | 8 | clay, harran, mast-romantic-maid, mint, neon-vision-eye, phantom, power, soda-twinkling-bunny |
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 20 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
-| `fbGate` | 10 | clay, ether, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, … |
+| `fbGate` | 11 | clay, ether, eunhwa-tactical-upgrade, kurumi, mihara-bonding-chain, modernia, privaty-unkind-maid, soda-twinkling-bunny, … |
 | `flatDamage` | 97 | 2b, a2, anchor, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
@@ -73,10 +73,10 @@
 | `hasTrueNormals` | 0 | _none_ |
 | `highestAllyAtkPct` | 1 | guilty |
 | `highestAllyMaxHpPct` | 2 | quency, sin |
-| `hitCount` | 65 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
+| `hitCount` | 66 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
 | `hitRatePct` | 20 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
-| `inFb` | 10 | clay, ether, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, … |
+| `inFb` | 11 | clay, ether, eunhwa-tactical-upgrade, kurumi, mihara-bonding-chain, modernia, privaty-unkind-maid, soda-twinkling-bunny, … |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 13 | alice-wonderland-bunny, arcana-fortune-mate, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, … |
 | `interval` | 37 | ade, anis, brid, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, … |
@@ -94,7 +94,7 @@
 | `outFb` | 1 | velvet |
 | `ownBurstGate` | 6 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
 | `pelletCountFlat` | 3 | arcana-fortune-mate, dorothy-serendipity, leona |
-| `perResource` | 7 | e-h, exia, guillotine, mana, marciana-marine-study, phantom, soda-twinkling-bunny |
+| `perResource` | 8 | e-h, exia, guillotine, mana, marciana-marine-study, mihara-bonding-chain, phantom, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
 | `pullsPerSec` | 4 | jill, k, takina, velvet |
 | `rampSec` | 4 | arcana-fortune-mate, cinderella, nayuta, scarlet |
