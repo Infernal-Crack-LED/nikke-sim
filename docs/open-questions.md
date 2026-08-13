@@ -677,9 +677,12 @@ ENACT-NOW, DECISIONS 2026-07-20) lit `milk-blooming-bunny`'s previously-dead Pie
 HOT** (total ~×2). The pierce value is datamined (not tuned) and the mechanism is verified faithful (debug:
 `dmgUp` 1.00→2.31 during her ~10s burst window, correctly ending at t≈13.17 — the same unit-tagged pierce
 Damage-Up model grave uses). So the residual **+0.30 HOT is a SEPARATE over-model**, not the pierce. Two
-candidate drivers, both measurement-gated: **(1)** her 2nd audit gotcha — the Embarrassment mode-split: in
-the default auto-mode the burst `atkPct 220` + S2 DoT `447.7% ×5` magnitudes and the whole
-Embarrassment-off cadence are an unmeasured parser baseline (plan §milk-blooming-bunny gotcha 2, MEASUREMENT);
+candidate drivers, both measurement-gated: **(1)** her auto-basis magnitudes — the burst `atkPct 220` + S2
+DoT `447.7% ×5` and the whole Embarrassment-off cadence are an unmeasured parser baseline (plan
+§milk-blooming-bunny gotcha 2, MEASUREMENT). ⚑ **Label updated 2026-08-12:** this used to read "the
+Embarrassment mode-split"; the mode split no longer exists (owner ruled the manual branch out of the model
+and her Embarrassment lines are filed under `unmodeled`). The auto basis is unchanged, so the SUBSTANCE of
+this driver survives intact — only its name was stale;
 **(2)** the pierce-window DPS share is unmeasured — a milk-blooming-bunny-FOCUS recording is needed to
 confirm how much of her damage really lands inside the +117.64% window. Do NOT re-fudge 117.64 to cool her.
 Recipe: milk-blooming-bunny-focus video, read burst-window vs out-of-window DPS split + confirm the pierce

@@ -504,6 +504,11 @@ describe('takina — kit spec', () => {
     //      and their own magazine — `laplace` (RL/Iron, not `laplace-ultimate-hero`; maxAmmo 999)
     //      and `eunhwa-tactical-upgrade` (SR/Fire variant, not base `eunhwa`; maxAmmo 1) — hence
     //      the proposal.
+    // ⚑ COVERAGE GAP, deliberate: this pins two of the ruling's THREE clauses — the 12-shot count
+    // and the absence of a mid-window reload. It does NOT assert the third, that her SNIPER comes
+    // back with a FULL magazine when the swap ends (blocked by the same `wasFlavorSwap` gate on the
+    // swap-EXIT refill). An implementation that fixes charge + ammo but forgets the exit refill
+    // would pass this test, so add a post-window magazine assertion when un-parking it.
     it.skip('fires 12 swap shots per window with NO reload gap (owner ruling)', () => {
       const casts = takinaBursts(base.events).map((c) => c.frame);
       expect(casts.length).toBeGreaterThan(0);
