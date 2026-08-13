@@ -167,7 +167,7 @@
 | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
 | 1. Cadence tuple (~22 units)               | **SOLVED 2026-07-25** — datamine frame data reliable; SMG frame-data confound understood |
 | 2. Defensive/heal/shield (~25 units)       | no HP pool in v1 (immortal boss) → inert by design                                       |
-| 17. User-selected modes (8 units)          | config/owner-review, not a primitive                                                     |
+| 17. User-selected modes (7 units)          | config/owner-review, not a primitive                                                     |
 | 18. Kill-gated effects (~4 units)          | inherent (immortal solo boss)                                                            |
 | 19. SG pull-vs-pellet `hitCount` 10× lever | measurement/calibration; per-unit landing CLOSED (A31/U17), open tail = U27              |
 | 12-tail. eve Mk2 crit-count proxy (U26)    | static proxy can't track external crit buffs; ungraded/no footage, not a primitive gap   |
@@ -498,7 +498,7 @@ burst-window over-model, now cleanly isolated as open-questions U19. **8 units n
 `gainPierce` enactment** (kit-autonomy gauntlet passes 2026-07-20 → 2026-08-02, per the primitive census
 above): ade-agent-bunny, asuka, dorothy, grave (ENABLED; residual = burst-window over-model, U19), mari,
 milk-blooming-bunny (ENACTED 2026-07-20, 0.653 COLD→1.301 HOT — the residual HOT is now isolated to her
-SEPARATE Embarrassment mode-split, not the pierce; U23), naga, neve. Units: alice, d-killer-wife,
+SEPARATE auto-basis over-model — the burst atkPct 220 / S2 DoT magnitudes — not the pierce; U23), naga, neve. Units: alice, d-killer-wife,
 prika (held — owner popup measurement pending, probe-runs 2026-07-14 inconclusive), red-hood, snow-white,
 snow-white-heavy-arms, zwei, laplace, maxwell, mana.
 
@@ -672,10 +672,12 @@ Sync carried no favorite-item prose → materialize froze untreasured base kit. 
 
 Team-comp branches via a manual `modes` field (first entry = default) → board misreads that look like
 model bugs but are config bugs (mint 0.768 was a config default, not a model error). The 7 `modes`
-overrides: bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, mint, naga, prika.
-(`milk-blooming-bunny` was an eighth until 2026-08-12, when the owner ruled her manual Embarrassment
-branch out of the model entirely — she now has no `modes` at all and her Embarrassment lines are filed
-under `unmodeled`.) **Triage note: check the selected mode against the recorded comp before counting one
+overrides, per the generated census above: bready, cinderella-crystal-wave, crust, delta-ninja-thief,
+emma-tactical-upgrade, mint, prika. (`milk-blooming-bunny` was an eighth until 2026-08-12, when the
+owner ruled her manual Embarrassment branch out of the model entirely — she now has no `modes` at all
+and her Embarrassment lines are filed under `unmodeled`. The `elegg-boom-and-shock` and `naga`
+anecdotes below are DATED history: neither carries `modes` today — naga's toggle was replaced by real
+shield machinery on 2026-07-20.) **Triage note: check the selected mode against the recorded comp before counting one
 of these as a modeling defect.**
 
 **2026-07-17 — `auto` no-op default added to 4 units** (bready, delta-ninja-thief, elegg-boom-and-shock,
