@@ -9,7 +9,82 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-11, latest) Unmodeled behaviour is RECORDED under `unmodeled`, never left to prose.**
+- **(2026-08-12, latest) A weapon swap's damage FLAVOR and its ammo ECONOMY are independent — and
+  `takina`'s burst gun is a real weapon, not a re-flavored sniper.**
+  - **The rulings (owner, 2026-08-12).** `takina`'s burst swaps to a CUSTOM weapon: it deals the
+    damage her kit lists (200.64%), has **no ammo and no reload**, fires at **1.2 shots/sec** — 12
+    shots across the 10s window — and when the swap ends she returns to the sniper **with its
+    magazine restored to full**. The owner named the consequence: she then never needs to reload,
+    because she cannot land 6 full-charge sniper shots between bursts in most comps.
+  - **Why the engine could not say it.** `weaponSwap.trueNormals` was authored as a damage flavor
+    ("normal attacks deal true damage") but the engine also read it as the marker for "same-weapon
+    flavor swap", gating the magazine refill at BOTH ends on it. That rule is itself correct — it
+    comes from the `chisato` kit-audit (#2): a swap that only re-flavors the gun in your hands
+    grants no free reload. Using the flavor to detect the case was the defect, because a REAL
+    weapon can also deal true damage. Separately, `chargeTimeSec` was read with a falsy check, so
+    an authored `0` ("does not charge") collapsed to `undefined` and inherited the base unit's
+    charge frames — which is why the swap's `pullsPerSec` was never consulted.
+  - **Enacted.** A new `weaponSwap.sameWeapon` flag is the sole refill marker; `trueNormals` is a
+    pure flavor flag again; `chargeTimeSec` is null-checked. The four genuine flavor swaps declare
+    it — `chisato`, `clay`, `jill`, `frima` — and the tree gives an independent check that the
+    partition is right: each of those four sets `damagePct` exactly equal to its own
+    `normalAttackMultiplier` (the gun is unchanged, so its damage is too), while the three
+    true-damaging REAL swaps do not (`takina` 200.64 vs 69.04, `laplace` RL/Iron 22.2 vs 63.11,
+    `eunhwa-tactical-upgrade` 105.6 vs 69.04).
+  - **⚠ DIRECTION — the faithful model is COLDER, not warmer.** The handoff that specced this
+    expected the fix to warm `takina` (7 shots → 12). It does the opposite: her 7 estimated shots
+    inherited the SR charge cycle and therefore the **×2.5 `chargeMultiplier`**, worth ~3511% ATK
+    per window against the ruling's 12 × 200.64 = ~2408%. Measured: her window damage drops ~30%,
+    her total 302.5M → 212.9M in her spec fixture, and her single graded reading moves
+    **0.786 → 0.579 COLD**. The swap economy was therefore never the explanation for her coldness.
+    Landed anyway under _faithful > fit_; the residual is a separate, now-larger open question.
+  - **Blast radius, all measured, none graded.** The same real-weapon rule stops two other swaps
+    leaking their magazines: `laplace` (RL/Iron, not `laplace-ultimate-hero`) **−5.4%** — her
+    999-round beam magazine used to carry over onto her 6-round RL for the rest of the fight, so
+    she never reloaded again — and `eunhwa-tactical-upgrade` (not base `eunhwa`) **−21%** — she used
+    to bring however many SR rounds she was holding into a 1-round cannon and fire them all before
+    the first reload, where her own override note describes a fire/reload cycle. Both changes move
+    each unit TOWARD its documented model. Neither appears in any graded comp. Every regression
+    snapshot is byte-identical, and the only board movement is inside `takina`'s own comp
+    (PG iron sweep: `d-killer-wife` +0.002, `maxwell` +0.001, `liberalio` +0.004,
+    `milk-blooming-bunny` +0.011 — her changed shot count feeding the shared rotation).
+  - **Proof:** `scripts/tests/units/takina.test.ts` (the parked acceptance test, un-skipped: 12
+    shots/window, no reload gap above 1.5s, and the restored 6-round magazine read off the ammo
+    counter) + `scripts/tests/engine/weapon-swap.test.ts` (entry AND exit refills, each asserted
+    against `sameWeapon` and `trueNormals` independently). Owner-answered ⇒ encode + `/code-review`,
+    not `/scientific-method` (CLAUDE.md, owner ruling 2026-08-11).
+
+- **(2026-08-12) `laplace`'s (RL/Iron) "at max stacks" gate needed no new engine primitive — a
+  monotone resource pool is the answer.**
+  - **The rulings it encodes (owner, 2026-08-12):** Hero Vision stacks build from **Full Charge
+    attacks**, not from full-burst shots — and her burst beam does not charge, so she gains **zero**
+    stacks during the window and enters it with whatever she built. Stacks **refresh as a whole
+    set** on each new stack (the game-wide rule already recorded as `docs/modeling-priors.md`
+    prior 12, owner ruling 2026-08-11), so her 15s clock is reset by her last pre-burst full charge
+    and outlasts the 10s window: once the gate is open it holds for the whole window.
+  - **What was proposed, and why it was not built.** The handoff proposed a new stack-count block
+    gate and, per F11, weighed it against just logging the carrier — a primitive for one unit, on a
+    unit with no recorded fight. Neither was needed. The gate is expressible with today's
+    primitives, exactly as `engine-modeling-gaps.md` theme 4 already says for `guilty`'s identical
+    rider: a `heroVision` pool (initial 0, max 5), `+1` per BASE full-charge pull
+    (`shotFired` + `swapGate: 'unswapped'`), read by `resourceGate` — the `soda-twinkling-bunny`
+    precedent. The beam splits into two mutually-exclusive `burstCast` branches (`min: 5` with
+    `trueNormals`, `max: 4` identical but plain) so a below-max cast still fires the beam as normal
+    damage, which is what the kit says; the 11.9% true rider gains `resourceGate min: 5` beside its
+    `swapGate`.
+  - **The approximation, stated not hidden:** a resource never expires, so the pool is monotone.
+    That matches the whole-set refresh rule at scope lock, where she fires continuously and the 15s
+    clock never lapses; it diverges only across a >15s firing pause, which the continuous fight does
+    not contain.
+  - **Worth −1.00%** on her total in the 720-kit-audit control comp (`liter` B1 / `crown` B2 /
+    `laplace` B3 carry+focus / `helm` B3, boss Fire), teammates byte-identical because both gated
+    clauses are self-scoped and neither feeds an ally bucket. She is in no graded comp, so the board
+    is unchanged. The over-credit removed is the one the rulings identify: a cast made before she
+    has landed 5 full charges — in that fixture, the fight's first burst.
+  - **Proof:** the L1/L2 assertion group in `scripts/tests/units/laplace.test.ts`, discriminated
+    against the prior "assume Hero Vision permanently maxed" model.
+
+- **(2026-08-11) Unmodeled behaviour is RECORDED under `unmodeled`, never left to prose.**
   - **The ruling (owner):** _"We should record all unmodeled behavior as unmodeled rather than
     leaving it in prose."_ Asked and answered off the phase-4 tail pass's §5 proposal
     ([2026-08-11-faithfulness-tail-plan.md](handoffs/2026-08-11-faithfulness-tail-plan.md)).

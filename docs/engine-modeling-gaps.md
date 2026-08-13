@@ -106,6 +106,7 @@
 | `requiresShielded` | 5 | asuka, kilo, mori, naga, rapunzel-pure-grace |
 | `requiresTargetStatus` | 13 | asuka-wille, d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, … |
 | `resourceGate` | 24 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace, … |
+| `sameWeapon` | 4 | chisato, clay, frima, jill |
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 2 | flora, naga |
