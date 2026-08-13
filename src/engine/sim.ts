@@ -1531,17 +1531,32 @@ export function runSim(
   let lastStage3Caster = -1;
   let chainBlockedUntil = 0; // post-full-burst chain-open block (opt-in floor arm only — see below)
   const POST_FB_CHAIN_DELAY_FRAMES = ENV.POSTFB ? Number(ENV.POSTFB) : 150; // opt-in A/B arm ONLY (ROTMODEL=floor). OVERTURNED as a game mechanic 2026-08-04 (owner): there is no post-FB chain-open lock — the old "measured 3s (FB-end→B1)" was natural refill-from-zero (~3-4s for a good team), and the bar-anatomy reads that motivated it were video-relative: the recording starts during the pre-fight intro, before the 3:00 clock (so its "first FB at 14.1s" is NOT 14.1s of fight time). Kept behind ROTMODEL=floor for A/B.
-  let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
-  // Reserve/grace window: how long a filled chain WAITS at stage 2/3 for a stage-filler to come
-  // off cooldown. This is the auto's inter-activation grace (owner 2026-07-21: auto casts B1→~1s→
-  // B2→~1s→B3), NOT the Full-Burst state duration — it was mistakenly set to burst_duration=1000
-  // (=10s), which let a B3 up to 10s out of cooldown get reserved as the leftmost window-maker and
-  // wait for it, over-allocating the leftmost of two alternating B3s (sakura-bloom-in-summer 6/4 vs
-  // the footage's 5/5). 120f (2s) = the real ~1s grace padded for the sim's 0.5s STAGE_CAST_GAP
-  // (which reaches B3 ~0.5s early); calibrated across all 12 graded FB comps (all pass; PH's
-  // separate over-by-1 untouched). 90f overshoots (PH 13→11); raising STAGE_CAST_GAP to 1s to allow
-  // 90f craters measured cadence — the 0.5s gap is pinned. DECISIONS 2026-07-21. STAGE_WINDOW=600 reverts.
-  const STAGE_WINDOW_FRAMES = ENV.STAGE_WINDOW ? Number(ENV.STAGE_WINDOW) : 120;
+  // TWO DEADLINES, NOT ONE (owner ruling 2026-08-13). A stalled chain has two independent clocks
+  // that a single constant used to conflate:
+  //
+  //   RESERVE — how long the auto WAITS at stage 2/3 for a stage-filler to come off cooldown before
+  //   picking someone else. This is the auto's inter-activation grace (owner 2026-07-21: auto casts
+  //   B1→~1s→B2→~1s→B3). It was once mistakenly set to burst_duration=1000 (=10s), which let a B3 up
+  //   to 10s out of cooldown be reserved as the leftmost window-maker, over-allocating the leftmost
+  //   of two alternating B3s (sakura-bloom-in-summer 6/4 vs the footage's 5/5). 120f (2s) = the real
+  //   ~1s grace padded for the sim's 0.5s STAGE_CAST_GAP (which reaches B3 ~0.5s early); calibrated
+  //   across all 12 graded FB comps. 90f overshoots (PH 13→11); raising STAGE_CAST_GAP to 1s to allow
+  //   90f craters measured cadence — the 0.5s gap is pinned. DECISIONS 2026-07-21.
+  //
+  //   TIMEOUT — how long the CHAIN ITSELF survives unfinished before it collapses and the gauge must
+  //   refill from zero. Owner-ruled 10s (2026-08-13). This is a property of the game's burst chain,
+  //   NOT of the auto's willingness to wait, which is why it must not inherit the reserve's 2s: the
+  //   gauge stays LOCKED (stage !== 0) for the whole time a chain hangs, so the timeout governs how
+  //   much generation a failed chain costs the team.
+  //
+  // Both were `STAGE_WINDOW_FRAMES` until the split; the 2s value belonged to RESERVE, and expiry
+  // silently inherited it (so a chain died 8s early and the bar started refilling 8s early).
+  let stageExpireFrame = Infinity; // chain-collapse deadline (stage 1 never expires)
+  let stageReserveFrame = Infinity; // filler-wait horizon, always ≤ stageExpireFrame
+  const STAGE_RESERVE_FRAMES = ENV.STAGE_WINDOW ? Number(ENV.STAGE_WINDOW) : 120;
+  const CHAIN_TIMEOUT_FRAMES = ENV.CHAIN_TIMEOUT
+    ? Number(ENV.CHAIN_TIMEOUT)
+    : 600;
   let fbEndFrame = -1;
   // PREFB (default off): when the B3 cast should defer the FB start by FB_PRE_DELAY_FRAMES, the
   // fbEndFrame set + fullBurstEnter + stored-hit release are scheduled here and fired that many
@@ -3351,6 +3366,7 @@ export function runSim(
       gauge = 0; // the chain consumes the gauge (refill required if it collapses)
       stage = 1;
       stageExpireFrame = Infinity;
+      stageReserveFrame = Infinity;
       stageGapFrames = PRE_B1_GAP_FRAMES; // measured 30f between gauge-full and B1 (default 0 = fire immediately)
     }
     if (
@@ -3364,6 +3380,7 @@ export function runSim(
       );
       stage = 0;
       stageExpireFrame = Infinity;
+      stageReserveFrame = Infinity;
     }
     // Burst casts are BLOCKED while the boss is off-screen during a range transition
     // (user, 2026-07-13): if a transition lands mid-chain, the next cast waits out the
@@ -3432,10 +3449,20 @@ export function runSim(
       // bench B3s cast where real fights never pick them — first-ready does NOT do that (a bench
       // B3 that never becomes earliest-ready-and-in-window never casts).
       const inWindow = stage >= 2 && stageExpireFrame !== Infinity;
+      // TWO DIFFERENT QUESTIONS, now that the chain outlives the reserve horizon (2026-08-13):
+      //   "can this unit fill the stage RIGHT NOW?"  → yes whenever it is off cooldown and the chain
+      //     is still alive. A Burst III that comes off cooldown 5s into a 10s chain gets pressed;
+      //     refusing it would leave the chain hanging with nobody able to fill it, a state that
+      //     cannot occur in game.
+      //   "is this unit worth WAITING for?"          → only if it lands inside the reserve horizon.
+      //     This is the clause DECISIONS 2026-07-21 calibrated: a far-out unit must not be reserved
+      //     as the window-maker and waited for (that is what double-cast the leftmost of two
+      //     alternating 40s B3s, sakura-bloom-in-summer 6/4 vs the footage's 5/5).
+      // Before the reserve/timeout split these coincided, because a chain died at the horizon.
       const windowFits = (u: UnitState) =>
         fillsStage(u) &&
         gatePasses(u) &&
-        frame + u.burstCdFrames < stageExpireFrame;
+        frame + u.burstCdFrames < stageReserveFrame;
       const next = inWindow
         ? ENV.B3_LEFTMOST
           ? units.find(windowFits)
@@ -3583,7 +3610,8 @@ export function runSim(
           } else {
             stage = (stage + 1) as 1 | 2 | 3;
             stageGapFrames = chainGap;
-            stageExpireFrame = frame + STAGE_WINDOW_FRAMES;
+            stageExpireFrame = frame + CHAIN_TIMEOUT_FRAMES;
+            stageReserveFrame = frame + STAGE_RESERVE_FRAMES;
           }
         }
       } else {
