@@ -173,11 +173,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    `countScope?: 'always' | 'gated'` on the hitCount trigger; `'gated'` accrues only while the
    block's own gates pass (reuses `blockGatesPass`, so it honours every gate, not just `fbGate`).
    Default `'always'` keeps the roster byte-identical — the block shape cannot distinguish the two
-   kit readings, only the WORDING can, so migration is authored per unit. Migrated 2 of 24 gated
-   blocks: `velvet` ×2 and `mihara-bonding-chain`. **Still to triage, one kit-wording read each:**
-   `asuka-wille`, `elegg`, `guillotine`, `guillotine-winter-slayer`, `kurumi`,
-   `laplace-ultimate-hero`, `marciana-marine-study`, `mica-snow-buddy`, `modernia`, `moran`,
-   `power`, `privaty-unkind-maid`, `rei-ayanami-tentative-name`, `rem`, `rouge`. The test to apply:
+   kit readings, only the WORDING can, so migration is authored per unit. **3 blocks migrated**
+   (`velvet` ×2, `mihara-bonding-chain` ×1); **23 gated blocks across 16 units remain** on the
+   default — 10 of those 23 are `fbGate`/`swapGate`-gated and are the likeliest candidates, the rest
+   sit behind `requiresTargetStatus` / `resourceGate` / `requiresCore`. **Still to triage, one
+   kit-wording read each:** `asuka-wille`, `elegg`, `guillotine`, `guillotine-winter-slayer`,
+   `kurumi`, `laplace-ultimate-hero`, `ludmilla-winter-owner`, `marciana-marine-study`,
+   `mica-snow-buddy`, `modernia`, `moran`, `power`, `privaty-unkind-maid`,
+   `rei-ayanami-tentative-name`, `rem`, `rouge`. (Counts and list regenerated 2026-08-13 after the
+   cross-family review caught the first pass mixing BLOCK and UNIT counts; the narrower gate set it
+   used had also silently dropped `ludmilla-winter-owner`, whose S2 is `requiresCore`-gated. Census
+   the gate set, not a remembered subset of it.) The test to apply:
    does the kit scope the COUNTING ("landing N normal attack(s) **during X**") or only the EFFECT
    ("every N normal attacks, [effect] during X")? Only the former takes `'gated'`.
    _Original entry, kept for the shape of the defect:_ The

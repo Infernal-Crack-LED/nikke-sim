@@ -334,10 +334,14 @@ export type EffectDef =
       intervalSec?: number;
       noRange?: boolean;
       noFb?: boolean;
-      crit?: boolean; // this DoT's ticks roll crit at the caster's sheet rate — opt-in ONLY where MEASURED
-      // (isabel's ~14.7s periodic hit: ~15-25% of fires observed critting; docs/probe-data/isabel-sg-band.json).
-      // Overrides the global DOT_CRIT gate (which stays default-OFF): most DoTs are validated NON-crit
-      // (jill's acid tick video-confirmed at 99.7% non-crit; mihara's Ensnaring validated at 1.03 non-crit).
+      crit?: boolean; // this DoT's ticks roll crit at the caster's sheet rate. Sets the tick's crit
+      // behaviour EXPLICITLY, overriding the global DOT_CRIT gate in either direction — and that gate
+      // has defaulted ON since 2026-07-21 (sim.ts `DOT_CRIT = ENV.DOTCRIT !== 'off'`; DECISIONS), so
+      // `crit:false` is the meaningful OPT-OUT for a DoT measured non-crit and `crit:true` is an
+      // explicit pin that does not depend on the default. Measured anchors both ways: isabel's ~14.7s
+      // periodic hit crits (3 of 11 fires, crit = non-crit ×1.5 exactly;
+      // docs/probe-data/isabel-sg-band.json), while jill's acid tick is video-confirmed 99.7%
+      // non-crit and mihara-bonding-chain's Ensnaring validated at 1.03 non-crit.
       flavor?:
         | 'distributed'
         | 'sustained'

@@ -29,6 +29,27 @@ import { describe, expect, it } from 'vitest';
 const OVERRIDES_DIR = new URL('../../src/skills/overrides/', import.meta.url);
 const SLOTS = ['skill1', 'skill2', 'burst'] as const;
 
+/** Does this effect ask the engine to core?
+ *
+ *  `core` is OVERLOADED across effect kinds, and checking only one shape is how this guard would
+ *  quietly stop guarding:
+ *    • flatDamage `core?: boolean` — a direct core strike.
+ *    • storedHit  `core?: number`  — a per-release core RATE in 0..1, which the engine forwards as
+ *      `coreRate: e.core` and then cores on `coreRate != null`. So `core: 0.5` on a true-flavored
+ *      storedHit WOULD core while a `core === true` test waved it through — precisely the ruling
+ *      violation this file exists to catch.
+ *  `coreRate` is checked too, defensively: no EffectDef declares it today (it lives on
+ *  ConsolidationConfig), so that clause is forward-looking rather than live. */
+function asksToCore(effect: any): boolean {
+  if (effect.core === true) {
+    return true;
+  }
+  if (typeof effect.core === 'number' && effect.core > 0) {
+    return true;
+  }
+  return typeof effect.coreRate === 'number' && effect.coreRate > 0;
+}
+
 /** Every authored effect in the roster, tagged with where it came from. */
 function allEffects(): Array<{ slug: string; slot: string; effect: any }> {
   const out: Array<{ slug: string; slot: string; effect: any }> = [];
@@ -58,11 +79,7 @@ describe('true damage is a flavor, not a property change (owner ruling 2026-08-1
 
   it('no SKILL-sourced true-damage effect asks to core', () => {
     const violations = effects
-      .filter(
-        ({ effect }) =>
-          effect.flavor === 'true' &&
-          (effect.coreRate != null || effect.core === true)
-      )
+      .filter(({ effect }) => effect.flavor === 'true' && asksToCore(effect))
       .map(({ slug, slot, effect }) => `${slug}.${slot}:${effect.kind}`);
     expect(violations).toEqual([]);
   });
@@ -72,5 +89,16 @@ describe('true damage is a flavor, not a property change (owner ruling 2026-08-1
       ({ effect }) => effect.flavor === 'true'
     );
     expect(trueFlavored.length).toBeGreaterThan(0);
+  });
+
+  // The detector is the guard. A filter that only understood one of the two `core` shapes would
+  // still pass the roster scan above — green, and blind to the storedHit case it was written for.
+  it('the core detector understands BOTH core shapes, not just the boolean one', () => {
+    expect(asksToCore({ kind: 'flatDamage', core: true })).toBe(true);
+    expect(asksToCore({ kind: 'storedHit', core: 0.5 })).toBe(true); // the rate shape
+    expect(asksToCore({ kind: 'storedHit', core: 1 })).toBe(true);
+    expect(asksToCore({ kind: 'flatDamage', core: false })).toBe(false);
+    expect(asksToCore({ kind: 'storedHit', core: 0 })).toBe(false); // 0% rate cores nothing
+    expect(asksToCore({ kind: 'dot' })).toBe(false);
   });
 });
