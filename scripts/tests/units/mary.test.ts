@@ -147,7 +147,8 @@ const maryDefBuffs = (events: SimEvent[]): BuffApply[] =>
 /** L2 negative pin: anything at all coming out of mary's skill2 slot. */
 const marySkill2Buffs = (events: SimEvent[]): BuffApply[] =>
   events.filter(
-    (e): e is BuffApply => e.kind === 'buffApply' && e.key.startsWith(`${MARY}:skill2:`)
+    (e): e is BuffApply =>
+      e.kind === 'buffApply' && e.key.startsWith(`${MARY}:skill2:`)
   );
 
 // Counterfactuals on mary's OWN override are lazy — before S3 there is no override on
@@ -183,22 +184,9 @@ const maryNoS1Heal = maryPatch((ov) => {
 const maryNoS1 = maryPatch((ov) => {
   ov.skill1 = [];
 });
-/** L1 counterfactual: the same heal on EVERY trigger pull. */
-const maryS1ShotFired = maryPatch((ov) => {
-  const b = ov.skill1.find((x: any) => hasHeal(x));
-  if (!b) {
-    throw new Error('mary S1 heal block missing — fixture is stale');
-  }
-  b.trigger = { kind: 'shotFired' };
-});
-/** L1 counterfactual: the heal keyed to her burst casts instead of her magazine. */
-const maryS1BurstCast = maryPatch((ov) => {
-  const b = ov.skill1.find((x: any) => hasHeal(x));
-  if (!b) {
-    throw new Error('mary S1 heal block missing — fixture is stale');
-  }
-  b.trigger = { kind: 'burstCast' };
-});
+// (The L1 shotFired / burstCast counterfactuals live INLINE in their own tests below, where they
+// also strip the burst heal so the two streams cannot be confused. The duplicates that used to sit
+// here were never run — a counterfactual nothing executes gates nothing — so they are gone.)
 /** L3 reference: the whole burst slot removed. */
 const maryNoBurst = maryPatch((ov) => {
   ov.burst = [];
@@ -220,7 +208,9 @@ describe('mary kit spec', () => {
     const lastBullets = maryLastBullets(events);
     expect(lastBullets.length).toBeGreaterThan(3); // SG cadence sanity over 180s
     const frames = recoveryFrames(events);
-    expect(frames).toEqual(lastBullets.map((s) => s.frame).sort((a, b) => a - b));
+    expect(frames).toEqual(
+      lastBullets.map((s) => s.frame).sort((a, b) => a - b)
+    );
     // exactly one recovery event (→ 3 ally buffApplies) per firing frame — ticks:1.
     for (const f of frames) {
       expect(
@@ -459,8 +449,13 @@ describe('mary kit spec', () => {
     for (const fb of literOpened) {
       expect(atFrame(shipped.events, fb.frame)).toBe(0);
     }
-    expect(crownRecoveryBuffs(cf.events).length).not.toBe(
-      crownRecoveryBuffs(shipped.events).length
-    );
+    // The per-frame assertions above are the real discriminator (shipped has ZERO recoveries on
+    // every liter-opened window; the counterfactual has N_ALLIES on each). A total-count comparison
+    // is a weaker, coincidence-prone restatement of it — since the 10s chain timeout landed
+    // (2026-08-13) both totals sit at 104 in this fixture — so compare the FRAME SETS instead.
+    const frames = (evs: SimEvent[]) => [
+      ...new Set(crownRecoveryBuffs(evs).map((b) => b.frame)),
+    ];
+    expect(frames(cf.events)).not.toEqual(frames(shipped.events));
   });
 });

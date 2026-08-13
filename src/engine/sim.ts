@@ -1397,6 +1397,22 @@ export function runSim(
     RL: 280,
     MG: 10,
   };
+  // ⚠ BEFORE YOU RAISE THE ALARM ABOUT A BIG PER-SHOT NUMBER × A BIG SHOT COUNT — read this. It has
+  // been re-derived from scratch by at least three sessions, so the invariant AND its condition live
+  // here, at the number, not only in `addGauge` where the gate actually sits:
+  //   * Generation is LOCKED during the burst CHAIN (stages 1-3) and during FULL BURST (`addGauge`).
+  //     The lock is on those two states — it is NOT a property of weapon swaps.
+  //   * So a swap is gauge-locked only for the part of its duration that OVERLAPS them. A 10s swap
+  //     cast at stage 2 is covered end-to-end when the chain COMPLETES (this is why jill's window was
+  //     airtight — DECISIONS 2026-08-10, whose "locked for the entire swap window" wording describes
+  //     HER timing and does not generalize). When the chain EXPIRES the lock lifts mid-swap.
+  //   * Since 2026-08-13 the question is moot for real weapon changes: they generate NO gauge at all
+  //     (owner ruling; see `shotGauge`). Same-weapon FLAVOR swaps still generate normally.
+  //   * What DOES ripple into rotation timing from a swap is the RELOAD-CYCLE PHASE, which no lock
+  //     gates: changing a swap's ammo economy moves the unit's first post-swap shot by a few frames,
+  //     which shifts its gauge contribution once the lock lifts (jill 2026-08-10; velvet 2026-08-13,
+  //     where 10 reloads → 0 moved her first post-swap shot 30f and Full Bursts 90-126f). That is
+  //     real, faithful collateral — do not "fix" it by re-tuning gauge.
   const gaugePerShot = (u: UnitState) => {
     const entry = (
       gaugeTable as Record<
@@ -1460,6 +1476,20 @@ export function runSim(
     );
   };
   const shotGauge = (u: UnitState, frame: number, hitFraction = 1) => {
+    // A REAL weapon swap generates NO burst gauge (owner ruling 2026-08-13). Scoped to an actual
+    // weapon CHANGE: a same-weapon flavor swap (`sameWeapon` — chisato/clay/jill/frima, where the
+    // gun never changes and only its normals turn true) keeps feeding the bar as it always did.
+    //
+    // This is usually invisible, which is exactly why it went unnoticed: gauge is already locked
+    // for the whole burst chain and Full Burst (see addGauge), and a 10s swap cast at stage 2 sits
+    // almost entirely inside that window WHEN THE CHAIN COMPLETES. It only becomes reachable when
+    // the chain EXPIRES mid-swap — and only becomes LARGE for a high-cadence swap. Before this
+    // ruling, velvet's 60-rounds/sec MG was credited her SNIPER's per-shot energy (5.6, a charged
+    // SR shot) on every 1-frame round, refilling the whole bar in 0.3s and pulling later Full
+    // Bursts 90-126 frames earlier.
+    if (u.swap && !u.swap.sameWeapon) {
+      return;
+    }
     const rounds = u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
     addGauge(u, frame, gaugePerShot(u) * rounds * hitFraction);
   };
@@ -1531,17 +1561,20 @@ export function runSim(
   let lastStage3Caster = -1;
   let chainBlockedUntil = 0; // post-full-burst chain-open block (opt-in floor arm only — see below)
   const POST_FB_CHAIN_DELAY_FRAMES = ENV.POSTFB ? Number(ENV.POSTFB) : 150; // opt-in A/B arm ONLY (ROTMODEL=floor). OVERTURNED as a game mechanic 2026-08-04 (owner): there is no post-FB chain-open lock — the old "measured 3s (FB-end→B1)" was natural refill-from-zero (~3-4s for a good team), and the bar-anatomy reads that motivated it were video-relative: the recording starts during the pre-fight intro, before the 3:00 clock (so its "first FB at 14.1s" is NOT 14.1s of fight time). Kept behind ROTMODEL=floor for A/B.
-  let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
-  // Reserve/grace window: how long a filled chain WAITS at stage 2/3 for a stage-filler to come
-  // off cooldown. This is the auto's inter-activation grace (owner 2026-07-21: auto casts B1→~1s→
-  // B2→~1s→B3), NOT the Full-Burst state duration — it was mistakenly set to burst_duration=1000
-  // (=10s), which let a B3 up to 10s out of cooldown get reserved as the leftmost window-maker and
-  // wait for it, over-allocating the leftmost of two alternating B3s (sakura-bloom-in-summer 6/4 vs
-  // the footage's 5/5). 120f (2s) = the real ~1s grace padded for the sim's 0.5s STAGE_CAST_GAP
-  // (which reaches B3 ~0.5s early); calibrated across all 12 graded FB comps (all pass; PH's
-  // separate over-by-1 untouched). 90f overshoots (PH 13→11); raising STAGE_CAST_GAP to 1s to allow
-  // 90f craters measured cadence — the 0.5s gap is pinned. DECISIONS 2026-07-21. STAGE_WINDOW=600 reverts.
-  const STAGE_WINDOW_FRAMES = ENV.STAGE_WINDOW ? Number(ENV.STAGE_WINDOW) : 120;
+  // CHAIN TIMEOUT — how long a chain that has opened but cannot finish survives before it collapses
+  // and the gauge must refill from zero. Owner-ruled 10s (2026-08-13). The gauge stays LOCKED
+  // (`stage !== 0`) for the whole time a chain hangs, so this governs what a failed chain costs the
+  // team in generation.
+  //
+  // It used to be `STAGE_WINDOW_FRAMES` = 120f, a value that belonged to a DIFFERENT question — the
+  // auto's filler-wait horizon, calibrated 2026-07-21 — which expiry silently inherited. So a
+  // stalled chain died at 2s instead of 10s and the bar began refilling 8s early. Splitting the two
+  // is what surfaced that the horizon itself is unreachable under the ready-now cast rule; see
+  // `windowFits` below for why it was deleted rather than kept beside this.
+  let stageExpireFrame = Infinity; // chain-collapse deadline (stage 1 never expires)
+  const CHAIN_TIMEOUT_FRAMES = ENV.CHAIN_TIMEOUT
+    ? Number(ENV.CHAIN_TIMEOUT)
+    : 600;
   let fbEndFrame = -1;
   // PREFB (default off): when the B3 cast should defer the FB start by FB_PRE_DELAY_FRAMES, the
   // fbEndFrame set + fullBurstEnter + stored-hit release are scheduled here and fired that many
@@ -3186,6 +3219,26 @@ export function runSim(
 
   const romanStage: Record<number, string> = { 1: 'I', 2: 'II', 3: 'III' };
 
+  // "Activates when entering Burst Stage N" — fired at the moment the chain REACHES stage N, i.e.
+  // when the gauge fills (N=1) or when the stage-(N-1) unit casts (N=2,3). Owner ruling 2026-08-13:
+  // "entering Burst Stage X" means "the burst gauge is full and it is now time to activate burst X",
+  // so the chain reads gauge full -> enter stage 1 -> any B1 activates -> enter stage 2 -> any B2
+  // activates -> enter stage 3 -> any B3 activates -> enter Full Burst. Entry therefore leads the
+  // stage-N CAST by the measured 30f chain gap, so a kit line keyed to it is live for that cast with
+  // room to spare. (It was ALREADY live for it: this dispatch has always preceded the caster's own
+  // burstCast blocks. The gain here is the 30f lead plus the stalled-chain entries below.)
+  // NOT the same event as `stageCast` — that one fires when a stage-N burst is USED, one step later
+  // in the chain ("when an ally uses a Burst Skill", carried by rupee-winter-shopper).
+  const fireStageEnter = (newStage: 1 | 2 | 3, atFrame: number) => {
+    units.forEach((u) =>
+      u.blocks.forEach((b, bi) => {
+        if (b.trigger.kind === 'stageEnter' && b.trigger.stage === newStage) {
+          applyBlock(u.idx, b, bi, atFrame);
+        }
+      })
+    );
+  };
+
   // FB-entry emission (fullBurstEnter triggers + stored-hit releases + log) — extracted so it can
   // fire inline at the B3 cast (default) OR be deferred by FB_PRE_DELAY_FRAMES (PREFB). fbEndFrame
   // must already be set when this runs (the log reads it).
@@ -3352,6 +3405,7 @@ export function runSim(
       stage = 1;
       stageExpireFrame = Infinity;
       stageGapFrames = PRE_B1_GAP_FRAMES; // measured 30f between gauge-full and B1 (default 0 = fire immediately)
+      fireStageEnter(1, frame); // the gauge filling IS entry to stage 1
     }
     if (
       !fbActive &&
@@ -3364,6 +3418,19 @@ export function runSim(
       );
       stage = 0;
       stageExpireFrame = Infinity;
+      // A "Full Burst Duration ▲ N sec" granted by a stage ENTRY belongs to the Full Burst that
+      // entry was leading to. If the chain dies before reaching one, there is no window to extend
+      // and the grant dies with it — otherwise the pending pool carries it onto a LATER Full Burst
+      // and stacks with that window's own grant (soda-twinkling-bunny read FB durations
+      // [15,20,20,20] instead of [15,15,15,15]: three windows absorbing two +5s grants each).
+      // Correct under BOTH readings of the stalled-entry question — an extension for a Full Burst
+      // that never happened cannot belong to a different one.
+      // ⚑ ASSUMPTION ON RECORD: this treats anything pending at expiry as belonging to the dead
+      // chain. True for every carrier today (only stage-entry grants ever sit here unconsumed; a
+      // B3's own burstCast grant resolves same-frame via the fbEndFrame > frame path). A FUTURE
+      // fullBurstExtend on a non-chain trigger (interval / hitCount) granted outside Full Burst
+      // would be silently dropped by the next expiry — revisit here if one is ever added.
+      pendingFbExtendSec = 0;
     }
     // Burst casts are BLOCKED while the boss is off-screen during a range transition
     // (user, 2026-07-13): if a transition lands mid-chain, the next cast waits out the
@@ -3432,10 +3499,23 @@ export function runSim(
       // bench B3s cast where real fights never pick them — first-ready does NOT do that (a bench
       // B3 that never becomes earliest-ready-and-in-window never casts).
       const inWindow = stage >= 2 && stageExpireFrame !== Infinity;
+      // A unit fills a live chain the moment it is OFF COOLDOWN — owner ruling 2026-08-13. A Burst
+      // III that comes off cooldown 5s into a 10s chain gets pressed; there is no separate horizon
+      // past which a ready unit is refused.
+      //
+      // ⚠ THE RESERVE HORIZON WAS DELETED HERE, and it is worth knowing why before reintroducing
+      // one. It answered "is this unit worth WAITING for?" — DECISIONS 2026-07-21 calibrated it to
+      // 120f because a 600f horizon let a far-out Burst III be reserved as the window-maker and
+      // waited for, double-casting the leftmost of two alternating 40s B3s
+      // (sakura-bloom-in-summer 6/4 vs the footage's 5/5). Under this rule that question can no
+      // longer arise: a not-ready unit never casts (the cast below requires burstCdFrames === 0),
+      // so admitting or refusing it as a candidate has NO observable consequence. Verified by
+      // deleting the clause outright — every graded FB count, every damage total and every probe
+      // comp's rotation were byte-identical at horizons of 1f, 120f and 600f, on both the default
+      // first-ready path and the legacy B3_LEFTMOST one. Keeping a calibrated-looking constant that
+      // cannot move anything is worse than removing it: it invites re-tuning that does nothing.
       const windowFits = (u: UnitState) =>
-        fillsStage(u) &&
-        gatePasses(u) &&
-        frame + u.burstCdFrames < stageExpireFrame;
+        fillsStage(u) && gatePasses(u) && u.burstCdFrames === 0;
       const next = inWindow
         ? ENV.B3_LEFTMOST
           ? units.find(windowFits)
@@ -3512,10 +3592,12 @@ export function runSim(
             fullBursts++;
           }
         }
+        // "when an ally USES a Burst Skill" — a stage-N burst was cast by anyone. Distinct from
+        // `stageEnter`, which fires one chain step EARLIER (see fireStageEnter above).
         units.forEach((u) =>
           u.blocks.forEach((b, bi) => {
             if (
-              b.trigger.kind === 'stageEnter' &&
+              b.trigger.kind === 'stageCast' &&
               b.trigger.stage === castStage
             ) {
               applyBlock(u.idx, b, bi, frame);
@@ -3541,7 +3623,7 @@ export function runSim(
             }
           });
         }
-        // PREFB only — snapshot the Full-Burst extension AFTER this cast's stageEnter/burstCast
+        // PREFB only — snapshot the Full-Burst extension AFTER this cast's stageCast/burstCast
         // blocks have contributed (2026-07-22). A "Full Burst Duration ▲ N sec" granted by the very
         // cast that opens the window belongs to THAT window; taking the snapshot before the blocks
         // ran pushed every extension onto the NEXT full burst, so the first FB of a fight ran the
@@ -3583,7 +3665,10 @@ export function runSim(
           } else {
             stage = (stage + 1) as 1 | 2 | 3;
             stageGapFrames = chainGap;
-            stageExpireFrame = frame + STAGE_WINDOW_FRAMES;
+            stageExpireFrame = frame + CHAIN_TIMEOUT_FRAMES;
+            // this cast is what ADVANCED the chain, so it is also the entry to the next stage —
+            // one chainGap (30f) ahead of the unit that will cast there
+            fireStageEnter(stage, frame);
           }
         }
       } else {

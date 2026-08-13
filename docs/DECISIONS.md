@@ -9,7 +9,152 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-12, latest) A weapon swap's damage FLAVOR and its ammo ECONOMY are independent — and
+- **(2026-08-13, latest) A burst chain has ONE clock, not two: it lives 10s, and any unit that comes
+  off cooldown inside it may fill it.**
+  - **The rulings (owner, 2026-08-13).** An unfinished burst chain takes **10 seconds** to time out.
+    The timeout and the auto's filler-wait horizon "should be two separate constants". And: "a unit
+    that comes off cooldown mid-chain gets to fill it."
+  - **What the engine did.** A single `STAGE_WINDOW_FRAMES` = 120f served BOTH questions. Expiry
+    inherited a value calibrated for the other one (DECISIONS 2026-07-21, the filler-wait grace), so
+    a stalled chain died at 2s instead of 10s and the bar began refilling 8s early.
+  - **The third ruling collapsed the split back to one constant — and that is the interesting part.**
+    Separating the clocks first created a state that cannot occur in game: a chain ALIVE but
+    unfillable, because the filler-wait horizon still refused everyone after 2s. Encoding "a ready
+    unit may always fill a live chain" fixes that — and then makes the horizon **unreachable**: a
+    not-ready unit never casts (the cast requires `burstCdFrames === 0`), so admitting or refusing
+    it as a candidate has no observable consequence. Verified by deleting the clause outright —
+    every graded FB count, every damage total and all four probe comps' rotations were
+    byte-identical at horizons of 1f, 120f and 600f, on both the default first-ready path and the
+    legacy `B3_LEFTMOST` one. So `STAGE_RESERVE_FRAMES` was REMOVED rather than kept beside its
+    replacement: a calibrated-looking constant that cannot move anything invites re-tuning that does
+    nothing. The 2026-07-21 calibration is not overturned — it is SUPERSEDED by the first-ready
+    selection rule plus this one, which make the situation it corrected unreachable.
+  - **Blast radius.** Board-neutral: all 8 graded Full-Burst counts hold and ZERO damage totals
+    drift, because no graded comp ever stalls a chain. The change is visible only where one does —
+    the `maxwell-ordinary-mechanic`/`ada` fixture's second chain now dies at 33.9s (10s after its
+    stage-2 cast) instead of 25.9s, and chains whose Burst III comes off cooldown inside the window
+    now COMPLETE instead of dying.
+  - **Eight spec assertions across six units had to be repaired**, all for the same reason: they
+    discriminated a trigger by COUNTING (casts vs Full Bursts, or total firings) and the rotation
+    change made the two counts coincide. Each is now keyed to the anchor FRAMES or to a containment
+    property instead — strictly stronger, and immune to the next rotation change. `emma`,
+    `helm-aquamarine`, `mary`, `nihilister`, `sakura-suzuhara` (×2), `gain-pierce-rounds`. The
+    lesson generalises: **a count is a lossy proxy for an anchor; discriminate on frames.**
+  - **Evidence tier.** Owner ruling on game behaviour ⇒ ANSWERED, so `/scientific-method` does not
+    apply (CLAUDE.md: known answer ⇒ encode + `/code-review`). Pinned by
+    `scripts/tests/engine/chain-timeout.test.ts`, verified RED under `CHAIN_TIMEOUT=120`.
+
+- **(2026-08-13) `velvet` has TWO mutually exclusive modes, and she is built to play as the
+  OFF-B2 — her burst weapon is a 60-round/sec machine gun.**
+  - **The rulings (owner, 2026-08-13).** Velvet "functions differently depending on which B2 uses
+    their burst, and she is intended primarily to be the OFF B2". When she does NOT cast, the first
+    block of S2 applies: the team buff (ATK 25.2% of her ATK + Charge Damage 100.8%, 3s) re-applied
+    on every sniper shot. When she DOES cast, the second block applies instead: she switches to a
+    machine gun with **no wind-up, 60 rounds/sec, no ammo and no reload**, lasting **10s from her
+    own activation** (so it ends before Full Burst does), and **every buff she holds is
+    self-targeted**. Separately: her ammo pouch is **NOT literal ammo** — it is a build/consume
+    stack resource, and it never touches her magazine.
+  - **Why the two blocks cannot overlap.** The MG cannot full-charge, so "Activates when attacking
+    with Full Charge during Full Burst" is unreachable while swapped (`swapGate:'unswapped'`). Going
+    the other way, her SR lands only 36 in-FB shots across a fight (7.2 per window) against the
+    50-hit threshold of the second block. So each mode has exactly one live block.
+  - **What the sim had.** The swap inherited her SR charge cycle and 6-round magazine — ~9 shots per
+    window with a reload in the middle — which left the 50-hit proc (400.92% of final ATK + self
+    Attack Damage 15.03%/5s) pinned at ZERO. That proc is the entire payout of her own burst. With
+    the MG it fires 55 times a fight, ~11 per Full Burst window, off ~2740 in-FB swap shots.
+  - **No engine change was needed.** The `chargeTimeSec` null-check and the sameWeapon/economy split
+    landed the day before (see the 2026-08-12 swap-economy entry), and `PULLS_PER_SEC.MG = 60` was
+    already documented as reachable only via a swap INTO MG, since the wind-up ladder is gated on
+    the BASE weapon. Her swap is authored `weapon:'MG'`, `pullsPerSec:60`, `chargeTimeSec:0`,
+    `maxAmmo:999`.
+  - **Board impact: none, proven by A/B rather than by the gate.** The regression snapshot is
+    byte-identical, but that is weaker evidence than it looks: the `T5 wind-weak` comp is
+    `disabled: true` in `scripts/regression.ts`, so its snapshot assert never runs (and its committed
+    values are separately stale at base HEAD — an unrelated pre-existing drift worth its own
+    cleanup). The real proof is a direct A/B of that comp with and without the change: byte-identical
+    for all five units, because velvet never casts there and `swapGate` is vacuous on a unit that
+    never swaps. The change is judged on
+    kit faithfulness, pinned by her spec test, which now runs TWO fixtures: the sole-B2 comp for the
+    swapped mode and a crown-as-second-B2 comp for the unswapped mode, where she casts zero bursts.
+  - **Her burst gauge: a swapped weapon generates NOTHING (owner ruling 2026-08-13).** Landed
+    engine-wide in `shotGauge`, scoped to REAL weapon changes — a same-weapon flavor swap
+    (`sameWeapon`: chisato/clay/jill/frima) still feeds the bar, because its gun never changed.
+    Board-inert: zero drift on every graded comp and every measured FB count preserved, since every
+    other swap already sat inside the gauge lock. What it fixes is velvet specifically: `gaugePerShot`
+    keys off the unit's OWN weapon, so each 1-frame MG round had been credited her SNIPER's per-shot
+    energy (5.6, a charged SR shot), refilling the entire bar in 0.3s whenever a stalled chain lifted
+    the lock mid-swap.
+  - **⚠ A correction, because the first version of this entry got the causality wrong.** Her Full
+    Bursts land 90-126 frames earlier than under the old SR-economy swap, and that is NOT the gauge —
+    an A/B isolating the gauge fix leaves the shift byte-identical. It is the RELOAD-CYCLE PHASE
+    ripple: the MG carries its own magazine and hands the SR back full, so her reloads go 10 → 0 and
+    her first post-swap shot lands 30f earlier, moving her own gauge contribution once the lock
+    lifts. That is the same faithful-collateral mechanism already recorded for `jill` (2026-08-10),
+    not a defect. The original claim came from correlating main-vs-branch without isolating the knob
+    — exactly the failure the "don't attribute a composite gap to one mechanism" rule names.
+  - **⚑ Left open deliberately.** The engine's `hitCount` counter is cumulative over ALL normal
+    attacks and only GATES the firing, so it diverges from the kit-literal "during Full Burst"
+    counting at low volume — 1 proc vs 0 in the off-B2 fixture (they converge, 55 vs 54, once swap
+    shots dominate). Both counts are pinned in her spec so the divergence cannot drift silently.
+    Closing it needs an in-FB-scoped counter on the trigger, which is cross-cutting across every
+    hitCount carrier — filed, not made here.
+  - **Evidence tier.** Owner ruling on game behaviour ⇒ the modeling question was ANSWERED, so
+    `/scientific-method` does not apply (CLAUDE.md: known answer ⇒ encode + `/code-review`).
+
+- **(2026-08-13) "Entering Burst Stage N" is the moment the chain REACHES stage N — one
+  chain step BEFORE the stage-N burst is cast.**
+  - **The ruling (owner, 2026-08-13), verbatim in substance.** "Entering burst stage X" means "the
+    burst gauge is full and it is now time to activate burst X". The chain therefore reads: burst
+    gauge fills → **enter stage 1** → any B1 activates → **enter stage 2** → any B2 activates →
+    **enter stage 3** → any B3 activates → **enter Full Burst** (the 10s clock starts). The owner
+    flagged it as a common kit mechanism that had to be correct globally, not per unit.
+  - **What the engine did instead.** `stageEnter{stage:N}` was dispatched at the frame the stage-N
+    unit CAST — one step late by the measured 30f chain gap, and, more importantly, keyed to a cast
+    that may never happen. All 12 carriers of the kit phrase "Activates when entering Burst Stage N"
+    had authored the literal number from their kit text, so all 12 inherited the offset: cinderella,
+    ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic,
+    mihara-bonding-chain, mint, neon-blue-ocean, rei-ayanami, snow-white-heavy-arms,
+    soda-twinkling-bunny.
+  - **The 13th carrier was RIGHT and must not be shifted.** `rupee-winter-shopper`'s blocks encode a
+    different sentence — "Activates when an ally uses a Burst Skill" — which genuinely is the
+    stage-N cast. That reading is now its own trigger, `stageCast`, and she moved onto it. The two
+    triggers are one chain step apart and are the easy confusion; `trigger-kinds.test.ts` pins the
+    lead directly.
+  - **Two consequences, both direct readings of the ruling.**
+    1. An entry-keyed buff now applies one chain step earlier (30f) and on stalled entries, so it is
+       live for strictly more of the window it feeds. NOTE what this is NOT: it does not newly add a
+       same-cast stage buff to a burst nuke. The old dispatch already ran stage blocks BEFORE the
+       caster's own `burstCast` blocks, and no shipped override sets `burstSnapshotsPreFb: true`
+       (`cinderella`, the only unit that names the flag, ships it FALSE and her spec's G1 pin proves
+       her nuke already snapshotted her own same-cast stage-3 conversion). An earlier draft of this
+       entry claimed the change fixed a missing nuke buff — that was wrong and is corrected here.
+    2. A chain that REACHES a stage and then expires (no eligible unit off cooldown) still ENTERED
+       it, so entries outnumber casts wherever chains stall — in the maxwell-ordinary-mechanic
+       fixture, 10 stage-3 entries against 5 B3 casts — four of the unfilled chains collapse (33.9s,
+       70.0s, 108.1s, 146.1s) and the last is still open when the fight ends. (Those collapse times
+       are the 10s ones from the chain-timeout ruling in the entry above; this example originally
+       quoted the pre-timeout 25.9s/62.0s, which the merge made self-contradictory.)
+       This roughly doubles those units' proc counts in stalling comps and is the larger half of the
+       change; it follows from the ruling's own wording ("it is now time to activate burst X"), not
+       from a separate inference.
+  - **Blast radius (measured, not estimated).** No Full-Burst count moves on any graded comp — the
+    rotation itself is untouched, and every measured-truth FB assert still passes. 15 per-unit damage
+    totals move, all under 1.6% (largest: mint +1.55%, prika +1.50%, snow-white-heavy-arms −1.45%).
+    Per-unit ratio movement is mixed and tiny — 6 units better, 7 worse, none by more than 0.009 in
+    ratio — but it is NOT band-neutral: the board goes ±3% 7 | ±5% **15** | ±8% 25 | worse 20 →
+    ±3% 7 | ±5% **14** | ±8% 25 | worse 20 over 142 datapoints, because `snow-white-heavy-arms`
+    crosses the ±5% boundary (0.954 → 0.946, n=4). Her S2 "entering Burst Stage 3" ATK ▲73.92% is
+    exactly the line this change re-times, so that is fit exposure — her magnitudes were hand-tuned
+    against the cast-frame timing — and the standing rule applies: a timing correction is judged on
+    measured-FB-count preservation, not the aggregate board, and an exposed unit is re-tuned
+    separately rather than re-fudged here. Filed in QUEUE.md.
+  - **Evidence tier.** Owner ruling on game behaviour ⇒ the modeling question was ANSWERED, so
+    `/scientific-method` does not apply (CLAUDE.md: known answer ⇒ encode + `/code-review`). Proof
+    lives in `scripts/tests/engine/trigger-kinds.test.ts` (the primitive: entry frames, the 30f lead
+    over the same-numbered cast, and stage-1 entry landing before any cast) plus the six unit specs
+    that had pinned the old timing and now pin the new.
+
+- **(2026-08-12) A weapon swap's damage FLAVOR and its ammo ECONOMY are independent — and
   `takina`'s burst gun is a real weapon, not a re-flavored sniper.**
   - **The rulings (owner, 2026-08-12).** `takina`'s burst swaps to a CUSTOM weapon: it deals the
     damage her kit lists (200.64%), has **no ammo and no reload**, fires at **1.2 shots/sec** — 12
@@ -423,7 +568,17 @@ validated model)` banner (19 overrides) and `[materialized … NOT hand-verified
   challenge to the LOG gate below: burst gauge generation IS provably locked for the entire swap
   window (`addGauge`'s `fbEndFrame > frame || stage !== 0` early return, `src/engine/sim.ts`), so
   shot COUNT during the window cannot leak into the shared gauge — that part of the LOG entry's
-  concern was correctly reasoned about the wrong mechanism. What actually moves the next chain's
+  concern was correctly reasoned about the wrong mechanism.
+  **⚠ SCOPE CORRECTION (2026-08-13) — "locked for the entire swap window" is true of `jill` and NOT
+  true in general; read it as a statement about her timing, not a property of swaps.** The lock is on
+  the CHAIN (stages 1-3) and FULL BURST, not on the swap. A 10s swap cast at stage 2 is fully covered
+  only when the chain COMPLETES; when the chain EXPIRES the lock lifts mid-swap and the remaining
+  duration feeds the bar normally. This sentence, stated unconditionally, is the reason the same
+  false alarm kept being re-raised by later sessions — an agent searching the record found a
+  guarantee that does not exist, while an agent reading `gaugePerShot` saw a large per-shot number
+  and could not find the lock (it lives in `addGauge`, a different function). Both failure modes are
+  now addressed at the source: the invariant + its CONDITION is commented at `gaugePerShot`, and
+  swapped weapons generate no gauge at all (owner ruling 2026-08-13, entry above). What actually moves the next chain's
   timing is `jill`'s RELOAD-CYCLE PHASE, which the gauge lock does not gate: her same-weapon
   flavor swap does not free-refill ammo on exit (`sim.ts` ~3529, `"no free reload on exit
 either"` — an existing, already-general primitive, not new). Toggling the fix on/off and

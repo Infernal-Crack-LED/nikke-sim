@@ -376,7 +376,7 @@ describe('cinderella — kit spec', () => {
     });
 
     it('G1 PIN: the nuke snapshots her live same-cast stage-3 ATK conversion (burstSnapshotsPreFb:false)', () => {
-      // burstSnapshotsPreFb:false ⇒ stageEnter blocks run BEFORE burstCast blocks, so the nuke
+      // burstSnapshotsPreFb:false ⇒ stage blocks run BEFORE burstCast blocks (stage-3 ENTRY is the stage-2 cast, 30f earlier still), so the nuke
       // resolves with her own same-cast atkOfMaxHpPct 2.71 conversion live. Removing that conversion
       // entirely must drop the nuke baseAtk. This PINS the SHIPPED behavior. ⚑ Whether the flag SHOULD
       // be false is gauntlet gotcha G1 (OWNER-RESOLUTION-REQUIRED): the [HISTORICAL] BURST TIMING note

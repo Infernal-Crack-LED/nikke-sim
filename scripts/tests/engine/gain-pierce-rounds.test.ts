@@ -20,7 +20,7 @@
 //
 // Assertions:
 //   1. LOAD-BEARING     — removing the grant drops her damage (the tag is what lets the 13.55 land).
-//   2. SURVIVES A LULL  — durationShots 1 ≥ durationSec 4 on the SAME trigger, and the shot after
+//   2. SURVIVES A LULL  — durationShots 1 ≥ a seconds stand-in on the SAME trigger, and the shot after
 //      her longest inter-shot gap is tagged under rounds and untagged under seconds. This is the
 //      assertion that discriminates rounds from seconds.
 //   3. BUDGET IS SPENT BY ROUNDS — on a NON-refreshing trigger (burstCast), N=1/2/3 tags strictly
@@ -122,7 +122,12 @@ function shotAfterLongestGap(evs: SimEvent[]) {
 
 describe('gainPierce — round-count windows (durationShots)', () => {
   const rounds1 = run({ durationShots: 1 });
-  const secs4 = run({ durationSec: 4 });
+  // The wall-clock stand-in has to be SHORTER than the fixture's longest firing lull, or it covers
+  // every gap and stops discriminating. That lull was >4s until the 10s chain timeout landed
+  // (2026-08-13) shifted the rotation and shortened it to 3.87s, so the stand-in moved 4s → 3s.
+  // The arm below asserts the relationship rather than the literal, so it cannot rot silently again.
+  const SECS_STANDIN = 3;
+  const secs4 = run({ durationSec: SECS_STANDIN });
   const none = run(null);
 
   it('1. the tag is LOAD-BEARING: removing it drops her damage', () => {
@@ -133,8 +138,8 @@ describe('gainPierce — round-count windows (durationShots)', () => {
     const gap = shotAfterLongestGap(secs4.events);
     expect(
       gap.gap / FPS,
-      'fixture has no gap longer than the 4s stand-in'
-    ).toBeGreaterThan(4);
+      `fixture has no gap longer than the ${SECS_STANDIN}s stand-in`
+    ).toBeGreaterThan(SECS_STANDIN);
 
     // Under seconds, the shot after that gap is untagged; under rounds it is tagged.
     const taggedAt = (r: ReturnType<typeof run>) =>

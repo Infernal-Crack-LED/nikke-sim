@@ -41,9 +41,10 @@
 //       shipped reaches {REI} only, and a generic `allies` counterfactual reaches all three. For
 //       the SELF-only Fire target the flat-vs-self-% axis is damage-identical (caster===target ⇒
 //       flat 0.2503×herATK == +25.03% of her own ATK), so the mechanic is pinned by the buffApply
-//       `stat`/`key` (casterAtkPct, raw 25.03), not a damage delta. Trigger is stageEnter stage 3:
-//       rei is the SOLE Burst III unit in the fixture, so it fires precisely on her burstCast
-//       frames (apply count == her burst casts), 10s window.
+//       `stat`/`key` (casterAtkPct, raw 25.03), not a damage delta. Trigger is stageEnter stage 3 —
+//       ENTRY, not cast (owner ruling 2026-08-13): the chain enters stage 3 when the stage-2 unit
+//       casts, ~30f BEFORE rei's own B3, so the buff is already live for her own burst damage and
+//       fires on stalled chains too (entries >= her casts). 10s window.
 //   RA4 the burst Attack damage ▲48.02% is the load-bearing Damage-Up line: removing it changes her
 //       total (LIVE). Element-scoped to Fire allies (reaches {REI} only; generic `allies` reaches
 //       all three), burstCast-keyed (once per cast), 10s window. The co-listed Shield (13.44% of
@@ -55,7 +56,7 @@
 //       window opens, so it must never take the +50% major (verified engine fact).
 //
 // Fixture: liter (B1) / crown (B2) / rei-ayanami (B3), helm OMITTED so rei is the SOLE Burst III
-// caster — her stageEnter-3 (RA3) and burstCast (RA4/RA5) blocks then fire exactly on her own burst
+// caster — her burstCast blocks (RA4/RA5) then fire exactly on her own burst
 // frames, with no second B3 to share the stage. She needs the B1→B2→B3 chain to cast at all (a lone
 // Burst III unit makes ZERO Full Bursts). Boss element varies per line: Wind makes rei (Fire) the
 // ONLY advantaged unit (RA1 LIVE); Iron makes nobody advantaged (RA1 gating control). Deterministic
@@ -85,8 +86,8 @@ type Boss = 'Wind' | 'Iron';
 
 /** Primary fixture: boss Wind ⇒ rei (Fire) is the ONLY advantaged unit (BEATS[Fire]=Wind; liter and
  *  crown are Iron, not advantaged). `Iron` is the no-advantage control for RA1. helm is OMITTED so
- *  rei is the sole Burst III caster — her stageEnter-3 and burstCast blocks then fire exactly on her
- *  own burst frames (clean per-line cadence). */
+ *  rei is the sole Burst III caster — her burstCast blocks fire exactly on her own burst frames,
+ *  while her stageEnter-3 block fires one chain step earlier, on the stage-2 cast (clean cadence). */
 function run(overrides: Record<string, any> = {}, bossElement: Boss = 'Wind') {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -99,7 +100,7 @@ function run(overrides: Record<string, any> = {}, bossElement: Boss = 'Wind') {
 }
 
 /** Trigger-identity fixture: helm RESTORED as a second Burst III caster. Now "entering stage 3"
- *  (stageEnter) fires on EVERY B3 cast — rei's AND helm's — while rei's OWN burstCast blocks fire on
+ *  (stageEnter) fires on EVERY stage-3 entry the chain reaches — while rei's OWN burstCast blocks fire on
  *  rei's casts only. The divergent cadences are the stageEnter-vs-burstCast discriminator (RA3 vs
  *  RA4/RA5). Boss Wind keeps rei the only advantaged unit. */
 function runHelm(
@@ -343,8 +344,27 @@ describe('rei-ayanami — kit spec', () => {
       }
     });
 
-    it('fires on her burstCast frames (sole B3 in fixture ⇒ once per burst cast)', () => {
-      expect(applied.length).toBe(reiBursts(base.events).length);
+    // ENTRY, not cast (owner ruling 2026-08-13): the chain enters Burst Stage 3 when the stage-2
+    // unit casts, ~30f BEFORE rei-ayanami's own B3 cast — so this buff is already live for her own
+    // burst damage. Entries also outnumber her casts: a chain that reaches stage 3 and expires
+    // (no B3 off cooldown) still entered the stage.
+    it('fires on every stage-3 ENTRY — the stage-2 cast frames, ahead of her own casts', () => {
+      const entries = base.events
+        .filter((e) => e.kind === 'burstCast' && e.stage === 2)
+        .map((e) => e.frame);
+      expect(entries.length).toBeGreaterThan(0);
+      expect(applied.map((b) => b.frame)).toEqual(entries);
+      expect(applied.length).toBeGreaterThanOrEqual(
+        reiBursts(base.events).length
+      );
+      for (const c of reiBursts(base.events)) {
+        // within the chain's LIFE (10s, CHAIN_TIMEOUT_FRAMES), not one 30f chain gap: a Burst III
+        // that comes off cooldown mid-chain fills it, so the entry can lead its cast by seconds
+        // (measured here: crown enters stage 3 at 7651, rei-ayanami casts at 8228 — 577f later).
+        expect(entries.some((f) => f < c.frame && c.frame - f <= 600)).toBe(
+          true
+        );
+      }
     });
 
     it('reaches the Fire ally (herself) and EXCLUDES every non-Fire ally', () => {

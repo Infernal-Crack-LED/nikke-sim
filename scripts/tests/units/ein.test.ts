@@ -25,7 +25,7 @@
 //                                                                                   prose; faithfully modeled]
 //
 // Faithful encoding notes (why the shipped model is the faithful one):
-//   E1  "entering Burst Skill Stage 3" is ANY unit's stage-3 cast, so the trigger is `stageEnter:3`
+//   E1  "entering Burst Skill Stage 3" is the CHAIN reaching stage 3 — the stage-2 cast frame, ahead of any stage-3 caster (owner ruling 2026-08-13) — so the trigger is `stageEnter:3`
 //       (fires on her OWN casts AND a co-B3's). Self-scoped, 10s.
 //   E5  Near Feathers are true-flavored riders that CRIT and are range-excluded. flatDamage defaults
 //       crit:true; the SSOT `crit && !trueFlavor` carve-out is DOT-scoped (damage-calculation.md §2c
@@ -56,7 +56,7 @@
 //
 // Fixture: the 720-kit-audit control comp (liter B1 / crown B2 / ein B3 / helm B3, boss Fire, focus
 // ein) — ein needs a real rotation to cast her burst at all (a lone B3 makes zero Full Bursts). helm is
-// a co-B3, so ein's `stageEnter:3` ATK buff (E1) fires on helm's casts too; E1 is therefore asserted as
+// a co-B3; ein's `stageEnter:3` ATK buff (E1) fires on every stage-3 ENTRY the chain reaches, not per B3 caster, so it outnumbers ein's own casts. E1 is therefore asserted as
 // "≥ her own burst count", not an exact count. Deterministic (no seed); event-log over totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
@@ -212,11 +212,19 @@ describe('ein — kit spec', () => {
       expect(applied.length).toBeGreaterThan(einBursts(base.events).length);
     });
 
-    it('DISCRIMINATING: at least one 70.12 apply lands on a rotation ein did NOT cast', () => {
-      // The nearest-wrong (burstCast keying) fires ONLY on ein's own casts — so every apply frame
-      // would coincide with an ein burstCast. stageEnter:3 fires on helm's casts too, so at least
-      // one 70.12 apply must land on a frame with no ein burstCast.
+    it("DISCRIMINATING: the applies land on the CHAIN's stage-3 entry frames, not on any cast", () => {
+      // Anchored to the entry frames themselves rather than to "not an ein cast". Under entry
+      // semantics the applies never coincide with ANY stage-3 cast (the entry leads it), so a
+      // not-ein-cast test is satisfied by that 30f offset alone even on rotations she DID open —
+      // it would pass under a burstCast misreading shifted by a frame. Equality with the stage-2
+      // cast frames is the real claim: the trigger follows the chain, not a caster.
+      const entryFrames = base.events
+        .filter((e) => e.kind === 'burstCast' && e.stage === 2)
+        .map((e) => e.frame);
       const einCastFrames = new Set(einBursts(base.events).map((c) => c.frame));
+      expect(entryFrames.length).toBeGreaterThan(0);
+      expect([...new Set(applied.map((b) => b.frame))]).toEqual(entryFrames);
+      // …and those frames are genuinely not her own casts, so the caster-keyed reading is excluded
       expect(applied.some((b) => !einCastFrames.has(b.frame))).toBe(true);
     });
 

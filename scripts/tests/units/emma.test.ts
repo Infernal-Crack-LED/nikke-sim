@@ -171,6 +171,16 @@ const recoveryFirings = (evs: SimEvent[]) =>
   buffs(evs).filter(
     (b) => b.casterIdx === ASUKA && b.stat === 'atkPct' && b.value === 96.98
   ).length;
+/** The FRAMES those firings land on — the discriminator that survives a count coincidence. */
+const recoveryFrames = (evs: SimEvent[]) => [
+  ...new Set(
+    buffs(evs)
+      .filter(
+        (b) => b.casterIdx === ASUKA && b.stat === 'atkPct' && b.value === 96.98
+      )
+      .map((b) => b.frame)
+  ),
+];
 const emmaBursts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'burstCast' && e.slug === 'emma').length;
 const fullBurstStarts = (evs: SimEvent[]) =>
@@ -192,14 +202,27 @@ describe('emma — fixture sanity (non-vacuity)', () => {
   });
 
   it('burstCast and fullBurstEnter genuinely diverge here — the E2 discrimination premise', () => {
-    // Two B1s + a 40s-CD B3: emma's cast count and the Full Burst count DISAGREE in both
-    // directions — some FB windows are liter-led (emma never cast) and most emma casts stall
-    // before the chain completes (asuka's B3 CD paces completion). Calibrated anatomy, 180s:
-    // emma 5 casts (1 FB-led, 4 stalled) vs 4 Full Bursts (1 emma-led, 3 liter-led). If the
-    // two counts ever matched, burstCast-vs-fullBurstEnter would be untestable here.
-    expect(fullBurstStarts(base.events)).not.toBe(emmaBursts(base.events));
+    // Two B1s + a 40s-CD B3: emma's casts and the Full Burst windows are DIFFERENT EVENTS — some
+    // FB windows are liter-led (emma never cast in them) and some emma casts stall before the
+    // chain completes (asuka's 40s B3 CD paces completion). The premise is that the two ANCHOR
+    // SETS differ, NOT that their counts do: since the 10s chain timeout landed (2026-08-13) the
+    // counts happen to coincide at 5 and 5 in this fixture, while the frames still disagree
+    // entirely — emma casts at 7.1s/45.6s/84.6s…, Full Bursts open at 8.5s/48.3s…. Keying the
+    // premise to counts made it fragile to exactly that coincidence.
+    const castFrames = new Set(
+      base.events
+        .filter((e) => e.kind === 'burstCast' && e.slug === 'emma')
+        .map((e) => e.frame)
+    );
+    const fbFrames = base.events
+      .filter((e) => e.kind === 'fullBurstStart')
+      .map((e) => e.frame);
     expect(emmaBursts(base.events)).toBeGreaterThan(0);
     expect(fullBurstStarts(base.events)).toBeGreaterThan(0);
+    expect(
+      fbFrames.filter((f) => castFrames.has(f)),
+      'a Full Burst opened on one of her cast frames — the two anchors are not separable here'
+    ).toEqual([]);
   });
 
   it('emma deals weapon damage (MG output) — inertness asserts are not vacuous zeros', () => {
@@ -245,8 +268,10 @@ describe('E2 — burst instant heal is keyed to her OWN burst cast (burstCast, n
     expect(recoveryFirings(fullBurstEnter.events)).toBe(
       6 * fullBurstStarts(fullBurstEnter.events)
     );
-    expect(recoveryFirings(fullBurstEnter.events)).not.toBe(
-      recoveryFirings(base.events)
+    // The counts can coincide (both 30 in this fixture since the 10s chain timeout landed); the
+    // FRAMES cannot — the window-keyed model heals on liter-led rotations emma never cast in.
+    expect(recoveryFrames(fullBurstEnter.events)).not.toEqual(
+      recoveryFrames(base.events)
     );
   });
 });
@@ -275,9 +300,9 @@ describe('E4 — the two unmodelable lines are documented, not dropped or fabric
     // Her kit text has no ▲ damage stat for allies: S1/S2 are sustain lines without engine
     // primitives and the burst is pure recovery. Any buff carrying her slot index is an
     // invented offensive contribution.
-    expect(
-      buffs(base.events).filter((b) => b.casterIdx === EMMA)
-    ).toHaveLength(0);
+    expect(buffs(base.events).filter((b) => b.casterIdx === EMMA)).toHaveLength(
+      0
+    );
   });
 
   it('her kit magnitudes never appear as any buff value', () => {
@@ -312,7 +337,9 @@ describe('structural pins (S2b-pre-registered traps, adopted at S2c)', () => {
     // A shield would emit shielded events and falsely satisfy teammates' requiresShielded
     // gates (asuka's S2); a buff/damage effect would move damage. Both are forbidden for a
     // clean-weapon healer whose entire payload is recovery events.
-    const kinds = allBlocks.flatMap((b: any) => b.effects.map((e: any) => e.kind));
+    const kinds = allBlocks.flatMap((b: any) =>
+      b.effects.map((e: any) => e.kind)
+    );
     expect(kinds.length).toBeGreaterThan(0);
     expect([...new Set(kinds)]).toEqual(['heal']);
   });

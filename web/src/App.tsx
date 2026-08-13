@@ -1257,7 +1257,9 @@ function triggerLabel(tr: any): string {
     case 'lastBullet':
       return 'last bullet';
     case 'stageEnter':
-      return `stage ${tr.stage} burst`;
+      return `stage ${tr.stage} entry`;
+    case 'stageCast':
+      return `stage ${tr.stage} cast`;
     case 'bossElement':
       return `boss is ${tr.element}`;
     default:

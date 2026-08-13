@@ -11,16 +11,16 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 207 | 44.9% |
+| Defensive / HP / shield / aggro | 207 | 45.0% |
 | Missing engine primitive / trigger | 93 | 20.2% |
-| Other / see caveats | 91 | 19.7% |
+| Other / see caveats | 93 | 20.2% |
 | Out-of-domain / parser unsupported | 30 | 6.5% |
-| Weapon-state / shot-count approximation | 12 | 2.6% |
 | Partless boss | 10 | 2.2% |
+| Weapon-state / shot-count approximation | 9 | 2.0% |
 | Self-status / stack gate | 8 | 1.7% |
 | RNG / probabilistic | 6 | 1.3% |
 | Measurement-gated / unverified cadence | 4 | 0.9% |
-| **Total** | **461** | 100.0% |
+| **Total** | **460** | 100.0% |
 
 ## Entries by reason
 
@@ -1148,7 +1148,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Other / see caveats (91)
+### Other / see caveats (93)
 
 **A2** (a2)
 
@@ -1447,9 +1447,13 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 **Velvet** (velvet)
 
 - **skill1:** Bullet Snatch (battle start + Burst Stage 2): removes 5% ammo from all enemies; fills own ammo pouch to 6,000 rounds.
-  - *Why:* Ammo pouch: refills to 6000 at battle start and on every Burst Stage 2 entry (team rotation state), and per-rotation spend (100/shot outside FB, 300/shot in FB, 300 per proc) stays well under 6000, so pouch bookkeeping is dropped — every ammo-gated effect fires at full uptime
+  - *Why:* AMMO POUCH — a build/consume stack resource, NOT her magazine (owner ruling 2026-08-13), and never binding, so it is dropped entirely: 'entering Burst Stage 2' is a team rotation state that fires whenever the chain reaches stage 2 regardless of who casts, so the pouch refills to its 6000 cap every rotation against a worst-case spend of ~3,450 while bursting (10 procs x 300, plus out-of-FB full charges at 100) and ~2,450 unswapped (in-FB full charges at 300)
 - **skill1:** Full Charge attack while not in Full Burst: expends 100 ammo from the ammo pouch.
-  - *Why:* CORRECTION vs draft: S1's self ATK 30.5% + Attack Damage 30.5% (3s, refreshed per full-charge shot) is text-gated 'while NOT in Full Burst' — the draft ignored the gate, keeping it up through FB windows (72% uptime, where the +50% FB multiplier lives)
+  - *Why:* S1's self ATK 30.5% + Attack Damage 30.5% (3s, per full-charge shot) is text-gated 'while NOT in Full Burst' → fbGate:'outFb' (hard cutoff; in-game ~3s of carryover into each FB is lost, slight undercount)
+- **skill2:** Full Charge attack during Full Burst: expends 300 ammo from the ammo pouch.
+  - *Why:* skill2: the hitCount:50 counter accrues on EVERY normal attack, and a threshold crossing the inFb gate then blocks still spends its 50 — so shots the kit would not count ('landing 50 normal attacks during Full Burst') still advance the counter. Engine-wide hitCount semantics, not velvet-specific. The two readings CONVERGE while swap shots dominate — cumulative counting fires 55 procs in the sole-B2 fixture against the in-FB-only reading's 2740/50 = 54, since both reduce to in-FB shots ÷ 50 — and DIVERGE at low volume: unswapped she lands only 36 in-FB shots in a fight, so the kit-literal reading fires zero while the cumulative counter leaks exactly one (her 100th overall shot crosses 50 with a Full Burst live). Both counts are pinned in her spec test; closing the gap needs an in-FB-scoped counter on the hitCount trigger, which is a cross-cutting engine change filed for the owner rather than made here.
+- **skill2:** Landing 50 normal attacks during Full Burst: expends 300 ammo from the ammo pouch.
+  - *Why:* skill2: the hitCount:50 counter accrues on EVERY normal attack, and a threshold crossing the inFb gate then blocks still spends its 50 — so shots the kit would not count ('landing 50 normal attacks during Full Burst') still advance the counter. Engine-wide hitCount semantics, not velvet-specific. The two readings CONVERGE while swap shots dominate — cumulative counting fires 55 procs in the sole-B2 fixture against the in-FB-only reading's 2740/50 = 54, since both reduce to in-FB shots ÷ 50 — and DIVERGE at low volume: unswapped she lands only 36 in-FB shots in a fight, so the kit-literal reading fires zero while the cumulative counter leaks exactly one (her 100th overall shot crosses 50 with a Full Burst live). Both counts are pinned in her spec test; closing the gap needs an in-FB-scoped counter on the hitCount trigger, which is a cross-cutting engine change filed for the owner rather than made here.
 
 **Volume** (volume)
 
@@ -1597,59 +1601,6 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 Outgoing healing ▲ 35.2% continuously.
   - *Why:* skill1/skill2 are EMPTY BY CONSTRUCTION, not by omission — every line there is out-of-domain for cause: (K1) S1 'Outgoing healing ▲ 35.2%' modifies heal AMOUNTS, which do not exist in the sim — no stat, no channel, and no recovery-consumer reads an amount
 
-### Weapon-state / shot-count approximation (12)
-
-**Ade: Agent Bunny** (ade-agent-bunny)
-
-- **burst:** Minimum Effective Range ▲ 55.56% for 10 sec.
-  - *Why:* The self Minimum Effective Range ▲55.56% is an inert range stat → unmodeled; range buffs change the effective-range BAND, not shots fired, so there is no shot-count channel for it to move
-
-**Arcana: Fortune Mate** (arcana-fortune-mate)
-
-- **skill1:** Full Burst ends: self removes Making Memories + Snapshots of Youth.
-  - *Why:* skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories +3 pellets via pelletCountFlat 3 — 2026-07-21 A4, was +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.
-
-**Diesel: Winter Sweets** (diesel-winter-sweets)
-
-- **skill2:** Sustained Damage ▲ 68.04% for 15 sec.
-  - *Why:* skill2: the Full-Charge Sustained +318.14% x2 (3s) LAPSES across the reload+charge gap (~3.35s > 3s) so stacks reset to 1 each magazine; the RL cadence tuple (chargeFrames 60 / reloadFrames 141) is the unverified datamine driving this (flag3)
-
-**Dorothy: Serendipity** (dorothy-serendipity)
-
-- **skill1:** Hit 160 pellets: Expands Pierce range 200% 3 rounds
-  - *Why:* S1 second block (160 pellets -> Expand Pierce range 200%) omitted: pierce is inert on a single boss
-- **skill1:** Hit Rate ▲ 98.18% 3 rounds
-  - *Why:* S1: hitting the target with 80 pellets (hitCount:80, re-triggers every ~8 shots -> effectively permanent in sustained fire) grants Attack Damage 72%; Hit Rate 98.18% kept for fidelity (unmodeled as a stat; its in-mode effect is already carried by the measured consolidation config)
-
-**Laplace: Ultimate Hero** (laplace-ultimate-hero)
-
-- **skill1:** Activates when Electric Power, Fully Full Charge ends. Affects self. Removes 100% of ammo.
-  - *Why:* skill1: the Electric Power swap weapon's fire cadence is KIT-SILENT — chargeTimeSec 0.25 (4 rounds/s) is an estimate by analogy to base laplace (Treasure)'s beam tick rate, the dominant unmeasured lever on her board number. It drives the swap-mode DPS (9.45% × 120 rounds per cycle) AND how fast oeStage builds (when the burst additional damage unlocks). The swap end is USES-BASED (maxShots:120); durationSec 300 never truncates it. Measure the Electric Power fire rate in a focus video.
-
-**Leona** (leona)
-
-- **skill1:** Maximum Effective Range ▲ 20% for 10 sec.
-  - *Why:* skill1: 'Maximum Effective Range ▲ 20%' to shotgun allies is not modeled — the engine has no range stat and shotgun pellet landing is a fixed measured table; real effect (better far-band landing) is a known under-model
-
-**Nihilister** (nihilister)
-
-- **skill1:** Piercing Radius ▲ 50% for 1 round(s).
-  - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
-
-**Takina** (takina)
-
-- **skill2:** Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)
-  - *Why:* swap-shot economy is OWNER-RULED (2026-08-12), not estimated: the burst swaps to a CUSTOM weapon that deals the damage her kit lists (200.64%), does not charge, has no ammo and no reload, and fires at 1.2 shots/sec — 12 shots across the 10s window. When the swap ends she returns to the sniper with its magazine restored to full, and the stated consequence is that she then never needs to reload, because she cannot land 6 full-charge sniper shots between bursts in most comps. Encoded as chargeTimeSec 0 (the engine reads that field with a null check, so 0 means 'does not charge' rather than collapsing to her base SR's 60 frames) + pullsPerSec 1.2 + maxAmmo 999, with NO sameWeapon marker — hers is a real weapon change, so it takes the magazine refill at both ends. Pinned in scripts/tests/units/takina.test.ts (shot count, no mid-window reload gap, and the restored 6-round magazine read off the ammo counter). NOTE THE DIRECTION: the faithful model is COLDER than the estimate it replaces, not warmer — the estimate's 7 shots inherited her SR charge cycle and therefore the x2.5 chargeMultiplier, worth ~3511% ATK per window against the ruling's 12 x 200.64 = ~2408%. Her total drops ~30% and her single graded reading moves 0.786 -> 0.579 COLD, so the swap economy was never the explanation for her coldness; the remaining gap is elsewhere in her model (the S2 uptime-average below is the largest ⚑ left).
-
-**Velvet** (velvet)
-
-- **skill2:** Full Charge attack during Full Burst: expends 300 ammo from the ammo pouch.
-  - *Why:* skill2: team buff (ATK 25.2% of caster + Charge Damage 100.8%) is kept alive by SWAPPED shots during her own 10s burst weapon-swap — kit requires a Full Charge attack; unverified whether the swap weapon full-charges (needs footage).
-- **skill2:** Landing 50 normal attacks during Full Burst: expends 300 ammo from the ammo pouch.
-  - *Why:* skill2: team buff (ATK 25.2% of caster + Charge Damage 100.8%) is kept alive by SWAPPED shots during her own 10s burst weapon-swap — kit requires a Full Charge attack; unverified whether the swap weapon full-charges (needs footage).
-- **burst:** Additional Effect (weapon-change spec — VERBATIM TEXT NOT AVAILABLE to this audit; fetch from blablalink: likely carries the swap weapon's charge time / ammo / Full Charge Damage spec that pins the swap shot economy)
-  - *Why:* burst: swap shot economy is a materialized parser estimate, not hand-verified — engine fires ~10 swapped shots/10s (60f cycle, no bolt gap) each carrying her SR charge-damage bucket on top of the 7% multiplier.
-
 ### Partless boss (10)
 
 **Moran (Treasure)** (moran)
@@ -1693,6 +1644,50 @@ Deals 50.33% of final ATK as additional damage.
 
 - **skill2:** ■ Activates when an ally or self destroys an enemy's part. Affects all allies.
   - *Why:* (K2) S2 is gated on PART DESTRUCTION ('when an ally or self destroys an enemy's part'): the engine emits no part-destroyed event and the scope-lock boss is partless (sim.ts: 'partless test boss ..
+
+### Weapon-state / shot-count approximation (9)
+
+**Ade: Agent Bunny** (ade-agent-bunny)
+
+- **burst:** Minimum Effective Range ▲ 55.56% for 10 sec.
+  - *Why:* The self Minimum Effective Range ▲55.56% is an inert range stat → unmodeled; range buffs change the effective-range BAND, not shots fired, so there is no shot-count channel for it to move
+
+**Arcana: Fortune Mate** (arcana-fortune-mate)
+
+- **skill1:** Full Burst ends: self removes Making Memories + Snapshots of Youth.
+  - *Why:* skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories +3 pellets via pelletCountFlat 3 — 2026-07-21 A4, was +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.
+
+**Diesel: Winter Sweets** (diesel-winter-sweets)
+
+- **skill2:** Sustained Damage ▲ 68.04% for 15 sec.
+  - *Why:* skill2: the Full-Charge Sustained +318.14% x2 (3s) LAPSES across the reload+charge gap (~3.35s > 3s) so stacks reset to 1 each magazine; the RL cadence tuple (chargeFrames 60 / reloadFrames 141) is the unverified datamine driving this (flag3)
+
+**Dorothy: Serendipity** (dorothy-serendipity)
+
+- **skill1:** Hit 160 pellets: Expands Pierce range 200% 3 rounds
+  - *Why:* S1 second block (160 pellets -> Expand Pierce range 200%) omitted: pierce is inert on a single boss
+- **skill1:** Hit Rate ▲ 98.18% 3 rounds
+  - *Why:* S1: hitting the target with 80 pellets (hitCount:80, re-triggers every ~8 shots -> effectively permanent in sustained fire) grants Attack Damage 72%; Hit Rate 98.18% kept for fidelity (unmodeled as a stat; its in-mode effect is already carried by the measured consolidation config)
+
+**Laplace: Ultimate Hero** (laplace-ultimate-hero)
+
+- **skill1:** Activates when Electric Power, Fully Full Charge ends. Affects self. Removes 100% of ammo.
+  - *Why:* skill1: the Electric Power swap weapon's fire cadence is KIT-SILENT — chargeTimeSec 0.25 (4 rounds/s) is an estimate by analogy to base laplace (Treasure)'s beam tick rate, the dominant unmeasured lever on her board number. It drives the swap-mode DPS (9.45% × 120 rounds per cycle) AND how fast oeStage builds (when the burst additional damage unlocks). The swap end is USES-BASED (maxShots:120); durationSec 300 never truncates it. Measure the Electric Power fire rate in a focus video.
+
+**Leona** (leona)
+
+- **skill1:** Maximum Effective Range ▲ 20% for 10 sec.
+  - *Why:* skill1: 'Maximum Effective Range ▲ 20%' to shotgun allies is not modeled — the engine has no range stat and shotgun pellet landing is a fixed measured table; real effect (better far-band landing) is a known under-model
+
+**Nihilister** (nihilister)
+
+- **skill1:** Piercing Radius ▲ 50% for 1 round(s).
+  - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
+
+**Takina** (takina)
+
+- **skill2:** Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)
+  - *Why:* swap-shot economy is OWNER-RULED (2026-08-12), not estimated: the burst swaps to a CUSTOM weapon that deals the damage her kit lists (200.64%), does not charge, has no ammo and no reload, and fires at 1.2 shots/sec — 12 shots across the 10s window. When the swap ends she returns to the sniper with its magazine restored to full, and the stated consequence is that she then never needs to reload, because she cannot land 6 full-charge sniper shots between bursts in most comps. Encoded as chargeTimeSec 0 (the engine reads that field with a null check, so 0 means 'does not charge' rather than collapsing to her base SR's 60 frames) + pullsPerSec 1.2 + maxAmmo 999, with NO sameWeapon marker — hers is a real weapon change, so it takes the magazine refill at both ends. Pinned in scripts/tests/units/takina.test.ts (shot count, no mid-window reload gap, and the restored 6-round magazine read off the ammo counter). NOTE THE DIRECTION: the faithful model is COLDER than the estimate it replaces, not warmer — the estimate's 7 shots inherited her SR charge cycle and therefore the x2.5 chargeMultiplier, worth ~3511% ATK per window against the ruling's 12 x 200.64 = ~2408%. Her total drops ~30% and her single graded reading moves 0.786 -> 0.579 COLD, so the swap economy was never the explanation for her coldness; the remaining gap is elsewhere in her model (the S2 uptime-average below is the largest ⚑ left).
 
 ### Self-status / stack gate (8)
 

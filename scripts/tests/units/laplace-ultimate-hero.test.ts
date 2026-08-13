@@ -23,7 +23,7 @@
 //       ~24 ATK (4.05% of 600 base) where the real line adds ~547 ATK (4.05% of ~13.5k HP). Proven two
 //       ways: the shipped buff's stat IS atkOfMaxHpPct, and swapping it to atkPct collapses her total;
 //       removing it entirely drops her total ~32% (measured 1.475×).
-//   H2  'entering Burst Stage 3' = stageEnter:3 — it fires on ANY stage-3 caster's cast frame, so with
+//   H2  'entering Burst Stage 3' = stageEnter:3 — it fires when the CHAIN reaches stage 3, i.e. on the stage-2 cast frame (owner ruling 2026-08-13), one step ahead of any stage-3 caster, so with
 //       a co-B3 (helm) in the fixture it applies on MORE windows than laplace's own casts. A burstCast
 //       key matches her own cast count exactly (and a fullBurstEnter key lands ~22f late). The count gap
 //       is the discriminator, plus the kit-exact value 52.14 / 10s / self.
