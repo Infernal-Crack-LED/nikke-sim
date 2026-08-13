@@ -133,10 +133,16 @@ of each buff line.
 The board lists only units whose value comes out at zero or above. A unit that
 reduces team damage in the standard comp has no standing to rank on a support
 board, and its bar would also set the chart's left edge, compressing every
-positive bar into what is left of the track. Blanc is dropped one step earlier,
-for the same reason, before the boards are computed at all. Chime and Avistar
-are held off the board as well; they are simmed as normal and their values are
-unaffected everywhere else those are used.
+positive bar into what is left of the track. No unit currently meets that
+description, so nothing is dropped on those grounds today.
+
+Chime and Avistar are held off this board entirely. They are not simply hidden
+from the chart — they are left out of the board's population, so no value is
+computed for them and they hold no place in the ranking anywhere it is shown:
+not on the chart, not on its share image, and not in the rank a unit card
+quotes. Everything else is unaffected: both are simmed as normal, they keep
+their standing on every other board, and they still appear as partners on the
+B1/B2 DPS board's Crown and Anis: Star rows.
 
 Two boards per unit:
 

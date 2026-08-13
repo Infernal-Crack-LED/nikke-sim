@@ -28,9 +28,11 @@ import type {
   BurstCdrArtifact,
   SustainArtifact,
   BufferChartArtifact,
+  BufferRow,
   RankUnitMeta,
 } from '../../ranks/types.js';
 import type { TsareenaBuild } from '../../types.js';
+import { onBoardBufferRows } from '../../ranks/buffer-rows.js';
 import { fmtMagnitude, profileLabel } from './rankTables.js';
 
 // ---- tunables (owner polish pass — see docs/handoffs/QUEUE.md) --------------
@@ -227,6 +229,17 @@ function findHits<R extends unknown[]>(
 // The headline row: the profiled one when it exists, else the plain one.
 const headline = <R>(h: BoardHits<R>): Hit<R> | null => h.profiled ?? h.plain;
 
+// The generic buffer board as the card ranks over it. Off-board units are gone
+// from the artifact at the source (scripts/build-bufferchart.ts), so this is a
+// backstop for an artifact built before that landed — the published-board fetch
+// path can serve one, and a stale row ahead of the unit silently shifts every
+// rank below it (Crown read #2 behind an off-board Chime until 2026-08-13).
+// NOT rankedBufferRows: negative rows keep their rank here, because the card
+// quotes a unit's own value whatever its sign rather than declaring it unranked.
+const bufferBoardRows = (
+  art: BufferChartArtifact | null | undefined
+): BufferRow[] => onBoardBufferRows(art?.cells?.generic);
+
 // ---- tile builders -----------------------------------------------------------
 
 const unrankedTile = (title: string): RankTile => ({
@@ -294,7 +307,7 @@ function bufferTile(
 ): RankTile {
   // The site's default view is the generic board (SupportRankings.tsx
   // useState('generic')); the card mirrors that default.
-  const hits = findHits(art?.cells?.generic, slug, 3);
+  const hits = findHits(bufferBoardRows(art), slug, 3);
   const hit = headline(hits);
   if (!hit) {
     return unrankedTile('Team Buffs');
@@ -475,7 +488,7 @@ function bufferChart(
   slug: string,
   each: number
 ): BarChart {
-  const hits = findHits(art?.cells?.generic, slug, 3);
+  const hits = findHits(bufferBoardRows(art), slug, 3);
   return boardChart('Team Buffs — team DMG', hits, each, (row, i, isUnit) => {
     const [s, added, , profile] = row as [
       string,
