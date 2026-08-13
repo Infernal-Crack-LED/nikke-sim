@@ -54,20 +54,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
-1. **⇒ OWNER QUESTION (blocks nothing else) — `velvet`'s S2 team buff: which premise is wrong?**
-   Her S2 activates "when attacking with Full Charge during Full Burst", and the owner ruled her
-   burst swap does **not** full-charge. Encoding that (`swapGate: 'unswapped'` beside the shipped
-   `fbGate: 'inFb'`) takes the line from 135 applications to **ZERO** in her control fixture — her
-   10s swap opens ~1s before Full Burst and covers essentially all of it, and the ~1s unswapped tail
-   is shorter than one charge cycle — so her signature support line becomes dead code in every comp
-   she is built for. Either the swap/FB alignment is wrong, or the assumption that she must be the
-   one bursting is (a teammate-opened Full Burst she is not swapped for would feed it fine).
-   **No measurement resolves this** — both readings are internally consistent, and the graded slice
-   is byte-identical either way (`T5 wind-weak`: she never casts there). Put it to the owner as an
-   either/or; do not enact. Parked as a skipped assertion in `scripts/tests/units/velvet.test.ts`;
-   context in [2026-08-12-takina-laplace-swap-engine-work.md](2026-08-12-takina-laplace-swap-engine-work.md) §4.
-
-2. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
+1. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
    economy landing (DECISIONS) made her colder, not warmer: the faithful custom weapon fires 12
    uncharged shots where the old estimate fired 7 that inherited her SR ×2.5 `chargeMultiplier`.
    Her swap window is therefore ruled OUT as the explanation. The largest remaining ⚑ in her file is
