@@ -58,13 +58,23 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    them actionable.** The eight batch docs were archived on 2026-08-13 as historical records, but
    each ends with a `## Recorded, not applied (per-unit follow-ups)` section, and NOTHING pointed at
    them. They live in `docs/handoffs/closed/2026-08-10-faithfulness-batch{1..8}-findings.md` (the
-   archive is gitignored but present locally; `grep -A40 "Recorded, not applied"` over that glob
+   archive is gitignored, so it is **per-worktree**: the 2026-08-13 archive `mv` ran in
+   `nikke-sim-wt-combined`, and the docs were copied into the main tree's `closed/` on 2026-08-13
+   so this pointer resolves there too; `grep -A40 "Recorded, not applied"` over that glob
    reproduces the full list). 13 of the 46 say "clean beyond prose" and need nothing. The other 33
-   fall into four classes — none is a board emergency, all are cheap in isolation:
-   - **Note-hygiene rewrites** (the 2026-07-22 override-prose rule: current model only, no history
-     narration): `isabel` (history narration ×6), `soda-twinkling-bunny` (note tail still narrates
-     the superseded flat-42 model as live), `elegg` (reviewer-provenance mentions), `frima` (~8 bare
-     `sim.ts:<line>` citations), `exia` (spec header contradicts its own assertions), `signal`.
+   fell into four classes — none a board emergency, all cheap in isolation:
+   - ~~**Note-hygiene rewrites**~~ **DONE 2026-08-13** (prose only; every edited override is
+     byte-identical once `note`/`caveats` are stripped). `isabel`, `soda-twinkling-bunny` and
+     `elegg` were rewritten to the current model, and `exia`'s spec header X3 comment corrected —
+     it claimed `"Fixed at"` clamp semantics are NOT encoded, but `reloadSpeedClamp` is a real stat
+     that `effectiveReloadFrames()` prefers over additive `reloadSpeedPct`. Two of the six needed
+     NOTHING, and the batch docs were stale on both: `frima`'s bare `sim.ts:<line>` citations were
+     already swept (`scripts/sweep-line-citations.ts --check` reports 0 in scope), and `signal`'s
+     SMG uptime arithmetic already reads the effective 20 hits/s. Two falsified live claims fell
+     out of the pass and are fixed: `isabel` was the **only** override still asserting the global
+     `DOT_CRIT` default is OFF (it flipped OFF→ON 2026-07-21), and her note contradicted its own
+     opening on whether the SG core bands are HR-contaminated (they are not — her read is what
+     proved them clean; the live SG lever is LANDING at range, U27).
    - **Measurement-gated ⚑, footage-blocked** — do NOT enact from the desk: `noir` (the reload
      tension, the only substantive open item in batch 7), `chisato` (core-on-true-damage, an ENGINE
      fidelity question), `rouge` (coin exclusivity; Shield-Coin interaction), `prika` (the Pierce
@@ -99,6 +109,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    handoff.
 
 4. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
+   economy landing (DECISIONS) made her colder, not warmer: the faithful custom weapon fires 12
+   uncharged shots where the old estimate fired 7 that inherited her SR ×2.5 `chargeMultiplier`.
+   Her swap window is therefore ruled OUT as the explanation. The largest remaining ⚑ in her file is
+   the **S2 uptime-average** — `damageTakenPct` 3.36 = 10.09 × 5/15 and ally `trueDamagePct` 93.66 =
+   140.49 × 10/15 — where the **15s cooldown is COMMUNITY-sourced (Prydwen), not in the kit prose**.
+   If the real cooldown is shorter, both values are under-credited roughly proportionally. Recipe is
+   already written in her override caveats: read the real skill2 cooldown + pulse shape from a
+   focused `takina` recording and rescale. She has ONE recorded fight (PG iron sweep), so this needs
+   footage before anything is changed — evidence-proportionality, not a re-fit.
+   _(Body restored 2026-08-13: nine lines were dropped from this item by the archive commit
+   `80c9f041`; recovered verbatim from `d3314ca3`.)_
+
 5. **`snow-white-heavy-arms` is FIT-EXPOSED by the stage-entry correction — re-tune, do not
    re-fudge.** The 2026-08-13 ruling (DECISIONS) re-times "entering Burst Stage N" to the chain's
    stage TRANSITION, one step ahead of the stage-N cast. Her S2 ATK ▲73.92%/10s rides exactly that
