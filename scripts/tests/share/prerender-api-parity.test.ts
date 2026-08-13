@@ -36,13 +36,27 @@ import {
 import {
   renderTableCardPng,
   renderResourcesCardPng,
+  renderDollCardPng,
 } from '../../../src/server/dps-table-cards.js';
+import {
+  buildDollPlan,
+  dollCardData,
+  type DollData,
+} from '../../../src/doll/card.js';
 
 const run = promisify(execFile);
 const SCRIPT = new URL('../../build-infographics.ts', import.meta.url);
 const CHARACTERS = new URL('../../../data/characters.json', import.meta.url);
 const SITE_ICON = new URL(
   '../../../src/infographics/assets/nikkesim-icon.png',
+  import.meta.url
+);
+const DOLL_ECONOMY = new URL(
+  '../../../data/doll-economy.json',
+  import.meta.url
+);
+const DOLL_PROC = new URL(
+  '../../../data/doll-super-success.json',
   import.meta.url
 );
 
@@ -181,6 +195,48 @@ describe('pre-rendered set vs the API render', () => {
       rmSync(out, { recursive: true, force: true });
     }
   }, 180_000);
+
+  it('doll cards are byte-identical either way', async () => {
+    const out = mkdtempSync(join(tmpdir(), 'prerender-parity-doll-'));
+    try {
+      const manifest = await build('doll/', out);
+      const keys = Object.keys(manifest.images).sort();
+      // Phase 0 (the whole journey) per rarity — see build-infographics.ts
+      // dollJobs for why the other starting phases are on-demand only.
+      expect(keys).toEqual(['doll/r.0', 'doll/sr.0']);
+
+      const data: DollData = {
+        economy: JSON.parse(readFileSync(DOLL_ECONOMY, 'utf8')),
+        proc: JSON.parse(readFileSync(DOLL_PROC, 'utf8')),
+      };
+      for (const key of keys) {
+        const rarity = key === 'doll/r.0' ? 'R' : 'SR';
+        const card = dollCardData(
+          buildDollPlan(data.economy, data.proc, rarity, 0)
+        );
+        card.icon = (await decodeToCanvas(SITE_ICON)) ?? undefined;
+        expect(
+          sha(renderDollCardPng(card)),
+          `${key} differs between the two render paths`
+        ).toBe(sha(readFileSync(join(out, manifest.images[key]!.file))));
+      }
+    } finally {
+      rmSync(out, { recursive: true, force: true });
+    }
+  }, 180_000);
+
+  // The plan is a Monte Carlo. It is seeded, but nothing about a seeded RNG is
+  // self-evidently reproducible across calls — if it ever stopped being, the
+  // pre-rendered card and every on-demand render would silently disagree.
+  it('the doll plan is reproducible, so the two paths can agree at all', () => {
+    const data: DollData = {
+      economy: JSON.parse(readFileSync(DOLL_ECONOMY, 'utf8')),
+      proc: JSON.parse(readFileSync(DOLL_PROC, 'utf8')),
+    };
+    const a = buildDollPlan(data.economy, data.proc, 'SR', 0);
+    const b = buildDollPlan(data.economy, data.proc, 'SR', 0);
+    expect(b).toEqual(a);
+  }, 60_000);
 
   it('emits a table card for exactly the units the API would render one for', () => {
     const chars = characters();

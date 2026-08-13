@@ -2,8 +2,9 @@
 // docs/handoffs/2026-07-27-infographics-centralization-plan.md): renders the
 // head-only set (2 headline DPS cells × 6 element variants, 5 rank boards, 2
 // static utility tables, 2 cards per unit, one max-ammo table per unit, one
-// charge-speed table per charge weapon, and one Resource Calculator card per
-// AI tier) through src/infographics/node/render.ts ONLY,
+// charge-speed table per charge weapon, one Resource Calculator card per AI
+// tier, and one Doll Leveling card per doll rarity) through
+// src/infographics/node/render.ts ONLY,
 // at scale 2, writing CONTENT-HASHED filenames into dist/img/ plus a mutable
 // manifest.json that maps each logical key to its immutable file.
 //
@@ -65,6 +66,10 @@ import {
   BOSS_TABLES,
   iconBasename,
   loadIcon,
+  drawDollCard,
+  dollCardHeight,
+  DOLL_CARD_W,
+  DOLL_TITLE_INK_REGION,
   type ChargeWeaponRow,
   type ResourcesIcons,
   buildBurstGenTable,
@@ -103,7 +108,13 @@ import { parseCellId, cellLabel } from '../src/dpschart/matrix.js';
 import {
   RESOURCES_TIER_MIN,
   RESOURCES_TIER_MAX,
+  DOLL_RARITIES,
 } from '../src/infographics/spec.js';
+import {
+  buildDollPlan,
+  dollCardData,
+  type DollData,
+} from '../src/doll/card.js';
 import type {
   BurstGenArtifact,
   BurstCdrArtifact,
@@ -635,6 +646,46 @@ function resourcesJobs(): Job[] {
   );
 }
 
+// The Doll Leveling card (bot /doll) — the per-phase feeding plan the /doll
+// page shows by default.
+//
+// Pre-rendered from phase 0 ONLY, for each doll rarity: that is the whole
+// journey, which is what the page defaults to and the only thing the command
+// asks for. The API renders any other starting phase on demand — 14 more cards
+// per rarity that nothing currently requests do not belong in every deploy.
+function dollJobs(): Job[] {
+  const data: DollData = {
+    economy: loadJson(new URL('../data/doll-economy.json', import.meta.url)),
+    proc: loadJson(new URL('../data/doll-super-success.json', import.meta.url)),
+  };
+  return DOLL_RARITIES.map((rarity) => {
+    const key = `doll/${rarity.toLowerCase()}.0`;
+    return {
+      key,
+      render: async (): Promise<Rendered> => {
+        const card = dollCardData(
+          buildDollPlan(data.economy, data.proc, rarity, 0)
+        );
+        card.icon = (await loadSiteIcon()) ?? undefined;
+        const canvas = scaledCanvas(
+          DOLL_CARD_W,
+          dollCardHeight(card.steps.length)
+        );
+        drawDollCard(canvas.getContext('2d') as unknown as Canvas2DLike, card);
+        return {
+          key,
+          png: canvas.toBuffer('image/png'),
+          ext: 'png' as const,
+          width: canvas.width,
+          height: canvas.height,
+          canvas,
+          inkRegion: scaledRegion(DOLL_TITLE_INK_REGION),
+        };
+      },
+    };
+  });
+}
+
 // The card's icon strip, loaded once and shared by all nine tiers (loadIcon is
 // per-process cached, but the fan-out below is explicit either way).
 let resourcesIconsCache: Promise<ResourcesIcons> | null = null;
@@ -820,7 +871,8 @@ async function main(): Promise<void> {
       ...rankJobs(),
       ...tableJobs(),
       ...perUnitTableJobs(Object.values(chars.characters)),
-      ...resourcesJobs()
+      ...resourcesJobs(),
+      ...dollJobs()
     );
   }
   if (ONLY) {

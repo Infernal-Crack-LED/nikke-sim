@@ -56,10 +56,20 @@ const REQUIRED = [
 // because ▲ is on this list.
 const FORBIDDEN = ['→', '▲', '▼', '⚔', '✓'];
 
+// EVERY module that can put a string on a card canvas, whether it draws the
+// string or only formats it. A card whose source is missing from this list is
+// not guarded at all — the check reports a clean pass over the files it happens
+// to know about, which reads as "the card set is safe".
 const SOURCES = [
   'src/infographics/core/unitCard.ts',
   'src/infographics/core/unitCardData.ts',
   'src/infographics/core/rankTables.ts',
+  'src/infographics/core/dollCard.ts',
+  'src/infographics/core/resourcesCard.ts',
+  'src/infographics/core/resourcesData.ts',
+  'src/infographics/core/tableData.ts',
+  // Not a renderer, but it authors every string the doll card draws.
+  'src/doll/card.ts',
 ];
 
 describe('bundled Roboto covers every glyph the unit card draws', () => {
