@@ -5384,18 +5384,20 @@ export function App({ user }: { user: AuthUser | null }) {
           overrides[chargeChar]?.charFixes?.noBoltRecovery)
           ? 0
           : RELEASE_LATENCY_FRAMES;
-      // No OL stat can roll more than 4 lines on a single build, so drop any
-      // breakpoint that would need a 5th charge-speed line at this tier —
-      // mirrors ammoBreakpoints' linesNeeded <= 4 cap below.
-      const allRows = chargeFrameBreakpoints(baseFrames).filter(
-        (r) => Math.ceil(r.csNeeded / bpTv.chargespd) <= 4
-      );
-      // Deep breakpoints need charge speed most teams never reach; hide them
-      // behind a toggle so the default view stays actionable.
+      // "All breakpoints" is literal — every reachable frame count, no cap.
+      // The default view narrows that down to what's actually attainable:
+      // deep breakpoints need charge speed most teams never reach, and no OL
+      // stat can roll more than 4 lines on a single build (mirrors
+      // ammoBreakpoints' linesNeeded <= 4 cap below).
       const REACHABLE_CS = 50;
+      const allRows = chargeFrameBreakpoints(baseFrames);
       const rows = chargeShowAll
         ? allRows
-        : allRows.filter((r) => r.csNeeded <= REACHABLE_CS);
+        : allRows.filter(
+            (r) =>
+              r.csNeeded <= REACHABLE_CS &&
+              Math.ceil(r.csNeeded / bpTv.chargespd) <= 4
+          );
       const hidden = allRows.length - rows.length;
       // exclude everything that isn't a charge weapon from the picker
       const nonCharge = allChars
@@ -5526,7 +5528,7 @@ export function App({ user }: { user: AuthUser | null }) {
               className={chargeShowAll ? '' : 'on'}
               onClick={() => setChargeShowAll(false)}
             >
-              Reachable (≤ {REACHABLE_CS}%)
+              Up to 4 Lines
             </button>
             <button
               className={chargeShowAll ? 'on' : ''}
@@ -5538,8 +5540,9 @@ export function App({ user }: { user: AuthUser | null }) {
           {!chargeShowAll && hidden > 0 && (
             <p className="muted">
               {hidden} deeper breakpoint{hidden === 1 ? '' : 's'} hidden (each
-              needs more than {REACHABLE_CS}% charge speed). Charge speed caps
-              at 100%, which floors the charge at a single frame.
+              needs more than 4 charge-speed OL lines, or more than{' '}
+              {REACHABLE_CS}% charge speed). Charge speed caps at 100%, which
+              floors the charge at a single frame.
             </p>
           )}
 
