@@ -65,7 +65,7 @@ harnesses that must do this:
 ## Building a static census (kit-text / override sweeps)
 
 Earned by the six phase-4 TAIL axes (2026-08-11,
-`docs/handoffs/2026-08-11-faithfulness-tail-plan.md` §6). Four of the six had a matcher that was
+`docs/handoffs/closed/2026-08-11-faithfulness-tail-plan.md` §6 — archived 2026-08-13, the archive is gitignored). Four of the six had a matcher that was
 wrong before it was right, and every one of those was caught by a rule below rather than by
 reading output.
 

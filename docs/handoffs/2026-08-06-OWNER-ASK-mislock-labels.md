@@ -95,7 +95,7 @@ Not part of this ask — do NOT let it change what you mark — but recorded her
 unit and the same investigation. `noir`'s recon reads a reload of **~0.6–0.9s against the datamined
 62f ≈ 1.03s**, and she sits 0.884 COLD on her two graded comps with no measurement-gated retune. It
 was queued as a standalone recording ask (item M7 of the M1–M12 recording list in
-`docs/handoffs/2026-08-10-faithfulness-ENACTMENT-START-HERE.md` §5); the owner folded it into **the ongoing
+`docs/handoffs/closed/2026-08-10-faithfulness-ENACTMENT-START-HERE.md` §5 — archived 2026-08-13); the owner folded it into **the ongoing
 SG investigation** instead, because `noir` is the SG-landing-table calibration anchor
 (`docs/probe-data/noir-solo-recon.json`) — moving her cadence moves the band table's own basis, so
 it cannot be settled beside the SG work, only inside it.

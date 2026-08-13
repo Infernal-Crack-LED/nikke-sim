@@ -54,8 +54,29 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
-1. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
-2. **`snow-white-heavy-arms` is FIT-EXPOSED by the stage-entry correction — re-tune, do not
+1. **The burst-gauge ECONOMY cluster still wants its one batched `/scientific-method` pass** — the
+   only thread from the 2026-08-10 faithfulness sweep that is still open, and it had fallen off this
+   queue entirely (found 2026-08-13 while archiving that sweep's handoffs). It stays in
+   [2026-08-10-gauge-economy-findings.md](2026-08-10-gauge-economy-findings.md), which is
+   deliberately NOT archived. Four measured items to land TOGETHER, because their directions
+   partially cancel (compensating-errors rule): (a) the charge-B3 fill-tempo channel — success
+   criterion is the 4 disabled comps' measured FB counts, re-enabled; (b) reproduce-then-fix the
+   double-emit log entry (gauge-DOWN); (c) the U28 rider encoding fix so both encodings emit
+   identically (gauge-UP); (d) source the focus multiplier from `characters.json.chargeMultiplier`
+   with the gauge row as an explicit override, plus a validator lint. A/B the FULL measured timeline.
+
+2. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
+   Recipe (unchanged, but the qualifying set is now exact): popup-read a qualifying all-enemies
+   burst nuke cast INSIDE vs OUTSIDE a `trina` Spread Roots window and compare against
+   `1 + 4.356` additive-in-Damage-Up. Any comp pairing `trina` with one of `isabel` / `liberalio` /
+   `mica` / `noir` / `phantom` / `privaty` / `quency-escape-queen` / `scarlet` /
+   `soda-twinkling-bunny` gives it; `cinderella` is NOT a candidate. If the test unit is `novel` or
+   another granularity-split unit the same measurement settles amp granularity for free (amped ⇒
+   skill-level, unamped ⇒ block-level). Footage-gated; carried out of the now-archived burst-amp
+   handoff.
+
+3. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
+4. **`snow-white-heavy-arms` is FIT-EXPOSED by the stage-entry correction — re-tune, do not
    re-fudge.** The 2026-08-13 ruling (DECISIONS) re-times "entering Burst Stage N" to the chain's
    stage TRANSITION, one step ahead of the stage-N cast. Her S2 ATK ▲73.92%/10s rides exactly that
    trigger, and her magnitudes were hand-tuned against the old cast-frame timing, so she moved
@@ -63,7 +84,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    change. Same class as the 2026-07-21 rotation-fix exposure: the fix is right, the unit's fit was
    standing on the bug. Re-tune her against her existing recordings; do NOT restore the old timing.
 
-3. **⚑ `hitCount` counts attacks the kit would not count (engine-wide, surfaced via `velvet`).** The
+5. **⚑ `hitCount` counts attacks the kit would not count (engine-wide, surfaced via `velvet`).** The
    trigger's counter accrues on EVERY normal attack and the gate (`fbGate` etc.) is applied at
    FIRING time, so a threshold crossing that the gate blocks still SPENDS its N. For a kit line
    worded "landing 50 normal attack(s) **during Full Burst**", out-of-FB attacks should not advance
@@ -73,4 +94,3 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    silently. Fix shape: a count-scope option on the trigger (count only while the gate passes).
    Cross-cutting across every hitCount carrier ⇒ needs its own blast-radius pass, which is why it
    was filed rather than made.
-

@@ -1,5 +1,11 @@
 # 2026-08-10 — Gauge-economy measurement pass (faithfulness phase 2d, FINDINGS-ONLY)
 
+> **⚑ DELIBERATELY STILL OPEN (checked 2026-08-13).** The other twelve handoffs from the
+> 2026-08-10/11 faithfulness sweep were archived; this one was NOT, because its batched proposal
+> at the end has never been executed. It is the sweep's last live thread and it had fallen off
+> QUEUE.md entirely — now re-filed there as item 1. Findings-only until that pass runs: the four
+> corrections interact and partially cancel, so nothing here lands piecemeal.
+
 > Owner-approved scope: measurement/instruments only, STOP before any constant changes. The
 > eventual fix is ONE batched `/scientific-method` pass over the whole cluster — the correction
 > directions interact (compensating-errors rule), so nothing here lands piecemeal.
