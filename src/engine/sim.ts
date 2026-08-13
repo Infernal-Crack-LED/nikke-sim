@@ -4294,8 +4294,13 @@ export function runSim(
       // emit twice — the residual half of U28, which needs the stat to stop being summed to fix.
       //
       // DBG_RIDERGAUGE=1 taps this emission site (slug / frame / whether `addGauge`'s chain+FB lock
-      // swallows it). It is what `scripts/battery/u28-gauge-ab.ts --lock-census` reads to show that
-      // every carrier's rider window sits INSIDE the lock today, i.e. why this line moves no comp.
+      // swallows it). `scripts/battery/u28-gauge-ab.ts --lock-census` reads it, and is why this line
+      // moves no comp: `nayuta`/`neon-vision-eye` (10s) and `neon-blue-ocean` (7s) hold riders granted
+      // by the stage-3 cast that opens a 10s Full Burst, so their windows close inside it BY
+      // MECHANISM; `modernia`'s 15s outlives FB by ~4.6s and is covered only BY MEASUREMENT (0 of
+      // 2103 + 50,795 emissions reach the bar across two comp shapes, and 0 under the ROTMODEL=floor
+      // arm that manufactures a post-FB stage-0 gap). Her tail is the one thing that could ever move:
+      // a post-FB gap where she is firing with the rider live.
       if (ENV.DBG_RIDERGAUGE) {
         console.error(
           `[u28] ${u.char.slug} f=${frame} locked=${fbEndFrame > frame || stage !== 0}`

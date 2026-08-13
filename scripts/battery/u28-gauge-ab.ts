@@ -32,13 +32,16 @@
 //
 // 2026-08-13, --lock-census: that "re-run it in the refill-bound shape" caveat is now ANSWERED, and
 // by a sharper instrument than the exaggerated arm. The census taps the emission site itself
-// (DBG_RIDERGAUGE) and asks where each emission LANDS rather than what it moves: every carrier's
-// rider is a burstCast-triggered buff of 7-15s, so its whole live window sits inside `addGauge`'s
-// chain+FB lock, and 100% of emissions are swallowed — in the control comps AND in all four
-// refill-bound disabled comps. That is a STRUCTURAL reason for zero board movement (the encoding is
-// now faithful and the gauge it generates is locked away), not a comp-shape coincidence, so no
-// further shape needs re-running. It also predicts exactly what would make the fix bite: a carrier
-// whose rider window outlives Full Burst, or a chain that expires mid-window.
+// (DBG_RIDERGAUGE) and asks where each emission LANDS rather than what it moves. Read the two
+// findings separately — they are NOT the same strength:
+//   * nayuta (10s), neon-vision-eye (10s), neon-blue-ocean (7s) — INERT BY MECHANISM. Their rider is
+//     granted by the stage-3 cast that opens a 10s Full Burst, so the window closes inside the lock
+//     no matter what comp seats them. Nothing to re-run.
+//   * modernia (15s) — INERT BY MEASUREMENT ONLY. Her window outlives Full Burst by ~4.6s, so a
+//     stage-0 gap where she is buffed AND firing would reach the bar. None occurs in any comp tried,
+//     and none under `ROTMODEL=floor npx tsx scripts/battery/u28-gauge-ab.ts --lock-census` — the arm
+//     that forcibly inserts a 2.5s post-FB chain-open block to manufacture exactly that gap. That
+//     adversarial arm is the re-run worth repeating if a new comp ever seats her.
 import { readFileSync } from 'node:fs';
 import { loadOverride } from '../../src/skills/overrides-node.js';
 

@@ -3641,6 +3641,72 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-08-13) THE BURST-GAUGE ECONOMY CLUSTER: three of its four items were not open work.** The
+  2026-08-10 gauge-economy pass ended in a batched proposal — land four interacting corrections
+  together under `/scientific-method`, because their directions partially cancel. Picking that up
+  2026-08-13, the bundle collapsed on inspection: two items were already answered and one was already
+  landed, leaving one genuine unknown. Recorded here because the collapse, not the bundle, is what a
+  future session needs to know.
+  - **(a) U28 gauge half — ENCODED, no pipeline.** `extraHitDamagePct` emitted no burst gauge while an
+    equivalent `flatDamage` proc emitted `skillGauge` per proc, so the two encodings of one kit line
+    were not interchangeable. This was never an unknown: `docs/data/burst-gauge.md` §5 states the rule
+    (every skill/additional-damage impact generates the caster's flat target per-shot value) and the
+    measurement of record already existed — `maiden-ice-rose` solo, 12.55%/pull in two visible bar
+    sub-steps = 910 (weapon 364×2.5) + 364 (rider, flat) — where her rider IS a
+    `shotFired` → `flatDamage` block. Per the 2026-08-11 owner ruling (answered question ⇒ encode +
+    `/code-review`, the onus on the code not the answer), `skillGauge(u, frame)` now fires at the
+    `extraHitDamagePct` call site in `firePull`.
+  - **Its board movement is ZERO, and the two reasons are of DIFFERENT strength — the distinction is
+    the point.** A field-form sweep of all 67 overrides finds exactly four carriers, each holding
+    exactly ONE rider, each a `burstCast`-triggered buff: `nayuta` 10s, `neon-vision-eye` 10s,
+    `neon-blue-ocean` 7s, `modernia` 15s. `addGauge` is locked for the burst chain and Full Burst.
+    - **Three are inert BY MECHANISM.** A rider granted by the stage-3 cast that opens a 10s Full
+      Burst, lasting ≤10s, closes no later than that Full Burst does (FB starts 22f after the cast, so
+      even the 10s pair are strictly inside). No comp can expose them; no consumer exists roster-wide.
+    - **`modernia` is inert BY MEASUREMENT, not by mechanism** — her 15s outlives Full Burst by ~4.6s,
+      so a stage-0 gap in which she is both buffed and firing WOULD reach the bar. None occurs:
+      2103/2103 emissions locked in the `liter`/`crown` control comp (her rider windows measured
+      13.3–15.0s, i.e. the full duration, all covered by FB plus the chain that follows it), and
+      50,795/50,795 across the N2 comp (`d-killer-wife`/`naga`/`chisato`/`ein` — a different shape
+      seating neither `liter` nor `crown`). It survives an adversarial arm too: under `ROTMODEL=floor`,
+      which forcibly inserts a 2.5s post-FB chain-open block and so manufactures the stage-0 gap, still
+      0 emissions reach the bar. **The discriminator, if a future comp ever moves:** a post-FB gap
+      where `modernia` is firing with her rider live.
+    - Both readings hold in the refill-bound "charge-B3" comps the 2026-08-10 handoff asked to re-check
+      before generalizing: T5 wind-weak (`nayuta`) 55/55 locked; the other three disabled comps seat no
+      `extraHitDamagePct` carrier at all, so U28 cannot be part of their shortfall.
+    - `scripts/experiment.ts` output is byte-identical before/after; `verify.sh` green, snapshot
+      untouched. Instrument, committed per constraint 9: `scripts/battery/u28-gauge-ab.ts
+--lock-census`, reading a new engine tap (`DBG_RIDERGAUGE`) at the emission site. It answers
+      "where does the emission LAND", which is a sharper question than the 2026-08-10
+      exaggerated-encoding arm's "what does it move" — that arm can only ever show absence.
+  - **(b) The "skillGauge fires twice per shot on shotFired-triggered flatDamage riders" entry
+    (2026-08-03) — CLOSED as NOT A DEFECT.** It described one `shotGauge` (weapon) plus one
+    `skillGauge` (rider) on the same pull as double-crediting. That is exactly the `maiden-ice-rose`
+    anchor above: her measured 12.55%/pull IS the two emissions, reproduced exactly by the current
+    code. The 2026-08-10 pass had already failed to reproduce a defect by inspection and correctly
+    declined to "fix" it; what was missing was the connection to an existing labeled measurement. No
+    code change. **This removes the only gauge-DOWN direction from the cluster**, which is what let
+    the remaining item land alone instead of as a bundle (the compensating-errors rule binds when
+    corrections genuinely cancel — here there was nothing to cancel against).
+  - **(c) Theme 20 (`fullChargeBonus` sourcing) — LANDED 2026-08-08, recorded retroactively.** Commit
+    `ccee21f7` ("Slice G") already sources the SR/RL focus multiplier from
+    `characters.json.chargeMultiplier`, keeps `gauge-per-shot.json`'s `fullChargeBonus` as an explicit
+    override only when `characters.json` reports 0 (`raven`), and added
+    `scripts/tests/data/gauge-per-shot-source.test.ts` as the lint (it also pins `belorta`, `n102`,
+    `yan`, `yuni` so the no-row 3.5× units cannot silently fall back to 2.5×). It carried no DECISIONS
+    entry, so both `docs/engine-modeling-gaps.md` §20 and the 2026-08-10 handoff still described it as
+    "not yet done" three days later, and it was queued as work. §20 is now deleted (capture-first: this
+    is the capture).
+  - **(d) The charge-B3 gauge-fill-tempo gap stays open and unbundled** — the one genuine unknown, and
+    the only part that wants `/scientific-method`. The 2026-08-03 LOG record already names what lifts
+    it from MEDIUM to HIGH: frame-measure the real FB-end → next-B1 gap on ONE disabled comp's footage
+    (`docs/probes/u8/u8 g vid.mov` is "iron sweep run G"), rather than any downstream proxy.
+  - **Method note.** Two of the four items dissolved against artifacts already in the repo — a
+    measurement and a commit. The cost of not checking was a bundling constraint that held the whole
+    cluster hostage for three days. Same shape as the SUFFICIENCY rule's original case: search the
+    tree before planning the work.
+
 - **(2026-08-13) OFF-BOARD BUFFERS ARE CUT FROM THE POPULATION, NOT HIDDEN AT RENDER — a row that
   exists in the artifact occupies a rank, whoever refuses to draw it.** Owner-reported bug: the unit
   card / infographic showed **Crown as #2 on Team Buffs while the web board showed her #1**.

@@ -1,57 +1,50 @@
-# 2026-08-10 — Gauge-economy measurement pass (faithfulness phase 2d, FINDINGS-ONLY)
+# Gauge-economy cluster — ONE item left: the charge-B3 fill-tempo gap
 
-> **⚑ DELIBERATELY STILL OPEN (checked 2026-08-13).** The other twelve handoffs from the
-> 2026-08-10/11 faithfulness sweep were archived; this one was NOT, because its batched proposal
-> at the end has never been executed. It is the sweep's last live thread and it had fallen off
-> QUEUE.md entirely — now re-filed there as item 1. Findings-only until that pass runs: the four
-> corrections interact and partially cancel, so nothing here lands piecemeal.
+> **Status 2026-08-13.** Opened 2026-08-10 as a findings-only measurement pass that ended in a
+> batched proposal: land four interacting corrections together under `/scientific-method`, because
+> their directions partially cancel. Picking that up, **three of the four were not open work** — two
+> were already answered, one had already landed. They closed the same day without a pipeline
+> (DECISIONS 2026-08-13, burst-gauge economy cluster). What is left is item (a), the only genuine
+> unknown, and the bundling constraint is gone with it: the only gauge-DOWN direction turned out not
+> to exist, so there is nothing left to cancel against.
 
-> Owner-approved scope: measurement/instruments only, STOP before any constant changes. The
-> eventual fix is ONE batched `/scientific-method` pass over the whole cluster — the correction
-> directions interact (compensating-errors rule), so nothing here lands piecemeal.
+## The one live item — charge-B3 gauge-fill-tempo gap
 
-## What was measured
+**Not re-measured since the 2026-08-03 `/scientific-method` record, which stands** (LOG verdict,
+2-of-2 ACCEPT at MEDIUM/MEDIUM; `docs/handoffs/scientific-method-harness.md`). Verdict there: a
+general, board-wide charge-B3 gauge-fill-tempo gap — NOT `liberalio`-specific, NOT a narrow fix.
+It is what keeps four comps disabled in `scripts/regression.ts` (iron sweep run G, T5 wind-weak,
+T1 wind-weak, N3 scarlet/liberalio iron), each under-counting measured full bursts by 1–2.
 
-1. **U28 (extraHitDamagePct emits no gauge vs flatDamage's per-proc `skillGauge`) — BOUNDED.**
-   New committed instrument `scripts/battery/u28-gauge-ab.ts`: each carrier's rider converted
-   in-memory to a PERMANENT per-pull `flatDamage` — a deliberate gauge-emission exaggeration
-   (window gating dropped, so it over-emits by ~1/uptime). Result: **zero full-burst-count
-   movement on all four carriers** (modernia 10=10, nayuta 5=5, neon-blue-ocean 11=11,
-   neon-vision-eye 13=13) in the control-comp shape. Since the exaggerated arm cannot move FB
-   counts there, the true asymmetry cannot either — in that shape. ⚑ The refill-bound charge-B3
-   comps (the tempo thread's 4 disabled comps) are where gauge deltas bind; re-run the arm there
-   before generalizing. The encoding asymmetry itself remains real (gauge-truthfulness), just
-   not FB-visible in support-core comps.
+- **Success criterion:** those four comps' measured FB counts, re-enabled.
+- **The step that lifts MEDIUM → HIGH, already named by that record:** frame-measure the real
+  FB-end → next-B1 gap on ONE disabled comp's footage — the disputed segment itself, not a
+  downstream proxy. `docs/probes/u8/u8 g vid.mov` is "iron sweep run G" and is on disk, so this is
+  not footage-gated.
+- **Instrument:** `decomposeCycles()` in `scripts/experiment.ts` (CLI `DECOMP=1`), pinned by
+  `scripts/tests/gauge-cycle-decomp.test.ts`. Invocation caveat: `DECOMP=1` prints only on the
+  deterministic report path — under the MC (`n=25`) comps it is silent, so use the pinned test's
+  fixtures or a seedless single run when refreshing numbers.
+- **ROTMODEL flip already accounted for:** the 2026-08-04 owner ruling removed the post-FB
+  chain-open lock and the decomposition floor dropped the dead +2.5s term, so `excess` now reads
+  refill-from-zero directly (~2.5–4.7s across the six comps). The LOG verdict survived that flip.
 
-2. **The charge-B3 fill-tempo gap — NOT re-measured here; the 2026-08-03 `/scientific-method`
-   record stands** (`docs/handoffs/scientific-method-harness.md`; instrument `decomposeCycles()`
-   pinned by `scripts/tests/gauge-cycle-decomp.test.ts`; the 2026-08-04 owner ruling resolved
-   the video-offset question and flipped `ROTMODEL=refill`). Invocation caveat hit in this pass:
-   `DECOMP=1` prints only on the deterministic report path — under the MC (`n=25`) comps it is
-   silent; use the pinned test's fixtures or a seedless single run when refreshing numbers.
+## Closed 2026-08-13 (do not re-open without new evidence)
 
-3. **The "skillGauge fires twice per shot on shotFired-triggered flatDamage riders" log entry
-   (QUEUE, from the 2026-08-03 pass) — NOT REPRODUCED BY INSPECTION in this pass, and not
-   re-derived.** The visible call sites are one weapon-path `shotGauge` per pull plus one
-   `skillGauge` per rider proc, which is the DOCUMENTED intended behavior (burst-gauge SSOT).
-   The 2026-08-03 log remains the finding of record; its dedicated pre-op must first REPRODUCE
-   the double-emit (event-log gauge decomposition on one carrier) before any correction —
-   correcting an unreproduced defect is how a compensating error gets planted.
-
-4. **Theme 20 data quality (`gauge-per-shot.json` `fullChargeBonus` vs
-   `characters.json.chargeMultiplier`) — unchanged from the engine-modeling-gaps §20 record:**
-   6/44 SR/RL rows synthesized class-modals, 4 units (belorta, n102, yan, yuni) with
-   `chargeMultiplier: 350` and no gauge row (the `?? 250` fallback under-fills them), `raven`
-   one live disagreement (250 vs 0). Suggested fix unchanged: source from
-   `characters.json.chargeMultiplier` with the gauge row as an explicit override, + a validator
-   lint on new SR/RL overrides.
-
-## The batched proposal (owner gate, one dedicated pass)
-
-A single `/scientific-method` pass scoped to burst-gauge generation, bundling: (a) the
-charge-B3 fill-tempo channel (success criterion: the 4 disabled comps' measured FB counts,
-re-enabled); (b) reproduce-then-fix the double-emit log entry; (c) the U28 encoding fix (both
-rider encodings emit identically), re-bounded in the charge-B3 shape first; (d) the theme-20
-sourcing fix + lint. Land together, A/B the FULL measured timeline per the compensating-errors
-rule — the directions partially cancel (double-emit correction is gauge-DOWN, U28 is gauge-UP,
-tempo is comp-dependent).
+- **U28 rider-encoding asymmetry — ENCODED.** `extraHitDamagePct` now emits `skillGauge` per impact,
+  like an equivalent `flatDamage` rider. Answered, not measured: `docs/data/burst-gauge.md` §5 plus
+  the `maiden-ice-rose` solo anchor (12.55%/pull = 910 weapon + 364 rider). Board movement zero —
+  `scripts/battery/u28-gauge-ab.ts --lock-census` shows the ≤10s riders (`nayuta`,
+  `neon-vision-eye`, `neon-blue-ocean`) sit inside the chain+FB gauge lock by mechanism and
+  `modernia`'s 15s by measurement only. **This also answers the 2026-08-10 "re-run the arm in the
+  refill-bound charge-B3 shape before generalizing" caveat:** T5 wind-weak (`nayuta`) is 55/55
+  locked, and the other three disabled comps seat no `extraHitDamagePct` carrier at all — so U28 is
+  not part of their shortfall.
+- **The "skillGauge fires twice per shot" log entry (2026-08-03) — NOT A DEFECT.** One `shotGauge`
+  (weapon) plus one `skillGauge` (rider) per pull is exactly what the `maiden-ice-rose` anchor
+  measures, and her rider IS a `shotFired` → `flatDamage` block. The 2026-08-10 pass had already
+  failed to reproduce it by inspection; what was missing was the link to the existing measurement.
+- **Theme 20 (`fullChargeBonus` sourcing) — landed 2026-08-08 in `ccee21f7`**, with
+  `scripts/tests/data/gauge-per-shot-source.test.ts` as the lint. It carried no DECISIONS entry, so
+  `docs/engine-modeling-gaps.md` §20 and this handoff both still called it "not yet done" three days
+  later. §20 now records it as fixed.
