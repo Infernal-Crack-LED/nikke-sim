@@ -54,7 +54,30 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
-1. **The burst-gauge ECONOMY cluster still wants its one batched `/scientific-method` pass** — the
+1. **The archived faithfulness sweep's `Recorded, not applied` residue — 46 per-unit items, 33 of
+   them actionable.** The eight batch docs were archived on 2026-08-13 as historical records, but
+   each ends with a `## Recorded, not applied (per-unit follow-ups)` section, and NOTHING pointed at
+   them. They live in `docs/handoffs/closed/2026-08-10-faithfulness-batch{1..8}-findings.md` (the
+   archive is gitignored but present locally; `grep -A40 "Recorded, not applied"` over that glob
+   reproduces the full list). 13 of the 46 say "clean beyond prose" and need nothing. The other 33
+   fall into four classes — none is a board emergency, all are cheap in isolation:
+   - **Note-hygiene rewrites** (the 2026-07-22 override-prose rule: current model only, no history
+     narration): `isabel` (history narration ×6), `soda-twinkling-bunny` (note tail still narrates
+     the superseded flat-42 model as live), `elegg` (reviewer-provenance mentions), `frima` (~8 bare
+     `sim.ts:<line>` citations), `exia` (spec header contradicts its own assertions), `signal`.
+   - **Measurement-gated ⚑, footage-blocked** — do NOT enact from the desk: `noir` (the reload
+     tension, the only substantive open item in batch 7), `chisato` (core-on-true-damage, an ENGINE
+     fidelity question), `rouge` (coin exclusivity; Shield-Coin interaction), `prika` (the Pierce
+     hold, owner-held), `ada` (Special Modification shot count), `guillotine-winter-slayer` (normal
+     fire reads ~26% off), `mint` (solo mode has ZERO real-fight anchor), `ade-agent-bunny`
+     (Spy-Lens gate rests on stacks REFRESHING), `mihara-bonding-chain` (the 12-stack rebuild
+     average is her single fitted number). `takina`'s is already item 4 below.
+   - **Held primitives, logged not built** (F11 discipline — one carrier each): `moran` S1
+     DEF ▲/stack, `maxwell` `byFinalAtk`, `helm`'s held tag. Leave held; the log is the point.
+   - **Encode-consistency candidates**: `anis` and `mica` both keep an `attacked`-N line unmodeled
+     on "nothing feeds the trigger" grounds. Same call, so decide them together, not one at a time.
+
+2. **The burst-gauge ECONOMY cluster still wants its one batched `/scientific-method` pass** — the
    only thread from the 2026-08-10 faithfulness sweep that is still open, and it had fallen off this
    queue entirely (found 2026-08-13 while archiving that sweep's handoffs). It stays in
    [2026-08-10-gauge-economy-findings.md](2026-08-10-gauge-economy-findings.md), which is
@@ -65,7 +88,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    identically (gauge-UP); (d) source the focus multiplier from `characters.json.chargeMultiplier`
    with the gauge row as an explicit override, plus a validator lint. A/B the FULL measured timeline.
 
-2. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
+3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
    Recipe (unchanged, but the qualifying set is now exact): popup-read a qualifying all-enemies
    burst nuke cast INSIDE vs OUTSIDE a `trina` Spread Roots window and compare against
    `1 + 4.356` additive-in-Damage-Up. Any comp pairing `trina` with one of `isabel` / `liberalio` /
@@ -75,8 +98,8 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    skill-level, unamped ⇒ block-level). Footage-gated; carried out of the now-archived burst-amp
    handoff.
 
-3. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
-4. **`snow-white-heavy-arms` is FIT-EXPOSED by the stage-entry correction — re-tune, do not
+4. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
+5. **`snow-white-heavy-arms` is FIT-EXPOSED by the stage-entry correction — re-tune, do not
    re-fudge.** The 2026-08-13 ruling (DECISIONS) re-times "entering Burst Stage N" to the chain's
    stage TRANSITION, one step ahead of the stage-N cast. Her S2 ATK ▲73.92%/10s rides exactly that
    trigger, and her magnitudes were hand-tuned against the old cast-frame timing, so she moved
@@ -84,7 +107,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    change. Same class as the 2026-07-21 rotation-fix exposure: the fix is right, the unit's fit was
    standing on the bug. Re-tune her against her existing recordings; do NOT restore the old timing.
 
-5. **⚑ `hitCount` counts attacks the kit would not count (engine-wide, surfaced via `velvet`).** The
+6. **⚑ `hitCount` counts attacks the kit would not count (engine-wide, surfaced via `velvet`).** The
    trigger's counter accrues on EVERY normal attack and the gate (`fbGate` etc.) is applied at
    FIRING time, so a threshold crossing that the gate blocks still SPENDS its N. For a kit line
    worded "landing 50 normal attack(s) **during Full Burst**", out-of-FB attacks should not advance
