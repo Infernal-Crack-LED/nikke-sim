@@ -344,15 +344,29 @@ describe('sakura-suzuhara kit spec', () => {
     for (const c of complete) {
       expect(inWindow(events, c.frame)).toBe(10 * N_ALLIES);
     }
-    // she has casts that never became a Full Burst (broken chain) — the heal fired anyway.
-    expect(casts.length).toBeGreaterThan(
-      openedBy(events).filter((f) => f.hers).length
-    );
-    // no recovery stream inside any liter-opened FB window.
-    const literOpened = openedBy(events).filter((f) => !f.hers);
-    expect(literOpened.length).toBeGreaterThanOrEqual(1);
-    for (const fb of literOpened) {
-      expect(inWindow(events, fb.frame)).toBe(0);
+    // ANCHOR IDENTITY: the heal streams start on HER CAST frames, never on Full Burst OPEN frames.
+    // This replaces two arms that the 10s chain timeout (2026-08-13) made vacuous in this fixture:
+    // every one of her casts now completes into a Full Burst (so "casts > her-opened windows" is
+    // no longer true), and every liter-led chain now expires instead of opening a window (so there
+    // are no liter-opened windows left to check for silence). The frames still separate cleanly —
+    // she casts at 9.1s/50.7s… and the windows open at 10.5s/52.0s… — which is the property the
+    // trigger identity actually rests on.
+    const castFrames = new Set(casts.map((c) => c.frame));
+    const openFrames = openedBy(events).map((f) => f.frame);
+    expect(openFrames.length).toBeGreaterThanOrEqual(1);
+    expect(
+      openFrames.filter((f) => castFrames.has(f)),
+      'a Full Burst opened on one of her cast frames — the two anchors are not separable here'
+    ).toEqual([]);
+    // CONTAINMENT: every recovery tick in the fight belongs to one of HER cast windows. A
+    // window-keyed encoding would put ticks outside them (the counterfactual below does).
+    const heals = crownRecoveryBuffs(events);
+    expect(heals.length).toBeGreaterThan(0);
+    for (const b of heals) {
+      expect(
+        casts.some((c) => b.frame >= c.frame && b.frame <= c.frame + 10 * FPS),
+        `a recovery tick at frame ${b.frame} falls outside every one of her cast windows`
+      ).toBe(true);
     }
   });
 
@@ -377,14 +391,24 @@ describe('sakura-suzuhara kit spec', () => {
     for (const fb of fbs) {
       expect(inWindow(cf.events, fb.frame)).toBe(10 * N_ALLIES);
     }
-    // recovery streams land on liter-opened rotations where shipped has NONE.
-    const literOpened = fbs.filter((f) => !f.hers);
-    expect(literOpened.length).toBeGreaterThanOrEqual(1);
-    for (const fb of literOpened) {
-      expect(inWindow(shipped.events, fb.frame)).toBe(0);
-    }
-    expect(crownRecoveryBuffs(cf.events).length).not.toBe(
-      crownRecoveryBuffs(shipped.events).length
+    // The counterfactual streams on WINDOW-OPEN frames where the shipped encoding is silent — the
+    // discriminator, stated on frames rather than on the liter-vs-hers split (every window in this
+    // fixture is hers since the 10s chain timeout landed, so that split no longer separates them).
+    // the counterfactual puts ticks outside her cast windows — the shipped encoding never does
+    const shippedCasts = sakuraCasts(shipped.events);
+    const outside = crownRecoveryBuffs(cf.events).filter(
+      (b) =>
+        !shippedCasts.some(
+          (c) => b.frame >= c.frame && b.frame <= c.frame + 10 * FPS
+        )
     );
+    expect(
+      outside.length,
+      'the window-keyed model landed no tick outside her cast windows — not discriminating'
+    ).toBeGreaterThan(0);
+    const frames = (evs: SimEvent[]) => [
+      ...new Set(crownRecoveryBuffs(evs).map((b) => b.frame)),
+    ];
+    expect(frames(cf.events)).not.toEqual(frames(shipped.events));
   });
 });

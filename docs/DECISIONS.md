@@ -9,7 +9,42 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-13, latest) `velvet` has TWO mutually exclusive modes, and she is built to play as the
+- **(2026-08-13, latest) A burst chain has ONE clock, not two: it lives 10s, and any unit that comes
+  off cooldown inside it may fill it.**
+  - **The rulings (owner, 2026-08-13).** An unfinished burst chain takes **10 seconds** to time out.
+    The timeout and the auto's filler-wait horizon "should be two separate constants". And: "a unit
+    that comes off cooldown mid-chain gets to fill it."
+  - **What the engine did.** A single `STAGE_WINDOW_FRAMES` = 120f served BOTH questions. Expiry
+    inherited a value calibrated for the other one (DECISIONS 2026-07-21, the filler-wait grace), so
+    a stalled chain died at 2s instead of 10s and the bar began refilling 8s early.
+  - **The third ruling collapsed the split back to one constant — and that is the interesting part.**
+    Separating the clocks first created a state that cannot occur in game: a chain ALIVE but
+    unfillable, because the filler-wait horizon still refused everyone after 2s. Encoding "a ready
+    unit may always fill a live chain" fixes that — and then makes the horizon **unreachable**: a
+    not-ready unit never casts (the cast requires `burstCdFrames === 0`), so admitting or refusing
+    it as a candidate has no observable consequence. Verified by deleting the clause outright —
+    every graded FB count, every damage total and all four probe comps' rotations were
+    byte-identical at horizons of 1f, 120f and 600f, on both the default first-ready path and the
+    legacy `B3_LEFTMOST` one. So `STAGE_RESERVE_FRAMES` was REMOVED rather than kept beside its
+    replacement: a calibrated-looking constant that cannot move anything invites re-tuning that does
+    nothing. The 2026-07-21 calibration is not overturned — it is SUPERSEDED by the first-ready
+    selection rule plus this one, which make the situation it corrected unreachable.
+  - **Blast radius.** Board-neutral: all 8 graded Full-Burst counts hold and ZERO damage totals
+    drift, because no graded comp ever stalls a chain. The change is visible only where one does —
+    the `maxwell-ordinary-mechanic`/`ada` fixture's second chain now dies at 33.9s (10s after its
+    stage-2 cast) instead of 25.9s, and chains whose Burst III comes off cooldown inside the window
+    now COMPLETE instead of dying.
+  - **Eight spec assertions across six units had to be repaired**, all for the same reason: they
+    discriminated a trigger by COUNTING (casts vs Full Bursts, or total firings) and the rotation
+    change made the two counts coincide. Each is now keyed to the anchor FRAMES or to a containment
+    property instead — strictly stronger, and immune to the next rotation change. `emma`,
+    `helm-aquamarine`, `mary`, `nihilister`, `sakura-suzuhara` (×2), `gain-pierce-rounds`. The
+    lesson generalises: **a count is a lossy proxy for an anchor; discriminate on frames.**
+  - **Evidence tier.** Owner ruling on game behaviour ⇒ ANSWERED, so `/scientific-method` does not
+    apply (CLAUDE.md: known answer ⇒ encode + `/code-review`). Pinned by
+    `scripts/tests/engine/chain-timeout.test.ts`, verified RED under `CHAIN_TIMEOUT=120`.
+
+- **(2026-08-13) `velvet` has TWO mutually exclusive modes, and she is built to play as the
   OFF-B2 — her burst weapon is a 60-round/sec machine gun.**
   - **The rulings (owner, 2026-08-13).** Velvet "functions differently depending on which B2 uses
     their burst, and she is intended primarily to be the OFF B2". When she does NOT cast, the first

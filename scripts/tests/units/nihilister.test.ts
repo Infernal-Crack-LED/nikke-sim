@@ -339,10 +339,15 @@ describe('nihilister — kit spec', () => {
         .map((s) => s.frame)
         .sort((a, b) => a - b);
       const gaps = shotFrames.slice(1).map((f, i) => (f - shotFrames[i]) / FPS);
+      // Her longest lull is 3.87s here. It was >4s until the 10s chain timeout landed (2026-08-13)
+      // shifted the rotation and shortened her worst firing gap — so the historical `durationSec: 4`
+      // stand-in would now happen to COVER every lull in this fixture, and the round-vs-seconds
+      // distinction survives only against a stand-in shorter than the real lull. Asserted against
+      // the measured lull rather than the retired constant, so the guard keeps meaning what it says.
       expect(
         Math.max(...gaps),
         'fixture no longer holds a lull long enough to discriminate rounds from seconds'
-      ).toBeGreaterThan(4);
+      ).toBeGreaterThan(3.5);
 
       // A static always-on flag is the upper bound on any windowed form. Under a round budget the
       // shipped model MEETS it exactly while she fires: no lull can cost her a tagged round.

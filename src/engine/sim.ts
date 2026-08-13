@@ -1561,17 +1561,20 @@ export function runSim(
   let lastStage3Caster = -1;
   let chainBlockedUntil = 0; // post-full-burst chain-open block (opt-in floor arm only — see below)
   const POST_FB_CHAIN_DELAY_FRAMES = ENV.POSTFB ? Number(ENV.POSTFB) : 150; // opt-in A/B arm ONLY (ROTMODEL=floor). OVERTURNED as a game mechanic 2026-08-04 (owner): there is no post-FB chain-open lock — the old "measured 3s (FB-end→B1)" was natural refill-from-zero (~3-4s for a good team), and the bar-anatomy reads that motivated it were video-relative: the recording starts during the pre-fight intro, before the 3:00 clock (so its "first FB at 14.1s" is NOT 14.1s of fight time). Kept behind ROTMODEL=floor for A/B.
-  let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
-  // Reserve/grace window: how long a filled chain WAITS at stage 2/3 for a stage-filler to come
-  // off cooldown. This is the auto's inter-activation grace (owner 2026-07-21: auto casts B1→~1s→
-  // B2→~1s→B3), NOT the Full-Burst state duration — it was mistakenly set to burst_duration=1000
-  // (=10s), which let a B3 up to 10s out of cooldown get reserved as the leftmost window-maker and
-  // wait for it, over-allocating the leftmost of two alternating B3s (sakura-bloom-in-summer 6/4 vs
-  // the footage's 5/5). 120f (2s) = the real ~1s grace padded for the sim's 0.5s STAGE_CAST_GAP
-  // (which reaches B3 ~0.5s early); calibrated across all 12 graded FB comps (all pass; PH's
-  // separate over-by-1 untouched). 90f overshoots (PH 13→11); raising STAGE_CAST_GAP to 1s to allow
-  // 90f craters measured cadence — the 0.5s gap is pinned. DECISIONS 2026-07-21. STAGE_WINDOW=600 reverts.
-  const STAGE_WINDOW_FRAMES = ENV.STAGE_WINDOW ? Number(ENV.STAGE_WINDOW) : 120;
+  // CHAIN TIMEOUT — how long a chain that has opened but cannot finish survives before it collapses
+  // and the gauge must refill from zero. Owner-ruled 10s (2026-08-13). The gauge stays LOCKED
+  // (`stage !== 0`) for the whole time a chain hangs, so this governs what a failed chain costs the
+  // team in generation.
+  //
+  // It used to be `STAGE_WINDOW_FRAMES` = 120f, a value that belonged to a DIFFERENT question — the
+  // auto's filler-wait horizon, calibrated 2026-07-21 — which expiry silently inherited. So a
+  // stalled chain died at 2s instead of 10s and the bar began refilling 8s early. Splitting the two
+  // is what surfaced that the horizon itself is unreachable under the ready-now cast rule; see
+  // `windowFits` below for why it was deleted rather than kept beside this.
+  let stageExpireFrame = Infinity; // chain-collapse deadline (stage 1 never expires)
+  const CHAIN_TIMEOUT_FRAMES = ENV.CHAIN_TIMEOUT
+    ? Number(ENV.CHAIN_TIMEOUT)
+    : 600;
   let fbEndFrame = -1;
   // PREFB (default off): when the B3 cast should defer the FB start by FB_PRE_DELAY_FRAMES, the
   // fbEndFrame set + fullBurstEnter + stored-hit release are scheduled here and fired that many
@@ -3496,10 +3499,23 @@ export function runSim(
       // bench B3s cast where real fights never pick them — first-ready does NOT do that (a bench
       // B3 that never becomes earliest-ready-and-in-window never casts).
       const inWindow = stage >= 2 && stageExpireFrame !== Infinity;
+      // A unit fills a live chain the moment it is OFF COOLDOWN — owner ruling 2026-08-13. A Burst
+      // III that comes off cooldown 5s into a 10s chain gets pressed; there is no separate horizon
+      // past which a ready unit is refused.
+      //
+      // ⚠ THE RESERVE HORIZON WAS DELETED HERE, and it is worth knowing why before reintroducing
+      // one. It answered "is this unit worth WAITING for?" — DECISIONS 2026-07-21 calibrated it to
+      // 120f because a 600f horizon let a far-out Burst III be reserved as the window-maker and
+      // waited for, double-casting the leftmost of two alternating 40s B3s
+      // (sakura-bloom-in-summer 6/4 vs the footage's 5/5). Under this rule that question can no
+      // longer arise: a not-ready unit never casts (the cast below requires burstCdFrames === 0),
+      // so admitting or refusing it as a candidate has NO observable consequence. Verified by
+      // deleting the clause outright — every graded FB count, every damage total and every probe
+      // comp's rotation were byte-identical at horizons of 1f, 120f and 600f, on both the default
+      // first-ready path and the legacy B3_LEFTMOST one. Keeping a calibrated-looking constant that
+      // cannot move anything is worse than removing it: it invites re-tuning that does nothing.
       const windowFits = (u: UnitState) =>
-        fillsStage(u) &&
-        gatePasses(u) &&
-        frame + u.burstCdFrames < stageExpireFrame;
+        fillsStage(u) && gatePasses(u) && u.burstCdFrames === 0;
       const next = inWindow
         ? ENV.B3_LEFTMOST
           ? units.find(windowFits)
@@ -3649,7 +3665,7 @@ export function runSim(
           } else {
             stage = (stage + 1) as 1 | 2 | 3;
             stageGapFrames = chainGap;
-            stageExpireFrame = frame + STAGE_WINDOW_FRAMES;
+            stageExpireFrame = frame + CHAIN_TIMEOUT_FRAMES;
             // this cast is what ADVANCED the chain, so it is also the entry to the next stage —
             // one chainGap (30f) ahead of the unit that will cast there
             fireStageEnter(stage, frame);
