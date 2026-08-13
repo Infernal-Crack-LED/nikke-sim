@@ -11,7 +11,7 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 207 | 45.0% |
+| Defensive / HP / shield / aggro | 207 | 44.9% |
 | Missing engine primitive / trigger | 93 | 20.2% |
 | Other / see caveats | 92 | 20.0% |
 | Out-of-domain / parser unsupported | 30 | 6.5% |
@@ -19,8 +19,8 @@
 | Partless boss | 10 | 2.2% |
 | Self-status / stack gate | 8 | 1.7% |
 | RNG / probabilistic | 6 | 1.3% |
-| Measurement-gated / unverified cadence | 3 | 0.7% |
-| **Total** | **460** | 100.0% |
+| Measurement-gated / unverified cadence | 4 | 0.9% |
+| **Total** | **461** | 100.0% |
 
 ## Entries by reason
 
@@ -1276,7 +1276,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 **Milk: Blooming Bunny** (milk-blooming-bunny)
 
 - **skill2:** ■ Activates only when in Embarrassment status. Affects self.
-  - *Why:* Modes added: 'auto (no Embarrassment)' [default — user validation runs are full-auto] keeps only S2's burst DoT + burst buffs; 'manual (Embarrassment cycle)' preserves the previous permanent-cycle model
+  - *Why:* The state procs only when a Full Charge is HELD an extra 0.5s (Prydwen) — a manual action the auto-play the sim models never performs — and the held-charge cycle is not faithfully representable here, so the second 'manual (Embarrassment cycle)' mode that approximated it was REMOVED rather than shipped as a selectable model nothing had validated
 - **skill2:** Pierce Damage ▲ 64.7% continuously.
   - *Why:* See unit note / caveats
 - **burst:** Gains Immunity to Embarrassment for 10 sec.
@@ -1750,7 +1750,7 @@ Deals 50.33% of final ATK as additional damage.
 - **burst:** Wilted Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 64.46% for 5 sec.
   - *Why:* burst: Spread Roots is MODELED (2026-08-10, faithfulness pass): burstSkillAoeDamagePct 435.6 to all allies for 5s on her burstCast — the kit gates it on 'enemy count aside from Nikkes is 1', which is ALWAYS true in the solo-raid sim, so no gate is encoded. Read only by burst-slot hits tagged burstDesc:'allEnemies'. SCOPE IS LITERAL-ONLY (owner ruling 2026-08-10): the kit amplifies 'skills with "Affects all enemies"', so a damage block qualifies only when its own clause contains that exact string — a paraphrase of the same meaning ('random enemies', 'enemies within attack range', a 10-target cap) does NOT. The qualifying carriers today are isabel, liberalio, mica, noir, phantom, privaty (the AR/Water Treasure base), quency-escape-queen, scarlet and soda-twinkling-bunny; the census that decides it is `npx tsx scripts/census-burst-amp-scope.ts`, pinned by scripts/tests/census-burst-amp-scope.test.ts. As a B2 her cast precedes the chain's B3 by under a second, so the window covers the nuke. The Wilted Roots branch (enemy count ≥2) is unreachable at scope and stays unmodeled verbatim. ⚑ additive Damage-Up placement per the '○○ Damage ▲' family rule (SSOT damage-formula §2); a popup read of an amped all-enemies nuke pins it.
 
-### Measurement-gated / unverified cadence (3)
+### Measurement-gated / unverified cadence (4)
 
 **Ade: Agent Bunny** (ade-agent-bunny)
 
@@ -1760,10 +1760,15 @@ Deals 50.33% of final ATK as additional damage.
 **Laplace (Treasure)** (laplace)
 
 - **skill2:** Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage.
-  - *Why:* skill2: the 132.45% full-charge additional hit is shotFired + swapGate:'unswapped' — it fires on base full-charge pulls only, NOT the swap beam (gauntlet 2026-07-26 S7 ruling: the burst labels beam damage 'Normal Damage', and both blind derivations read exclusion; the prior every-shot reading was a circular cite of the kit-silent chargeTimeSec ⚑). Confirm with a focus video: 132.45%-class popups should appear outside the 10s swap window and stop inside it
+  - *Why:* skill2: the 132.45% full-charge additional hit is shotFired + swapGate:'unswapped' — it fires on base full-charge pulls only, NOT the swap beam (gauntlet 2026-07-26 S7 ruling: the burst labels beam damage 'Normal Damage', and both blind derivations read exclusion; the prior every-shot reading was a circular cite of the kit-silent chargeTimeSec ⚑). OWNER-CONFIRMED 2026-08-12: the 132.45% additional hit fires on her BASE full-charge shots only, not on the swap beam. The gauntlet ruling stands and needs no footage
 
 **Little Mermaid** (little-mermaid)
 
 - **skill2:** Explosive Bubble: Damage Taken ▲ 5.05% continuously. Stuns for 3 sec. Removes Bubble.
   - *Why:* Explosive Bubble (skill 2) is not modeled: the override carries a single permanent Damage Taken ▲ 5.05% (Bubble). If Bubble re-applies after the explosion and Explosive Bubble's debuff persists, the boss would carry BOTH stacks (10.1%) in steady state — unverified, needs an in-game debuff-icon / popup-delta measurement before any change. ⚑ MEASUREMENT-GATED (kit-status F1; independently re-derived by the blind cross-family reviewer, gauntlet 2026-07-26 — the kit-literal reading is a one-time RELOCATION: 'Removes Bubble' + the same 5.05% re-applied, so boss DT stays 5.05% and the 50-hit gate closes forever; the 3s stun is inert, no boss-action model). Estimate: 5.05% (shipped, kit-literal) vs 10.1% (coexistence). Recipe: read the boss debuff icons / popup delta ~5s into a fight (she lands the 50 normals in ~2s at 1440 rpm); if coexistence holds, add a second passive damageTakenPct 5.05 block. Tier: MEASUREMENT-GATED.
+
+**Milk: Blooming Bunny** (milk-blooming-bunny)
+
+- **skill1:** Embarrassment ("Activates when not in the Embarrassment state and when Full Charge lasts for 0.5 sec or more. Affects self.") and all five of its effects — Eff1 all enemies 290% of final ATK as Distributed Damage, Eff2 removes 100% of ammo, Eff3 reload speed fixed at a 50% reduction for 1 reload(s), Eff4 Forced Reload, Eff5 ATK 118.7%. UNMODELED BY OWNER RULING (2026-08-12): the state procs only when a Full Charge is HELD an extra 0.5s, which is a MANUAL action the auto-play the sim models never performs — and the sim cannot represent the held-charge cycle faithfully, so the mode that approximated it was removed rather than shipped as a second, unvalidated model. Her S2 "in Embarrassment state -> Pierce Damage 64.7%" is unmodeled for the same reason (filed separately). ESTIMATE: manual play adds a per-shot 290% distributed proc plus a permanent ATK 118.7% against a collapsed 1-shot-per-reload cadence — a different unit, not a haircut on this one. RECIPE: a manual-play recording measuring the real Embarrassment duration, cycle spacing, and whether the -50% scopes to exactly one reload.
+  - *Why:* skill1: 'Gain Pierce for 6 sec' (full-charge trigger) is now MODELED (gainPierce durationSec 6 on shotFired — SR auto-full-charges every shot, so the 6s window refreshes continuously → she stays Pierce-tagged). Enacted 2026-07-20 (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED). This lights her previously-DEAD Pierce package: her burst pierceDamagePct +117.64% (10s) now applies to her burst-window damage (and she becomes an SR recipient of d-killer-wife's +13.55% in PG). DELIBERATE overshoot per faithful>fit (grave-pierce precedent DECISIONS 2026-07-17): PG 0.653 COLD → 1.301 HOT (total ~254M→506M, ~×2 — her burst window carries huge atkPct-220 + FB normals, and pierce ~doubles it). The residual HOT is now cleanly isolated to milk-blooming-bunny's SEPARATE over-models, NOT the pierce: (1) the faithfulness of her burst atkPct 220 / S2 DoT 447.7 magnitudes on the auto basis (MEASUREMENT-gated), and (2) needs a milk-blooming-bunny-FOCUS pierce-window measurement (pierce-window DPS share). Do NOT re-fudge the pierce value (117.64 is datamined); fix the residual with a measurement. ⇒ open-questions U23.
 

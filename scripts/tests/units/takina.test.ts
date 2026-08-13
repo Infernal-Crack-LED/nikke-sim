@@ -483,6 +483,52 @@ describe('takina — kit spec', () => {
       expect(swapShots(base.events).length).toBeGreaterThan(0);
       expect(swapShots(noSwap.events).length).toBe(0);
     });
+    // OWNER RULING 2026-08-12, replacing the kit-silent estimate this unit shipped on: the swap
+    // weapon does NOT charge, fires 12 shots in the 10s window, and does NOT reload. The estimate
+    // it replaces was the largest unmeasured lever behind her 0.78 COLD reading — it fired 7 shots
+    // per window (3, a ~3.5s reload, then 4), because the swap inherited her SR magazine.
+    // SKIPPED, NOT WRONG — the ruling is settled; the ENGINE cannot express it yet, and the fix
+    // is cross-cutting so it is proposed rather than slipped into a per-unit batch (QUEUE).
+    // Two blockers, both verified against the tree:
+    //   1. "the swap does not charge" is INEXPRESSIBLE. A swap with no `chargeTimeSec` inherits
+    //      the BASE unit's chargeFrames (`u.swap?.chargeFrames ?? u.char.chargeFrames`), so her
+    //      SR charge governs and the swap's `pullsPerSec` is never consulted — the charge branch
+    //      wins whenever chargeFrames > 0. Authoring `chargeTimeSec: 0` does not help either: it
+    //      is read with a FALSY check, so 0 becomes `undefined`. (No override sets 0 today, so
+    //      relaxing that to a null check is byte-neutral roster-wide — the cheap half.)
+    //   2. "no reload" is blocked by a shared rule: a `trueNormals` swap deliberately skips the
+    //      magazine refill (chisato kit-audit #2 — a same-weapon FLAVOR swap picks up no fresh
+    //      mag), and the engine uses `trueNormals` as the proxy for "flavor-only". Hers is not
+    //      flavor-only (damagePct 200.64 vs her base), so she keeps her small SR mag and reloads
+    //      mid-window. Fixing the proxy moves the other two swaps that declare BOTH trueNormals
+    //      and their own magazine — `laplace` (RL/Iron, not `laplace-ultimate-hero`; maxAmmo 999)
+    //      and `eunhwa-tactical-upgrade` (SR/Fire variant, not base `eunhwa`; maxAmmo 1) — hence
+    //      the proposal.
+    // ⚑ COVERAGE GAP, deliberate: this pins two of the ruling's THREE clauses — the 12-shot count
+    // and the absence of a mid-window reload. It does NOT assert the third, that her SNIPER comes
+    // back with a FULL magazine when the swap ends (blocked by the same `wasFlavorSwap` gate on the
+    // swap-EXIT refill). An implementation that fixes charge + ammo but forgets the exit refill
+    // would pass this test, so add a post-window magazine assertion when un-parking it.
+    it.skip('fires 12 swap shots per window with NO reload gap (owner ruling)', () => {
+      const casts = takinaBursts(base.events).map((c) => c.frame);
+      expect(casts.length).toBeGreaterThan(0);
+      for (const cast of casts) {
+        const frames = swapShots(base.events)
+          .map((d) => d.frame)
+          .filter((f) => f > cast && f <= cast + 10 * FPS);
+        expect(
+          frames.length,
+          `cast at ${(cast / FPS).toFixed(1)}s fired ${frames.length} swap shots, ruling says 12`
+        ).toBe(12);
+        // No reload: consecutive shots stay on cadence. A magazine break shows up as a gap of
+        // several seconds (her SR reload is ~3.5s), so any gap far above the shot interval fails.
+        const gaps = frames.slice(1).map((f, i) => f - frames[i]);
+        expect(
+          Math.max(...gaps) / FPS,
+          'a multi-second gap means the swap weapon reloaded mid-window'
+        ).toBeLessThan(1.5);
+      }
+    });
     it('the swap shots are TRUE-flavored: trueDamagePct (flavor-gated) rides their Damage-Up bucket', () => {
       // faithful swap shots carry the trueDamagePct buffs (T3 35.05 + T5 93.66) in dmgUp
       expect(Math.min(...swapDmgUp(base.events))).toBeGreaterThan(1.9); // ≥ +93.66% trueDamagePct alone

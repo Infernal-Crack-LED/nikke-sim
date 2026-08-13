@@ -8,13 +8,13 @@
 // must discriminate against) — never the encoding under test.
 //
 // THE TIER-2 MECHANIC: Embarrassment is a MANUAL action — it procs only when a Full Charge is HELD
-// an extra 0.5s (Prydwen), which the auto-play AI never does. The override is therefore MODE-SPLIT:
-//   modes[0] = "auto (no Embarrassment)"  [DEFAULT] — a plain SR + her burst buffs + S2 burst DoT
-//   modes[1] = "manual (Embarrassment cycle)"       — the held-charge cycle (1 shot/reload, 290%
-//                                                     distributed proc, ATK 118.7%, -50% reload)
-// The engine gates each block by `mode` (sim.ts:663 — active iff `!b.mode || b.mode === selected`),
-// so the Embarrassment blocks (mode: manual) are FILTERED OUT in the default auto mode. MBB5 pins
-// that gate behaviourally.
+// an extra 0.5s (Prydwen), which the auto-play the sim models never does. OWNER RULING 2026-08-12:
+// it is UNMODELED, and the second "manual (Embarrassment cycle)" mode that approximated it was
+// REMOVED — the sim cannot represent the held-charge cycle faithfully, so shipping it as a
+// selectable second model offered a number nothing had validated. She is now one model: a plain SR
+// with her burst buffs and the S2 burst DoT. The Embarrassment package (all five effects) and the
+// S2 Pierce-Damage line it gates are filed verbatim under `unmodeled`. MBB5 pins what that leaves
+// OBSERVABLE — the proc and its buffs are absent, and her cadence is a full magazine.
 //
 // Kit (blablalink prose, data/characters.json → characters['milk-blooming-bunny'].skills; L10 vals):
 //   S1 ■ Full Charge attack → self: Gain Pierce for 6 sec.                                   [MBB1] (both modes)
@@ -70,10 +70,11 @@
 //         (1s interval). Distributed flavor is NOT assertable: dot/damage events carry no flavor
 //         field (override note flags this); vs a single partless boss distributed deals full value
 //         and she has no distributedDamagePct, so no boost is lost.
-//   MBB5  the mode gate itself: in AUTO the manual blocks are inert (stripping them is byte-identical
-//         to shipped) and her cadence is a full 6-round magazine (no 290% proc, no ATK 118.7); in
-//         MANUAL the cycle activates (proc-per-shot, collapsed cadence, ATK 118.7 present). A
-//         permanent-cycle model (the pre-mode-split encoding) would over-count auto damage.
+//   MBB5  the Embarrassment package is ABSENT and stays absent: no 290% skill1 proc, no ATK 118.7%,
+//         no maxAmmoPct dump, and a full 6-round magazine cadence. The counterfactual is the
+//         permanent-cycle encoding this unit shipped before the (now-removed) mode split — it
+//         fires the proc every shot and collapses the magazine, so it OVER-counts her damage.
+//         Discriminating because that is the exact wrong model the removal must not regress into.
 //
 // Fixture: the 720-kit-audit control comp (liter B1 / crown B2 / mbb B3 / helm B3, boss Fire,
 // focus mbb — slot index 2). mbb needs a real B1→B2→B3 rotation to cast her burst at all.
@@ -86,13 +87,13 @@ import {
   totals,
   withPatchedOverride,
 } from '../lib/harness.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
 
 const FPS = 60;
 const SLUG = 'milk-blooming-bunny';
 /** controlComp slot order: liter 0 / crown 1 / mbb 2 / helm 3. */
 const MBB = 2;
 const FIGHT_FRAMES = 180 * FPS;
-const MANUAL = 'manual (Embarrassment cycle)';
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
@@ -142,19 +143,37 @@ const noDot = withPatchedOverride(SLUG, (ov) => {
     throw new Error('mbb S2 dot block missing — fixture is stale');
   }
 });
-/** MBB5 isolation: the manual-gated Embarrassment blocks stripped. In the DEFAULT auto mode the
- *  engine's mode gate already filters these out, so this must be byte-identical to shipped. */
-const stripManual = withPatchedOverride(SLUG, (ov) => {
-  ov.skill1 = ov.skill1.filter((b: any) => b.mode !== MANUAL);
+/** MBB5 counterfactual: the pre-2026-08-12 permanent-cycle encoding — the Embarrassment package
+ *  re-added with NO mode gate, so it runs all fight. This is the wrong model the owner ruling
+ *  removed (it credits a manual-only cycle to auto play), and it must beat nothing. */
+const permanentCycle = withPatchedOverride(SLUG, (ov) => {
+  ov.skill1.push(
+    {
+      slot: 'skill1',
+      trigger: { kind: 'passive' },
+      target: { kind: 'self' },
+      effects: [
+        { kind: 'buff', stat: 'maxAmmoPct', value: -100 },
+        { kind: 'buff', stat: 'reloadSpeedClamp', value: -50 },
+        { kind: 'buff', stat: 'atkPct', value: 118.7 },
+      ],
+    },
+    {
+      slot: 'skill1',
+      trigger: { kind: 'shotFired' },
+      target: { kind: 'enemy' },
+      effects: [{ kind: 'flatDamage', atkPct: 290, flavor: 'distributed' }],
+    }
+  );
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
-const manual = run({ mode: MANUAL });
+
 const noPierce = run({ overrides: { [SLUG]: noGainPierce } });
 const no220 = run({ overrides: { [SLUG]: noAtk220 } });
 const noD = run({ overrides: { [SLUG]: noDot } });
-const stripped = run({ overrides: { [SLUG]: stripManual } });
+const cycled = run({ overrides: { [SLUG]: permanentCycle } });
 
 // ---- readers ----------------------------------------------------------------------------------
 const dmg = (evs: SimEvent[]) =>
@@ -324,12 +343,8 @@ describe('milk-blooming-bunny — kit spec', () => {
     });
   });
 
-  describe('MBB5 — Embarrassment is MANUAL-gated (the Tier-2 mode split)', () => {
-    it('AUTO (default): the manual blocks are inert — stripping them is byte-identical to shipped', () => {
-      expect(stripped.total).toBe(base.total);
-    });
-
-    it('AUTO (default): no 290% Embarrassment proc and no ATK 118.7% — she is a plain SR', () => {
+  describe('MBB5 — Embarrassment is UNMODELED (owner ruling 2026-08-12)', () => {
+    it('no 290% Embarrassment proc and no ATK 118.7% — she is a plain SR', () => {
       expect(mbbDamage(base.events, 'skill1').length).toBe(0);
       expect(
         mbbBuffs(base.events, 'atkPct').filter((b) => b.value === 118.7).length
@@ -337,32 +352,30 @@ describe('milk-blooming-bunny — kit spec', () => {
       expect(mbbBuffs(base.events, 'maxAmmoPct').length).toBe(0);
     });
 
-    it('MANUAL: the Embarrassment cycle activates (ATK 118.7, ammo dump, slow reload)', () => {
+    it('the override carries no mode split at all (one model, not a player choice)', () => {
+      const ov = loadOverride(SLUG) as any;
+      expect(ov.modes).toBeUndefined();
       expect(
-        mbbBuffs(manual.events, 'atkPct').filter((b) => b.value === 118.7)
-          .length
-      ).toBeGreaterThan(0);
-      expect([
-        ...new Set(mbbBuffs(manual.events, 'maxAmmoPct').map((b) => b.value)),
-      ]).toEqual([-100]);
-      expect([
-        ...new Set(
-          mbbBuffs(manual.events, 'reloadSpeedClamp').map((b) => b.value)
-        ),
-      ]).toEqual([-50]);
+        [...ov.skill1, ...ov.skill2, ...ov.burst].filter((b: any) => b.mode)
+      ).toEqual([]);
     });
 
-    it('MANUAL: the 290% distributed proc fires once per shot, and cadence collapses to 1 shot/cycle', () => {
-      const procs = mbbDamage(manual.events, 'skill1');
-      const shots = mbbShots(manual.events).length;
-      expect(procs.length).toBe(shots);
-      expect([...new Set(procs.map((d) => d.atkPct))]).toEqual([290]);
-      // The -100 max-ammo cap floors the magazine to 1 → far fewer shots than the auto 6-round cadence.
-      expect(shots).toBeLessThan(mbbShots(base.events).length);
+    it('the removed behaviour is RECORDED under unmodeled, not silently dropped', () => {
+      // The 2026-08-11 ruling: unmodeled behaviour is filed structurally so `unmodeled` stays a
+      // trustworthy index of what the model skips. Deleting the blocks without filing them would
+      // make her read as fully modeled.
+      const ov = loadOverride(SLUG) as any;
+      expect(
+        ov.unmodeled.skill1.some((e: string) => /Embarrassment/.test(e))
+      ).toBe(true);
     });
 
-    it('DISCRIMINATING: the two modes produce different totals (a permanent-cycle model would not)', () => {
-      expect(manual.total).not.toBe(base.total);
+    it('DISCRIMINATING: the pre-ruling permanent-cycle encoding inflates her and collapses cadence', () => {
+      expect(cycled.total).toBeGreaterThan(base.total);
+      expect(mbbDamage(cycled.events, 'skill1').length).toBeGreaterThan(0);
+      expect(mbbShots(cycled.events).length).toBeLessThan(
+        mbbShots(base.events).length
+      );
     });
   });
 });

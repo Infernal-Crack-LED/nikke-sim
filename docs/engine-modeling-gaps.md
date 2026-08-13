@@ -64,7 +64,7 @@
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 20 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 10 | clay, ether, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, … |
-| `flatDamage` | 98 | 2b, a2, anchor, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
+| `flatDamage` | 97 | 2b, a2, anchor, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
 | `gainPierce` | 15 | ade-agent-bunny, asuka, d-killer-wife, dorothy, grave, harran, makima, mari, … |
@@ -83,9 +83,9 @@
 | `lastBullet` | 19 | anchor, anis-sparkling-summer, aria, cinderella-crystal-wave, crow, dorothy, epinel, eunhwa, … |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 12 | emilia, grave, himeno, mica, n102, neon, nihilister, noir, … |
-| `maxShots` | 4 | ada, e-h, laplace-ultimate-hero, snow-white-heavy-arms |
-| `mode` | 8 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
-| `modes` | 8 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
+| `maxShots` | 5 | ada, e-h, laplace-ultimate-hero, maxwell, snow-white-heavy-arms |
+| `mode` | 7 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, mint, prika |
+| `modes` | 7 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, mint, prika |
 | `noB1` | 2 | anis-star, rapi-red-hood |
 | `noRetriggerWhileActive` | 1 | vesti-tactical-upgrade |
 | `nonBurstCasters` | 1 | crown |
@@ -167,7 +167,7 @@
 | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
 | 1. Cadence tuple (~22 units)               | **SOLVED 2026-07-25** — datamine frame data reliable; SMG frame-data confound understood |
 | 2. Defensive/heal/shield (~25 units)       | no HP pool in v1 (immortal boss) → inert by design                                       |
-| 17. User-selected modes (8 units)          | config/owner-review, not a primitive                                                     |
+| 17. User-selected modes (7 units)          | config/owner-review, not a primitive                                                     |
 | 18. Kill-gated effects (~4 units)          | inherent (immortal solo boss)                                                            |
 | 19. SG pull-vs-pellet `hitCount` 10× lever | measurement/calibration; per-unit landing CLOSED (A31/U17), open tail = U27              |
 | 12-tail. eve Mk2 crit-count proxy (U26)    | static proxy can't track external crit buffs; ungraded/no footage, not a primitive gap   |
@@ -365,25 +365,28 @@ in its single-status, same-unit, same-frame form. Everything below is what that 
   differently-named statuses held live simultaneously, gated three ways: `target-status-gate.test.ts`
   P4a/P4b/P4c.)
 
-### 1b. "is fixed at" stat LOCKS — ✅ CLAMP VOCABULARY LANDED — 8 carriers
+### 1b. "is fixed at" stat LOCKS — ✅ CLAMP VOCABULARY LANDED — 7 carriers
 
 Kit lines of the form _"X is **fixed at** V"_ CLAMP a stat (owner ruling 2026-07-22): the value is
 the locked level and it cannot be modified further — not a delta applied on top. Sign varies
-(`milk-blooming-bunny` reads _"fixed at a 50% **reduction**"_, `jill` _"a 99.96% increase"_).
+(`jill` reads _"a 99.96% **increase**"_; `milk-blooming-bunny`'s kit line is _"fixed at a 50%
+**reduction**"_, though she no longer carries a clamp — see the open remainder).
 Expressed by three StatKeys — `reloadSpeedClamp` / `reloadTimeClamp` / `chargeTimeClamp`
 (`src/skills/types.ts`; a clamp OVERRIDES the additive stat, most recent active clamp wins) plus the
 `weaponSwap.chargeTimeClamp` field for swap-scoped charge locks. Live carriers:
 
 | locked stat  | carriers                                                                                      |
 | ------------ | --------------------------------------------------------------------------------------------- |
-| reload speed | `jill`, `exia`, `asuka-wille`, `milk-blooming-bunny` (`reloadSpeedClamp`)                     |
+| reload speed | `jill`, `exia`, `asuka-wille` (`reloadSpeedClamp`)                                            |
 | charge time  | `anis-star`, `nayuta`, `snow-white-heavy-arms` (incl. the swap field), `cinderella-crystal-wave` |
 | reload time  | `cinderella-crystal-wave` (`reloadTimeClamp`, _"reload time is fixed at 3 sec"_)              |
 | pellet count | `dorothy-serendipity` — bespoke `consolidation` block, not a clamp StatKey                    |
 
-Open remainder: `milk-blooming-bunny`'s lock is **reload-count-scoped** in kit text while the shipped
-clamp rides a timed window — the count-scoped variant is the surviving gap (QUEUE 5e builds;
-deprioritized 2026-08-10, owner call). Open-questions **U31** still carries the `jill`
+Open remainder: the **reload-count-scoped** clamp variant now has ZERO carriers.
+`milk-blooming-bunny`'s kit line is the count-scoped shape, but her whole Embarrassment package —
+that clamp included — was ruled UNMODELED on 2026-08-12 and is filed under `unmodeled`, so the gap
+survives only as a primitive with no live carrier (QUEUE 5e builds; deprioritized 2026-08-10, owner
+call). Open-questions **U31** still carries the `jill`
 `reloadFrames: 0` consequence.
 
 ### 2. Defensive / heal / shield with no engine vocabulary — ~25 units
@@ -495,7 +498,7 @@ burst-window over-model, now cleanly isolated as open-questions U19. **8 units n
 `gainPierce` enactment** (kit-autonomy gauntlet passes 2026-07-20 → 2026-08-02, per the primitive census
 above): ade-agent-bunny, asuka, dorothy, grave (ENABLED; residual = burst-window over-model, U19), mari,
 milk-blooming-bunny (ENACTED 2026-07-20, 0.653 COLD→1.301 HOT — the residual HOT is now isolated to her
-SEPARATE Embarrassment mode-split, not the pierce; U23), naga, neve. Units: alice, d-killer-wife,
+SEPARATE auto-basis over-model — the burst atkPct 220 / S2 DoT magnitudes — not the pierce; U23), naga, neve. Units: alice, d-killer-wife,
 prika (held — owner popup measurement pending, probe-runs 2026-07-14 inconclusive), red-hood, snow-white,
 snow-white-heavy-arms, zwei, laplace, maxwell, mana.
 
@@ -665,12 +668,16 @@ documented comp-COLD cause — remains unauthored, tracked as open-questions U19
 Sync carried no favorite-item prose → materialize froze untreasured base kit. helm anchor
 0.591→1.014. Units: helm, laplace, moran, miranda, drake. Watch on any newly-synced treasure unit.
 
-### 17. User-selected modes vs auto-detection — 8 units (config-driven board misreads)
+### 17. User-selected modes vs auto-detection — 7 units (config-driven board misreads)
 
 Team-comp branches via a manual `modes` field (first entry = default) → board misreads that look like
-model bugs but are config bugs (mint 0.768 was a config default, not a model error). The 8 `modes`
-overrides: bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, milk-blooming-bunny,
-mint, naga, prika. **Triage note: check the selected mode against the recorded comp before counting one
+model bugs but are config bugs (mint 0.768 was a config default, not a model error). The 7 `modes`
+overrides, per the generated census above: bready, cinderella-crystal-wave, crust, delta-ninja-thief,
+emma-tactical-upgrade, mint, prika. (`milk-blooming-bunny` was an eighth until 2026-08-12, when the
+owner ruled her manual Embarrassment branch out of the model entirely — she now has no `modes` at all
+and her Embarrassment lines are filed under `unmodeled`. The `elegg-boom-and-shock` and `naga`
+anecdotes below are DATED history: neither carries `modes` today — naga's toggle was replaced by real
+shield machinery on 2026-07-20.) **Triage note: check the selected mode against the recorded comp before counting one
 of these as a modeling defect.**
 
 **2026-07-17 — `auto` no-op default added to 4 units** (bready, delta-ninja-thief, elegg-boom-and-shock,
@@ -679,9 +686,8 @@ naga): a new first-entry `auto` mode that no block is tagged to, so it applies N
 unverified branch — e.g. naga's default was `with shielder` (fires `coreDamagePct 85.17` + burst
 `casterAtkPct`); `auto` drops both (72.1M → 63.3M unpinned, neutralizing the 1.175 HOT over-credit).
 verify.sh stayed green (board/regression comps pin their mode explicitly). Still branch-default (owner
-review pending): cinderella-crystal-wave (`MG`_/`Snipe`, pierce only in Snipe), the mint↔prika duet pair
-(`solo`_/`duet` — mutually referencing, flip both together), milk-blooming-bunny (`auto (no Embarrassment)`\*
-already a no-op-style default). Full action item + per-unit mode inventory: `docs/handoffs/QUEUE.md`
+review pending): cinderella-crystal-wave (`MG`_/`Snipe`, pierce only in Snipe) and the mint↔prika duet
+pair (`solo`_/`duet` — mutually referencing, flip both together). Full action item + per-unit mode inventory: `docs/handoffs/QUEUE.md`
 backlog (new item 6).
 
 ### 18. Kill-gated / revive / boss-death effects that never fire — ~4 units

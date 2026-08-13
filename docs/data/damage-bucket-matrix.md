@@ -95,8 +95,8 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `maxHpPct` | Max HP | converted at build time to a `maxHpFlat` SELF-grant (Vigor cube path); no kit carrier | feeds the holder’s own ATK conversion | 0 | _none_ |
 | `targetMaxHpPct` | Max HP | flat Max HP grant of the TARGET's own `maxHp × %`, stored as `maxHpFlat` | feeds an ATK conversion only when self-granted (e3 rule) | 17 | 2b, blanc, delta, diesel, folkwang, label, laplace-ultimate-hero, maiden-ice-rose, … |
 | `maxAmmoFlat` | Ammo | flat rounds added on top of the percentage scaling | always | 12 | emilia, grave, himeno, mica, n102, neon, nihilister, noir, … |
-| `maxAmmoPct` | Ammo | additive pp with the doll ammo line in `maxAmmo()` | always | 17 | alice-wonderland-bunny, anis-sparkling-summer, chime, diesel, drake, eve, k, liter, … |
-| `reloadSpeedClamp` | Reload | OVERRIDES additive `reloadSpeedPct`; most recent active clamp wins | when a clamp buff is active | 4 | asuka-wille, exia, jill, milk-blooming-bunny |
+| `maxAmmoPct` | Ammo | additive pp with the doll ammo line in `maxAmmo()` | always | 16 | alice-wonderland-bunny, anis-sparkling-summer, chime, diesel, drake, eve, k, liter, … |
+| `reloadSpeedClamp` | Reload | OVERRIDES additive `reloadSpeedPct`; most recent active clamp wins | when a clamp buff is active | 3 | asuka-wille, exia, jill |
 | `reloadSpeedPct` | Reload | SUBTRACTIVE on reload frames (`× (1 − Σ/100)`, +13-frame tail) | always | 12 | admi, anchor-innocent-maid, anis-sparkling-summer, crown, ludmilla-winter-owner, makima, mast-romantic-maid, privaty, … |
 | `reloadTimeClamp` | Reload | OVERRIDES both base reload frames and `reloadSpeedPct`; fixed seconds | when a clamp buff is active | 1 | cinderella-crystal-wave |
 | `attackSpeedPct` | Fire cadence | ADDS with `fireRatePct` into one `speedMult` (MG ladder + ordinary cadence) | always | 4 | dorothy-serendipity, soline, sugar, tove |
