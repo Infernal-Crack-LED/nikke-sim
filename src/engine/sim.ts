@@ -458,7 +458,9 @@ interface Dot {
   trueFlavor?: boolean;
   noRange?: boolean;
   noFb?: boolean;
-  crit?: boolean; // per-DoT crit opt-in (isabel measured); overrides the global DOT_CRIT gate when set
+  crit?: boolean; // per-DoT crit, set EXPLICITLY in either direction — it overrides the global
+  // DOT_CRIT gate, which has defaulted ON since 2026-07-21, so `false` is the opt-OUT for a DoT
+  // measured non-crit and `true` an explicit pin (isabel measured). See types.ts for the anchors.
   projFlavor?: 'attachment' | 'explosion';
   // live resource-scaled DoT: each tick recomputes atkPct = owner.resources[name] × mult
   perResource?: { name: string; mult: number };
