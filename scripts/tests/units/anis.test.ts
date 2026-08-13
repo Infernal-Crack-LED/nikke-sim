@@ -37,12 +37,16 @@
 //       FB-exempt, verified fact 2026-07-13), so the 156.73% nuke must never take the +50%
 //       major; removal empties her burst bucket (she has no other burst line). The SL1 datamine
 //       magnitude 68.57 is the wrong-skill-level nearest-wrong.
-//   N3a the sim has NO incoming-damage model (immortal boss), so S1's attacked-40 trigger can
-//       never fire (the `attacked` primitive exists — makima/yulha encode theirs — but nothing
-//       feeds it at scope lock); pinned as an EMPTY skill1 + zero defPct-120 applications. The
-//       nearest-wrong model — hitCount 40 counting hits she DEALS (an RL at ~1 pull/s reaches
-//       40 around t≈50s) — provably produces defPct-120 applications, so the empty-log
-//       assertion is one that mis-modeling fails.
+//   N3a S1's attacked-40 line is ENCODED kit-verbatim on the `attacked` trigger (makima/yulha
+//       precedent; owner ruling 2026-08-13 — encode for consistency even though it is inert).
+//       It is dormant BY MECHANISM, not by fixture: the engine's only caller of recordAttack is
+//       the `manualAttacks` test hook, so no production comp can advance the counter. Pinned
+//       from BOTH sides, because presence and dormancy are separate claims and a test of only
+//       one of them would pass for the wrong reason: (a) the block ships with the kit's shape,
+//       (b) it emits zero defPct-120 applications in a normal run, and (c) feeding the hook 40
+//       attacks DOES fire it — so (b) proves nothing feeds the trigger, not that the encoding
+//       is broken. The nearest-wrong model — hitCount 40 counting hits she DEALS (an RL at
+//       ~1 pull/s reaches 40 around t≈50s) — provably produces defPct-120 applications.
 //   N3b there is no damage-redistribution primitive (no incoming damage to share; bay
 //       precedent) — pinned structurally: every shipped S2 effect is a defPct buff.
 //   N3c/N4 the burst's DEF ▼32%/5s is MODELED as a sibling burstCast → enemy defPct block on
@@ -381,16 +385,44 @@ describe('anis (base) — kit spec', () => {
   });
 
   describe('N3 — UNMODELED lines are absent, and their nearest-wrong encodings provably fail', () => {
-    it('N3a S1: the shipped override carries NO skill1 blocks (attacked-40 is untriggerable)', () => {
+    it('N3a S1: the shipped override encodes attacked-40 → self DEF ▲120%/10s kit-verbatim', () => {
       const ov = loadOverride('anis')!;
-      expect(ov.skill1).toEqual([]);
+      expect(ov.skill1).toEqual([
+        {
+          slot: 'skill1',
+          trigger: { kind: 'attacked', count: 40 },
+          target: { kind: 'self' },
+          effects: [
+            { kind: 'buff', stat: 'defPct', value: 120, durationSec: 10 },
+          ],
+        },
+      ]);
     });
 
-    it('N3a S1: no DEF-120 application ever appears in the log', () => {
+    it('N3a S1: no DEF-120 application appears in a normal run — nothing feeds the counter', () => {
       const fired = buffs(base.events).filter(
         (b) => b.casterIdx === ANIS && b.stat === 'defPct' && b.value === 120
       );
       expect(fired).toEqual([]);
+    });
+
+    it('N3a S1 DORMANT-NOT-BROKEN: feeding 40 attacks via the manualAttacks hook DOES fire it', () => {
+      const events: SimEvent[] = [];
+      const attackFrames = Array.from({ length: 40 }, (_, i) => 60 + i);
+      const manualAttacks = COMP.map((_, i) =>
+        i === ANIS ? attackFrames : []
+      );
+      runComp({
+        slugs: COMP,
+        bossElement: 'Fire',
+        focusSlug: 'anis',
+        cfg: { manualAttacks, onEvent: (e) => events.push(e) },
+      });
+      const fired = buffs(events).filter(
+        (b) => b.casterIdx === ANIS && b.stat === 'defPct' && b.value === 120
+      );
+      expect(fired.length).toBe(1);
+      expect(fired[0].targetIdx).toBe(ANIS);
     });
 
     it('N3a DISCRIMINATING: a hitCount-40 (hits DEALT) mis-model would emit DEF-120 applies', () => {

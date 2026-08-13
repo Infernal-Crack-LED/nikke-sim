@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 207 | 45.0% |
-| Missing engine primitive / trigger | 93 | 20.2% |
-| Other / see caveats | 93 | 20.2% |
-| Out-of-domain / parser unsupported | 30 | 6.5% |
+| Defensive / HP / shield / aggro | 203 | 44.5% |
+| Missing engine primitive / trigger | 93 | 20.4% |
+| Other / see caveats | 93 | 20.4% |
+| Out-of-domain / parser unsupported | 30 | 6.6% |
 | Partless boss | 10 | 2.2% |
 | Weapon-state / shot-count approximation | 9 | 2.0% |
-| Self-status / stack gate | 8 | 1.7% |
+| Self-status / stack gate | 8 | 1.8% |
 | RNG / probabilistic | 6 | 1.3% |
 | Measurement-gated / unverified cadence | 4 | 0.9% |
-| **Total** | **460** | 100.0% |
+| **Total** | **456** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (207)
+### Defensive / HP / shield / aggro (203)
 
 **A2** (a2)
 
@@ -71,13 +71,6 @@ Incoming healing ▲ 150% for 15 sec. (no healing-received channel — no HP poo
   - *Why:* burst: healing Storage (60.19% Max HP overheal buffer) is unmodeled — defensive, no engine vocabulary; deliberately not encoded as a shield event
 - **burst:** Recovers 40.18% of the skill user's Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
   - *Why:* burst: healing Storage (60.19% Max HP overheal buffer) is unmodeled — defensive, no engine vocabulary; deliberately not encoded as a shield event
-
-**Anis** (anis)
-
-- **skill1:** Activates when attacked 40 time(s). Affects self.
-  - *Why:* skill1: the entire attacked-40 cluster (self DEF ▲120%/10s) is UNMODELED — the `attacked` trigger primitive exists (types.ts; makima/yulha encode theirs) but nothing feeds it at scope lock (no incoming-damage model; the boss never acts), and the effect (defPct) is damage-inert regardless. Nearest-wrong (hitCount 40 on hits she DEALS) is pinned in the spec test and provably fails
-- **skill1:** DEF ▲ 120% for 10 sec.
-  - *Why:* See unit note / caveats
 
 **Anis: Star** (anis-star)
 
@@ -431,13 +424,6 @@ ATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destr
 
 - **skill1:** Sea Breeze: DEF ▼ 1.9% of the skill user's DEF, stacks up to 50 time(s) and lasts for 3 sec.
   - *Why:* skill1: the Sea Breeze DEF-reduction EFFECT is unmodeled — there is no dynamic enemy-DEF-reduction primitive (cfg.bossDef is a fixed per-hit subtraction; damageTakenPct is a separate bucket). At the 50-stack cap it is ~81.7 flat DEF off the 140-DEF scope-lock boss = ~0.16% team damage — a minor secondary effect, not load-bearing. The stack COUNT is captured indirectly: it sets Storm's steady-state mirror magnitude (burst) and the always-present 'Sea Breeze' status gates Storm. Recipe if a primitive lands: a stacking boss-DEF-reduction debuff (1.9% of caster DEF per stack, cap 50, 3s refresh driven by a 2-normal-crit trigger) feeding baseAtk = effectiveAtk - (bossDef - reduction).
-
-**Mica** (mica)
-
-- **skill1:** ■ Activates when attacked 20 time(s). Affects self.
-  - *Why:* skill1: the whole attacked-20x sentence (self DEF ▲39.18% / 10s) is unmodeled — the `attacked` trigger primitive exists (types.ts; makima/yulha encode theirs) but nothing feeds it at scope lock (no incoming-damage model), and the effect (defPct) would be damage-inert even if it fired. Honestly absent (⚑1), not a stale fixture — the unit test pins the zero against the hitCount:20 'attacks' misread.
-- **skill1:** DEF ▲ 39.18% for 10S.
-  - *Why:* DEF ▲ 39.18% for 10S.'): UNMODELED IN FULL (both sentences verbatim in unmodeled.skill1) — the trigger is a counter of hits RECEIVED; the `attacked` trigger primitive exists (types.ts) but the v1 sim models NO incoming ally damage and the boss never acts, so the counter never accrues and the line never fires at scope lock
 
 **Milk (Treasure)** (milk)
 
