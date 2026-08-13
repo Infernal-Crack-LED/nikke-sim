@@ -169,26 +169,29 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    change. Same class as the 2026-07-21 rotation-fix exposure: the fix is right, the unit's fit was
    standing on the bug. Re-tune her against her existing recordings; do NOT restore the old timing.
 
-6. **DONE 2026-08-13 — the option landed; 16 carriers remain UNMIGRATED, which is the open part.**
-   `countScope?: 'always' | 'gated'` on the hitCount trigger; `'gated'` accrues only while the
-   block's own gates pass (reuses `blockGatesPass`, so it honours every gate, not just `fbGate`).
-   Default `'always'` keeps the roster byte-identical — the block shape cannot distinguish the two
-   kit readings, only the WORDING can, so migration is authored per unit. **28 gated hitCount blocks
-   exist; 3 are migrated** (`velvet` ×2, `mihara-bonding-chain` ×1), leaving **25 unmigrated across
-   18 units** — 10 behind `fbGate`/`swapGate` (the likeliest candidates), the rest behind
-   `resourceGate` (10), `requiresTargetStatus` (7), `bossElementGate` (2), `requiresCore` (1).
-   **Still to triage, one kit-wording read each:** `asuka-wille`, `brid-silent-track`, `elegg`,
+6. **DONE 2026-08-13 — the option landed; 25 gated blocks across 18 units remain UNMIGRATED, which
+   is the open part.** `countScope?: 'always' | 'gated'` on the hitCount trigger; `'gated'` accrues
+   only while the block's own gates pass (reuses `blockGatesPass`, so it honours every gate, not
+   just `fbGate`). Default `'always'` keeps the roster byte-identical — the block shape cannot
+   distinguish the two kit readings, only the WORDING can, so migration is authored per unit.
+   **28 gated hitCount blocks exist; 3 are migrated** (`velvet` ×2, `mihara-bonding-chain` ×1).
+   Of the 25 unmigrated, 10 sit behind `fbGate`/`swapGate` and are the likeliest candidates.
+   **Still to triage, one kit-wording read each (18):** `asuka-wille`, `brid-silent-track`, `elegg`,
    `eve`, `guillotine`, `guillotine-winter-slayer`, `kurumi`, `laplace-ultimate-hero`,
    `ludmilla-winter-owner`, `marciana-marine-study`, `mica-snow-buddy`, `modernia`, `moran`,
    `power`, `privaty-unkind-maid`, `rei-ayanami-tentative-name`, `rem`, `rouge`.
-   ⚠ **This census was wrong TWICE, the same way both times** — each pass invented its own subset of
-   the gate set from memory and undercounted silently. Pass 1 mixed BLOCK and UNIT counts; pass 2
-   dropped `bossElementGate` and with it `brid-silent-track` and `eve`. The numbers above are
-   derived by grepping the `block.<gate>` reads out of `blockGatesPass` in `src/engine/sim.ts` and
-   censusing THAT list (bossElementGate, fbGate, ownBurstGate, requiresCore, requiresShielded,
-   requiresTargetStatus, resourceGate, swapGate, teamHas). **Re-derive the gate list from the
-   function, never from memory**, and if `blockGatesPass` gains a gate this list is stale.
-   The test to apply:
+   ⚠ **This census was wrong THREE TIMES, each time by trusting a remembered gate set over the
+   code** — pass 1 mixed BLOCK and UNIT counts; pass 2 dropped `bossElementGate` (hiding
+   `brid-silent-track` and `eve`); pass 3 fixed the body and left the stale count in this item's own
+   header. Deliberately NOT carrying a per-gate breakdown here: blocks can be double-gated (5 are —
+   `kurumi` `fbGate`+`requiresTargetStatus`, `laplace-ultimate-hero` ×4
+   `resourceGate`+`swapGate`), so per-gate counts do not sum to the block total and read as a fourth
+   error. **Regenerate rather than trust these numbers**: the gate set is whatever
+   `blockGatesPass` (`src/engine/sim.ts`) reads off `block.*` — 8 gates today (`bossElementGate`,
+   `fbGate`, `ownBurstGate`, `requiresCore`, `requiresShielded`, `requiresTargetStatus`,
+   `resourceGate`, `swapGate`). Note `teamHas` is NOT one of them: it is a static pre-filter in
+   `activeBlocks`, so a recipe that says "grep blockGatesPass" yields 8, not 9 — no hitCount block
+   carries it today either way. The test to apply:
    does the kit scope the COUNTING ("landing N normal attack(s) **during X**") or only the EFFECT
    ("every N normal attacks, [effect] during X")? Only the former takes `'gated'`.
    _Original entry, kept for the shape of the defect:_ The
