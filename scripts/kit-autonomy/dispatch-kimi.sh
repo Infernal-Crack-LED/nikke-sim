@@ -193,9 +193,20 @@ for i, c in enumerate(text[idx:], idx):
         break
 ")"
 
-# Validate: must parse as JSON.
+# Validate: must parse as JSON. On failure the reviewer's ACTUAL WORK must survive — before
+# 2026-08-13 it did not: the assistant text lived only in this shell variable, so an unparseable
+# reply (a real one: a multi-line `issue` string with raw newlines, which jq rejects) cost a full
+# 12-minute cross-family dispatch and left a 500-char preview as the only trace. Persist both the
+# raw assistant text and the brace-extracted candidate next to $OUT so the reply can be rescued
+# (scripts/extract-review-json.py) or read by hand instead of re-spent.
 if ! printf '%s' "$CLEANED" | jq empty 2>/dev/null; then
+  mkdir -p "$(dirname "$OUT")"
+  printf '%s' "$RESULT_TEXT" > "${OUT%.json}.raw.txt"
+  printf '%s' "$CLEANED" > "${OUT%.json}.cleaned.txt"
   echo "❌ model response is not valid JSON" >&2
+  echo "   raw reply saved:      ${OUT%.json}.raw.txt" >&2
+  echo "   extracted candidate:  ${OUT%.json}.cleaned.txt" >&2
+  echo "   rescue: python3 scripts/extract-review-json.py ${OUT%.json}.raw.txt $OUT" >&2
   echo "--- first 500 chars ---" >&2
   printf '%s' "$CLEANED" | head -c 500 >&2
   echo >&2
