@@ -584,7 +584,11 @@ function perUnitTableJobs(chars: CharacterRow[]): Job[] {
       const key = `table/max-ammo.${ch.slug}`;
       jobs.push({
         key,
-        render: () => renderTable(key, buildAmmoTable(ch.ammo!, ch.name)),
+        render: async () => {
+          const data = buildAmmoTable(ch.ammo!, ch.name);
+          data.portrait = (await loadPortrait(ch.slug)) ?? undefined;
+          return renderTable(key, data);
+        },
       });
     }
     const baseFrames = ch.chargeFrames ?? 0;
@@ -598,8 +602,9 @@ function perUnitTableJobs(chars: CharacterRow[]): Job[] {
             ch.name,
             chargeLatencyFrames(ch as ChargeWeaponRow)
           );
-          // The API's per-unit charge table carries the unit's portrait; the
-          // generic one and the ammo tables do not.
+          // Every PER-UNIT table carries the unit's portrait, ammo and charge
+          // alike — api.ts attaches it on `spec.unit`, without branching on
+          // which table it is. Only the generic (unit-less) charge table has none.
           data.portrait = (await loadPortrait(ch.slug)) ?? undefined;
           return renderTable(key, data);
         },

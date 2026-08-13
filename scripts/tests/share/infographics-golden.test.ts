@@ -174,20 +174,17 @@ describe('infographic golden images', () => {
 // exact card position, no title text).
 //
 // Drawing the WHOLE mark, not just its icon, is the point: the mark moved to
-// the card's top-right corner, so its wordmark is now the part nearest each
-// region, and a long footer path ('nikkesim.app/teambuilder' is the longest
-// real one) is what would close the gap first. Reconstructing it through
-// drawBrandMark — the renderer's own function, positioned off the card's own
-// *_TITLE_ICON export — means a layout change or a longer path moves the guard
-// AND this test together, instead of silently re-vacating it.
+// the card's top-right corner, so its accent wordmark — not the icon — is the
+// part nearest each region. Reconstructing it through drawBrandMark, the
+// renderer's own function, positioned off the card's own *_TITLE_ICON export,
+// means a layout change moves the guard AND this test together instead of
+// silently re-vacating it. The mark draws no caller-supplied text, because no
+// drawBrandMark takes one: it is always the bare domain (theme.ts).
 describe('assertTitleInk regions are not satisfiable by the nikkesim.app mark alone', () => {
   const SITE_ICON = new URL(
     '../../../src/infographics/assets/nikkesim-icon.png',
     import.meta.url
   );
-  // The longest descriptor any caller passes today (src/server/card-from-build.ts
-  // via the teambuilder share path); the widest wordmark the mark can draw.
-  const LONGEST_MARK = 'nikkesim.app/teambuilder';
   // [card, icon draw rect, ink region] — derived from the core card modules
   const cases: [
     string,
@@ -217,7 +214,6 @@ describe('assertTitleInk regions are not satisfiable by the nikkesim.app mark al
       drawBrandMark(ctx as unknown as Canvas2DLike, {
         right: iconRect.x + iconRect.size,
         top: iconRect.y,
-        text: LONGEST_MARK,
         icon: icon!,
       });
       expect(() => assertTitleInk(ctx, card, region)).toThrow(/ZERO/);

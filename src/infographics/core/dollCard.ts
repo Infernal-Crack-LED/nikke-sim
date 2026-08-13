@@ -18,7 +18,7 @@ import {
   TEXT_SECONDARY,
   drawBrandMark,
   drawFooterNote,
-  splitFooter,
+  footerNote,
   brandMarkIconRect,
 } from './theme.js';
 
@@ -129,10 +129,9 @@ export function drawDollCard(ctx: Canvas2DLike, data: DollCardData): void {
 
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  const { mark, note } = splitFooter(data.footer, 'nikke-sim');
+  const note = footerNote(data.footer, 'nikke-sim');
   const markLeft = drawBrandMark(ctx, {
     right: W - PAD_X,
-    text: mark,
     icon: data.icon,
   });
   const textX = PAD_X;

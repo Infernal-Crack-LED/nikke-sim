@@ -2,9 +2,9 @@
 // MANDATORY nikkesim.app mark. The mark is the architectural point of
 // the centralization (docs/handoffs/2026-07-27-infographics-centralization-plan.md
 // §2 "The advertising goal has an architectural consequence"): every card draws
-// it through drawBrandMark, so it can never be removed or replaced by a caller —
-// the per-card `footer` field only picks WHICH nikkesim.app path the mark names
-// and adds a descriptor note.
+// it through drawBrandMark, which takes no text at all, so a caller can neither
+// remove nor reword it — the per-card `footer` field contributes only a
+// descriptor NOTE beside the card's foot (footerNote below).
 import { type Canvas2DLike, drawContained } from './canvas2d.js';
 
 // Single font family for every infographic. Node hosts MUST register the Roboto
@@ -57,32 +57,26 @@ export const ACCENT = '#5b9dff';
 // The non-optional mark. Present on every rendered image, exactly once.
 export const WATERMARK = 'nikkesim.app';
 
-// A card's `footer` descriptor carries two different things, and they end up in
-// two different places: the nikkesim.app URL (which the top-right mark names)
-// and any NOTE beside it — the sim caveats a card states by default, or the
-// "simmed <date>" provenance stamp a stored-snapshot card adds
-// (src/server/card-from-build.ts). Split them so the mark stays a clean
-// wordmark and the note keeps its own small line.
+// The part of a card's `footer` descriptor that still reaches the card: the
+// NOTE — the sim caveats a card states by default, or the "simmed <date>"
+// provenance stamp a stored-snapshot card adds (src/server/card-from-build.ts).
 //
-// A descriptor segment carrying the mark ('nikkesim.app/charge') becomes the
-// wordmark as-is, so a card can advertise its own page rather than the bare
-// domain; anything else is note. 'nikke-sim' is the pre-mark spelling the
-// default descriptors still use, and reads as the mark, not as a note.
-export function splitFooter(
+// Every URL segment is DROPPED, because the mark is ALWAYS the bare domain
+// (owner, 2026-08-13): a sub-page path ('nikkesim.app/charge') is not promoted
+// into the wordmark. A path reads as instructions at a glance; the mark should
+// read as a name. 'nikke-sim' is the pre-mark spelling the default descriptors
+// still use, and is dropped the same way rather than surfacing as a note.
+//
+// So the mark takes no input at all — see drawBrandMark, which has no `text`
+// parameter. A caller cannot change what it says, only whether a note joins it.
+export function footerNote(
   descriptor: string | undefined,
   fallback: string
-): { mark: string; note: string } {
-  const segments = (descriptor ?? fallback).split(' · ');
-  const markAt = segments.findIndex(
-    (s) => s.includes(WATERMARK) || s === 'nikke-sim'
-  );
-  return {
-    mark:
-      markAt < 0 || segments[markAt] === 'nikke-sim'
-        ? WATERMARK
-        : segments[markAt],
-    note: segments.filter((_, i) => i !== markAt).join(' · '),
-  };
+): string {
+  return (descriptor ?? fallback)
+    .split(' · ')
+    .filter((s) => !s.includes(WATERMARK) && s !== 'nikke-sim')
+    .join(' · ');
 }
 
 // Mark geometry, matching the unit card's (core/unitCard.ts drawTitle, owner
@@ -104,6 +98,9 @@ const MARK_BASELINE = 24;
 // by forgetting it. `icon` is optional — a host with no icon loaded (the
 // browser preview) thins the mark to its wordmark rather than dropping it.
 //
+// There is deliberately NO text parameter: the mark always reads WATERMARK, so
+// a caller can neither remove it nor bend it into a sub-page path.
+//
 // Returns the mark's LEFT edge, so the caller can clamp a title that would
 // otherwise run under it.
 export function drawBrandMark(
@@ -111,7 +108,6 @@ export function drawBrandMark(
   o: {
     right: number; // the mark's right edge (usually W - padX)
     top?: number; // icon's y; defaults to MARK_ICON_TOP
-    text?: string; // defaults to the bare WATERMARK
     icon?: unknown;
     // Size overrides — the unit card's portrait variant draws everything ~1.6×
     // larger, where the default mark reads as an afterthought.
@@ -122,7 +118,7 @@ export function drawBrandMark(
   }
 ): number {
   const top = o.top ?? MARK_ICON_TOP;
-  const text = o.text ?? WATERMARK;
+  const text = WATERMARK;
   const iconSize = o.iconSize ?? MARK_ICON;
   let right = o.right;
   if (o.icon) {
@@ -153,7 +149,7 @@ export function brandMarkIconRect(
   return { x: W - padX - MARK_ICON, y: top, size: MARK_ICON };
 }
 
-// Draw a card's footer NOTE (see splitFooter) — the caveats/provenance line
+// Draw a card's footer NOTE (see footerNote) — the caveats/provenance line
 // that is not the mark. Drawn only when there is one: a card whose descriptor
 // is nothing but its URL gets no footer line at all.
 export function drawFooterNote(

@@ -779,10 +779,12 @@ placeholder, never throws, never reflows (all geometry is fixed).
   for rank numerals only — **bars are element-colored, the two color systems
   never touch**; `WATERMARK = 'nikkesim.app'` drawn via `drawBrandMark` in the
   card's TOP-RIGHT corner (accent wordmark + the site icon, the unit card's
-  geometry) — the mark is architectural, not a caller option. A card's `footer`
-  descriptor only picks which nikkesim.app path the wordmark names; `splitFooter`
-  peels off any non-mark remainder (sim caveats, a stored card's "simmed <date>"
-  stamp) into a small `drawFooterNote` line, drawn only when there is one.
+  geometry). The mark is architectural, not a caller option — `drawBrandMark`
+  takes **no text parameter**, so it always reads the bare domain and a caller
+  can neither remove it nor bend it into a sub-page path. A card's `footer`
+  descriptor contributes only a NOTE: `footerNote` drops every URL segment and
+  passes the remainder (sim caveats, a stored card's "simmed <date>" stamp) to a
+  small `drawFooterNote` line, drawn only when there is one.
 
 ### 9.3 Renderer inventory
 

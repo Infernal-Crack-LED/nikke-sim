@@ -127,7 +127,13 @@ describe('pre-rendered set vs the API render', () => {
       const chars = characters();
 
       // Every per-unit key the build emitted, checked against the API path.
-      // Both kinds appear: max-ammo (no portrait) and charge-speed (portrait).
+      // Both kinds appear, and BOTH carry the unit's portrait: api.ts attaches
+      // it on `spec.unit` without branching on the table kind. This test used
+      // to hand-build the API side as "max-ammo (no portrait)", which is what
+      // the pre-render did rather than what the API does — so it pinned the
+      // disagreement instead of catching it, and every /max-ammo card the bot
+      // posted (manifest-resolved) shipped portrait-less while the same card
+      // rendered on demand had one.
       const perUnit = Object.keys(manifest.images).filter((k) =>
         k.includes('.')
       );
@@ -152,9 +158,11 @@ describe('pre-rendered set vs the API render', () => {
               chargeLatencyFrames(ch as unknown as ChargeWeaponRow)
             )
           );
-          data.portrait = (await loadPortrait(slug!)) ?? undefined;
           checkedCharge++;
         }
+        // Unconditional, mirroring api.ts's `if (spec.unit)` — a per-kind
+        // branch here is what let the two paths drift apart unnoticed.
+        data.portrait = (await loadPortrait(slug!)) ?? undefined;
 
         const fromApi = sha(renderTableCardPng(data));
         const fromBuild = sha(

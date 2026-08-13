@@ -17,7 +17,7 @@ import {
   TEXT_DIM,
   drawBrandMark,
   drawFooterNote,
-  splitFooter,
+  footerNote,
   brandMarkIconRect,
 } from './theme.js';
 import {
@@ -307,10 +307,9 @@ export function drawResourcesCard(
 
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  const { mark, note } = splitFooter(data.footer, 'nikke-sim');
+  const note = footerNote(data.footer, 'nikke-sim');
   const markLeft = drawBrandMark(ctx, {
     right: W - PAD_X,
-    text: mark,
     icon: data.icon,
   });
   const textX = PAD_X;

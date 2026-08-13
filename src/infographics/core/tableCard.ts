@@ -12,7 +12,7 @@ import {
   FONT,
   drawBrandMark,
   drawFooterNote,
-  splitFooter,
+  footerNote,
   brandMarkIconRect,
 } from './theme.js';
 import { windowRows } from './window.js';
@@ -51,7 +51,7 @@ export interface TableCardData {
   // slices with the §6.6 window): a row carrying a color draws every cell in
   // it. The olsim before/after card marks changed lines with the accent.
   rowColors?: (string | null)[];
-  footer?: string; // which nikkesim.app path the mark names + any note (theme.ts)
+  footer?: string; // the descriptor note; the mark itself is fixed (theme.ts)
   icon?: unknown; // the nikkesim.app mark's icon, drawn top-right
   portrait?: unknown; // optional character portrait drawn top-right
 }
@@ -61,7 +61,7 @@ const PAD_X = 32;
 const HEAD_H = 96;
 const COL_HEADER_H = 36;
 const ROW_H = 38;
-// Bottom pad. Only the footer NOTE lands here (theme.ts splitFooter) — the
+// Bottom pad. Only the footer NOTE lands here (theme.ts footerNote) — the
 // mark itself is up in the title row — and most cards have no note at all, so
 // this is a plain margin rather than the old 40px watermark band.
 const FOOT_H = 22;
@@ -123,12 +123,11 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
   // the nikkesim.app mark (top-right), then title + subtitle
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  const { mark, note } = splitFooter(data.footer, 'nikke-sim');
+  const note = footerNote(data.footer, 'nikke-sim');
   // A per-unit table already puts the character's portrait in the corner, so
   // the mark steps left of it rather than over it.
   const markLeft = drawBrandMark(ctx, {
     right: W - padX - (data.portrait ? PORTRAIT_SIZE + PORTRAIT_GAP : 0),
-    text: mark,
     icon: data.icon,
   });
   const textX = padX;

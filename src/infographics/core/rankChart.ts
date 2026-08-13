@@ -24,7 +24,7 @@ import {
   ELEMENT_COLORS,
   drawBrandMark,
   drawFooterNote,
-  splitFooter,
+  footerNote,
   brandMarkIconRect,
 } from './theme.js';
 
@@ -58,7 +58,7 @@ export interface RankChartData {
   subtitle?: string;
   bars: RankChartBar[];
   icon?: unknown; // the nikkesim.app mark's icon, drawn top-right
-  footer?: string; // which nikkesim.app path the mark names + any note (theme.ts)
+  footer?: string; // the descriptor note; the mark itself is fixed (theme.ts)
 }
 
 export const RANK_CHART_W = 900;
@@ -107,14 +107,13 @@ export function drawRankChart(ctx: Canvas2DLike, data: RankChartData): void {
   // the nikkesim.app mark (top-right), then title + subtitle
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  const { mark, note } = splitFooter(
+  const note = footerNote(
     data.footer,
     'nikke-sim · scope-lock basis · partless boss'
   );
   const markLeft = drawBrandMark(ctx, {
     right: W - padX,
     top: MARK_TOP,
-    text: mark,
     icon: data.icon,
   });
   const textX = padX;

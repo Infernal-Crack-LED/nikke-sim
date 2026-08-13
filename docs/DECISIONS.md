@@ -5447,17 +5447,23 @@ the least legible text on the card at timeline scale.
 things at once — the nikkesim.app URL, and a NOTE beside it (the sim's standing caveats, or the
 `simmed <date>` provenance stamp `src/server/card-from-build.ts` appends so a card drawn from a
 stored snapshot says when that snapshot was produced). Moving "the footer" wholesale would have
-dropped the second. `theme.ts splitFooter` separates them: the URL segment becomes the top-right
-wordmark (so `/charge`, `/ranks`, `/resources` still deep-link rather than collapsing to the bare
-domain), and any remainder keeps a small `drawFooterNote` line, drawn ONLY when non-empty. Cards
-whose descriptor is nothing but their URL now have no footer line at all, which is why the bottom
-bands shrank (58→30, 44→24, 40→22) rather than sitting empty.
+dropped the second. `theme.ts footerNote` separates them: every URL segment is DROPPED, and the
+remainder keeps a small `drawFooterNote` line, drawn ONLY when non-empty. Cards whose descriptor is
+nothing but their URL now have no footer line at all, which is why the bottom bands shrank
+(58→30, 44→24, 40→22) rather than sitting empty.
+
+**The mark says `nikkesim.app` and nothing else** (owner, same day, after seeing the first cut). The
+first implementation promoted the URL segment into the wordmark, so cards read `nikkesim.app/charge`,
+`nikkesim.app/ranks` — the sub-page still deep-linking rather than collapsing to the bare domain.
+The owner's ruling is the bare domain everywhere: a path reads as instructions at a glance, where the
+mark should read as a name. So `drawBrandMark` now takes **no text parameter at all** — a caller can
+neither remove the mark nor reword it — and the paths are simply gone from the cards.
 
 **The architectural invariant survives the move.** The centralization plan's point (§2, "the
 advertising goal has an architectural consequence") was that no renderer can ship an unmarked image
 by forgetting the mark. `drawWatermark` was the single footer path enforcing that; `drawBrandMark`
-is now the single top-right path, and `footer` still only picks WHICH nikkesim.app path is named,
-never whether the mark appears.
+is now the single top-right path, and takes no caller input, so `footer` can no longer influence the
+mark at all — only whether a note joins it.
 
 **Two consequences worth knowing.** (1) `core/siteIcon.ts` was DELETED, not kept: its measured
 cap-height plate geometry existed solely to size an icon sitting inline with a title, and no card
@@ -5473,3 +5479,30 @@ posting cards inside embeds. An embed caps its image at the embed column's width
 rendered unreadably small — while Discord renders attachments above embeds at full message width.
 Cards now ship as plain attachments with the embed as a caption below, its mark reduced to the
 author line's ~24px icon since the card above already carries the full-size one.
+
+## Per-unit table cards: the max-ammo portrait, and a parity test that pinned its absence (2026-08-13)
+
+**Tier: OWNER-OBSERVED defect + code fix.** The owner reported "the max ammo card isn't showing the
+portrait"; the cause and the reason nothing caught it are below.
+
+**The defect.** `src/server/api.ts` attaches a unit's portrait on `spec.unit`, without branching on
+which table it is — so an ON-DEMAND max-ammo render always had one. `scripts/build-infographics.ts`
+attached it only in the charge-speed job, and its comment asserted the split was intentional ("the
+generic one and the ammo tables do not"). The bot resolves `/max-ammo` through the MANIFEST — the
+pre-rendered set — so every max-ammo card a player actually saw was the portrait-less one, while the
+same card rendered through the API had a portrait. Fixed by attaching it in the ammo job too.
+
+**Why the guard didn't fire, which is the more useful half.** `prerender-api-parity.test.ts` exists
+precisely to catch a pre-render/API disagreement, and it was passing. It builds the API-side data by
+HAND rather than calling the API's builder, and its hand-built version carried the same per-kind
+branch — `max-ammo (no portrait)` was written into the test as a comment and a code path. So the
+test reproduced the bug on both sides and compared them to each other. A parity test that
+re-implements one side is only as good as that re-implementation; the portrait attach is now
+unconditional there, mirroring `api.ts`'s `if (spec.unit)`, and the per-kind branch is gone.
+
+**Also this pass, unrelated to the defect:** the charge-speed card's subtitle dropped its trailing
+parenthetical (`shots per Full Burst (10s, +22f release)` / `(10s, autofire — no release latency)`)
+by owner ruling — the 10s window and the latency term are how the column is DERIVED, not something
+the reader acts on. `latencyFrames` still feeds the Shots/FB numbers, and two table-share assertions
+that had been reading it off the SUBTITLE now assert the arithmetic instead, which is what had to be
+right either way.

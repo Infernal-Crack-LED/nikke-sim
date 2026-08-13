@@ -46,9 +46,7 @@ import {
   TEXT_SECONDARY,
   TEXT_DIM,
   rankColor,
-  WATERMARK,
   drawBrandMark,
-  splitFooter,
 } from './theme.js';
 import type { UnitCardModel, RankTile, BarChart } from './unitCardData.js';
 
@@ -127,7 +125,7 @@ export interface UnitCardData {
   portrait?: unknown; // pre-loaded character art
   icons?: UnitCardIcons;
   siteIcon?: unknown; // nikkesim-icon.png, the second (prominent) mark
-  footer?: string; // which nikkesim.app path the mark names; can never remove it
+  footer?: string; // unused by the mark, which is always the bare domain
 }
 
 // Ink-guard geometry (see node/render.ts assertTitleInk). MUST cover text and
@@ -256,7 +254,6 @@ function drawTitle(
   const markLeft = drawBrandMark(ctx, {
     right: r.x + r.w,
     top: r.y + (big ? 4 : 2),
-    text: splitFooter(d.footer, WATERMARK).mark,
     icon: d.siteIcon,
     iconSize: big ? 60 : 40,
     fontSize: big ? 22 : 15,

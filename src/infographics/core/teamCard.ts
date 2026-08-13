@@ -22,7 +22,7 @@ import {
   ELEMENT_COLORS,
   drawBrandMark,
   drawFooterNote,
-  splitFooter,
+  footerNote,
   brandMarkIconRect,
 } from './theme.js';
 
@@ -50,7 +50,7 @@ export interface TeamCardMeta {
   level: number; // synchro
   coreLabel: string; // e.g. "100% core"
   icon?: unknown; // the nikkesim.app mark's icon, drawn top-right
-  footer?: string; // which nikkesim.app path the mark names + any note (theme.ts)
+  footer?: string; // the descriptor note; the mark itself is fixed (theme.ts)
 }
 
 // layout constants (logical px; caller scales for device pixel ratio)
@@ -59,7 +59,7 @@ const PAD_X = 40;
 const HEAD_H = 156;
 const ROW_H = 84;
 // Bottom pad. The mark moved to the title row, so all that can land here is the
-// footer NOTE (theme.ts splitFooter) — the sim caveats, or the "simmed <date>"
+// footer NOTE (theme.ts footerNote) — the sim caveats, or the "simmed <date>"
 // stamp a stored-snapshot card carries (src/server/card-from-build.ts).
 const FOOT_H = 30;
 // The mark's icon y — hung so it reads level with a 30px title on baseline 56.
@@ -90,11 +90,10 @@ function drawTeamTitle(
   // them and so have nothing to caveat.
   fallback: string
 ): string {
-  const { mark, note } = splitFooter(meta.footer, fallback);
+  const note = footerNote(meta.footer, fallback);
   const markLeft = drawBrandMark(ctx, {
     right: CARD_W - PAD_X,
     top: MARK_TOP,
-    text: mark,
     icon: meta.icon,
   });
   ctx.fillStyle = '#e7eaf0';

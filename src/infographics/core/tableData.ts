@@ -142,9 +142,13 @@ export function buildChargeTable(
   }
   return {
     title: `Charge Speed — ${label}`,
+    // No parenthetical after "shots per Full Burst" (owner, 2026-08-13): the
+    // 10s window and the release-latency term are how the column is DERIVED,
+    // not something the reader acts on, and they crowded the one line the card
+    // has for what it is. `latencyFrames` still feeds the Shots/FB numbers.
     subtitle:
       `Base ${baseFrames}f (${(baseFrames / 60).toFixed(2)}s) · T${tier} = ${perLinePct.toFixed(2)}% CS/line · ` +
-      `shots per Full Burst (10s${latencyFrames === 0 ? ', autofire — no release latency' : `, +${latencyFrames}f release`})`,
+      `shots per Full Burst`,
     columns: [
       { header: 'OL Lines' },
       { header: 'CS Needed', align: 'right' },
