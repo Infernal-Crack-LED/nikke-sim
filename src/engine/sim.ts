@@ -4279,6 +4279,29 @@ export function runSim(
       // here — but that is fine: true damage CAN crit (owner ruling 2026-07-25, in-game confirmed;
       // reverses the 2026-07-21 §2c "cannot crit" ruling), so a true-flavored rider critting at the
       // caster rate via RIDER_CRIT is CORRECT and needs no per-source flavor exemption.
+      //
+      // U28: an additional-damage impact generates the caster's flat target per-shot value, exactly as
+      // the equivalent `flatDamage` rider does (docs/data/burst-gauge.md §5). The measurement of record
+      // is maiden-ice-rose (slug maiden-ice-rose, RL/Electric — NOT the SG unit `maiden`) solo:
+      // 12.55%/pull in two sub-steps, 910 (weapon 364x2.5) + 364 (rider, flat), and her rider IS a
+      // shotFired -> flatDamage block, so the emission this adds is the one already measured on the
+      // other encoding of the same kit shape. Before this, re-encoding a rider from `extraHitDamagePct`
+      // to `flatDamage` silently changed a unit's gauge economy (U28).
+      // ONE emission per pull, not one per summed rider: `extraHitDamagePct` is a SUMMED stat dealt as
+      // a single impact, so the emission count matches the impact count. All four carriers today hold
+      // exactly one rider each (modernia, nayuta, neon-blue-ocean, neon-vision-eye), so this is exact;
+      // if a unit ever carries two, the summed pair would still emit once where two `flatDamage` riders
+      // emit twice — the residual half of U28, which needs the stat to stop being summed to fix.
+      //
+      // DBG_RIDERGAUGE=1 taps this emission site (slug / frame / whether `addGauge`'s chain+FB lock
+      // swallows it). It is what `scripts/battery/u28-gauge-ab.ts --lock-census` reads to show that
+      // every carrier's rider window sits INSIDE the lock today, i.e. why this line moves no comp.
+      if (ENV.DBG_RIDERGAUGE) {
+        console.error(
+          `[u28] ${u.char.slug} f=${frame} locked=${fbEndFrame > frame || stage !== 0}`
+        );
+      }
+      skillGauge(u, frame);
       dealDamage(u, extraPerHit * u.char.hitsPerShot, frame, {
         crit: RIDER_CRIT,
         core: false,
