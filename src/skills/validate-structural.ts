@@ -72,6 +72,7 @@ export const TRIGGERS = new Set([
   'recovery',
   'shielded',
   'stageEnter',
+  'stageCast',
   'bossElement',
   'chargeCounter',
   'interval',

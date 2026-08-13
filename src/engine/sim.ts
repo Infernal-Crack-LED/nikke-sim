@@ -3216,6 +3216,26 @@ export function runSim(
 
   const romanStage: Record<number, string> = { 1: 'I', 2: 'II', 3: 'III' };
 
+  // "Activates when entering Burst Stage N" — fired at the moment the chain REACHES stage N, i.e.
+  // when the gauge fills (N=1) or when the stage-(N-1) unit casts (N=2,3). Owner ruling 2026-08-13:
+  // "entering Burst Stage X" means "the burst gauge is full and it is now time to activate burst X",
+  // so the chain reads gauge full -> enter stage 1 -> any B1 activates -> enter stage 2 -> any B2
+  // activates -> enter stage 3 -> any B3 activates -> enter Full Burst. Entry therefore leads the
+  // stage-N CAST by the measured 30f chain gap, so a kit line keyed to it is live for that cast with
+  // room to spare. (It was ALREADY live for it: this dispatch has always preceded the caster's own
+  // burstCast blocks. The gain here is the 30f lead plus the stalled-chain entries below.)
+  // NOT the same event as `stageCast` — that one fires when a stage-N burst is USED, one step later
+  // in the chain ("when an ally uses a Burst Skill", carried by rupee-winter-shopper).
+  const fireStageEnter = (newStage: 1 | 2 | 3, atFrame: number) => {
+    units.forEach((u) =>
+      u.blocks.forEach((b, bi) => {
+        if (b.trigger.kind === 'stageEnter' && b.trigger.stage === newStage) {
+          applyBlock(u.idx, b, bi, atFrame);
+        }
+      })
+    );
+  };
+
   // FB-entry emission (fullBurstEnter triggers + stored-hit releases + log) — extracted so it can
   // fire inline at the B3 cast (default) OR be deferred by FB_PRE_DELAY_FRAMES (PREFB). fbEndFrame
   // must already be set when this runs (the log reads it).
@@ -3382,6 +3402,7 @@ export function runSim(
       stage = 1;
       stageExpireFrame = Infinity;
       stageGapFrames = PRE_B1_GAP_FRAMES; // measured 30f between gauge-full and B1 (default 0 = fire immediately)
+      fireStageEnter(1, frame); // the gauge filling IS entry to stage 1
     }
     if (
       !fbActive &&
@@ -3394,6 +3415,19 @@ export function runSim(
       );
       stage = 0;
       stageExpireFrame = Infinity;
+      // A "Full Burst Duration ▲ N sec" granted by a stage ENTRY belongs to the Full Burst that
+      // entry was leading to. If the chain dies before reaching one, there is no window to extend
+      // and the grant dies with it — otherwise the pending pool carries it onto a LATER Full Burst
+      // and stacks with that window's own grant (soda-twinkling-bunny read FB durations
+      // [15,20,20,20] instead of [15,15,15,15]: three windows absorbing two +5s grants each).
+      // Correct under BOTH readings of the stalled-entry question — an extension for a Full Burst
+      // that never happened cannot belong to a different one.
+      // ⚑ ASSUMPTION ON RECORD: this treats anything pending at expiry as belonging to the dead
+      // chain. True for every carrier today (only stage-entry grants ever sit here unconsumed; a
+      // B3's own burstCast grant resolves same-frame via the fbEndFrame > frame path). A FUTURE
+      // fullBurstExtend on a non-chain trigger (interval / hitCount) granted outside Full Burst
+      // would be silently dropped by the next expiry — revisit here if one is ever added.
+      pendingFbExtendSec = 0;
     }
     // Burst casts are BLOCKED while the boss is off-screen during a range transition
     // (user, 2026-07-13): if a transition lands mid-chain, the next cast waits out the
@@ -3542,10 +3576,12 @@ export function runSim(
             fullBursts++;
           }
         }
+        // "when an ally USES a Burst Skill" — a stage-N burst was cast by anyone. Distinct from
+        // `stageEnter`, which fires one chain step EARLIER (see fireStageEnter above).
         units.forEach((u) =>
           u.blocks.forEach((b, bi) => {
             if (
-              b.trigger.kind === 'stageEnter' &&
+              b.trigger.kind === 'stageCast' &&
               b.trigger.stage === castStage
             ) {
               applyBlock(u.idx, b, bi, frame);
@@ -3571,7 +3607,7 @@ export function runSim(
             }
           });
         }
-        // PREFB only — snapshot the Full-Burst extension AFTER this cast's stageEnter/burstCast
+        // PREFB only — snapshot the Full-Burst extension AFTER this cast's stageCast/burstCast
         // blocks have contributed (2026-07-22). A "Full Burst Duration ▲ N sec" granted by the very
         // cast that opens the window belongs to THAT window; taking the snapshot before the blocks
         // ran pushed every extension onto the NEXT full burst, so the first FB of a fight ran the
@@ -3614,6 +3650,9 @@ export function runSim(
             stage = (stage + 1) as 1 | 2 | 3;
             stageGapFrames = chainGap;
             stageExpireFrame = frame + STAGE_WINDOW_FRAMES;
+            // this cast is what ADVANCED the chain, so it is also the entry to the next stage —
+            // one chainGap (30f) ahead of the unit that will cast there
+            fireStageEnter(stage, frame);
           }
         }
       } else {

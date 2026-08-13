@@ -188,12 +188,17 @@ describe('trigger-kind matrix', () => {
     });
   });
 
-  describe('stageEnter', () => {
-    it('fires for EVERY unit when a burst of that stage is cast, on the cast frame', () => {
+  // The two are ONE CHAIN STEP APART and are easy to confuse (owner ruling 2026-08-13):
+  //   gauge full -> [enter stage 1] -> any B1 casts -> [enter stage 2] -> any B2 casts ->
+  //   [enter stage 3] -> any B3 casts -> [enter Full Burst]
+  // so `stageEnter{N}` fires on the stage-(N-1) CAST frame (or the gauge-full frame for N=1), and
+  // `stageCast{N}` fires on the stage-N cast frame — the measured 30f chain gap apart.
+  describe('stageCast', () => {
+    it('fires for EVERY unit when a burst of that stage is CAST, on the cast frame', () => {
       // Team-wide, not caster-only: the probe rides on `helm` (a Burst III) and is triggered by
       // `liter`'s Burst I casts. A caster-scoped implementation fires zero times here.
       const { procs, casts } = probe(
-        { kind: 'stageEnter', stage: 1 },
+        { kind: 'stageCast', stage: 1 },
         { probeOn: 'helm' }
       );
       const stage1 = casts.filter((c) => c.stage === 1);
@@ -208,7 +213,7 @@ describe('trigger-kind matrix', () => {
 
     it('DISCRIMINATING: the stage is matched literally — a stage-2 block ignores stage-1 casts', () => {
       const { procs, casts } = probe(
-        { kind: 'stageEnter', stage: 2 },
+        { kind: 'stageCast', stage: 2 },
         { probeOn: 'helm' }
       );
       const stage2 = casts.filter((c) => c.stage === 2);
@@ -219,6 +224,44 @@ describe('trigger-kind matrix', () => {
         'fixture needs stage-1 casts present to be ignored'
       ).toBeGreaterThan(2);
       expect(procs.map((p) => p.frame)).toEqual(stage2.map((c) => c.frame));
+    });
+  });
+
+  describe('stageEnter', () => {
+    it('fires for EVERY unit when the chain REACHES that stage — the stage-(N-1) cast frame', () => {
+      const { procs, casts } = probe(
+        { kind: 'stageEnter', stage: 2 },
+        { probeOn: 'helm' }
+      );
+      const stage1 = casts.filter((c) => c.stage === 1);
+      expect(stage1.length, 'no Burst I was cast').toBeGreaterThan(2);
+      // entry to stage 2 IS the stage-1 cast: same frames, one step ahead of the stage-2 casts
+      expect(procs.map((p) => p.frame)).toEqual(stage1.map((c) => c.frame));
+    });
+
+    it('DISCRIMINATING: stageEnter LEADS the same-numbered stageCast by the chain gap', () => {
+      const enter = probe(
+        { kind: 'stageEnter', stage: 3 },
+        { probeOn: 'liter' }
+      );
+      const cast = probe({ kind: 'stageCast', stage: 3 }, { probeOn: 'liter' });
+      expect(enter.procs.length).toBeGreaterThan(2);
+      expect(enter.procs.length).toBe(cast.procs.length);
+      const gaps = enter.procs.map((p, i) => cast.procs[i].frame - p.frame);
+      expect(gaps.every((g) => g > 0)).toBe(true);
+      // every entry precedes its cast, and never by more than the stage window
+      expect(Math.max(...gaps)).toBeLessThanOrEqual(60);
+    });
+
+    it('stage 1 entry is the GAUGE-FULL frame, which no cast can express', () => {
+      const { procs, casts } = probe(
+        { kind: 'stageEnter', stage: 1 },
+        { probeOn: 'helm' }
+      );
+      const stage1 = casts.filter((c) => c.stage === 1);
+      expect(procs.length).toBe(stage1.length);
+      // strictly BEFORE the B1 cast — the measured 30f gauge-full -> B1 gap
+      expect(procs.every((p, i) => p.frame < stage1[i].frame)).toBe(true);
     });
   });
 

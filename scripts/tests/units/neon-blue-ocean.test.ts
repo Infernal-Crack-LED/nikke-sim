@@ -34,7 +34,7 @@
 //   N2  stageEnter:3 → self → escalating [elemAdvantageDamagePct 20.56/20.2/20.2, 10s].
 //       "Entering Burst Stage 3" = stageEnter{stage:3} per the gauntlet-validated convention
 //       for that literal wording (laplace-ultimate-hero S2c / rei-ayanami S2b): it fires on the
-//       stage-3 CAST frame of ANY B3 (the fixture's helm co-B3 casts 5 of the 11), NOT only her
+//       stage-3 ENTRY frame — the stage-2 cast that opens it (owner ruling 2026-08-13), NOT only her
 //       own casts (burstCast under-fires) and NOT fullBurstEnter (~22f late, past the cast
 //       frame). elemAdvantageDamagePct sits in the ELEMENT bucket and is live only while
 //       advantaged (MEASURED 2026-07-14 battery 5): observed elem mults are exactly
@@ -174,8 +174,15 @@ const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const nboCasts = (evs: SimEvent[]) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === SLUG);
-/** Every stage-3 entry in the fixture = the B3 casts (nbo's own + the co-B3 helm's). */
+/**
+ * Every stage-3 ENTRY = the stage-2 casts (owner ruling 2026-08-13: the chain enters stage 3 the
+ * moment a B2 activates, ~30f before any B3 can cast there — and it enters even on the rotations
+ * where no B3 is off cooldown and the chain expires).
+ */
 const stage3Entries = (evs: SimEvent[]) =>
+  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.stage === 2);
+/** The B3 casts themselves (nbo's own + the co-B3 `helm`'s) — one chain step after the entry. */
+const stage3Casts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BurstCast =>
       e.kind === 'burstCast' && (e.slug === SLUG || e.slug === 'helm')
@@ -291,16 +298,27 @@ describe('neon-blue-ocean (Neon: Blue Ocean) — kit spec', () => {
       expect(perEntry).toEqual([1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3]);
     });
 
-    it('DISCRIMINATING: own-cast keying misses the helm-cast stage-3 entries', () => {
+    it('DISCRIMINATING: own-cast keying fires only on HER casts, missing the entries the co-B3 rotations open', () => {
       const keyed = statApplies(s2CastKeyed.events, 'elemAdvantageDamagePct');
+      const ownFrames = new Set(
+        nboCasts(s2CastKeyed.events).map((c) => c.frame)
+      );
       const helmFrames = new Set(
-        stage3Entries(s2CastKeyed.events)
+        stage3Casts(s2CastKeyed.events)
           .filter((c) => c.slug === 'helm')
           .map((c) => c.frame)
       );
       expect(
+        helmFrames.size,
+        'fixture needs co-B3 casts to be missed'
+      ).toBeGreaterThan(0);
+      expect(
+        keyed.every((b) => ownFrames.has(b.frame)),
+        'burstCast-keyed applies land ONLY on her own cast frames'
+      ).toBe(true);
+      expect(
         keyed.every((b) => !helmFrames.has(b.frame)),
-        'burstCast-keyed applies must NEVER land on helm cast frames'
+        'burstCast-keyed applies must NEVER land on the co-B3 cast frames'
       ).toBe(true);
       expect(keyed.length).toBeLessThan(applies.length);
     });

@@ -65,8 +65,9 @@
 //       nothing. Magnitude is the caster-scaled flat add (45.12% of FLORA's ATK), distinct in value
 //       from her burst's 85.86% line, so the two never alias.
 //   F7  S2-2 lands 2 SECONDS AFTER Burst Stage 2 entry (the Max HP grant's expiry is what puts the
-//       allies back at max HP). The assertion is that every 30.97% application sits exactly 120
-//       frames after a stage-2 cast frame and on NO stage-2 cast frame — which fails under the naive
+//       allies back at max HP). Stage-2 ENTRY is the stage-1 cast frame (owner ruling 2026-08-13).
+//       The assertion is that every 30.97% application sits exactly 120 frames after an entry frame
+//       and on NO entry frame — which fails under the naive
 //       same-frame encoding. The counterfactual runs that same-frame model and shows both the frames
 //       and the carry's total move, so the delay is not cosmetic.
 //   F8  stripping the whole S2 slot (what the model shipped before this chain was understood) drops
@@ -448,11 +449,14 @@ describe('flora — kit spec', () => {
 
   // ---- S2 chain (F5–F8) — the 5-unit, Flora-at-the-left-edge fixture ---------------------------
   describe('S2 chain — self-procced off S1 at Burst Stage 2 entry', () => {
+    // Stage-2 ENTRY frames (owner ruling 2026-08-13): the chain enters Burst Stage 2 the moment a
+    // stage-1 burst is cast, ~30f before any B2 casts there — and it enters on every rotation that
+    // reaches stage 1, including those whose chain later expires before a B2 is ready.
     const stage2Frames = [
       ...new Set(
         wide.events
           .filter(
-            (e): e is BurstCast => e.kind === 'burstCast' && e.stage === 2
+            (e): e is BurstCast => e.kind === 'burstCast' && e.stage === 1
           )
           .map((e) => e.frame)
       ),

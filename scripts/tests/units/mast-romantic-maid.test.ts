@@ -43,8 +43,9 @@
 //          expiry. Nearest wrong for M8: an x1-stack model (20.06% → ~20,007 flat).
 //   M3     normalAttackPct -40 is SELF-only (holders [mrm]) and LIVE: removing it raises her own
 //          total (the ~40% miss rate stops biting) while leaving every ally byte-identical.
-//   M4/M5  fire on STAGE-3 ENTRY (the B3 carry's cast frame), NOT on her own stage-2 cast — she is
-//          Burst II, so her cast precedes the stage-3 entry by the ~0.5s chain gap. Value is the
+//   M4/M5  fire on STAGE-3 ENTRY, which under the 2026-08-13 ruling IS her own stage-2 cast frame —
+//          she is the Burst II, so casting is what enters stage 3, ~0.5s AHEAD of the B3 carry's
+//          cast (the buff must NOT coincide with that). Value is the
 //          x2 cycle average (30.06/30.08). Nearest wrong: x1 stacks (15.03/15.04).
 //   M6/M7  burst grants to all 4 allies for 10s, once per cast. Nearest wrong: self-only.
 //   M9     BEHAVIORAL — the stun emits no event; it is read as a ~10s gap in her shot stream. Over
@@ -181,11 +182,23 @@ const mrmCasts = (evs: SimEvent[]) =>
     .filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === SLUG)
     .sort((a, b) => a.frame - b.frame);
 
-/** Every stage-3 cast frame (the B3 carry's casts) — the stageEnter:3 trigger anchor. */
+/** Every stage-3 CAST frame (the B3 carry's casts) — one chain step AFTER the stage-3 entry. */
 const stage3Frames = (evs: SimEvent[]) =>
   new Set(
     evs
       .filter((e): e is BurstCast => e.kind === 'burstCast' && e.stage === 3)
+      .map((c) => c.frame)
+  );
+
+/**
+ * Every stage-3 ENTRY frame — the stageEnter:3 anchor. Owner ruling 2026-08-13: the chain enters
+ * stage 3 when a stage-2 burst is cast, which for mast-romantic-maid is HER OWN cast (she is the
+ * B2), ~30f before the B3 casts.
+ */
+const stage3EntryFrames = (evs: SimEvent[]) =>
+  new Set(
+    evs
+      .filter((e): e is BurstCast => e.kind === 'burstCast' && e.stage === 2)
       .map((c) => c.frame)
   );
 
@@ -321,19 +334,25 @@ describe('mast-romantic-maid — kit spec', () => {
       }
     });
 
-    it('fires on the B3 stage-3 cast frame, NOT on her own stage-2 cast', () => {
-      const s3 = stage3Frames(base.events);
-      const own = new Set(mrmCasts(base.events).map((c) => c.frame));
+    // ENTRY, not cast (owner ruling 2026-08-13). She IS the Burst II here, so the chain enters
+    // stage 3 on her own cast frame — the buff lands ~30f BEFORE the B3 casts, not on its frame.
+    it('fires on the stage-3 ENTRY frame — her own stage-2 cast, ahead of the B3 cast', () => {
+      const entries = stage3EntryFrames(base.events);
+      const s3casts = stage3Frames(base.events);
+      expect(applied.length).toBeGreaterThan(0);
       for (const b of applied) {
         expect(
-          s3.has(b.frame),
+          entries.has(b.frame),
           `buff frame ${b.frame} is not a stage-3 entry`
         ).toBe(true);
         expect(
-          own.has(b.frame),
-          'must not coincide with her own stage-2 cast'
+          s3casts.has(b.frame),
+          'the entry LEADS the B3 cast — it must not coincide with it'
         ).toBe(false);
       }
+      // and the entry she opens is her own cast
+      const own = new Set(mrmCasts(base.events).map((c) => c.frame));
+      expect(applied.every((b) => own.has(b.frame))).toBe(true);
     });
 
     it('DISCRIMINATING: an x1-stack model would grant 15.03%, not 30.06%', () => {

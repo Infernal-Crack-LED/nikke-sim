@@ -41,7 +41,9 @@
 //       stack (the raw parser miss). It is permanent (ticks the whole fight), not burst-gated.
 //   M3  THE decomposition: the burst DoT is the 700%/s DELTA, not the naive 1001%/s stacked on top
 //       of the baseline. Shipped total must sit BELOW the naive double-count counterfactual.
-//   M4  the stage-3 buff is the L10 value 59.98% for exactly 10s, fires once per burst, and is
+//   M4  the stage-3 buff is the L10 value 59.98% for exactly 10s, fires once per stage-3 ENTRY (the
+//       stage-2 cast frame — entries outnumber her own bursts, since a chain that reaches stage 3
+//       and then expires still entered it), and is
 //       LIVE (removing it lowers her total — the sustained DoTs inherit it via the Damage-Up bucket).
 //   M5  the two inert S2 triggers stay documented VERBATIM in `unmodeled` (guarded, not silently
 //       dropped). No behavioural assertion — boss deals no damage and never dies in v1.
@@ -278,7 +280,17 @@ describe('mihara-bonding-chain — kit spec', () => {
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame, '10s duration').toBe(10 * FPS);
       }
-      expect(applied.length, 'fires once per Burst Stage 3 entry').toBe(
+      // ENTRY, not cast (owner ruling 2026-08-13): stage 3 is entered when the stage-2 unit casts,
+      // ~30f ahead of her own B3 — so the buff is live for her own burst, and entries outnumber her
+      // casts because a chain that reaches stage 3 and expires still entered it.
+      const entries = base.events
+        .filter((e) => e.kind === 'burstCast' && e.stage === 2)
+        .map((e) => e.frame);
+      expect(
+        applied.map((b) => b.frame),
+        'fires on every stage-3 entry'
+      ).toEqual(entries);
+      expect(applied.length).toBeGreaterThanOrEqual(
         mbcBursts(base.events).length
       );
     });

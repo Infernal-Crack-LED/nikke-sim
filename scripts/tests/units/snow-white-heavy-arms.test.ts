@@ -78,7 +78,7 @@
 //   W12 shotFired self ATK ▲46.84% 5s. Nearest-wrong (target): `allies` → hits all 3 slots, not swha alone.
 //   W13 Parts Damage ▲62.64% is INERT vs the partless scope-lock boss — byte-identical totals when removed (the
 //       helm-H4 pattern), AND the encoding still fires (self, 5s).
-//   W14 stageEnter(B3) self ATK ▲73.92% 10s — fires precisely on her burstCast frames (entering stage 3 = casting
+//   W14 stageEnter(B3) self ATK ▲73.92% 10s — fires on each stage-3 ENTRY, i.e. the stage-2 cast ~30f BEFORE her own B3 (owner ruling 2026-08-13), so it is live for her own burst; entries also cover chains that reach stage 3 and expire (entering stage 3 = the chain reaching it, NOT casting
 //       her B3 burst). Nearest-wrong (duration): 5s, not the prose 10s.
 //   W15 burstCast self Charge Damage ▲528% durationShots:2 — encoding fires on cast frames; APPLIED: swap-weapon
 //       normals carry charge mult 7.78 (= 2.5 + 5.28), base normals 2.5. Nearest-wrong: removed → no 7.78 normals.
@@ -464,14 +464,22 @@ describe('snow-white-heavy-arms — kit spec', () => {
 
   describe('W14 — S2 entering Burst Stage 3: ATK ▲73.92% for 10 sec, self-scoped (stageEnter)', () => {
     const atk = swhaBuff(base.events, 'atkPct', 73.92);
-    it('is 73.92% for 10s on swha alone, firing precisely on her burstCast frames (entering stage 3)', () => {
-      expect(atk.length).toBe(casts);
+    // ENTRY, not cast (owner ruling 2026-08-13): stage 3 is entered when the stage-2 unit casts,
+    // ~30f before swha's own B3 — so the ATK buff is live for her own burst damage. Entries also
+    // outnumber her casts, since a chain that reaches stage 3 and expires still entered it.
+    it('is 73.92% for 10s on swha alone, firing on every stage-3 ENTRY (ahead of her own casts)', () => {
+      const entries = base.events
+        .filter((e) => e.kind === 'burstCast' && e.stage === 2)
+        .map((e) => e.frame)
+        .sort((a, b) => a - b);
+      expect(entries.length).toBeGreaterThan(0);
+      expect(atk.length).toBeGreaterThanOrEqual(casts);
       expect(targetsOf(atk)).toEqual([S]);
       expect(dursOf(atk)).toEqual([10 * FPS]);
-      const cf = castFrames(base.events);
-      expect(atk.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
-        [...cf].sort((a, b) => a - b)
-      );
+      expect(atk.map((b) => b.frame).sort((a, b) => a - b)).toEqual(entries);
+      for (const f of castFrames(base.events)) {
+        expect(entries.some((e) => e < f && f - e <= 60)).toBe(true);
+      }
     });
     it('DISCRIMINATING (duration): 5s (nearest-wrong) is not the prose 10s', () => {
       expect(dursOf(swhaBuff(atk73Dur5.events, 'atkPct', 73.92))).toEqual([
