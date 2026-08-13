@@ -82,11 +82,12 @@ export function assertFontsLive(): void {
 // guard. Fails loudly (naming fonts) instead of surfacing as an opaque fixture
 // diff.
 //
-// ⚠ THE REGION MUST COVER TEXT AND ONLY TEXT. Every card that takes an icon
-// draws it at the far left of the title row (core/* textX = padX + ICON + 12),
-// so a region that starts at padX passes on ICON PIXELS alone with zero
-// glyphs — that was the vacuous-guard bug (team/dps/table cards "passed" with
-// all text removed). Callers must start the region at the title's textX.
+// ⚠ THE REGION MUST COVER TEXT AND ONLY TEXT. A region that also covers the
+// nikkesim.app mark passes on ICON PIXELS alone with zero glyphs — that was the
+// vacuous-guard bug (team/dps/table cards "passed" with all text removed). The
+// mark now hangs off the card's top-RIGHT corner (core/theme.ts drawBrandMark)
+// and the title starts at padX, so each card's *_TITLE_INK_REGION covers the
+// title only; the golden test pins that separation per card.
 export function assertTitleInk(
   pngCtx: ReturnType<Canvas['getContext']>,
   cardName: string,

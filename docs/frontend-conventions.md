@@ -777,26 +777,34 @@ placeholder, never throws, never reflows (all geometry is fixed).
 - `theme.ts`: `FONT = 'Roboto'`; `ELEMENT_COLORS` (Fire `#d92d38`, Water
   `#0075f8`, Wind `#00e554`, Electric `#bc1eb1`, Iron `#ff8321`); `RANK_COLORS`
   for rank numerals only — **bars are element-colored, the two color systems
-  never touch**; `WATERMARK = 'nikkesim.app'` drawn via `drawWatermark`, the
-  only footer path — the mark is architectural, not a caller option.
+  never touch**; `WATERMARK = 'nikkesim.app'` drawn via `drawBrandMark` in the
+  card's TOP-RIGHT corner (accent wordmark + the site icon, the unit card's
+  geometry). The mark is architectural, not a caller option — `drawBrandMark`
+  takes **no text parameter**, so it always reads the bare domain and a caller
+  can neither remove it nor bend it into a sub-page path. A card's `footer`
+  descriptor contributes only a NOTE: `footerNote` drops every URL segment and
+  passes the remainder (sim caveats, a stored card's "simmed <date>" stamp) to a
+  small `drawFooterNote` line, drawn only when there is one.
 
 ### 9.3 Renderer inventory
 
 | Renderer (core/)      | Logical size                             | Physical / encoding             |
 | --------------------- | ---------------------------------------- | ------------------------------- |
-| Team results card     | 1040 × `156 + 84n + 58`                  | dpr 2, PNG                      |
+| Team results card     | 1040 × `156 + 84n + 30`                  | dpr 2, PNG                      |
 | Team composition card | 1040 × fixed                             | PNG                             |
-| Roster card (5 teams) | 1040 × `156 + 96n + 58`                  | dpr 2, PNG                      |
-| DPS chart             | 900 × `118 + 52·rows (+52 compare) + 44` | dpr 2, PNG                      |
+| Roster card (5 teams) | 1040 × `156 + 96n + 30`                  | dpr 2, PNG                      |
+| DPS chart             | 900 × `118 + 52·rows (+52 compare) + 24` | dpr 2, PNG                      |
 | Rank board chart      | 900 × rows at `ROW_H = 64`               | dpr 2, PNG                      |
-| Table card            | 720 × `96 + 36 + 38·rows + 40`           | dpr 2, PNG                      |
+| Table card            | 720 × `96 + 36 + 38·rows + 22`           | dpr 2, PNG                      |
 | Unit card `discord`   | 1200×600 (2:1 landscape)                 | dpr 2 → 2400×1200, **WebP q90** |
 | Unit card `twitter`   | 1200×1600 (3:4 portrait)                 | dpr 1 → 1200×1600, **WebP q90** |
 
 `UNIT_CARD_WEBP_QUALITY = 90` lives in core so BOTH hosts encode identically;
-everything else ships PNG. Every renderer exports a `*_TITLE_INK_REGION` the
-build's blank-text guard checks (regions start at the title's textX, never the
-padding — the icon alone once satisfied a vacuous guard).
+everything else ships PNG. The trailing term in each height is the bottom pad —
+only the footer NOTE lands there, so it is a margin, not the old watermark band.
+Every renderer exports a `*_TITLE_INK_REGION` the build's blank-text guard checks
+(regions cover the title and nothing else — the mark's icon alone once satisfied
+a vacuous guard, which is why the mark and the region must not overlap).
 
 ### 9.4 Fonts before draw — on both hosts
 
@@ -878,7 +886,7 @@ draw — stepping small images adds artifacts), and sizes to device pixels.
 | ----------------------------------------- | -------------------------------------------------------------------------------- |
 | `favicon.svg`                             | hand-authored SVG (four damage-share bars in the site palette); no PNG fallbacks |
 | `og.png`                                  | default OG share image, 1200×630                                                 |
-| `nikkesim-icon.png`                       | site logo drawn beside card titles / as watermark plate                          |
+| `nikkesim-icon.png`                       | site logo drawn in every card's top-right mark                                   |
 | `fonts/`                                  | the three Roboto subsets (§3)                                                    |
 | `nikke-icons/`                            | game-UI icon set (below)                                                         |
 | `img/portraits/`                          | generated portrait tiers (above)                                                 |
@@ -968,8 +976,8 @@ can't diverge.
 ### Adding a new share-card type
 
 Extend `src/infographics/spec.ts` (bump `RENDERER_VERSION` if shapes change),
-add a `core/` renderer (fixed geometry, ink region, watermark via
-`drawWatermark`), wire the Node host exports, a build job in
+add a `core/` renderer (fixed geometry, ink region, top-right mark via
+`drawBrandMark`), wire the Node host exports, a build job in
 `build-infographics.ts` if it pre-renders, a `builderSpec.ts` mapping if the
 Card Builder offers it, and pin it with tests under `scripts/tests/share/`.
 

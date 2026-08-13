@@ -192,6 +192,42 @@ export function barTrackX(labelEndX: number, min: number, max: number): number {
   return Math.min(Math.max(labelEndX + BAR_LABEL_GAP, min), max);
 }
 
+// Draw an image scaled to FIT inside a box, centered, aspect preserved — the
+// icon draw every card uses for the nikkesim.app mark (theme.ts drawBrandMark)
+// and the unit card uses for its icon strip. Lives here rather than in either
+// caller so the two hosts can't drift into different icon geometry.
+export function drawContained(
+  ctx: Canvas2DLike,
+  img: unknown,
+  r: { x: number; y: number; w: number; h: number }
+): void {
+  const im = img as {
+    naturalWidth?: number;
+    naturalHeight?: number;
+    width?: number;
+    height?: number;
+  };
+  const iw = im.naturalWidth ?? im.width ?? r.w;
+  const ih = im.naturalHeight ?? im.height ?? r.h;
+  if (!iw || !ih) {
+    return;
+  }
+  const scale = Math.min(r.w / iw, r.h / ih);
+  const w = iw * scale;
+  const h = ih * scale;
+  ctx.drawImage(
+    img,
+    0,
+    0,
+    iw,
+    ih,
+    r.x + (r.w - w) / 2,
+    r.y + (r.h - h) / 2,
+    w,
+    h
+  );
+}
+
 export function roundRect(
   ctx: Canvas2DLike,
   x: number,

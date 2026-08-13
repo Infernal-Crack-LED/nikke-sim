@@ -17,7 +17,14 @@ import {
   ADVANTAGE_MARK_W,
   BAR_LABEL_GAP,
 } from './canvas2d.js';
-import { FONT, ELEMENT_COLORS, drawWatermark } from './theme.js';
+import {
+  FONT,
+  ELEMENT_COLORS,
+  drawBrandMark,
+  drawFooterNote,
+  footerNote,
+  brandMarkIconRect,
+} from './theme.js';
 
 export interface TeamCardUnit {
   name: string;
@@ -42,8 +49,8 @@ export interface TeamCardMeta {
   weakness: string | null; // boss weakness element
   level: number; // synchro
   coreLabel: string; // e.g. "100% core"
-  icon?: unknown; // optional canvas-drawable image drawn beside the title
-  footer?: string; // descriptor added to the watermark footer (theme.ts)
+  icon?: unknown; // the nikkesim.app mark's icon, drawn top-right
+  footer?: string; // the descriptor note; the mark itself is fixed (theme.ts)
 }
 
 // layout constants (logical px; caller scales for device pixel ratio)
@@ -51,26 +58,49 @@ export const CARD_W = 1040;
 const PAD_X = 40;
 const HEAD_H = 156;
 const ROW_H = 84;
-const FOOT_H = 58;
-const ICON = 36; // site icon square, drawn beside the title
+// Bottom pad. The mark moved to the title row, so all that can land here is the
+// footer NOTE (theme.ts footerNote) — the sim caveats, or the "simmed <date>"
+// stamp a stored-snapshot card carries (src/server/card-from-build.ts).
+const FOOT_H = 30;
+// The mark's icon y — hung so it reads level with a 30px title on baseline 56.
+const MARK_TOP = 14;
 
 // Ink-guard geometry, exported so every assertTitleInk caller (golden harness,
 // build-infographics, the golden test's icon-immunity cases) derives from the
 // same numbers a layout change would move — a hand-copied region can silently
 // re-vacate the guard (it once passed on icon pixels alone, zero glyphs).
-// TITLE_ICON is the icon's draw rect; TITLE_INK_REGION starts at the title's
-// textX (padX + ICON + 12) so the icon alone can never satisfy the guard.
-export const TEAM_TITLE_ICON = {
-  x: PAD_X,
-  y: 56 - ICON + 4,
-  size: ICON,
-} as const;
+// TITLE_ICON is the mark's icon rect (top-right); TITLE_INK_REGION covers the
+// title, which starts at padX, so the icon alone can never satisfy the guard.
+export const TEAM_TITLE_ICON = brandMarkIconRect(CARD_W, PAD_X, MARK_TOP);
 export const TEAM_TITLE_INK_REGION = {
-  x: PAD_X + ICON + 12, // title textX (30px title, baseline y 56)
+  x: PAD_X, // title textX (30px title, baseline y 56)
   y: 26,
   w: 400,
   h: 40,
 } as const;
+
+// The four cards below draw the same title row: the mark hung top-right, the
+// title at padX, fitted so it can never run under the mark.
+function drawTeamTitle(
+  ctx: Canvas2DLike,
+  title: string,
+  meta: TeamCardMeta,
+  // The card's own default descriptor, used when the caller passes none. The
+  // SIM cards state their assumptions; the composition cards have no sim behind
+  // them and so have nothing to caveat.
+  fallback: string
+): string {
+  const note = footerNote(meta.footer, fallback);
+  const markLeft = drawBrandMark(ctx, {
+    right: CARD_W - PAD_X,
+    top: MARK_TOP,
+    icon: meta.icon,
+  });
+  ctx.fillStyle = '#e7eaf0';
+  ctx.font = `700 30px ${FONT}`;
+  ctx.fillText(fitText(ctx, title, markLeft - 16 - PAD_X), PAD_X, 56);
+  return note;
+}
 
 export const cardHeight = (unitCount: number) =>
   HEAD_H + unitCount * ROW_H + FOOT_H;
@@ -101,16 +131,16 @@ export function drawTeamCard(
   ctx.fillStyle = '#5b9dff';
   ctx.fillRect(0, 0, W, 5);
 
-  // icon + title + summary
+  // mark + title + summary
   ctx.textBaseline = 'alphabetic';
-  let textX = padX;
-  if (meta.icon) {
-    ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);
-    textX = padX + ICON + 12;
-  }
+  ctx.textAlign = 'left';
+  const note = drawTeamTitle(
+    ctx,
+    'NIKKE Solo Raid Sim',
+    meta,
+    'nikke-sim · expected-value crits · always in range · 0 enemy debuffs'
+  );
   ctx.fillStyle = '#e7eaf0';
-  ctx.font = `700 30px ${FONT}`;
-  ctx.fillText('NIKKE Solo Raid Sim', textX, 56);
   ctx.font = `700 40px ${FONT}`;
   ctx.fillText(fmt(data.teamDamage), padX, 108);
   const bigW = ctx.measureText(fmt(data.teamDamage)).width;
@@ -219,16 +249,9 @@ export function drawTeamCard(
     ctx.textAlign = 'left';
   });
 
-  // footer — the mandatory watermark final pass (theme.ts): `footer` only adds
-  // a descriptor; it can never remove or replace the nikkesim.app mark.
-  drawWatermark(
-    ctx,
-    padX,
-    H - 22,
-    13,
-    meta.footer,
-    'nikke-sim · expected-value crits · always in range · 0 enemy debuffs'
-  );
+  // footer — the descriptor's NOTE only; the mandatory mark is in the title row
+  // (theme.ts drawBrandMark).
+  drawFooterNote(ctx, padX, H - 11, 13, note);
 }
 
 // ---------------------------------------------------------------------------
@@ -243,7 +266,7 @@ const C_HEAD_H = 132;
 const C_PS = 160; // portrait square — 5 across CARD_W
 const C_GAP = 40;
 const C_NAME_H = 62; // name + tag block under each portrait
-const C_FOOT_H = 58;
+const C_FOOT_H = 30; // bottom pad — see FOOT_H
 
 export const compositionCardHeight = (): number =>
   C_HEAD_H + C_PS + C_NAME_H + C_FOOT_H;
@@ -265,14 +288,7 @@ export function drawTeamCompositionCard(
   // title + the settings line (what was SELECTED — not a result)
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  let textX = padX;
-  if (meta.icon) {
-    ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);
-    textX = padX + ICON + 12;
-  }
-  ctx.fillStyle = '#e7eaf0';
-  ctx.font = `700 30px ${FONT}`;
-  ctx.fillText('NIKKE Solo Raid Sim', textX, 56);
+  const note = drawTeamTitle(ctx, 'NIKKE Solo Raid Sim', meta, 'nikke-sim');
   ctx.fillStyle = '#8b93a3';
   ctx.font = `400 18px ${FONT}`;
   ctx.fillText(
@@ -348,7 +364,7 @@ export function drawTeamCompositionCard(
     ctx.textAlign = 'left';
   });
 
-  drawWatermark(ctx, padX, H - 22, 13, meta.footer, 'nikke-sim');
+  drawFooterNote(ctx, padX, H - 11, 13, note);
 }
 
 // ---------------------------------------------------------------------------
@@ -375,7 +391,7 @@ export interface RosterCardData {
 
 const R_HEAD_H = 156;
 const R_ROW_H = 96;
-const R_FOOT_H = 58;
+const R_FOOT_H = 30; // bottom pad — see FOOT_H
 const R_PS = 58; // portrait square
 const R_GAP = 7;
 
@@ -401,21 +417,16 @@ export function drawRosterCard(
   ctx.fillStyle = '#5b9dff';
   ctx.fillRect(0, 0, W, 5);
 
-  // icon + title + summary (total only — no DPS/FB, per the roster card spec)
+  // mark + title + summary (total only — no DPS/FB, per the roster card spec)
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  let textX = padX;
-  if (meta.icon) {
-    ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);
-    textX = padX + ICON + 12;
-  }
-  ctx.fillStyle = '#e7eaf0';
-  ctx.font = `700 30px ${FONT}`;
-  ctx.fillText(
+  const note = drawTeamTitle(
+    ctx,
     data.title ?? 'NIKKE Solo Raid Sim · Roster Generator',
-    textX,
-    56
+    meta,
+    'nikke-sim · expected-value crits · always in range · 0 enemy debuffs'
   );
+  ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 40px ${FONT}`;
   ctx.fillText(fmt(data.totalDamage), padX, 108);
   const bigW = ctx.measureText(fmt(data.totalDamage)).width;
@@ -512,16 +523,9 @@ export function drawRosterCard(
     ctx.textAlign = 'left';
   });
 
-  // footer — the mandatory watermark final pass (theme.ts): `footer` only adds
-  // a descriptor; it can never remove or replace the nikkesim.app mark.
-  drawWatermark(
-    ctx,
-    padX,
-    H - 22,
-    13,
-    meta.footer,
-    'nikke-sim · expected-value crits · always in range · 0 enemy debuffs'
-  );
+  // footer — the descriptor's NOTE only; the mandatory mark is in the title row
+  // (theme.ts drawBrandMark).
+  drawFooterNote(ctx, padX, H - 11, 13, note);
 }
 
 // ---------------------------------------------------------------------------
@@ -563,17 +567,11 @@ export function drawRosterCompositionCard(
 
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  let textX = padX;
-  if (meta.icon) {
-    ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);
-    textX = padX + ICON + 12;
-  }
-  ctx.fillStyle = '#e7eaf0';
-  ctx.font = `700 30px ${FONT}`;
-  ctx.fillText(
+  const note = drawTeamTitle(
+    ctx,
     data.title ?? 'NIKKE Solo Raid Sim · Roster Generator',
-    textX,
-    56
+    meta,
+    'nikke-sim'
   );
   ctx.fillStyle = '#8b93a3';
   ctx.font = `400 18px ${FONT}`;
@@ -630,5 +628,5 @@ export function drawRosterCompositionCard(
     ctx.fillText(label, padX, py - 6);
   });
 
-  drawWatermark(ctx, padX, H - 22, 13, meta.footer, 'nikke-sim');
+  drawFooterNote(ctx, padX, H - 11, 13, note);
 }

@@ -286,13 +286,21 @@ describe('buildChargeTable release latency (autofire units)', () => {
   const framesCell = (t: ReturnType<typeof buildChargeTable>, row: number) =>
     Number(t.rows[row][2].replace('f', ''));
 
+  // These read the Shots/FB NUMBERS, not the subtitle. The subtitle used to
+  // spell the latency out ('+22f release' / 'autofire — no release latency')
+  // and the owner removed that parenthetical (2026-08-13); asserting on it
+  // again would re-couple a derivation detail to card copy, where the numbers
+  // are the thing that must be right either way.
   it('defaults to the 22f release latency (old-style charge weapons)', () => {
     const t = buildChargeTable(60, 'Generic (1.0s)');
     expect(shotsFbCell(t, 0)).toBeCloseTo(
       FULL_BURST_FRAMES / (framesCell(t, 0) + RELEASE_LATENCY_FRAMES),
       2
     );
-    expect(t.subtitle).toContain('+22f release');
+    // discriminating: the no-latency number would be measurably higher
+    expect(shotsFbCell(t, 0)).toBeLessThan(
+      FULL_BURST_FRAMES / framesCell(t, 0)
+    );
   });
 
   it('an autofire unit fires with NO release latency', () => {
@@ -305,7 +313,6 @@ describe('buildChargeTable release latency (autofire units)', () => {
     );
     // the bug this pins: the latent number is ~25-30% lower on every row
     expect(shotsFbCell(auto, 0)).toBeGreaterThan(shotsFbCell(latent, 0));
-    expect(auto.subtitle).toContain('autofire');
   });
 
   it('chargeLatencyFrames reads the datamined input_type', () => {
