@@ -38,9 +38,13 @@
 //       contributes no damage and no buff (it is empty), and the line is verbatim in unmodeled.
 //   M6  her burst is the KIT-LITERAL weapon swap (enacted 2026-08-09, owner faithfulness ruling —
 //       superseding the probe-run-G single-flatDamage collapse, which its own note recorded as
-//       unstable, 0.80 G vs 1.17 N6): each cast opens a 10s swap window firing ≥2 charged railgun
-//       shots (2s charge + 1-round mag + 141f reload ≈ a shot every ~4.7s) and ZERO burst-bucket
-//       nukes. The old-model counterfactual inverts both observables.
+//       unstable, 0.80 G vs 1.17 N6): each cast opens a swap window firing EXACTLY ONE charged
+//       railgun shot and ZERO burst-bucket nukes. The old-model counterfactual inverts both
+//       observables. The count is owner-ruled (2026-08-12): the kit's "Max Ammunition Capacity: 1"
+//       means one shot per window, not one round that reloads — the same modeling error `ada`
+//       carried, and it takes the same fix (`maxShots: 1`, the uses-based swap termination).
+//       EXACTLY 1, not >=1: the failure mode guarded is the over-fire that shipped before (3
+//       shots/window at a 2s charge + 141f reload), which her 1.34 HOT board reading leaned on.
 //   M7  window shots carry the swap magnitude atkPct 813.42 (the 300% full-charge lever composes
 //       in `amount` via the charge bucket), vs her base 69.04 outside the window.
 //   M8  railgun shots are real charged weapon fire: crit-eligible at her sheet rate.
@@ -267,7 +271,7 @@ describe('maxwell — kit spec', () => {
       );
     };
 
-    it('each cast opens a swap window firing ≥2 charged railgun shots and ZERO burst-bucket nukes', () => {
+    it('each cast fires EXACTLY ONE charged railgun shot and ZERO burst-bucket nukes', () => {
       const casts = maxwellBursts(base.events);
       expect(casts.length).toBeGreaterThan(0);
       expect(maxwellNukes(base.events)).toEqual([]);
@@ -277,8 +281,9 @@ describe('maxwell — kit spec', () => {
         );
         expect(
           inWindow.length,
-          `cast at frame ${c}: expected ≥2 railgun shots in the 10s window (2s charge + 1-round mag + 141f reload)`
-        ).toBeGreaterThanOrEqual(2);
+          `cast at frame ${c}: fired ${inWindow.length} railgun shots, kit allows 1 ` +
+            `("Max Ammunition Capacity: 1", owner ruling 2026-08-12 — same fix as ada's maxShots 1)`
+        ).toBe(1);
       }
     });
 

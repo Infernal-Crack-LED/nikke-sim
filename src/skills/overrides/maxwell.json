@@ -50,6 +50,7 @@
           "chargeTimeSec": 2,
           "chargeMultPct": 300,
           "maxAmmo": 1,
+          "maxShots": 1,
           "hasPierce": true,
           "durationSec": 10
         }

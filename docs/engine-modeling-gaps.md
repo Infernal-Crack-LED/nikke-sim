@@ -64,7 +64,7 @@
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 20 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 10 | clay, ether, eunhwa-tactical-upgrade, kurumi, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, … |
-| `flatDamage` | 98 | 2b, a2, anchor, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
+| `flatDamage` | 97 | 2b, a2, anchor, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
 | `gainPierce` | 15 | ade-agent-bunny, asuka, d-killer-wife, dorothy, grave, harran, makima, mari, … |
@@ -83,9 +83,9 @@
 | `lastBullet` | 19 | anchor, anis-sparkling-summer, aria, cinderella-crystal-wave, crow, dorothy, epinel, eunhwa, … |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 12 | emilia, grave, himeno, mica, n102, neon, nihilister, noir, … |
-| `maxShots` | 4 | ada, e-h, laplace-ultimate-hero, snow-white-heavy-arms |
-| `mode` | 8 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
-| `modes` | 8 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
+| `maxShots` | 5 | ada, e-h, laplace-ultimate-hero, maxwell, snow-white-heavy-arms |
+| `mode` | 7 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, mint, prika |
+| `modes` | 7 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, mint, prika |
 | `noB1` | 2 | anis-star, rapi-red-hood |
 | `noRetriggerWhileActive` | 1 | vesti-tactical-upgrade |
 | `nonBurstCasters` | 1 | crown |
