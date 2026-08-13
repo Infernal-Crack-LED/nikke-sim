@@ -87,6 +87,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
 import { runComp, withPatchedOverride } from '../lib/harness.js';
+import { loadOverride } from '../../../src/skills/overrides-node.js';
 
 const FPS = 60;
 const TAKINA = 1; // slot index in the fixture
@@ -268,6 +269,18 @@ const cfNoTrueNormals = withPatchedOverride('takina', (ov: any) => {
   }
   b.effects.find((e: any) => e.kind === 'weaponSwap').trueNormals = false;
 });
+// T7 nearest-wrong (economy): her burst read as a same-weapon FLAVOR swap (the chisato/clay/jill/
+// frima shape) instead of a real weapon change — no magazine refill at either end, so she runs the
+// swap dry mid-window and reloads. The owner ruling (2026-08-12) is the opposite.
+const cfFlavorSwap = withPatchedOverride('takina', (ov: any) => {
+  const b = ov.burst.find((x: any) =>
+    x.effects.some((e: any) => e.kind === 'weaponSwap')
+  );
+  if (!b) {
+    throw new Error('takina burst weaponSwap block missing — fixture is stale');
+  }
+  b.effects.find((e: any) => e.kind === 'weaponSwap').sameWeapon = true;
+});
 // T8 nearest-wrong (gate, UNGATED): strip the gate from the 6.04 shotFired debuff → fires on every takina shot.
 const cfDebuffUngated = withPatchedOverride('takina', (ov: any) => {
   const b = ov.burst.find((x: any) =>
@@ -307,6 +320,7 @@ const s2TrueRaw = run({ takina: cfS2TrueRaw });
 const s2TrueEnemy = run({ takina: cfS2TrueEnemy });
 const noSwap = run({ takina: cfNoSwap });
 const noTrueNormals = run({ takina: cfNoTrueNormals });
+const flavorSwap = run({ takina: cfFlavorSwap });
 const debuffUngated = run({ takina: cfDebuffUngated });
 const debuffFbGate = run({ takina: cfDebuffFbGate });
 
@@ -484,32 +498,39 @@ describe('takina — kit spec', () => {
       expect(swapShots(noSwap.events).length).toBe(0);
     });
     // OWNER RULING 2026-08-12, replacing the kit-silent estimate this unit shipped on: the swap
-    // weapon does NOT charge, fires 12 shots in the 10s window, and does NOT reload. The estimate
-    // it replaces was the largest unmeasured lever behind her 0.78 COLD reading — it fired 7 shots
-    // per window (3, a ~3.5s reload, then 4), because the swap inherited her SR magazine.
-    // SKIPPED, NOT WRONG — the ruling is settled; the ENGINE cannot express it yet, and the fix
-    // is cross-cutting so it is proposed rather than slipped into a per-unit batch (QUEUE).
-    // Two blockers, both verified against the tree:
-    //   1. "the swap does not charge" is INEXPRESSIBLE. A swap with no `chargeTimeSec` inherits
-    //      the BASE unit's chargeFrames (`u.swap?.chargeFrames ?? u.char.chargeFrames`), so her
-    //      SR charge governs and the swap's `pullsPerSec` is never consulted — the charge branch
-    //      wins whenever chargeFrames > 0. Authoring `chargeTimeSec: 0` does not help either: it
-    //      is read with a FALSY check, so 0 becomes `undefined`. (No override sets 0 today, so
-    //      relaxing that to a null check is byte-neutral roster-wide — the cheap half.)
-    //   2. "no reload" is blocked by a shared rule: a `trueNormals` swap deliberately skips the
-    //      magazine refill (chisato kit-audit #2 — a same-weapon FLAVOR swap picks up no fresh
-    //      mag), and the engine uses `trueNormals` as the proxy for "flavor-only". Hers is not
-    //      flavor-only (damagePct 200.64 vs her base), so she keeps her small SR mag and reloads
-    //      mid-window. Fixing the proxy moves the other two swaps that declare BOTH trueNormals
-    //      and their own magazine — `laplace` (RL/Iron, not `laplace-ultimate-hero`; maxAmmo 999)
-    //      and `eunhwa-tactical-upgrade` (SR/Fire variant, not base `eunhwa`; maxAmmo 1) — hence
-    //      the proposal.
-    // ⚑ COVERAGE GAP, deliberate: this pins two of the ruling's THREE clauses — the 12-shot count
-    // and the absence of a mid-window reload. It does NOT assert the third, that her SNIPER comes
-    // back with a FULL magazine when the swap ends (blocked by the same `wasFlavorSwap` gate on the
-    // swap-EXIT refill). An implementation that fixes charge + ammo but forgets the exit refill
-    // would pass this test, so add a post-window magazine assertion when un-parking it.
-    it.skip('fires 12 swap shots per window with NO reload gap (owner ruling)', () => {
+    // weapon does NOT charge, fires 12 shots in the 10s window, and does NOT reload; when the swap
+    // ends her sniper comes back with a FULL magazine. The estimate it replaces was the largest
+    // unmeasured lever behind her 0.78 COLD reading — it fired 7 shots per window (3, a ~3.5s
+    // reload, then 4), because the swap inherited her SR charge cycle AND her SR magazine.
+    // ENACTED 2026-08-12 (engine/swap-economy). The three clauses map to three encodings:
+    //   1. "does not charge" — `chargeTimeSec: 0` on the swap. The engine now reads that field
+    //      with a NULL check, so 0 survives as chargeFrames 0 instead of collapsing to `undefined`
+    //      and inheriting the base SR's 60 (`u.swap?.chargeFrames ?? u.char.chargeFrames`). The
+    //      fire loop then takes the cadence branch and reads `pullsPerSec` at last.
+    //   2. "1.2 shots/sec" — `pullsPerSec: 1.2`, which the swap-cadence branch prefers over both
+    //      her measured cadence and the SR class default.
+    //   3. "no ammo / no reload" + "sniper restored to full on exit" — the swap declares its own
+    //      magazine (`maxAmmo: 999`, the `laplace` RL/Iron precedent) and, being a REAL weapon
+    //      change, no longer carries `sameWeapon`, so it takes the refill at BOTH ends. The
+    //      refill gate used to key on `trueNormals`, which conflated the damage FLAVOR with the
+    //      ammo ECONOMY; `sameWeapon` now marks the four genuine same-weapon flavor swaps
+    //      (chisato / clay / jill / frima), each of whose `damagePct` equals its own
+    //      `normalAttackMultiplier` exactly.
+    // The three assertions below cover all three clauses: the shot COUNT, the absence of a
+    // mid-window reload gap, and the post-window magazine.
+    it('ENCODING: the swap declares its own economy — chargeTimeSec 0 / pullsPerSec 1.2 / maxAmmo 999, and is NOT a sameWeapon swap', () => {
+      const ov: any = loadOverride('takina');
+      const sw = ov.burst
+        .flatMap((b: any) => b.effects)
+        .find((e: any) => e.kind === 'weaponSwap');
+      expect(sw).toBeTruthy();
+      expect(sw.chargeTimeSec).toBe(0); // "does not charge" — a null-checked 0, not an omission
+      expect(sw.pullsPerSec).toBe(1.2);
+      expect(sw.maxAmmo).toBe(999); // "no ammo" — outlasts the 10s window (laplace RL/Iron precedent)
+      expect(sw.sameWeapon).toBeUndefined(); // a REAL weapon change: refills at both ends
+      expect(sw.trueNormals).toBe(true); // …and still true-flavored: flavor and economy are independent
+    });
+    it('fires 12 swap shots per window with NO reload gap (owner ruling)', () => {
       const casts = takinaBursts(base.events).map((c) => c.frame);
       expect(casts.length).toBeGreaterThan(0);
       for (const cast of casts) {
@@ -528,6 +549,43 @@ describe('takina — kit spec', () => {
           'a multi-second gap means the swap weapon reloaded mid-window'
         ).toBeLessThan(1.5);
       }
+    });
+    // Ruling clause 3: "when the swap ends she returns to the sniper with its magazine restored to
+    // full", read straight off the ammo counter — the first SR pull after each window leaves 5 of
+    // her 6 rounds. Both wrong models are excluded numerically: keeping her half-spent magazine
+    // across the window leaves FEWER (she entered most windows on 1-3 rounds), and leaking the
+    // swap's own 999-round magazine back to the sniper leaves ~986.
+    it('the SNIPER comes back with a FULL magazine (ammo 6) when the swap ends', () => {
+      const shots = base.events.filter(
+        (e): e is Extract<SimEvent, { kind: 'shot' }> =>
+          e.kind === 'shot' && e.slug === 'takina'
+      );
+      const casts = takinaBursts(base.events).map((c) => c.frame);
+      let windowsChecked = 0;
+      for (const cast of casts) {
+        const exit = cast + 10 * FPS;
+        const first = shots.find((s) => s.frame > exit);
+        if (!first) {
+          continue; // last window, truncated by the end of the fight
+        }
+        windowsChecked++;
+        expect(
+          first.ammoAfter,
+          `swap ending at ${(exit / FPS).toFixed(1)}s: a restored 6-round magazine reads 5 after the first pull`
+        ).toBe(5);
+      }
+      expect(windowsChecked).toBeGreaterThan(0);
+    });
+    // The ruling's stated CONSEQUENCE, and the reason the restored magazine matters: "she then
+    // never needs to reload, because she cannot land 6 full-charge sniper shots between bursts in
+    // most comps." She fires 5-6 SR rounds per inter-burst gap here, so no reload ever completes.
+    // Discriminated against the nearest-wrong reading — her burst as a same-weapon FLAVOR swap,
+    // which withholds the refill at both ends and makes her run the swap dry mid-window.
+    it('DISCRIMINATING (economy): she NEVER reloads; as a sameWeapon flavor swap she would', () => {
+      const reloads = (evs: SimEvent[]) =>
+        evs.filter((e) => e.kind === 'reload' && e.slug === 'takina');
+      expect(reloads(base.events).length).toBe(0);
+      expect(reloads(flavorSwap.events).length).toBeGreaterThan(0);
     });
     it('the swap shots are TRUE-flavored: trueDamagePct (flavor-gated) rides their Damage-Up bucket', () => {
       // faithful swap shots carry the trueDamagePct buffs (T3 35.05 + T5 93.66) in dmgUp

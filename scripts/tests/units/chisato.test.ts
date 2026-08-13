@@ -38,8 +38,9 @@
 // The override encodes the kit faithfully (trueNormals on the swap, flavor:'true' on the rider); whether true
 // damage crits/cores is the ENGINE's domain. C3 pins the actual engine behaviour (crit/core ON) so a future
 // engine guard is detected; the override note's "CRIT now OFF / engine crit&&!trueFlavor guard" and "swap mag
-// refill" claims are STALE (sim.ts:1944/2487 — a trueNormals flavor swap does NOT refill the mag) and are
-// corrected in the S3 note addendum. Core-on-true-damage remains ⚑ unverified in-game (SMG coreMult 250 lever).
+// refill" claims are STALE — her swap carries `sameWeapon`, the marker that withholds the magazine refill at
+// both ends (2026-08-12; it took that role over from `trueNormals`, which is now purely the damage flavor) —
+// and are corrected in the S3 note addendum. Core-on-true-damage remains ⚑ unverified in-game (SMG coreMult 250 lever).
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest-wrong gates nothing):
 //   C1  the three gates are FUSED PASSIVES: live from frame 0, FINITE durations 60/90/150s, self-scoped, and

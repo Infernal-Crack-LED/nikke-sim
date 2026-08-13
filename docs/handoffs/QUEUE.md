@@ -54,34 +54,32 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
-1. **⇒ NEXT TASK — `takina` + `laplace` (RL/Iron, not `laplace-ultimate-hero`) swap-weapon engine
-   work.** Plan of record:
-   [2026-08-12-takina-laplace-swap-engine-work.md](2026-08-12-takina-laplace-swap-engine-work.md).
-   Both rulings are OWNER-SETTLED and need no footage — what is missing is engine expressiveness, so
-   this is encode + `/code-review`, NOT `/scientific-method`. Each unit's spec file already carries
-   the ruling as a documented `it.skip`; un-skip it as the acceptance test.
-   - **`takina` (board 0.780 COLD, her largest named lever)** — her burst swap is a CUSTOM WEAPON:
-     kit normal damage, NO ammo, NO reload, 1.2 shots/sec = 12 shots per 10s window, and the sniper
-     comes back FULL on exit (so she effectively never reloads). Today: 7 shots, because the swap
-     inherits her SR charge cycle and SR magazine. All three blockers share ONE root cause —
-     `trueNormals` is overloaded as both a damage flavor and the "same-weapon flavor swap" marker
-     that gates the entry refill, the exit refill, and the charge inheritance. ⚑ Any fix keyed on
-     "declares its own magazine" also moves `laplace` (`maxAmmo` 999) and `eunhwa-tactical-upgrade`
-     (`maxAmmo` 1) — A/B both. The byte-neutral half (accept `chargeTimeSec: 0` via a null check
-     instead of a falsy one) can land first; no override sets 0 today.
-   - **`laplace` — MUCH smaller than first feared, and the scary part is already DONE.** The engine
-     ALREADY refreshes the whole stack set on each new stack (`applyBuff` resets `expiresFrame`;
-     `maxStacks` caps), which is the game-wide rule of `docs/modeling-priors.md` prior 12 — so **no
-     engine-wide stack rework is needed; do not re-open it.** Her stacks therefore cannot expire
-     mid-window, and the only over-credit left is a burst cast before she has landed 5 full-charge
-     shots ≈ the fight's FIRST burst only. What is still missing is a gate on a stacked buff's COUNT
-     (no engine gate reads one; `resourceGate` counts but never expires) plus modeling Hero Vision
-     at all. Weigh against F11 — one carrier, ~one burst window per fight, and she has no recorded
-     fight.
+1. **⇒ OWNER QUESTION (blocks nothing else) — `velvet`'s S2 team buff: which premise is wrong?**
+   Her S2 activates "when attacking with Full Charge during Full Burst", and the owner ruled her
+   burst swap does **not** full-charge. Encoding that (`swapGate: 'unswapped'` beside the shipped
+   `fbGate: 'inFb'`) takes the line from 135 applications to **ZERO** in her control fixture — her
+   10s swap opens ~1s before Full Burst and covers essentially all of it, and the ~1s unswapped tail
+   is shorter than one charge cycle — so her signature support line becomes dead code in every comp
+   she is built for. Either the swap/FB alignment is wrong, or the assumption that she must be the
+   one bursting is (a teammate-opened Full Burst she is not swapped for would feed it fine).
+   **No measurement resolves this** — both readings are internally consistent, and the graded slice
+   is byte-identical either way (`T5 wind-weak`: she never casts there). Put it to the owner as an
+   either/or; do not enact. Parked as a skipped assertion in `scripts/tests/units/velvet.test.ts`;
+   context in [2026-08-12-takina-laplace-swap-engine-work.md](2026-08-12-takina-laplace-swap-engine-work.md) §4.
+
+2. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
+   economy landing (DECISIONS) made her colder, not warmer: the faithful custom weapon fires 12
+   uncharged shots where the old estimate fired 7 that inherited her SR ×2.5 `chargeMultiplier`.
+   Her swap window is therefore ruled OUT as the explanation. The largest remaining ⚑ in her file is
+   the **S2 uptime-average** — `damageTakenPct` 3.36 = 10.09 × 5/15 and ally `trueDamagePct` 93.66 =
+   140.49 × 10/15 — where the **15s cooldown is COMMUNITY-sourced (Prydwen), not in the kit prose**.
+   If the real cooldown is shorter, both values are under-credited roughly proportionally. Recipe is
+   already written in her override caveats: read the real skill2 cooldown + pulse shape from a
+   focused `takina` recording and rescale. She has ONE recorded fight (PG iron sweep), so this needs
+   footage before anything is changed — evidence-proportionality, not a re-fit.
 
 > **(2026-08-11) The three phase-0/1 candidates this note used to offer are all DONE** — see the
-> block below. Nothing is queued; per the header, an empty queue means survey and propose rather
-> than invent work.
+> block below.
 
 ### Open action items (pointers — attended sessions)
 
