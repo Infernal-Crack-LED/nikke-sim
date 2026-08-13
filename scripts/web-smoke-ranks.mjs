@@ -14,7 +14,7 @@ import { JSDOM } from 'jsdom';
 import { readFileSync, readdirSync } from 'node:fs';
 import {
   rankedBufferRows,
-  HIDDEN_BUFFER_SLUGS,
+  OFF_BOARD_BUFFER_SLUGS,
 } from '../src/ranks/buffer-rows.js';
 
 const artifacts = {
@@ -35,11 +35,42 @@ const bufferGeneric = rankedBufferRows(
 const bufferTyped = rankedBufferRows(artifacts['bufferchart.json'].cells.typed);
 const bufferTop = bufferGeneric[0][0];
 const bufferTopName = artifacts['bufferchart.json'].units[bufferTop].name;
-// Names the board must NOT render, so the filter is asserted on the rendered
-// DOM and not just trusted from the module it came from.
-const hiddenNames = [...HIDDEN_BUFFER_SLUGS]
-  .map((slug) => artifacts['bufferchart.json'].units[slug]?.name)
+// Off-board units are excluded at the SOURCE: the builder never puts them in
+// the population, so they must be absent from the artifact's rows AND from its
+// units map — that is what keeps every consumer's rank numbering right, not the
+// render-time filter. Asserted here at module scope so a builder regression
+// fails the smoke before any DOM work happens.
+for (const slug of OFF_BOARD_BUFFER_SLUGS) {
+  for (const board of ['generic', 'typed']) {
+    if (artifacts['bufferchart.json'].cells[board].some((e) => e[0] === slug)) {
+      throw new Error(
+        `bufferchart ${board} still carries off-board slug "${slug}" — ` +
+          'scripts/build-bufferchart.ts must filter it out of the population ' +
+          '(src/ranks/buffer.ts bufferPopulation)'
+      );
+    }
+  }
+  if (slug in artifacts['bufferchart.json'].units) {
+    throw new Error(
+      `bufferchart units map still carries off-board slug "${slug}"`
+    );
+  }
+}
+// Names the board must NOT render, so the exclusion is asserted on the rendered
+// DOM too and not just trusted from the artifact. Read from the roster, not the
+// artifact's units map — the whole point is that the map no longer has them.
+const rosterNames = JSON.parse(
+  readFileSync('data/characters.json', 'utf8')
+).characters;
+const hiddenNames = [...OFF_BOARD_BUFFER_SLUGS]
+  .map((slug) => rosterNames[slug]?.name)
   .filter(Boolean);
+if (hiddenNames.length !== OFF_BOARD_BUFFER_SLUGS.size) {
+  throw new Error(
+    'an OFF_BOARD_BUFFER_SLUGS entry is not a roster slug — the DOM assertion ' +
+      'below would silently check nothing'
+  );
+}
 // Map buffer comp-profile ids to the badge text rendered by the frontend's
 // profileLabel(). Keep in sync with web/src/rankChartBars.ts.
 const PROFILE_LABELS = {

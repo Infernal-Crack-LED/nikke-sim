@@ -3460,6 +3460,51 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-08-13) OFF-BOARD BUFFERS ARE CUT FROM THE POPULATION, NOT HIDDEN AT RENDER — a row that
+  exists in the artifact occupies a rank, whoever refuses to draw it.** Owner-reported bug: the unit
+  card / infographic showed **Crown as #2 on Team Buffs while the web board showed her #1**.
+  - **Cause.** The 2026-08-03 owner direction to hold `chime` and `avistar` off the Team Buffs board
+    was implemented as a render-time name filter (`HIDDEN_BUFFER_SLUGS` in `rankedBufferRows`). The
+    two hosts that call it — the web bars (`web/src/rankBoardsData.ts`) and the share/pre-render
+    table card (`src/infographics/core/rankTables.ts`) — numbered correctly. The unit card does not
+    call it: `bufferTile`/`bufferChart` (`src/infographics/core/unitCardData.ts`) read a rank
+    straight off the artifact index (`hit.index + 1`), and `chime` sat at index 0 (+142.7% generic)
+    directly above Crown. Every rank below an off-board row was off by one, the field size counted
+    units the board does not rank, and the neighbourhood charts could draw an off-board unit as a
+    neighbour.
+  - **Ruling (owner, 2026-08-13): remove them from consideration entirely, not just from the front
+    end, so there is nothing downstream to get wrong.** The exclusion now bites at the board's
+    POPULATION — `bufferPopulation()` (`src/ranks/buffer.ts`), one function called by both
+    `scripts/build-bufferchart.ts` and `scripts/probe/buffer-rotation-audit.ts` (it was a copied
+    predicate in two places; the audit can no longer describe a board that does not ship). No value
+    is computed for an off-board unit and it has no row in `bufferchart.json` at all, so no consumer
+    — present or future — can rank over it, count it, or draw it.
+  - **Renamed to say what it now means:** `HIDDEN_BUFFER_SLUGS` → `OFF_BOARD_BUFFER_SLUGS`, and
+    `rankedBufferRows` splits into `onBoardBufferRows` (name filter only) + the ≥ 0 rule. The unit
+    card uses the former, so it keeps quoting a unit's own value whatever its sign — the deliberate
+    behaviour the negative-row rule was never meant to touch — while numbering over the same set as
+    the chart. **Both name filters stay** as a backstop: PR CI can serve a PUBLISHED artifact
+    (`scripts/fetch-published-boards.ts`, the `SKIP_BOARD_BUILD=1` artifacts tier) built before this landed,
+    and a stale row would otherwise reintroduce the same off-by-one.
+  - **Measured A/B — old builder vs new, same HEAD (`145a97e9`), full shipped board, both cells**
+    (`npx tsx scripts/build-bufferchart.ts --out …`, then a row-for-row compare): population
+    127 → 125, rows 133 → 131 per cell, and **every remaining row is element-for-element identical
+    on both `generic` and `typed`**, as is the `units` map minus the two entries. That is inert by
+    MECHANISM, not just in this fixture: `bufferValueFor` scores each unit against its own
+    stage-matched no-op baseline and `rankBuffers` only maps over the population, so no unit's
+    number can depend on which other slugs were computed. Consequences: `crown` +105.1% is now the
+    artifact's #1 as well as the board's, and her card reads **#1 of 131 rows** with a `default`
+    rank of 4 (it read #2 before). `chime`/`avistar` cards read Team Buffs _unranked_ rather than
+    quoting a rank they are excluded from. Everything else is untouched: both units are still simmed,
+    still rank on burst-gen and B1/B2 DPS, and still serve as the `with-chime` / `with-avistar`
+    partners on the B1/B2 board's Crown and Anis: Star rows.
+  - **Evidence / pins:** `scripts/tests/ranks/buffer.test.ts` (population excludes them, and they are
+    still real sim-supported B1/B2 units so the exclusion is not passing for the wrong reason);
+    `scripts/tests/share/unit-card-data.test.ts` (a stale off-board row does not offset the ranks
+    below it; an off-board unit's own card is unranked; no card anywhere draws an off-board row);
+    `scripts/tests/share/table-share.test.ts`; `scripts/web-smoke-ranks.mjs` (asserts absence from
+    the shipped artifact's rows AND its `units` map, then from the rendered DOM).
+
 - **(2026-08-11) `chargeCounter` routes through `applyBlock` — the F2.1 bypass is fully closed, and
   the validator rule that guarded it is REMOVED in the same change.** Owner-approved engine edit;
   isolated worktree + PR per constraint 8.
