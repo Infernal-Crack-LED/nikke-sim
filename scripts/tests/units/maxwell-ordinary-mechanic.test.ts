@@ -28,9 +28,12 @@
 //       HP is offensively inert by the cindy e3 rule, so the line's only damage path is mom's OWN
 //       stacks feeding her own M3 caster-Max-HP conversion basis — the buff-application signature
 //       is the pin.
-//   M2  stageEnter:3, NOT burstCast: the value-10 buff fires EXACTLY on the B3 caster's (ada's)
-//       cast frames, which are distinct from mom's own B2 cast frames. A burstCast-keyed model
-//       fires on mom's frames — the frame-set equality is the discriminator.
+//   M2  stageEnter:3, NOT burstCast. Entry to stage 3 is the stage-2 CAST (owner ruling
+//       2026-08-13), so the value-10 buff fires ~30f ahead of every ada cast and on the stalled
+//       chains that reach stage 3 without one. Coincidentally mom IS the B2 here, so the frame set
+//       matches her own casts — the discriminator is therefore NOT frame identity but SCOPE: the
+//       burstCast counterfactual is caster-keyed and would keep firing if a different unit held
+//       stage 2, while stageEnter follows the chain regardless of who casts.
 //   M3  the stat IS atkOfCasterMaxHpPct — "ATK ▲ 1% of the SKILL USER'S final max HP" is
 //       CASTER-basis: it arrives as a FLAT casterAtkPct-routed ATK add of 1% of mom's LIVE Max HP
 //       at each cast (owner ruling 2026-08-04: the shipped target-own atkOfMaxHpPct was a misread
@@ -247,7 +250,8 @@ const momNoBurstBuff = withPatchedOverride(SLUG, (ov) => {
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
 const noS1A = run({ [SLUG]: momNoS1A });
-const s1BOnBurstCast = run({ [SLUG]: momS1BOnBurstCast });
+// the burstCast counterfactual now runs on the TWO-B2 fixture (see twoB2OnBurstCast below): in the
+// sole-B2 `base` comp every stage-3 entry IS one of mom's own casts, so it could not discriminate.
 const noS2A = run({ [SLUG]: momNoS2A });
 const s2ATargetOwn = run({ [SLUG]: momS2ATargetOwn });
 const noS2B = run({ [SLUG]: momNoS2B });
@@ -261,6 +265,24 @@ const noBurstBuff = run({ [SLUG]: momNoBurstBuff });
 const momMaxHp = unitOf(base.res, SLUG).maxHp;
 const adaFrames = burstFrames(base.events, 'ada');
 const momFrames = burstFrames(base.events, SLUG);
+
+// M2-ONLY fixture: mom is the SOLE Burst II in `base`, so every stage-3 entry coincides with one of
+// her own casts and a burstCast-keyed misreading would be frame-identical to the correct one. Adding
+// crown as a second B2 splits the two — the chain still enters stage 3 on the rotations crown takes,
+// where mom cast nothing.
+function runTwoB2(overrides: Record<string, any> = {}) {
+  const events: SimEvent[] = [];
+  runComp({
+    slugs: ['liter', 'crown', SLUG, 'ada'],
+    bossElement: 'Iron',
+    focusSlug: SLUG,
+    overrides,
+    cfg: { onEvent: (e) => events.push(e) },
+  });
+  return { events };
+}
+const twoB2 = runTwoB2();
+const twoB2OnBurstCast = runTwoB2({ [SLUG]: momS1BOnBurstCast });
 
 describe('maxwell-ordinary-mechanic — kit spec', () => {
   describe('M1 — S1 Full Charge grants all allies Max HP ▲ 1% of the user Max HP, stack 30, continuous', () => {
@@ -298,11 +320,22 @@ describe('maxwell-ordinary-mechanic — kit spec', () => {
   describe('M2 — S1 entering Burst Stage 3 grants all allies Attack Damage ▲ 10% for 5 sec', () => {
     const applied = momBuffs(base.events, 'attackDamagePct', 10);
 
-    it('fires EXACTLY on the B3 (ada) cast frames — stageEnter:3, not mom own-burstCast', () => {
+    // ENTRY, not cast (owner ruling 2026-08-13): the chain enters Burst Stage 3 when the stage-2
+    // unit casts — here mom herself — and a stage-3 unit casts ~30f LATER, if one is ready. So the
+    // buff fires on mom's own B2 frames, 30f ahead of each ada cast, and ALSO on the rotations
+    // where the chain reaches stage 3 and expires because ada is still on cooldown (5 of the 10
+    // here). Both are real entries to the stage; only the completed ones lead to a Full Burst.
+    it('fires on every stage-3 ENTRY — the B2 cast frames, ~30f ahead of each B3 cast', () => {
       expect(adaFrames.length).toBeGreaterThan(0);
-      expect(distinctFrames(applied)).toEqual(adaFrames);
-      // …which are distinct from mom's own B2 cast frames.
-      expect(distinctFrames(applied)).not.toEqual(momFrames);
+      const frames = distinctFrames(applied);
+      expect(frames).toEqual(momFrames);
+      expect(frames).not.toEqual(adaFrames);
+      // every ada cast is preceded by an entry exactly one chain gap earlier
+      for (const a of adaFrames) {
+        expect(frames).toContain(a - 30);
+      }
+      // …and entries OUTNUMBER the B3 casts, because chains that expire at stage 3 still entered it
+      expect(frames.length).toBeGreaterThan(adaFrames.length);
     });
 
     it('reaches all three allies for 5 sec (300 frames)', () => {
@@ -314,10 +347,21 @@ describe('maxwell-ordinary-mechanic — kit spec', () => {
       ]).toEqual([5 * FPS]);
     });
 
-    it('DISCRIMINATING: re-keyed to mom own-burstCast, it fires on mom B2 frames instead', () => {
-      const wrong = momBuffs(s1BOnBurstCast.events, 'attackDamagePct', 10);
-      expect(distinctFrames(wrong)).toEqual(momFrames);
-      expect(distinctFrames(wrong)).not.toEqual(adaFrames);
+    it('DISCRIMINATING: with a second B2 present, stageEnter follows the CHAIN and burstCast follows MOM', () => {
+      // mom sits in slot 2 of this 4-unit fixture, not slot 1 as in `base`
+      const momBuffs4 = (evs: SimEvent[]) =>
+        buffs(evs).filter(
+          (b) =>
+            b.casterIdx === 2 && b.stat === 'attackDamagePct' && b.value === 10
+        );
+      const right = distinctFrames(momBuffs4(twoB2.events));
+      const wrong = distinctFrames(momBuffs4(twoB2OnBurstCast.events));
+      const momCasts = burstFrames(twoB2.events, SLUG);
+      // the burstCast misreading fires on mom's own casts only…
+      expect(wrong).toEqual(momCasts);
+      // …while the entry trigger also covers the rotations crown took, where mom cast nothing
+      expect(right.length).toBeGreaterThan(wrong.length);
+      expect(right).not.toEqual(wrong);
     });
   });
 

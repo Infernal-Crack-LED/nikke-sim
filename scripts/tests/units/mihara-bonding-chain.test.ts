@@ -278,7 +278,17 @@ describe('mihara-bonding-chain — kit spec', () => {
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame, '10s duration').toBe(10 * FPS);
       }
-      expect(applied.length, 'fires once per Burst Stage 3 entry').toBe(
+      // ENTRY, not cast (owner ruling 2026-08-13): stage 3 is entered when the stage-2 unit casts,
+      // ~30f ahead of her own B3 — so the buff is live for her own burst, and entries outnumber her
+      // casts because a chain that reaches stage 3 and expires still entered it.
+      const entries = base.events
+        .filter((e) => e.kind === 'burstCast' && e.stage === 2)
+        .map((e) => e.frame);
+      expect(
+        applied.map((b) => b.frame),
+        'fires on every stage-3 entry'
+      ).toEqual(entries);
+      expect(applied.length).toBeGreaterThanOrEqual(
         mbcBursts(base.events).length
       );
     });

@@ -448,11 +448,14 @@ describe('flora — kit spec', () => {
 
   // ---- S2 chain (F5–F8) — the 5-unit, Flora-at-the-left-edge fixture ---------------------------
   describe('S2 chain — self-procced off S1 at Burst Stage 2 entry', () => {
+    // Stage-2 ENTRY frames (owner ruling 2026-08-13): the chain enters Burst Stage 2 the moment a
+    // stage-1 burst is cast, ~30f before any B2 casts there — and it enters on every rotation that
+    // reaches stage 1, including those whose chain later expires before a B2 is ready.
     const stage2Frames = [
       ...new Set(
         wide.events
           .filter(
-            (e): e is BurstCast => e.kind === 'burstCast' && e.stage === 2
+            (e): e is BurstCast => e.kind === 'burstCast' && e.stage === 1
           )
           .map((e) => e.frame)
       ),

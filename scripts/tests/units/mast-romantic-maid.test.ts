@@ -181,11 +181,23 @@ const mrmCasts = (evs: SimEvent[]) =>
     .filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === SLUG)
     .sort((a, b) => a.frame - b.frame);
 
-/** Every stage-3 cast frame (the B3 carry's casts) — the stageEnter:3 trigger anchor. */
+/** Every stage-3 CAST frame (the B3 carry's casts) — one chain step AFTER the stage-3 entry. */
 const stage3Frames = (evs: SimEvent[]) =>
   new Set(
     evs
       .filter((e): e is BurstCast => e.kind === 'burstCast' && e.stage === 3)
+      .map((c) => c.frame)
+  );
+
+/**
+ * Every stage-3 ENTRY frame — the stageEnter:3 anchor. Owner ruling 2026-08-13: the chain enters
+ * stage 3 when a stage-2 burst is cast, which for mast-romantic-maid is HER OWN cast (she is the
+ * B2), ~30f before the B3 casts.
+ */
+const stage3EntryFrames = (evs: SimEvent[]) =>
+  new Set(
+    evs
+      .filter((e): e is BurstCast => e.kind === 'burstCast' && e.stage === 2)
       .map((c) => c.frame)
   );
 
@@ -321,19 +333,25 @@ describe('mast-romantic-maid — kit spec', () => {
       }
     });
 
-    it('fires on the B3 stage-3 cast frame, NOT on her own stage-2 cast', () => {
-      const s3 = stage3Frames(base.events);
-      const own = new Set(mrmCasts(base.events).map((c) => c.frame));
+    // ENTRY, not cast (owner ruling 2026-08-13). She IS the Burst II here, so the chain enters
+    // stage 3 on her own cast frame — the buff lands ~30f BEFORE the B3 casts, not on its frame.
+    it('fires on the stage-3 ENTRY frame — her own stage-2 cast, ahead of the B3 cast', () => {
+      const entries = stage3EntryFrames(base.events);
+      const s3casts = stage3Frames(base.events);
+      expect(applied.length).toBeGreaterThan(0);
       for (const b of applied) {
         expect(
-          s3.has(b.frame),
+          entries.has(b.frame),
           `buff frame ${b.frame} is not a stage-3 entry`
         ).toBe(true);
         expect(
-          own.has(b.frame),
-          'must not coincide with her own stage-2 cast'
+          s3casts.has(b.frame),
+          'the entry LEADS the B3 cast — it must not coincide with it'
         ).toBe(false);
       }
+      // and the entry she opens is her own cast
+      const own = new Set(mrmCasts(base.events).map((c) => c.frame));
+      expect(applied.every((b) => own.has(b.frame))).toBe(true);
     });
 
     it('DISCRIMINATING: an x1-stack model would grant 15.03%, not 30.06%', () => {

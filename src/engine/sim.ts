@@ -3186,6 +3186,25 @@ export function runSim(
 
   const romanStage: Record<number, string> = { 1: 'I', 2: 'II', 3: 'III' };
 
+  // "Activates when entering Burst Stage N" — fired at the moment the chain REACHES stage N, i.e.
+  // when the gauge fills (N=1) or when the stage-(N-1) unit casts (N=2,3). Owner ruling 2026-08-13:
+  // "entering Burst Stage X" means "the burst gauge is full and it is now time to activate burst X",
+  // so the chain reads gauge full -> enter stage 1 -> any B1 activates -> enter stage 2 -> any B2
+  // activates -> enter stage 3 -> any B3 activates -> enter Full Burst. Entry therefore leads the
+  // stage-N CAST by the measured 30f chain gap; a kit line keyed to it is live for that cast, which
+  // is what a unit like cinderella (burst damage snapshotted pre-FB) depends on for her own nuke.
+  // NOT the same event as `stageCast` — that one fires when a stage-N burst is USED, one step later
+  // in the chain ("when an ally uses a Burst Skill", carried by rupee-winter-shopper).
+  const fireStageEnter = (newStage: 1 | 2 | 3, atFrame: number) => {
+    units.forEach((u) =>
+      u.blocks.forEach((b, bi) => {
+        if (b.trigger.kind === 'stageEnter' && b.trigger.stage === newStage) {
+          applyBlock(u.idx, b, bi, atFrame);
+        }
+      })
+    );
+  };
+
   // FB-entry emission (fullBurstEnter triggers + stored-hit releases + log) — extracted so it can
   // fire inline at the B3 cast (default) OR be deferred by FB_PRE_DELAY_FRAMES (PREFB). fbEndFrame
   // must already be set when this runs (the log reads it).
@@ -3352,6 +3371,7 @@ export function runSim(
       stage = 1;
       stageExpireFrame = Infinity;
       stageGapFrames = PRE_B1_GAP_FRAMES; // measured 30f between gauge-full and B1 (default 0 = fire immediately)
+      fireStageEnter(1, frame); // the gauge filling IS entry to stage 1
     }
     if (
       !fbActive &&
@@ -3512,10 +3532,12 @@ export function runSim(
             fullBursts++;
           }
         }
+        // "when an ally USES a Burst Skill" — a stage-N burst was cast by anyone. Distinct from
+        // `stageEnter`, which fires one chain step EARLIER (see fireStageEnter above).
         units.forEach((u) =>
           u.blocks.forEach((b, bi) => {
             if (
-              b.trigger.kind === 'stageEnter' &&
+              b.trigger.kind === 'stageCast' &&
               b.trigger.stage === castStage
             ) {
               applyBlock(u.idx, b, bi, frame);
@@ -3584,6 +3606,9 @@ export function runSim(
             stage = (stage + 1) as 1 | 2 | 3;
             stageGapFrames = chainGap;
             stageExpireFrame = frame + STAGE_WINDOW_FRAMES;
+            // this cast is what ADVANCED the chain, so it is also the entry to the next stage —
+            // one chainGap (30f) ahead of the unit that will cast there
+            fireStageEnter(stage, frame);
           }
         }
       } else {

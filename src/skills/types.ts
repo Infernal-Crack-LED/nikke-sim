@@ -116,7 +116,13 @@ export type TriggerDef =
   | { kind: 'recovery' } // when the owner RECEIVES a heal (a 'heal' effect targets them) — Crown's "when recovery takes effect"
   | { kind: 'shielded' } // when the owner RECEIVES a shield (a 'shield' effect targets them) — shield-synergy kits (e.g. naga's shield-gate)
   | { kind: 'interval'; sec: number } // fires every `sec` seconds of battle, first at t=sec — kit lines that "just happen" on an internal cooldown with no visible activation clause (snow-white S2a 144.73%, owner-stated 15s CD 2026-07-20). ⚑ first-fire phase (t=sec vs t=0) is a convention; pin from footage when a consumer's cadence is popup-read
-  | { kind: 'stageEnter'; stage: 1 | 2 | 3 } // when a stage-N burst is cast by anyone
+  // "Activates when entering Burst Stage N" — the chain REACHES stage N: the gauge fills (N=1) or
+  // the stage-(N-1) unit casts (N=2,3). Owner ruling 2026-08-13: entry to stage N is the moment it
+  // becomes time to activate burst N, so it LEADS the stage-N cast by the 30f chain gap.
+  | { kind: 'stageEnter'; stage: 1 | 2 | 3 }
+  // "Activates when an ally uses a Burst Skill" — a stage-N burst is CAST by anyone. One chain step
+  // LATER than the same-numbered stageEnter; do not substitute one for the other.
+  | { kind: 'stageCast'; stage: 1 | 2 | 3 }
   | { kind: 'bossElement'; element: string } // permanent, but only if the boss has this element
   | { kind: 'unsupported'; raw: string };
 

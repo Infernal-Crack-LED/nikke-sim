@@ -9,7 +9,53 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-12, latest) A weapon swap's damage FLAVOR and its ammo ECONOMY are independent — and
+- **(2026-08-13, latest) "Entering Burst Stage N" is the moment the chain REACHES stage N — one
+  chain step BEFORE the stage-N burst is cast.**
+  - **The ruling (owner, 2026-08-13), verbatim in substance.** "Entering burst stage X" means "the
+    burst gauge is full and it is now time to activate burst X". The chain therefore reads: burst
+    gauge fills → **enter stage 1** → any B1 activates → **enter stage 2** → any B2 activates →
+    **enter stage 3** → any B3 activates → **enter Full Burst** (the 10s clock starts). The owner
+    flagged it as a common kit mechanism that had to be correct globally, not per unit.
+  - **What the engine did instead.** `stageEnter{stage:N}` was dispatched at the frame the stage-N
+    unit CAST — one step late by the measured 30f chain gap, and, more importantly, keyed to a cast
+    that may never happen. All 12 carriers of the kit phrase "Activates when entering Burst Stage N"
+    had authored the literal number from their kit text, so all 12 inherited the offset: cinderella,
+    ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic,
+    mihara-bonding-chain, mint, neon-blue-ocean, rei-ayanami, snow-white-heavy-arms,
+    soda-twinkling-bunny.
+  - **The 13th carrier was RIGHT and must not be shifted.** `rupee-winter-shopper`'s blocks encode a
+    different sentence — "Activates when an ally uses a Burst Skill" — which genuinely is the
+    stage-N cast. That reading is now its own trigger, `stageCast`, and she moved onto it. The two
+    triggers are one chain step apart and are the easy confusion; `trigger-kinds.test.ts` pins the
+    lead directly.
+  - **Two consequences, both direct readings of the ruling.**
+    1. An entry-keyed buff is now live for the cast it precedes — `cinderella` resolves her burst
+       damage pre-Full-Burst (`burstSnapshotsPreFb`), and the engine applied stage blocks AFTER that
+       resolution, so her own "entering Burst Stage 3" self-buff had been missing her own nuke.
+    2. A chain that REACHES a stage and then expires (no eligible unit off cooldown) still ENTERED
+       it, so entries outnumber casts wherever chains stall — in the maxwell-ordinary-mechanic
+       fixture, 10 stage-3 entries against 5 B3 casts, the other five expiring at 25.9s, 62.0s, …
+       This roughly doubles those units' proc counts in stalling comps and is the larger half of the
+       change; it follows from the ruling's own wording ("it is now time to activate burst X"), not
+       from a separate inference.
+  - **Blast radius (measured, not estimated).** No Full-Burst count moves on any graded comp — the
+    rotation itself is untouched, and every measured-truth FB assert still passes. 15 per-unit damage
+    totals move, all under 1.6% (largest: mint +1.55%, prika +1.50%, snow-white-heavy-arms −1.45%).
+    Per-unit ratio movement is mixed and tiny — 6 units better, 7 worse, none by more than 0.009 in
+    ratio — but it is NOT band-neutral: the board goes ±3% 7 | ±5% **15** | ±8% 25 | worse 20 →
+    ±3% 7 | ±5% **14** | ±8% 25 | worse 20 over 142 datapoints, because `snow-white-heavy-arms`
+    crosses the ±5% boundary (0.954 → 0.946, n=4). Her S2 "entering Burst Stage 3" ATK ▲73.92% is
+    exactly the line this change re-times, so that is fit exposure — her magnitudes were hand-tuned
+    against the cast-frame timing — and the standing rule applies: a timing correction is judged on
+    measured-FB-count preservation, not the aggregate board, and an exposed unit is re-tuned
+    separately rather than re-fudged here. Filed in QUEUE.md.
+  - **Evidence tier.** Owner ruling on game behaviour ⇒ the modeling question was ANSWERED, so
+    `/scientific-method` does not apply (CLAUDE.md: known answer ⇒ encode + `/code-review`). Proof
+    lives in `scripts/tests/engine/trigger-kinds.test.ts` (the primitive: entry frames, the 30f lead
+    over the same-numbered cast, and stage-1 entry landing before any cast) plus the six unit specs
+    that had pinned the old timing and now pin the new.
+
+- **(2026-08-12) A weapon swap's damage FLAVOR and its ammo ECONOMY are independent — and
   `takina`'s burst gun is a real weapon, not a re-flavored sniper.**
   - **The rulings (owner, 2026-08-12).** `takina`'s burst swaps to a CUSTOM weapon: it deals the
     damage her kit lists (200.64%), has **no ammo and no reload**, fires at **1.2 shots/sec** — 12
