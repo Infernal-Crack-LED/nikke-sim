@@ -928,7 +928,7 @@ Removes Fulfillment of Righteousness.
 **Laplace (Treasure)** (laplace)
 
 - **skill1:** Activates when attacking with Full Charge. Affects self. Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5, 15s.
-  - *Why:* skill1: Explosion Radius ▲ is inert vs the partless boss; its stacks only gate the burst true damage (assumed maxed)
+  - *Why:* skill1: the Explosion Radius ▲3.57% magnitude is inert vs the partless boss and stays unmodeled; the STACK COUNT it comes with is now modeled as the heroVision resource pool, because that count is what gates the burst's two true-damage clauses
 
 **Little Mermaid** (little-mermaid)
 

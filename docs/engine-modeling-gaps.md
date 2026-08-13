@@ -105,7 +105,7 @@
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 5 | asuka, kilo, mori, naga, rapunzel-pure-grace |
 | `requiresTargetStatus` | 13 | asuka-wille, d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, … |
-| `resourceGate` | 23 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace-ultimate-hero, … |
+| `resourceGate` | 24 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace, … |
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 2 | flora, naga |

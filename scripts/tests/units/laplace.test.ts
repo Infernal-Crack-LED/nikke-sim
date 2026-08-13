@@ -22,9 +22,10 @@
 //      ■ same enemy unit(s) when Hero Vision at max stacks: 11.9% of final ATK as true damage       [L12]
 //
 // INERT / OUT-OF-DOMAIN lines (no damage observable at the partless single-boss scope lock):
-//   L1/L2 Hero Vision Explosion Radius ▲ — AoE radius is inert vs one partless boss; its STACK STATE
-//         only gates the burst true damage (L10/L12), which the override assumes maxed for the window (⚑).
-//         UNMODELED (no assertion).
+//   L1/L2 Hero Vision Explosion Radius ▲ — the AoE RADIUS magnitude is inert vs one partless boss and
+//         stays unmodeled. Its STACK COUNT is MODELED (2026-08-12) as a `heroVision` resource pool,
+//         because that count is what gates the burst's two true-damage clauses (L10/L12) — see the
+//         L1/L2 assertion group at the end of this file.
 //   L4    S2b 14.78% parts hit — needs destructible parts ("target's body"); partless boss ⇒ never fires.
 //         UNMODELED (no assertion).
 //   L9    Gains Pierce — modeled (gauntlet 2026-07-26, blind-reviewer converged) as swap-scoped
@@ -35,8 +36,8 @@
 // trueNormals (L10) is a SEMANTIC FLAVOR TAG: the engine routes true damage through the trueDamagePct
 // buff bucket, and this comp grants laplace none — so trueNormals:true is numerically identical to
 // false here. It is PINNED STRUCTURALLY (the override must carry the tag) and is NOT behaviorally
-// discriminable from damage totals in this fixture. The Hero-Vision-max gate it encodes is the ⚑ uptime
-// assumption (maxed throughout the 10s window), shared with the L12 rider.
+// discriminable from damage totals in this fixture. The Hero-Vision-max gate it sits behind IS
+// behaviorally live, though — see L1/L2.
 //
 // Why each PIN discriminates (a test that cannot fail under the nearest wrong model gates nothing):
 //   L3  the treasure value 132.45 on a shotFired trigger gated swapGate:'unswapped' — it rides the base
@@ -120,14 +121,15 @@ const laplaceBaseFirst = withPatchedOverride('laplace', (ov) => {
   }
   e.atkPct = 897.6;
 });
-/** L7 counterfactual: the base-kit swap Normal Damage (14.52). */
+/** L7 counterfactual: the base-kit swap Normal Damage (14.52). Both Hero-Vision branches. */
 const laplaceBaseSwap = withPatchedOverride('laplace', (ov) => {
-  const b = ov.burst.find(hasSwap);
-  const e = b && swapEff(b);
-  if (!e || e.damagePct !== 22.2) {
+  const es = ov.burst.filter(hasSwap).map(swapEff);
+  if (!es.length || es.some((e: any) => e.damagePct !== 22.2)) {
     throw new Error('laplace weaponSwap 22.2 missing — fixture is stale');
   }
-  e.damagePct = 14.52;
+  es.forEach((e: any) => {
+    e.damagePct = 14.52;
+  });
 });
 /** L5/L8 reference: the swap weapon removed entirely. */
 const laplaceNoSwap = withPatchedOverride('laplace', (ov) => {
@@ -137,7 +139,7 @@ const laplaceNoSwap = withPatchedOverride('laplace', (ov) => {
     throw new Error('laplace weaponSwap block missing — fixture is stale');
   }
 });
-/** L12 counterfactual: the 11.9% rider with its swap gate removed (fires on EVERY shot). */
+/** L12 counterfactual: the 11.9% rider fully ungated (fires on EVERY shot, in or out of a window). */
 const laplaceNoRiderGate = withPatchedOverride('laplace', (ov) => {
   const b = ov.burst.find(
     (x: any) => x.trigger.kind === 'shotFired' && x.swapGate === 'swapped'
@@ -146,15 +148,29 @@ const laplaceNoRiderGate = withPatchedOverride('laplace', (ov) => {
     throw new Error('laplace 11.9 swap-gated rider missing — fixture is stale');
   }
   delete b.swapGate;
+  delete b.resourceGate;
+});
+/** L1/L2 counterfactual: Hero Vision assumed permanently maxed (the pre-2026-08-12 model) — the
+ *  stack gate stripped from both the rider and the beam's true flavor, so the whole fight runs as
+ *  if she had 5 stacks from frame 0. */
+const laplaceHeroVisionAssumed = withPatchedOverride('laplace', (ov) => {
+  const gated = ov.burst.filter((b: any) => b.resourceGate);
+  if (gated.length !== 3) {
+    throw new Error(
+      `laplace heroVision gates: expected 3 gated burst blocks, found ${gated.length} — fixture is stale`
+    );
+  }
+  // drop the below-max beam branch entirely, then ungate the max-stack branch + the rider
+  ov.burst = ov.burst.filter((b: any) => b.resourceGate?.max === undefined);
+  ov.burst.forEach((b: any) => delete b.resourceGate);
 });
 /** L9 reference: the swap-scoped pierce tag removed (proves it is damage-inert at scope lock). */
 const laplaceNoPierce = withPatchedOverride('laplace', (ov) => {
-  const b = ov.burst.find(hasSwap);
-  const e = b && swapEff(b);
-  if (!e || e.hasPierce !== true) {
+  const es = ov.burst.filter(hasSwap).map(swapEff);
+  if (!es.length || es.some((e: any) => e.hasPierce !== true)) {
     throw new Error('laplace weaponSwap.hasPierce missing — fixture is stale');
   }
-  delete e.hasPierce;
+  es.forEach((e: any) => delete e.hasPierce);
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -166,6 +182,7 @@ const baseSwap = run({ laplace: laplaceBaseSwap });
 const noSwap = run({ laplace: laplaceNoSwap });
 const noRiderGate = run({ laplace: laplaceNoRiderGate });
 const noPierce = run({ laplace: laplaceNoPierce });
+const heroVisionAssumed = run({ laplace: laplaceHeroVisionAssumed });
 
 // ---- readers ----------------------------------------------------------------------------------
 const dmg = (evs: SimEvent[]) =>
@@ -347,18 +364,88 @@ describe('laplace (Treasure) — kit spec', () => {
       expect([...new Set(r.map((d) => d.bucket))]).toEqual(['burst']);
     });
 
-    it('fires once per swap-beam shot, and strictly fewer than total shots (gate is live)', () => {
+    it('fires once per MAX-STACK swap-beam shot, and strictly fewer than total shots (both gates live)', () => {
       const riders = trueRiders(base.events).length;
-      expect(riders).toBe(swapBeamNormals(base.events).length);
+      // The rider carries TWO gates: swapGate 'swapped' (beam ticks only) and the heroVision
+      // stack gate. Beam ticks are its ceiling, and the ticks of any window she opened below max
+      // Hero Vision are excluded — see the L1/L2 group for that difference.
+      expect(riders).toBeLessThanOrEqual(swapBeamNormals(base.events).length);
       expect(riders).toBeLessThan(lapShots(base.events).length);
+      expect(riders).toBeGreaterThan(0);
     });
 
-    it('DISCRIMINATING: removing the swap gate fires it on EVERY shot', () => {
+    it('DISCRIMINATING: removing BOTH gates fires it on EVERY shot', () => {
       expect(trueRiders(noRiderGate.events).length).toBe(
         lapShots(noRiderGate.events).length
       );
       expect(trueRiders(noRiderGate.events).length).toBeGreaterThan(
         trueRiders(base.events).length
+      );
+    });
+  });
+
+  describe('L1/L2 — Hero Vision "at max stacks" gates BOTH burst true-damage clauses', () => {
+    // OWNER RULINGS 2026-08-12: Hero Vision stacks build from FULL CHARGE attacks, and her burst
+    // beam does not charge — so she gains ZERO stacks during the 10s window and enters it with
+    // whatever she built. Stacks REFRESH as a whole set on each new stack (game-wide, owner ruling
+    // 2026-08-11 = modeling-priors prior 12), so the 15s clock is reset by her last pre-burst full
+    // charge and outlasts the window: once open, the gate holds for the whole window. The only
+    // over-credit the old "assume maxed" model carried is a cast made BEFORE she has landed 5 full
+    // charges — in this fixture, the fight's first burst.
+    //
+    // Encoded with the EXISTING resource primitives (soda-twinkling-bunny precedent), not a new
+    // engine gate: a `heroVision` pool capped at 5, +1 per base full-charge pull
+    // (shotFired + swapGate 'unswapped' — the beam grants none), read by `resourceGate` on the
+    // two clauses. APPROXIMATION, deliberate and documented: a resource does not expire, so the
+    // pool is monotone. That matches the refresh rule at scope lock (she fires continuously, so
+    // the 15s clock never lapses) and diverges only across a >15s firing pause, which the
+    // continuous scope-lock fight does not contain.
+    it('ENCODING: a heroVision pool (0..5) feeds off base full charges only, and gates both clauses', () => {
+      const ov = loadOverride('laplace') as any;
+      expect(ov.resources).toEqual([
+        { name: 'heroVision', initial: 0, min: 0, max: 5 },
+      ]);
+      const feeder = ov.skill1.find((b: any) =>
+        b.effects.some((e: any) => e.kind === 'resource')
+      );
+      expect(feeder.trigger.kind).toBe('shotFired');
+      expect(
+        feeder.swapGate,
+        'the beam does not charge → grants no stacks'
+      ).toBe('unswapped');
+      expect(feeder.effects[0]).toEqual({
+        kind: 'resource',
+        name: 'heroVision',
+        delta: 1,
+      });
+      // the beam splits into a max-stack (true-flavored) branch and a below-max (plain) branch
+      const swaps = ov.burst.filter(hasSwap);
+      expect(swaps).toHaveLength(2);
+      const maxBranch = swaps.find((b: any) => b.resourceGate?.min === 5);
+      const lowBranch = swaps.find((b: any) => b.resourceGate?.max === 4);
+      expect(swapEff(maxBranch).trueNormals).toBe(true);
+      expect(swapEff(lowBranch).trueNormals).toBeUndefined();
+      expect(swapEff(maxBranch).damagePct).toBe(swapEff(lowBranch).damagePct);
+    });
+
+    it('BEHAVIORAL: she opens at least one window below max stacks — the beam still fires there', () => {
+      // gate live ⇒ strictly fewer 11.9 riders than beam ticks; the beam itself never goes missing
+      expect(trueRiders(base.events).length).toBeLessThan(
+        swapBeamNormals(base.events).length
+      );
+      expect(swapBeamNormals(base.events).length).toBe(
+        swapBeamNormals(heroVisionAssumed.events).length
+      );
+    });
+
+    it('DISCRIMINATING: assuming Hero Vision permanently maxed (the prior model) over-credits her', () => {
+      // every beam tick becomes rider-bearing, and her total rises — the exact over-credit the
+      // rulings identified, now bounded rather than assumed away
+      expect(trueRiders(heroVisionAssumed.events).length).toBe(
+        swapBeamNormals(heroVisionAssumed.events).length
+      );
+      expect(heroVisionAssumed.totals.laplace).toBeGreaterThan(
+        base.totals.laplace
       );
     });
   });
