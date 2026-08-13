@@ -3392,6 +3392,11 @@ export function runSim(
       // [15,20,20,20] instead of [15,15,15,15]: three windows absorbing two +5s grants each).
       // Correct under BOTH readings of the stalled-entry question — an extension for a Full Burst
       // that never happened cannot belong to a different one.
+      // ⚑ ASSUMPTION ON RECORD: this treats anything pending at expiry as belonging to the dead
+      // chain. True for every carrier today (only stage-entry grants ever sit here unconsumed; a
+      // B3's own burstCast grant resolves same-frame via the fbEndFrame > frame path). A FUTURE
+      // fullBurstExtend on a non-chain trigger (interval / hitCount) granted outside Full Burst
+      // would be silently dropped by the next expiry — revisit here if one is ever added.
       pendingFbExtendSec = 0;
     }
     // Burst casts are BLOCKED while the boss is off-screen during a range transition

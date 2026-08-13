@@ -43,8 +43,9 @@
 //          expiry. Nearest wrong for M8: an x1-stack model (20.06% → ~20,007 flat).
 //   M3     normalAttackPct -40 is SELF-only (holders [mrm]) and LIVE: removing it raises her own
 //          total (the ~40% miss rate stops biting) while leaving every ally byte-identical.
-//   M4/M5  fire on STAGE-3 ENTRY (the B3 carry's cast frame), NOT on her own stage-2 cast — she is
-//          Burst II, so her cast precedes the stage-3 entry by the ~0.5s chain gap. Value is the
+//   M4/M5  fire on STAGE-3 ENTRY, which under the 2026-08-13 ruling IS her own stage-2 cast frame —
+//          she is the Burst II, so casting is what enters stage 3, ~0.5s AHEAD of the B3 carry's
+//          cast (the buff must NOT coincide with that). Value is the
 //          x2 cycle average (30.06/30.08). Nearest wrong: x1 stacks (15.03/15.04).
 //   M6/M7  burst grants to all 4 allies for 10s, once per cast. Nearest wrong: self-only.
 //   M9     BEHAVIORAL — the stun emits no event; it is read as a ~10s gap in her shot stream. Over
