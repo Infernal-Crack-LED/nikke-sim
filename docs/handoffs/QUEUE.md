@@ -82,10 +82,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      - **`noir` — OPEN.** The reload tension (recon ~0.6–0.9s vs datamined 62f ≈ 1.03s). Folded
        into the ongoing SG investigation per owner direction (M7) and cross-referenced from the SG
        owner-ask doc §5b: she is the SG-landing anchor, so the same footage serves both.
-     - **`chisato` — OPEN, and narrower than batch 7 framed it.** The flavor/economy split landed
-       (`cbd950af`) and true damage CRITTING is owner-ruled in-game-confirmed. What is left is
-       only **whether true damage should CORE** — an ENGINE-fidelity question outside her
-       override's domain, large because SMG `coreMult` is 250.
+     - ~~`chisato`~~ **CLOSED 2026-08-13 by owner ruling — it was never a footage question.** True
+       damage is a FLAVOR like pierce and does not change the damage's properties, so a WEAPON
+       dealing true damage crits AND cores, while a SKILL dealing true damage crits but never
+       cores. The engine already conformed by two independent paths, so this closed as CONFORMANT
+       with **no code change**; the fragile half (nothing stopped a future override from authoring
+       a `coreRate` on a true-flavored skill effect) is now pinned in
+       `scripts/tests/true-damage-flavor-guard.test.ts`. General ruling — it governs every
+       `trueFlavor` swap, not just hers. → DECISIONS 2026-08-13.
      - CLOSED by enactment: `ada` (maxShots 1 — the kit-literal reading won), `prika` (Pierce),
        `rouge` (M10 coin CO-EXISTENCE, which turned out to be a model defect, not a measurement),
        all in `de84bbd4`; `ade-agent-bunny` by the M6 ruling that stacks REFRESH unless a kit says
@@ -95,9 +99,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
        from another context, and `12 / 1.26 ≈ 9.5/s` was an arithmetic coincidence promoted to a
        suspect. Do not re-open it from the batch-8 wording.
      - HELD, not open: `mint` (M12 confirmed the shipped `singing` model; her solo magnitudes stay
-       unanchored **by disposition**) and `mihara-bonding-chain` (the 12-stack average is still the
-       one fitted number in her file, but "do not turn it without a measurement" IS the recorded
-       ruling, and the engine has no stack-currency primitive to replace it with).
+       unanchored **by disposition**).
+     - **`mihara-bonding-chain` — the recorded ruling was BACKWARDS, corrected 2026-08-13.** Her
+       file (and this queue, until now) said "do not turn the 12-stack average without a
+       measurement". The owner's actual ruling is the opposite: **do NOT use the average stacks —
+       build/use a primitive for her.** Worse, the primitive already existed and was built FOR HER:
+       `types.ts` documents a resource-scaled DoT naming her Ensnaring, and `sim.ts`'s dot tick
+       recomputes `atkPct = resources[name] × mult` with the comment "(mihara Ensnaring)" — and
+       **zero** overrides used it. The engine half landed; the override was never migrated.
+       Work is DONE and parked on branch `mihara/ensnaring-live-pool`, deliberately NOT merged:
+       it is correct in structure but **blocked on QUEUE item 6**. A live pool moves her
+       1.034 → 1.182 HOT (±5% 14→13, ±8% 25→24) because generation runs ~5× too fast — 127
+       stack-gains in 180s where "+1 per 40 normals DURING Full Burst" implies roughly 25 — which
+       is item 6's `hitCount` scope defect exactly. Land the two TOGETHER (compensating-errors
+       rule), then re-read her board; the expected direction after the item-6 fix is that she cools
+       well below 1.182.
        `takina`'s is item 4 below and is still open.
    - **Held primitives, logged not built** (F11 discipline — one carrier each): `moran` S1
      DEF ▲/stack, `maxwell` `byFinalAtk`, `helm`'s held tag. Leave held; the log is the point.
