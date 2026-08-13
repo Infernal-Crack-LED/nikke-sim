@@ -85,6 +85,15 @@ reading output.
 - **Kit text is written in BLOCKS, not lines.** A `■` header carries the trigger and target clause
   and governs the effect lines beneath it; entries and quotes routinely span the whole block.
   Matching line-by-line is a structural blind spot, not a threshold to tune.
+- **A GENERATED census and the HAND-WRITTEN prose beside it drift apart silently — when you edit
+  that prose, re-derive it from the generator.** `doc-drift.ts` guards the generated tables in
+  `engine-modeling-gaps.md` and cannot see a sentence one line below them. Found 2026-08-12 by a
+  cross-family review: a section heading said "8 units" while the census in the same file said 7,
+  and the hand-written membership list beside it was wrong on **4 of 7 names** (it claimed two units
+  that carry no `modes` at all and omitted two that do) — the count had been "corrected" without
+  checking the list. Correcting one number in a hand-written block is exactly the moment to score
+  the whole block against the generator, and to say in the prose that it comes from there.
+
 - **What NO mechanical census can reach is the modeling JUDGEMENT** — "this line looks inert but
   isn't". That is what the `d-killer-wife` Pierce change actually was (the quantity was correctly
   recorded before AND after; only its disposition changed). Censuses check that a kit line is

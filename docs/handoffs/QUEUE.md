@@ -431,9 +431,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > The 2026-08-09 faithfulness-enactment batch LANDED every enactable finding from the
 > unmodeled-entries audit (DECISIONS 2026-08-09 has the full list + board A/B). What remains:
 
-- **Exposed hot fit from the batch — run the pending direct measurement, then re-tune (never
-  re-fudge):** `maxwell` 0.889→1.252 (popup-read the burst window in run-G/N6 footage: railgun
-  shot count + charged value vs the modeled ~2 × 2440.26%).
+- ~~**Exposed hot fit from the batch:** `maxwell` (SR/Iron, not `maxwell-ordinary-mechanic`)
+  0.889→1.252~~ **RESOLVED 2026-08-12 without footage** — owner ruling: her burst fires ONE railgun
+  shot (kit "Max Ammunition Capacity: 1"), not the ~2-3 the sim ran. `maxShots: 1`, board
+  1.252 → 1.069. A popup read would now only pin the charged VALUE, not the count.
 - **`alice-wonderland-bunny` stack-grant reading:** now aligned to the +1-GRANT majority; if a
   datamine function-type read or footage confirms the 2026-07-28 cap-raise reading instead,
   revert her addStack block to unmodeled (revert path in her note).
