@@ -149,7 +149,10 @@ const PRE_B1_GAP_FRAMES = ENV.PREB1GAP === 'off' ? 0 : STAGE_CAST_GAP_FRAMES; //
 // PREFB (frame-measured 2026-07-21, chisato.mov): a 22f delay between the B3 cast and the FB
 // countdown actually starting (b3 → 22f → 10s FB). Likely the mechanistic reason instant burst-cast
 // attacks miss the +50% (they land in this gap, before FB begins — today modeled via per-unit noFb
-// flags). Default OFF (inert). `PREFB=1` enables. INVESTIGATION ITEM (owner). (open-questions U16.)
+// flags). Default ON (22f); `PREFB=off` disables. (open-questions U16.) ⚑ This line said "Default OFF
+// (inert). `PREFB=1` enables" until 2026-08-13 — stale prose contradicting the code one line below it
+// AND the unit tests (vesti-tactical-upgrade / mihara-bonding-chain treat cast+22f as live). Caught by
+// code review when a new comment leaned on the 22f default two screens away from text denying it.
 const FB_PRE_DELAY_FRAMES = ENV.PREFB === 'off' ? 0 : 22; // default ON (frame-measured 22f B3->FB)
 const FULL_BURST_FRAMES = 10 * FPS;
 // AUTO RELEASE LATENCY (2026-07-13 reframe; docs/data/charge-weapons.md §2): "old-style"
@@ -1578,7 +1581,8 @@ export function runSim(
     ? Number(ENV.CHAIN_TIMEOUT)
     : 600;
   let fbEndFrame = -1;
-  // PREFB (default off): when the B3 cast should defer the FB start by FB_PRE_DELAY_FRAMES, the
+  // PREFB (default ON, 22f — `PREFB=off` reverts): when the B3 cast defers the FB start by
+  // FB_PRE_DELAY_FRAMES, the
   // fbEndFrame set + fullBurstEnter + stored-hit release are scheduled here and fired that many
   // frames later (during the gap fbEndFrame stays old, so "in FB" is correctly false).
   let pendingFbStartFrame = -1;
@@ -3294,8 +3298,8 @@ export function runSim(
   };
 
   for (let frame = 0; frame < totalFrames; frame++) {
-    // PREFB: a deferred full-burst start fires here, FB_PRE_DELAY_FRAMES after the B3 cast (default
-    // off → pendingFbStartFrame stays -1, so this is inert/byte-identical).
+    // PREFB: a deferred full-burst start fires here, FB_PRE_DELAY_FRAMES after the B3 cast. This is
+    // the DEFAULT path (22f); `PREFB=off` sets the delay to 0 and the start fires inline instead.
     if (pendingFbStartFrame >= 0 && frame >= pendingFbStartFrame) {
       fbEndFrame =
         frame + FULL_BURST_FRAMES + Math.round(pendingFbStartExtendSec * FPS);

@@ -6,13 +6,16 @@ write a clean result JSON. When a dispatch instead leaves only a raw session log
 model narrated its tool calls around the verdict, or the bridge died after the model
 answered — this pulls the verdict back out instead of re-spending the dispatch.
 
-The log is a JSON envelope with a `result` string holding the model's full output: tool
-call/result blocks followed by the final JSON verdict, usually inside a ```json fence.
+Two input shapes are accepted, because both occur:
+  * a session log — a JSON envelope with a `result` string holding the model's full output
+    (tool call/result blocks, then the final JSON verdict, usually inside a ```json fence);
+  * that output text on its own — what dispatch-*.sh saves as `<out>.raw.txt` when its own
+    jq validation rejects the extracted candidate.
 
     python3 scripts/extract-review-json.py <log-path> <out-path> [--model NAME]
 
 <log-path>   the dispatch session log (e.g. ~/.kimi-code/sessions/<wd>/<session>/agents/
-             main/tasks/<task>/output.log), or `-` to read the envelope from stdin
+             main/tasks/<task>/output.log), a bridge-saved `<out>.raw.txt`, or `-` for stdin
 <out-path>   where to write the extracted verdict, e.g.
              scratchpad/gates/<date>-<topic>/result.json
 --model      stamp `model` on the verdict. The bridges inject this themselves; set it only
@@ -74,16 +77,23 @@ def main() -> int:
     args = ap.parse_args()
 
     raw = sys.stdin.read() if args.log_path == '-' else open(args.log_path).read()
-    envelope = json.loads(raw)
-    if 'result' not in envelope:
-        print(
-            f'{args.log_path}: no `result` field — not a dispatch envelope',
-            file=sys.stderr,
-        )
-        return 1
+    # Two input shapes, both real:
+    #   1. a dispatch SESSION LOG — a JSON envelope whose `result` string holds the model's output.
+    #   2. the model's output text ITSELF — what dispatch-*.sh now saves as `<out>.raw.txt` when jq
+    #      rejects the extracted candidate. Before 2026-08-13 this path crashed on `json.loads`
+    #      (plain text) or exited on the missing `result` field (text that happened to be pure JSON),
+    #      so the rescue command the bridge printed could never work in the one case it existed for.
+    try:
+        envelope = json.loads(raw)
+    except json.JSONDecodeError:
+        envelope = None
+    if isinstance(envelope, dict) and 'result' in envelope:
+        source = envelope['result']
+    else:
+        source = raw
 
     try:
-        obj = extract(envelope['result'])
+        obj = extract(source)
     except ValueError as e:
         print(f'{args.log_path}: {e}', file=sys.stderr)
         return 1

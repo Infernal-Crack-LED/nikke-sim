@@ -47,8 +47,8 @@
 //     600f expiry, and buffs die on `expiresFrame <= frame` while stage resets on
 //     `frame >= stageExpireFrame`, so the hole is ZERO frames. ⚑ Default-only: under CHAIN_TIMEOUT=120
 //     the chain dies 8s before her rider does and she WOULD generate. She is also dormant in the
-//     control shape (crown takes every B2 cast — the census prints "no carrier fires" for her row),
-//     so T5 wind-weak is her only empirical coverage here.
+//     control shape (crown takes every B2 cast — her row prints "(no extraHitDamagePct carrier
+//     fires)"), so T5 wind-weak is her only empirical coverage here.
 // The census numbers (0 unlocked emissions, every comp) confirm the mechanism; they are not the
 // argument for it. What would actually expose the emission: a rider window that outlives the Full
 // Burst its own cast opens, or a chain that expires while a window is still live.
