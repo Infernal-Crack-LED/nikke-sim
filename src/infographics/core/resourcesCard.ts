@@ -172,7 +172,7 @@ export function buildResourcesCard(
 // ~150px each needs to hold their label/sub without ellipsizing.
 export const RESOURCES_CARD_W = 940;
 const PAD_X = 32;
-const HEAD_H = 96; // icon + title + subtitle band, matches tableCard's HEAD_H
+const HEAD_H = 96; // title + subtitle band, matches tableCard's HEAD_H
 const TITLE_BASELINE_Y = 44;
 const TITLE_FONT_SIZE = 24;
 // Bottom pad — only the footer NOTE lands here now (see tableCard.ts's FOOT_H).

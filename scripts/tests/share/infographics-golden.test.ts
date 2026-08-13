@@ -52,6 +52,8 @@ import {
   TABLE_TITLE_INK_REGION,
   RESOURCES_TITLE_ICON,
   RESOURCES_TITLE_INK_REGION,
+  drawBrandMark,
+  type Canvas2DLike,
 } from '../../../src/infographics/node/render.js';
 import { renderAll, type FixtureRender } from './infographics-harness.js';
 
@@ -166,19 +168,26 @@ describe('infographic golden images', () => {
 });
 
 // Regression for the vacuous-guard bug the ink regions fixed: a region that
-// starts at padX passes on ICON PIXELS alone with zero glyphs. Each ink region
-// used by the harness/build script must THROW on an icon-only canvas (icon
-// drawn at its exact card position, no text).
+// covers the nikkesim.app MARK passes on the mark's own pixels with zero title
+// glyphs. Each ink region used by the harness/build script must THROW on a
+// mark-only canvas (the whole mark — icon AND accent wordmark — drawn at its
+// exact card position, no title text).
 //
-// Both sides — the icon draw rect and the ink region — come from the card
-// modules' *_TITLE_ICON / *_TITLE_INK_REGION exports, so a layout change moves
-// the guard AND this test together (the hand-copied constants this replaced
-// could drift from the core cards and silently re-vacate the guard).
-describe('assertTitleInk regions are not satisfiable by the site icon alone', () => {
+// Drawing the WHOLE mark, not just its icon, is the point: the mark moved to
+// the card's top-right corner, so its wordmark is now the part nearest each
+// region, and a long footer path ('nikkesim.app/teambuilder' is the longest
+// real one) is what would close the gap first. Reconstructing it through
+// drawBrandMark — the renderer's own function, positioned off the card's own
+// *_TITLE_ICON export — means a layout change or a longer path moves the guard
+// AND this test together, instead of silently re-vacating it.
+describe('assertTitleInk regions are not satisfiable by the nikkesim.app mark alone', () => {
   const SITE_ICON = new URL(
     '../../../src/infographics/assets/nikkesim-icon.png',
     import.meta.url
   );
+  // The longest descriptor any caller passes today (src/server/card-from-build.ts
+  // via the teambuilder share path); the widest wordmark the mark can draw.
+  const LONGEST_MARK = 'nikkesim.app/teambuilder';
   // [card, icon draw rect, ink region] — derived from the core card modules
   const cases: [
     string,
@@ -191,23 +200,26 @@ describe('assertTitleInk regions are not satisfiable by the site icon alone', ()
     ['resourcesCard', RESOURCES_TITLE_ICON, RESOURCES_TITLE_INK_REGION],
   ];
   for (const [card, iconRect, region] of cases) {
-    it(`${card}: icon-only canvas fails the ink guard`, async () => {
+    it(`${card}: mark-only canvas fails the ink guard`, async () => {
       const icon = await decodeToCanvas(SITE_ICON);
       expect(icon, 'site icon must decode for this test').not.toBeNull();
-      // Wide enough to hold the mark's icon at its real top-right position —
-      // an off-canvas draw would make the guard pass for the wrong reason.
+      // Wide enough to hold the mark at its real top-right position — an
+      // off-canvas draw would make the guard pass for the wrong reason.
       const W = Math.max(600, iconRect.x + iconRect.size + 8);
       const canvas = createCanvas(W, 120);
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = '#101216';
       ctx.fillRect(0, 0, W, 120);
-      ctx.drawImage(
-        icon!,
-        iconRect.x,
-        iconRect.y,
-        iconRect.size,
-        iconRect.size
-      ); // icon, ZERO text
+      // The mark exactly as a card draws it, and ZERO title text. The cast is
+      // the harness's own (infographics-harness.ts): skia's context types
+      // fillStyle as string|Gradient|Pattern where the platform-free
+      // Canvas2DLike narrows it to string.
+      drawBrandMark(ctx as unknown as Canvas2DLike, {
+        right: iconRect.x + iconRect.size,
+        top: iconRect.y,
+        text: LONGEST_MARK,
+        icon: icon!,
+      });
       expect(() => assertTitleInk(ctx, card, region)).toThrow(/ZERO/);
     });
   }

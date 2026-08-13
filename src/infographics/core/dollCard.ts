@@ -50,7 +50,7 @@ export interface DollCardData {
 // right edge. 640 keeps a gutter between columns and still fits the subtitle.
 export const DOLL_CARD_W = 640;
 const PAD_X = 32;
-const HEAD_H = 96; // icon + title + subtitle band, matches the other cards
+const HEAD_H = 96; // title + subtitle band, matches the other cards
 const TITLE_BASELINE_Y = 44;
 const TITLE_FONT_SIZE = 24;
 // Bottom pad — only the footer NOTE lands here now (see tableCard.ts's FOOT_H).
