@@ -258,6 +258,8 @@ beforeAll(async () => {
   put('img/unit/liter.0123abcd.png', 'png');
   put('img/unit/maiden-ice-rose.discord.9fedcba1.webp', 'webp');
   put('img/table/ol.c0ffee00.png', 'png');
+  put('img/doll/sr.0.f6c74721.png', 'png');
+  put('img/resources/t9.5fde01eb.png', 'png');
   put('img/portraits/liter-128.webp', 'webp');
   // Copy the real sitemap.xml so we can assert every advertised URL is a known
   // route and serves with the correct content type.
@@ -299,6 +301,12 @@ describe('api/v1/img static routes', () => {
       '/api/v1/img/dps/solo.eleweak.c100.8of12.all.deadbeef.png',
       '/api/v1/img/unit/liter.0123abcd.png',
       '/api/v1/img/table/ol.c0ffee00.png',
+      // doll and resources landed in the manifest (build-infographics.ts)
+      // without this route's kind allowlist ever being extended to match —
+      // both 404'd in production for weeks despite the files existing on
+      // disk. Regression coverage for that gap.
+      '/api/v1/img/doll/sr.0.f6c74721.png',
+      '/api/v1/img/resources/t9.5fde01eb.png',
     ]) {
       const res = await fetch(`${base}${p}`);
       expect(res.status).toBe(200);

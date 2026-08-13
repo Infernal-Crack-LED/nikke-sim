@@ -4,7 +4,7 @@
 // trigger fired when POST /api/v1/img/render shipped).
 //
 //   GET /api/v1/img/manifest.json            → dist/img/manifest.json, no-cache
-//   GET /api/v1/img/{dps,unit,rank,table}/<file> → dist/img/..., immutable (hashed)
+//   GET /api/v1/img/{dps,unit,rank,table,doll,resources}/<file> → dist/img/..., immutable (hashed)
 //   GET /api/v1/img/cache/<file>             → the dynamic-render cache, immutable
 //   GET /api/v1/img/team.png?b=<buildcode>|?id=<config> → 302 to /api/v1/img/cache/team.<hash>.png
 //   GET /api/v1/img/roster.png?b=<buildcode>|?id=<config> → 302 to .../roster.<hash>.png
@@ -732,7 +732,7 @@ export function registerImgApi(app: Hono, ctx: ApiContext): void {
     const path = new URL(c.req.url).pathname;
     const rest = path.slice(API_PREFIX.length);
     const kind = rest.split('/')[0];
-    if (!['dps', 'unit', 'rank', 'table'].includes(kind)) {
+    if (!['dps', 'unit', 'rank', 'table', 'doll', 'resources'].includes(kind)) {
       return apiMiss();
     }
     const rel = normalize(decodeURIComponent(rest)).replace(
