@@ -96,7 +96,7 @@
 | `pelletCountFlat` | 3 | arcana-fortune-mate, dorothy-serendipity, leona |
 | `perResource` | 7 | e-h, exia, guillotine, mana, marciana-marine-study, phantom, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
-| `pullsPerSec` | 3 | jill, k, takina |
+| `pullsPerSec` | 4 | jill, k, takina, velvet |
 | `rampSec` | 4 | arcana-fortune-mate, cinderella, nayuta, scarlet |
 | `recovery` | 2 | asuka, crown |
 | `reenterStage` | 7 | alice-wonderland-bunny, anis-star, avistar, chime, rupee-winter-shopper, tia, viper |
@@ -115,7 +115,7 @@
 | `stageEnter` | 13 | cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, … |
 | `storedHit` | 1 | rapi-red-hood |
 | `stun` | 1 | mast-romantic-maid |
-| `swapGate` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
+| `swapGate` | 9 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, velvet, … |
 | `swapped` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
 | `targetMaxHpPct` | 17 | 2b, blanc, delta, diesel, folkwang, label, laplace-ultimate-hero, maiden-ice-rose, … |
 | `targetStatus` | 12 | asuka-wille, d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, … |
@@ -123,8 +123,8 @@
 | `teamHas` | 4 | anchor-innocent-maid, blanc, eunhwa-tactical-upgrade, noir |
 | `trueNormals` | 7 | chisato, clay, eunhwa-tactical-upgrade, frima, jill, laplace, takina |
 | `unlimitedAmmo` | 6 | grave, modernia, moran, nayuta, red-hood, snow-white-innocent-days |
-| `unswapped` | 2 | laplace, laplace-ultimate-hero |
-| `weapon` | 15 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, himeno, k, leona, miranda, … |
+| `unswapped` | 3 | laplace, laplace-ultimate-hero, velvet |
+| `weapon` | 16 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, himeno, k, leona, miranda, … |
 | `weaponSwap` | 21 | ada, chisato, cinderella-crystal-wave, clay, e-h, eunhwa-tactical-upgrade, frima, jill, … |
 | `whileSwapped` | 0 | _none_ |
 
