@@ -41,6 +41,12 @@ export const DEFAULT_RESOURCES_TIER = 9;
 export const RESOURCES_TIER_MIN = 1;
 export const RESOURCES_TIER_MAX = 9;
 
+// doll.png with no params renders the /doll page's own default view: an SR doll
+// planned from phase 0, i.e. the whole journey.
+export const DEFAULT_DOLL_RARITY = 'SR';
+export const DOLL_RARITIES = ['R', 'SR'] as const;
+export const DOLL_MAX_PHASE = 15;
+
 // The element filter set both link surfaces expose (web DpsChartTab
 // ELEMENT_FILTERS pills, bot /dps choices) — request values are lowercase.
 export const ELEMENT_FILTERS = ['fire', 'water', 'wind', 'electric', 'iron'];
@@ -70,7 +76,8 @@ export type RenderSpec =
     }
   | { kind: 'table'; table: 'max-ammo'; unit: string }
   | { kind: 'table'; table: 'charge-speed'; unit?: string }
-  | { kind: 'resources'; tier: number };
+  | { kind: 'resources'; tier: number }
+  | { kind: 'doll'; rarity: 'R' | 'SR'; from: number };
 
 // A comparison chart is capped at 10 bars — the same row count the §6.6
 // window renders, so the card geometry never changes shape.
@@ -221,6 +228,30 @@ export function parseRenderSpec(
       }
       return { ok: true, spec: { kind: 'resources', tier } };
     }
+    case 'doll': {
+      const rawRarity = trimmed(String(raw.rarity ?? ''));
+      const rarity = rawRarity ?? DEFAULT_DOLL_RARITY;
+      if (!DOLL_RARITIES.includes(rarity as (typeof DOLL_RARITIES)[number])) {
+        return {
+          ok: false,
+          error: `rarity must be ${DOLL_RARITIES.join(' or ')}`,
+        };
+      }
+      const rawFrom = trimmed(String(raw.from ?? ''));
+      const from = rawFrom !== undefined ? Number(rawFrom) : 0;
+      // A plan from the max phase has no steps, so it is not a card — the last
+      // renderable start is one phase short of the top.
+      if (!Number.isInteger(from) || from < 0 || from >= DOLL_MAX_PHASE) {
+        return {
+          ok: false,
+          error: `from must be an integer 0-${DOLL_MAX_PHASE - 1}`,
+        };
+      }
+      return {
+        ok: true,
+        spec: { kind: 'doll', rarity: rarity as 'R' | 'SR', from },
+      };
+    }
     default:
       return { ok: false, error: `unknown render kind '${String(raw.kind)}'` };
   }
@@ -342,6 +373,8 @@ export function specCacheKey(spec: RenderSpec): string {
       return `${RENDERER_VERSION}|table|${spec.table}|${spec.unit ?? 'generic'}`;
     case 'resources':
       return `${RENDERER_VERSION}|resources|${spec.tier}`;
+    case 'doll':
+      return `${RENDERER_VERSION}|doll|${spec.rarity}|${spec.from}`;
   }
 }
 
@@ -349,6 +382,6 @@ export function specCacheKey(spec: RenderSpec): string {
 // variants share the `table` prefix, matching the existing files).
 export function specCacheType(
   spec: RenderSpec
-): 'team' | 'roster' | 'dps' | 'table' | 'resources' {
+): 'team' | 'roster' | 'dps' | 'table' | 'resources' | 'doll' {
   return spec.kind === 'table' ? 'table' : spec.kind;
 }

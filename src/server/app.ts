@@ -13,6 +13,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { decodeToCanvas, type Canvas } from '../infographics/node/render.js';
 import { handleStatic } from './static.js';
 import { API_PREFIX, apiMiss, registerImgApi, type ApiContext } from './api.js';
+import type { DollData } from '../doll/card.js';
 import { RenderCache } from './render-cache.js';
 import { SpecStore } from './spec-store.js';
 import { ConfigStore } from './config-store.js';
@@ -49,6 +50,25 @@ function loadCharacters(): Record<string, CardCharacter> {
     characters: Record<string, CardCharacter>;
   };
   return parsed.characters;
+}
+
+// The doll card's two data files. Undefined when they aren't there, which the
+// doll route reports as a 404 — the same treatment the dps artifact gets, and
+// better than refusing to boot the whole server over one card.
+function loadDollData(): DollData | undefined {
+  try {
+    return {
+      economy: JSON.parse(
+        readFileSync(join(REPO_ROOT, 'data', 'doll-economy.json'), 'utf8')
+      ),
+      proc: JSON.parse(
+        readFileSync(join(REPO_ROOT, 'data', 'doll-super-success.json'), 'utf8')
+      ),
+    };
+  } catch (err) {
+    console.warn('doll data unavailable, /api/v1/img/doll.png will 404:', err);
+    return undefined;
+  }
 }
 
 // The nikkesim icon drawn beside card titles. The compiled bundle resolves it
@@ -91,6 +111,7 @@ export async function createNikkesimServer(
     icon: await loadIcon(),
     renderSecret: opts.renderSecret ?? env.NIKKESIM_RENDER_SECRET,
     dpsChartPath: opts.dpsChartPath,
+    doll: loadDollData(),
   };
 
   const staticOpts = {

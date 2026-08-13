@@ -1,12 +1,14 @@
 // Build-time pre-generation of the static infographic set (Phase 2 of
 // docs/handoffs/2026-07-27-infographics-centralization-plan.md): renders the
-// head-only set (~210 images — 2 headline DPS cells × 6 element variants, 4
-// rank boards, 2 utility tables, 192 unit cards) through
+// head-only set (2 headline DPS cells × 6 element variants, 5 rank boards, 2
+// static utility tables, 2 cards per unit, one max-ammo table per unit, one
+// charge-speed table per charge weapon, one Resource Calculator card per AI
+// tier, and one Doll Leveling card per doll rarity) through
 // src/infographics/node/render.ts ONLY,
 // at scale 2, writing CONTENT-HASHED filenames into dist/img/ plus a mutable
 // manifest.json that maps each logical key to its immutable file.
 //
-//   npx tsx scripts/build-infographics.ts [--limit N] [--out <dir>]
+//   npx tsx scripts/build-infographics.ts [--limit N] [--out <dir>] [--only <key-prefix>]
 //
 // --limit N renders only the first N unit cards (sorted by slug) and skips the
 // DPS/rank jobs entirely — the fast path for tests, which must not require the
@@ -53,7 +55,23 @@ import {
   UNIT_CARD_WEBP_QUALITY,
   buildOlTable,
   buildChargeTable,
+  buildAmmoTable,
+  chargeLatencyFrames,
   GENERIC_BASE_FRAMES,
+  buildResourcesCard,
+  drawResourcesCard,
+  resourcesCardHeight,
+  RESOURCES_CARD_W,
+  RESOURCES_TITLE_INK_REGION,
+  BOSS_TABLES,
+  iconBasename,
+  loadIcon,
+  drawDollCard,
+  dollCardHeight,
+  DOLL_CARD_W,
+  DOLL_TITLE_INK_REGION,
+  type ChargeWeaponRow,
+  type ResourcesIcons,
   buildBurstGenTable,
   buildBurstCdrTable,
   buildSustainTable,
@@ -87,6 +105,16 @@ import {
 } from './lib/portrait-thumbs.js';
 import { computeInfographicsInputHash } from './artifact-input-hash.js';
 import { parseCellId, cellLabel } from '../src/dpschart/matrix.js';
+import {
+  RESOURCES_TIER_MIN,
+  RESOURCES_TIER_MAX,
+  DOLL_RARITIES,
+} from '../src/infographics/spec.js';
+import {
+  buildDollPlan,
+  dollCardData,
+  type DollData,
+} from '../src/doll/card.js';
 import type {
   BurstGenArtifact,
   BurstCdrArtifact,
@@ -106,6 +134,11 @@ const LIMIT = argValue('--limit') ? Number(argValue('--limit')) : null;
 const OUT_DIR = argValue('--out')
   ? resolve(argValue('--out')!)
   : fileURLToPath(new URL('../dist/img/', import.meta.url));
+// Render only the jobs whose logical key starts with this — for iterating on
+// one card kind (`--only table/`) without paying the whole set, and for tests
+// that need a real render of a narrow slice. It writes a PARTIAL manifest
+// describing just those keys, so it is for a scratch --out dir, never dist/.
+const ONLY = argValue('--only') ?? null;
 
 // Both variants are pre-rendered for every unit (ruling 15).
 const UNIT_CARD_VARIANTS = ['discord', 'twitter'] as const;
@@ -164,6 +197,11 @@ interface CharacterRow {
   manufacturer: string;
   burstCooldownSec: number | null;
   simSupported?: boolean;
+  // Per-unit table inputs — the same flat fields the API's table routes read
+  // off this file (src/server/card-from-build.ts CardCharacter).
+  ammo?: number;
+  chargeFrames?: number;
+  role?: { weapon?: unknown } | null;
 }
 
 const DATA_HINT =
@@ -502,22 +540,181 @@ function tableJobs(): Job[] {
   ];
   return specs.map(({ key, build }) => ({
     key,
-    render: async (): Promise<Rendered> => {
-      const data = build();
-      data.icon = (await loadSiteIcon()) ?? undefined;
-      const canvas = scaledCanvas(TABLE_W, tableHeight(data.rows.length));
-      drawTableCard(canvas.getContext('2d') as unknown as Canvas2DLike, data);
+    render: () => renderTable(key, build()),
+  }));
+}
+
+// A table card, rendered exactly the way the API's dynamic table route renders
+// it (src/server/dps-table-cards.ts renderTableCardPng) — same builder, same
+// canvas size, so the pre-rendered file and the on-demand render agree.
+async function renderTable(
+  key: string,
+  data: TableCardData
+): Promise<Rendered> {
+  data.icon = (await loadSiteIcon()) ?? undefined;
+  const canvas = scaledCanvas(TABLE_W, tableHeight(data.rows.length));
+  drawTableCard(canvas.getContext('2d') as unknown as Canvas2DLike, data);
+  return {
+    key,
+    png: canvas.toBuffer('image/png'),
+    ext: 'png' as const,
+    width: canvas.width,
+    height: canvas.height,
+    canvas,
+    inkRegion: scaledRegion(TABLE_TITLE_INK_REGION),
+  };
+}
+
+// PER-UNIT table cards — the bot's /charge-speed <unit> and /max-ammo <unit>.
+//
+// These were the API's on-demand renders, which meant every one was a URL
+// Discord's image proxy had never seen: the message posted and the card
+// appeared seconds later. The set is bounded and small (one ammo table per
+// unit, one charge table per charge weapon), so pre-rendering puts them on the
+// same instant, content-hashed footing as the unit cards.
+//
+// The eligibility rules mirror the API's (src/server/api.ts resolveRender,
+// 'table'): ammo needs a positive base magazine, charge needs positive base
+// frames AND an SR/RL weapon. A unit the API would 400 gets no key here, so a
+// manifest miss and an API rejection stay the same answer.
+function perUnitTableJobs(chars: CharacterRow[]): Job[] {
+  const jobs: Job[] = [];
+  for (const ch of [...chars].sort((a, b) => a.slug.localeCompare(b.slug))) {
+    if ((ch.ammo ?? 0) > 0) {
+      const key = `table/max-ammo.${ch.slug}`;
+      jobs.push({
+        key,
+        render: () => renderTable(key, buildAmmoTable(ch.ammo!, ch.name)),
+      });
+    }
+    const baseFrames = ch.chargeFrames ?? 0;
+    if (baseFrames > 0 && (ch.weapon === 'SR' || ch.weapon === 'RL')) {
+      const key = `table/charge-speed.${ch.slug}`;
+      jobs.push({
+        key,
+        render: async () => {
+          const data = buildChargeTable(
+            baseFrames,
+            ch.name,
+            chargeLatencyFrames(ch as ChargeWeaponRow)
+          );
+          // The API's per-unit charge table carries the unit's portrait; the
+          // generic one and the ammo tables do not.
+          data.portrait = (await loadPortrait(ch.slug)) ?? undefined;
+          return renderTable(key, data);
+        },
+      });
+    }
+  }
+  return jobs;
+}
+
+// The Resource Calculator card (bot /ai), one per Anomaly Interception tier.
+// Nine tiers, nine images — small enough that the whole space is pre-rendered
+// rather than rendered per request.
+function resourcesJobs(): Job[] {
+  return Array.from(
+    { length: RESOURCES_TIER_MAX - RESOURCES_TIER_MIN + 1 },
+    (_, i) => {
+      const tier = RESOURCES_TIER_MIN + i;
+      const key = `resources/t${tier}`;
       return {
         key,
-        png: canvas.toBuffer('image/png'),
-        ext: 'png' as const,
-        width: canvas.width,
-        height: canvas.height,
-        canvas,
-        inkRegion: scaledRegion(TABLE_TITLE_INK_REGION),
+        render: async (): Promise<Rendered> => {
+          const data = buildResourcesCard(tier, await resourcesIcons());
+          data.icon = (await loadSiteIcon()) ?? undefined;
+          const canvas = scaledCanvas(
+            RESOURCES_CARD_W,
+            resourcesCardHeight(data.sections.length)
+          );
+          drawResourcesCard(
+            canvas.getContext('2d') as unknown as Canvas2DLike,
+            data
+          );
+          return {
+            key,
+            png: canvas.toBuffer('image/png'),
+            ext: 'png' as const,
+            width: canvas.width,
+            height: canvas.height,
+            canvas,
+            inkRegion: scaledRegion(RESOURCES_TITLE_INK_REGION),
+          };
+        },
       };
-    },
-  }));
+    }
+  );
+}
+
+// The Doll Leveling card (bot /doll) — the per-phase feeding plan the /doll
+// page shows by default.
+//
+// Pre-rendered from phase 0 ONLY, for each doll rarity: that is the whole
+// journey, which is what the page defaults to and the only thing the command
+// asks for. The API renders any other starting phase on demand — 14 more cards
+// per rarity that nothing currently requests do not belong in every deploy.
+function dollJobs(): Job[] {
+  const data: DollData = {
+    economy: loadJson(new URL('../data/doll-economy.json', import.meta.url)),
+    proc: loadJson(new URL('../data/doll-super-success.json', import.meta.url)),
+  };
+  return DOLL_RARITIES.map((rarity) => {
+    const key = `doll/${rarity.toLowerCase()}.0`;
+    return {
+      key,
+      render: async (): Promise<Rendered> => {
+        const card = dollCardData(
+          buildDollPlan(data.economy, data.proc, rarity, 0)
+        );
+        card.icon = (await loadSiteIcon()) ?? undefined;
+        const canvas = scaledCanvas(
+          DOLL_CARD_W,
+          dollCardHeight(card.steps.length)
+        );
+        drawDollCard(canvas.getContext('2d') as unknown as Canvas2DLike, card);
+        return {
+          key,
+          png: canvas.toBuffer('image/png'),
+          ext: 'png' as const,
+          width: canvas.width,
+          height: canvas.height,
+          canvas,
+          inkRegion: scaledRegion(DOLL_TITLE_INK_REGION),
+        };
+      },
+    };
+  });
+}
+
+// The card's icon strip, loaded once and shared by all nine tiers (loadIcon is
+// per-process cached, but the fan-out below is explicit either way).
+let resourcesIconsCache: Promise<ResourcesIcons> | null = null;
+function resourcesIcons(): Promise<ResourcesIcons> {
+  resourcesIconsCache ??= (async () => {
+    const RES_ICON_SIZE = 26; // matches web's .res-stat-icon (styles.css)
+    const [moduleIcon, gearIcon, lockIcon, fodderIcon, ...fragIcons] =
+      await Promise.all([
+        loadIcon('res_module', RES_ICON_SIZE),
+        loadIcon('res_t9_gear', RES_ICON_SIZE),
+        loadIcon('res_lock', RES_ICON_SIZE),
+        loadIcon('res_xp_fodder', RES_ICON_SIZE),
+        ...BOSS_TABLES.map((t) =>
+          loadIcon(iconBasename(t.fragmentIcon), RES_ICON_SIZE)
+        ),
+      ]);
+    const fragmentByBoss: ResourcesIcons['fragmentByBoss'] = {};
+    BOSS_TABLES.forEach((t, i) => {
+      fragmentByBoss[t.key] = fragIcons[i] ?? undefined;
+    });
+    return {
+      module: moduleIcon ?? undefined,
+      gear: gearIcon ?? undefined,
+      lock: lockIcon ?? undefined,
+      fodder: fodderIcon ?? undefined,
+      fragmentByBoss,
+    };
+  })();
+  return resourcesIconsCache;
 }
 
 // TWO cards per character (ruling 15): `discord` 2:1 landscape for the bot embed
@@ -657,7 +854,7 @@ async function main(): Promise<void> {
     );
   }
   const notSimSupported: string[] = [];
-  const jobs: Job[] = unitJobs(
+  let jobs: Job[] = unitJobs(
     Object.values(chars.characters),
     sources,
     LIMIT,
@@ -669,10 +866,24 @@ async function main(): Promise<void> {
       new URL('../web/public/dpschart.json', import.meta.url),
       DATA_HINT
     );
-    jobs.unshift(...dpsJobs(dpschart), ...rankJobs(), ...tableJobs());
+    jobs.unshift(
+      ...dpsJobs(dpschart),
+      ...rankJobs(),
+      ...tableJobs(),
+      ...perUnitTableJobs(Object.values(chars.characters)),
+      ...resourcesJobs(),
+      ...dollJobs()
+    );
+  }
+  if (ONLY) {
+    jobs = jobs.filter((j) => j.key.startsWith(ONLY));
   }
   if (jobs.length === 0) {
-    throw new Error('build-infographics: empty job list');
+    throw new Error(
+      ONLY
+        ? `build-infographics: --only '${ONLY}' matched no job keys`
+        : 'build-infographics: empty job list'
+    );
   }
 
   mkdirSync(OUT_DIR, { recursive: true });
