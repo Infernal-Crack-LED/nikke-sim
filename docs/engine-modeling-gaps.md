@@ -96,7 +96,7 @@
 | `pelletCountFlat` | 3 | arcana-fortune-mate, dorothy-serendipity, leona |
 | `perResource` | 7 | e-h, exia, guillotine, mana, marciana-marine-study, phantom, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
-| `pullsPerSec` | 2 | jill, k |
+| `pullsPerSec` | 3 | jill, k, takina |
 | `rampSec` | 4 | arcana-fortune-mate, cinderella, nayuta, scarlet |
 | `recovery` | 2 | asuka, crown |
 | `reenterStage` | 7 | alice-wonderland-bunny, anis-star, avistar, chime, rupee-winter-shopper, tia, viper |

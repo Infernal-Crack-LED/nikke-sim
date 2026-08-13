@@ -295,10 +295,15 @@ describe('laplace (Treasure) — kit spec', () => {
       // the window while the beam pays only 22.2%+11.9% per tick — the S2a-scope × beam-economy
       // interaction the S7 judge flagged as the dominant unmeasured lever. Direction aside, the swap
       // must move her total by a wide margin (it is her whole kit), proving it is live, not vacuous.
+      // Margin 0.2, not the pre-2026-08-12 0.3: the swap-economy fix (`sameWeapon` replacing
+      // `trueNormals` as the magazine-refill marker) stopped her 999-round BEAM magazine leaking
+      // back onto the base RL when the window closed — she used to spend the rest of the fight
+      // reload-free on a 999-round rocket launcher, which inflated the no-swap gap. Her total is
+      // 5.4% lower and the delta is now 0.265.
       const delta =
         Math.abs(base.totals.laplace - noSwap.totals.laplace) /
         noSwap.totals.laplace;
-      expect(delta).toBeGreaterThan(0.3);
+      expect(delta).toBeGreaterThan(0.2);
     });
   });
 

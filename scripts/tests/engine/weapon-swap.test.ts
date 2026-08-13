@@ -207,7 +207,12 @@ describe('weaponSwap (temporary weapon override)', () => {
     ).toEqual(new Set([1]));
   });
 
-  it('DISCRIMINATING: entering a real (non-trueNormals) swap force-refills ammo to swap.maxAmmo; trueNormals does not', () => {
+  // The refill rule keys on `sameWeapon` — "the gun is not replaced" — and NOT on `trueNormals`,
+  // which is a damage FLAVOR. Conflating the two made a real weapon that happens to deal true
+  // damage inexpressible: it was stuck with the base weapon's magazine (takina's burst gun, owner
+  // ruling 2026-08-12). The two flags are asserted INDEPENDENT here: trueNormals alone still
+  // refills, sameWeapon alone still withholds.
+  it('DISCRIMINATING: entering a real (non-sameWeapon) swap force-refills ammo to swap.maxAmmo; sameWeapon does not', () => {
     const HUGE_AMMO = 900; // far above blanc's base 60, so a refill jump is unmistakable
     const real = swapComp({
       damagePct: BASE_MULT,
@@ -218,20 +223,54 @@ describe('weaponSwap (temporary weapon override)', () => {
       damagePct: BASE_MULT,
       pullsPerSec: BASE_PPS,
       maxAmmo: HUGE_AMMO,
+      sameWeapon: true,
+    });
+    // a real weapon that ALSO deals true damage — the case the old trueNormals proxy got wrong
+    const realTrue = swapComp({
+      damagePct: BASE_MULT,
+      pullsPerSec: BASE_PPS,
+      maxAmmo: HUGE_AMMO,
       trueNormals: true,
     });
     const firstAfterEntry = (shots: ShotEvent[]) =>
       shots.find((s) => s.sec >= SWAP_SEC && s.slug === CARRY)!;
-    const realFirst = firstAfterEntry(real.shots);
-    const flavorFirst = firstAfterEntry(flavor.shots);
     expect(
-      realFirst.ammoAfter,
+      firstAfterEntry(real.shots).ammoAfter,
       'a real swap should force-refill to the new (huge) capacity on entry'
     ).toBeGreaterThan(HUGE_AMMO - 5);
     expect(
-      flavorFirst.ammoAfter,
-      'a trueNormals (same-weapon flavor) swap must NOT force a free reload on entry'
+      firstAfterEntry(flavor.shots).ammoAfter,
+      'a sameWeapon (flavor) swap must NOT force a free reload on entry'
     ).toBeLessThan(60);
+    expect(
+      firstAfterEntry(realTrue.shots).ammoAfter,
+      'true-flavored normals are a DAMAGE flag — they must not withhold a real swap’s magazine'
+    ).toBeGreaterThan(HUGE_AMMO - 5);
+  });
+
+  it('DISCRIMINATING: leaving a real (non-sameWeapon) swap hands the BASE weapon back full; sameWeapon does not', () => {
+    // A real weapon change hands the base weapon back FULL (owner ruling 2026-08-12, takina: "with
+    // its magazine restored to full"); a same-weapon flavor swap has been firing the base gun all
+    // along and keeps whatever is left in it. Read off the FIRST pull after the window closes.
+    // The swap is deliberately slow (0.5/s → 4 shots) on a deep magazine so no reload cycle runs
+    // inside the window and the two arms differ only in the refills.
+    const swap = {
+      damagePct: BASE_MULT,
+      pullsPerSec: 0.5,
+      maxAmmo: 999,
+    } as const;
+    const real = swapComp({ ...swap });
+    const flavor = swapComp({ ...swap, sameWeapon: true });
+    const firstAfterExit = (shots: ShotEvent[]) =>
+      shots.find((s) => s.sec > SWAP_SEC + SWAP_DUR)!;
+    expect(
+      firstAfterExit(real.shots).ammoAfter,
+      'the base weapon should come back on a full magazine (blanc: 60 rounds, 59 after one pull)'
+    ).toBe(59);
+    expect(
+      firstAfterExit(flavor.shots).ammoAfter,
+      'a sameWeapon swap grants no free reload on exit either — the base magazine is where it was'
+    ).toBeLessThan(59);
   });
 
   it('DISCRIMINATING: maxShots ends the swap early (uses-based), independent of durationSec', () => {

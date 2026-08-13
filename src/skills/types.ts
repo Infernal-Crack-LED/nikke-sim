@@ -355,6 +355,17 @@ export type EffectDef =
       // unit's normalAttackMultiplier — NOT a per-pellet value.
       pelletCount?: number;
       trueNormals?: boolean; // swap shots are true-flavored (Takina: "Normal attacks deal true damage")
+      // The gun is NOT replaced — this "swap" only re-flavors/re-values the weapon already in hand
+      // (chisato/clay/jill/frima: "Normal attacks deal true damage for N sec", modeled as a swap
+      // because the flavor tag rides the swap state). A same-weapon swap grants NO magazine refill
+      // at either end (kit-audit chisato #2 — you keep shooting the same half-spent gun); a REAL
+      // weapon change picks up a fresh magazine on entry and hands the base weapon back FULL on exit
+      // (owner ruling 2026-08-12, takina). This is the SOLE discriminator for that refill rule —
+      // `trueNormals` used to double as the marker, which conflated a damage FLAVOR with the weapon's
+      // ammo ECONOMY and made a true-damaging real weapon inexpressible (takina; `laplace` the
+      // RL/Iron treasure unit, NOT laplace-ultimate-hero; `eunhwa-tactical-upgrade`, NOT base eunhwa). Diagnostic in the tree: every same-weapon carrier's `damagePct` equals its own
+      // `normalAttackMultiplier` exactly (the gun is unchanged, so its damage is too).
+      sameWeapon?: boolean;
       hasPierce?: boolean; // swap shots are Pierce-tagged ("Additional Effect: Pierce" scoped to the
       // swapped weapon, snow-white's cannon — owner-ruled 2026-07-20). Feeds the
       // per-shot pierce tag only (Pierce Damage ▲ bucket eligibility); never the

@@ -478,6 +478,9 @@ interface WeaponSwap {
   // SG swap is the FULL-SHOT total (all pellets landing), same convention as normalAttackMultiplier.
   pelletCount?: number;
   trueNormals?: boolean;
+  // "the gun is not replaced" — a same-weapon flavor swap. Gates the magazine refill at BOTH ends
+  // (see the two `sameWeapon` sites below). Authored per-unit; never inferred from trueNormals.
+  sameWeapon?: boolean;
   hasPierce?: boolean; // swap shots are Pierce-tagged (swap-scoped "Additional Effect: Pierce",
   // snow-white's cannon) — feeds the per-shot pierceActive tag only
   // uses-based termination (MEASURED 2026-07-14, SWHA-focus recording: the swap ends right
@@ -2722,9 +2725,14 @@ export function runSim(
           owner.swap = {
             untilFrame: frame + Math.round(e.durationSec * FPS),
             damagePct: e.damagePct,
-            chargeFrames: e.chargeTimeSec
-              ? Math.round(e.chargeTimeSec * FPS)
-              : undefined,
+            // null-check, NOT falsy: `chargeTimeSec: 0` is the authored way to say "the swapped
+            // weapon does NOT charge" and must survive to the engine as chargeFrames 0, so the
+            // fire loop takes the cadence branch instead of inheriting the BASE unit's charge
+            // (`u.swap?.chargeFrames ?? u.char.chargeFrames`) and never reading `pullsPerSec`.
+            chargeFrames:
+              e.chargeTimeSec != null
+                ? Math.round(e.chargeTimeSec * FPS)
+                : undefined,
             chargeTimeClampFrames: e.chargeTimeClamp
               ? Math.max(1, Math.round(e.chargeTimeClamp * FPS))
               : undefined,
@@ -2734,6 +2742,7 @@ export function runSim(
             weapon: e.weapon,
             pelletCount: e.pelletCount,
             trueNormals: e.trueNormals,
+            sameWeapon: e.sameWeapon,
             hasPierce: e.hasPierce,
             maxShots: e.maxShots,
             shotsFired: 0,
@@ -2741,10 +2750,13 @@ export function runSim(
           owner.chargeProgress = 0;
           owner.reloading = false;
           owner.reloadProgress = 0;
-          // A same-weapon flavor swap (trueNormals — the gun never changes, only normals become true
-          // damage: chisato/takina/laplace) does NOT reload the mag; only a real weapon swap picks up a
-          // fresh magazine. (kit-audit chisato #2 — the kit grants no reload here.)
-          if (!e.trueNormals) {
+          // A same-weapon flavor swap (the gun never changes, only its normals become true damage:
+          // chisato/clay/jill/frima) does NOT reload the mag; only a real weapon swap picks up a
+          // fresh magazine. (kit-audit chisato #2 — the kit grants no reload here.) The marker is
+          // the authored `sameWeapon`, NOT `trueNormals`: a REAL weapon can also deal true damage
+          // (takina's burst gun, owner ruling 2026-08-12), and reading the flavor as the economy
+          // left such a unit stuck with the base weapon's magazine mid-window.
+          if (!e.sameWeapon) {
             owner.ammo = maxAmmo(owner, frame);
           }
           break;
@@ -3642,7 +3654,9 @@ export function runSim(
       }
 
       if (u.swap && frame >= u.swap.untilFrame) {
-        const wasFlavorSwap = u.swap.trueNormals; // same-weapon flavor swap → no free reload on exit either
+        const wasFlavorSwap = u.swap.sameWeapon; // same-weapon flavor swap → no free reload on exit either;
+        // a REAL weapon change hands the base weapon back with a FULL magazine (owner ruling 2026-08-12,
+        // takina: "when the swap ends she returns to the sniper with its magazine restored to full")
         u.swap = null;
         if (!wasFlavorSwap) {
           u.ammo = maxAmmo(u, frame);

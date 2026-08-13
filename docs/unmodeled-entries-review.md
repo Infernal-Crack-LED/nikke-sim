@@ -13,9 +13,9 @@
 | --- | --- | --- |
 | Defensive / HP / shield / aggro | 207 | 44.9% |
 | Missing engine primitive / trigger | 93 | 20.2% |
-| Other / see caveats | 92 | 20.0% |
+| Other / see caveats | 91 | 19.7% |
 | Out-of-domain / parser unsupported | 30 | 6.5% |
-| Weapon-state / shot-count approximation | 11 | 2.4% |
+| Weapon-state / shot-count approximation | 12 | 2.6% |
 | Partless boss | 10 | 2.2% |
 | Self-status / stack gate | 8 | 1.7% |
 | RNG / probabilistic | 6 | 1.3% |
@@ -1148,7 +1148,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Other / see caveats (92)
+### Other / see caveats (91)
 
 **A2** (a2)
 
@@ -1444,11 +1444,6 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 - **skill2:** ATK ▲ 23.74% of the skill user's ATK for 15 sec.
   - *Why:* Its ATK line is casterAtkPct-shaped (23.74% of SORA's ATK) if ever modeled — NOT atkPct per target; materializing it on a substitute trigger is the nearest-wrong model the spec test discriminates
 
-**Takina** (takina)
-
-- **skill2:** Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)
-  - *Why:* S2 is a 15s-cooldown pulse (cooldown NOT in the DB text; Prydwen COMMUNITY ⚑ supplies the 15s): enemies Damage Taken 10.09%/5s + 2s stun (boss-inert, UNMODELED), allies True Damage 140.49%/10s
-
 **Velvet** (velvet)
 
 - **skill1:** Bullet Snatch (battle start + Burst Stage 2): removes 5% ammo from all enemies; fills own ammo pouch to 6,000 rounds.
@@ -1602,7 +1597,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 Outgoing healing ▲ 35.2% continuously.
   - *Why:* skill1/skill2 are EMPTY BY CONSTRUCTION, not by omission — every line there is out-of-domain for cause: (K1) S1 'Outgoing healing ▲ 35.2%' modifies heal AMOUNTS, which do not exist in the sim — no stat, no channel, and no recovery-consumer reads an amount
 
-### Weapon-state / shot-count approximation (11)
+### Weapon-state / shot-count approximation (12)
 
 **Ade: Agent Bunny** (ade-agent-bunny)
 
@@ -1640,6 +1635,11 @@ Outgoing healing ▲ 35.2% continuously.
 
 - **skill1:** Piercing Radius ▲ 50% for 1 round(s).
   - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
+
+**Takina** (takina)
+
+- **skill2:** Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)
+  - *Why:* swap-shot economy is OWNER-RULED (2026-08-12), not estimated: the burst swaps to a CUSTOM weapon that deals the damage her kit lists (200.64%), does not charge, has no ammo and no reload, and fires at 1.2 shots/sec — 12 shots across the 10s window. When the swap ends she returns to the sniper with its magazine restored to full, and the stated consequence is that she then never needs to reload, because she cannot land 6 full-charge sniper shots between bursts in most comps. Encoded as chargeTimeSec 0 (the engine reads that field with a null check, so 0 means 'does not charge' rather than collapsing to her base SR's 60 frames) + pullsPerSec 1.2 + maxAmmo 999, with NO sameWeapon marker — hers is a real weapon change, so it takes the magazine refill at both ends. Pinned in scripts/tests/units/takina.test.ts (shot count, no mid-window reload gap, and the restored 6-round magazine read off the ammo counter). NOTE THE DIRECTION: the faithful model is COLDER than the estimate it replaces, not warmer — the estimate's 7 shots inherited her SR charge cycle and therefore the x2.5 chargeMultiplier, worth ~3511% ATK per window against the ruling's 12 x 200.64 = ~2408%. Her total drops ~30% and her single graded reading moves 0.786 -> 0.579 COLD, so the swap economy was never the explanation for her coldness; the remaining gap is elsewhere in her model (the S2 uptime-average below is the largest ⚑ left).
 
 **Velvet** (velvet)
 
