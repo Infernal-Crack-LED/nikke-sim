@@ -3483,9 +3483,24 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
     `rankedBufferRows` splits into `onBoardBufferRows` (name filter only) + the ≥ 0 rule. The unit
     card uses the former, so it keeps quoting a unit's own value whatever its sign — the deliberate
     behaviour the negative-row rule was never meant to touch — while numbering over the same set as
-    the chart. **Both name filters stay** as a backstop: PR CI can serve a PUBLISHED artifact
-    (`scripts/fetch-published-boards.ts`, the `SKIP_BOARD_BUILD=1` artifacts tier) built before this landed,
-    and a stale row would otherwise reintroduce the same off-by-one.
+    the chart. **Both name filters stay** as a backstop, and PR CI is not a hypothetical caller of
+    them: it does not BUILD the boards, it FETCHES the published set
+    (`scripts/fetch-published-boards.ts`, Step 0; the `artifacts` tier then runs with
+    `SKIP_BOARD_BUILD=1`), so on every PR until the next deploy the smoke runs against an artifact
+    that still contains the off-board rows. Without the render-time filter that stale row
+    reintroduces the same off-by-one.
+  - **⚠ A SOURCE-LEVEL ASSERTION CANNOT BE MADE AGAINST A FETCHED ARTIFACT — this cost a red CI.**
+    The first version of `scripts/web-smoke-ranks.mjs` hard-asserted that `bufferchart.json` carries
+    no off-board slug. That is a property of the BUILDER, and PR CI's copy did not come from the
+    builder, so the assertion failed on exactly the input the backstop exists for. It now keys off
+    the artifact's own `inputsHash` vs `computeRanksInputHash()` — the same escape hatch
+    `board-hash-parity.test.ts` takes, on the artifact's hash rather than on which env var the
+    workflow happened to set (the `artifacts` step sets `SKIP_BOARD_BUILD`, the gate step sets
+    `BOARDS_FETCHED`). Built-here ⇒ hard-assert the source property; fetched/stale ⇒ the population
+    check is advisory and what is under test is the backstop, which is what has to hold there
+    anyway. Either way the smoke PRINTS which mode ran: a source check that silently evaporates
+    reads as a pass. Verified in both modes locally by pointing `dist/bufferchart.json` at the
+    pre-change build.
   - **Measured A/B — old builder vs new, same HEAD (`145a97e9`), full shipped board, both cells**
     (`npx tsx scripts/build-bufferchart.ts --out …`, then a row-for-row compare): population
     127 → 125, rows 133 → 131 per cell, and **every remaining row is element-for-element identical
