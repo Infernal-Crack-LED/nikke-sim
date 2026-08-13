@@ -41,6 +41,22 @@ lives. Newest first within each section.
     never swaps. The change is judged on
     kit faithfulness, pinned by her spec test, which now runs TWO fixtures: the sole-B2 comp for the
     swapped mode and a crown-as-second-B2 comp for the unswapped mode, where she casts zero bursts.
+  - **Her burst gauge: a swapped weapon generates NOTHING (owner ruling 2026-08-13).** Landed
+    engine-wide in `shotGauge`, scoped to REAL weapon changes — a same-weapon flavor swap
+    (`sameWeapon`: chisato/clay/jill/frima) still feeds the bar, because its gun never changed.
+    Board-inert: zero drift on every graded comp and every measured FB count preserved, since every
+    other swap already sat inside the gauge lock. What it fixes is velvet specifically: `gaugePerShot`
+    keys off the unit's OWN weapon, so each 1-frame MG round had been credited her SNIPER's per-shot
+    energy (5.6, a charged SR shot), refilling the entire bar in 0.3s whenever a stalled chain lifted
+    the lock mid-swap.
+  - **⚠ A correction, because the first version of this entry got the causality wrong.** Her Full
+    Bursts land 90-126 frames earlier than under the old SR-economy swap, and that is NOT the gauge —
+    an A/B isolating the gauge fix leaves the shift byte-identical. It is the RELOAD-CYCLE PHASE
+    ripple: the MG carries its own magazine and hands the SR back full, so her reloads go 10 → 0 and
+    her first post-swap shot lands 30f earlier, moving her own gauge contribution once the lock
+    lifts. That is the same faithful-collateral mechanism already recorded for `jill` (2026-08-10),
+    not a defect. The original claim came from correlating main-vs-branch without isolating the knob
+    — exactly the failure the "don't attribute a composite gap to one mechanism" rule names.
   - **⚑ Left open deliberately.** The engine's `hitCount` counter is cumulative over ALL normal
     attacks and only GATES the firing, so it diverges from the kit-literal "during Full Burst"
     counting at low volume — 1 proc vs 0 in the off-B2 fixture (they converge, 55 vs 54, once swap
@@ -464,7 +480,17 @@ validated model)` banner (19 overrides) and `[materialized … NOT hand-verified
   challenge to the LOG gate below: burst gauge generation IS provably locked for the entire swap
   window (`addGauge`'s `fbEndFrame > frame || stage !== 0` early return, `src/engine/sim.ts`), so
   shot COUNT during the window cannot leak into the shared gauge — that part of the LOG entry's
-  concern was correctly reasoned about the wrong mechanism. What actually moves the next chain's
+  concern was correctly reasoned about the wrong mechanism.
+  **⚠ SCOPE CORRECTION (2026-08-13) — "locked for the entire swap window" is true of `jill` and NOT
+  true in general; read it as a statement about her timing, not a property of swaps.** The lock is on
+  the CHAIN (stages 1-3) and FULL BURST, not on the swap. A 10s swap cast at stage 2 is fully covered
+  only when the chain COMPLETES; when the chain EXPIRES the lock lifts mid-swap and the remaining
+  duration feeds the bar normally. This sentence, stated unconditionally, is the reason the same
+  false alarm kept being re-raised by later sessions — an agent searching the record found a
+  guarantee that does not exist, while an agent reading `gaugePerShot` saw a large per-shot number
+  and could not find the lock (it lives in `addGauge`, a different function). Both failure modes are
+  now addressed at the source: the invariant + its CONDITION is commented at `gaugePerShot`, and
+  swapped weapons generate no gauge at all (owner ruling 2026-08-13, entry above). What actually moves the next chain's
   timing is `jill`'s RELOAD-CYCLE PHASE, which the gauge lock does not gate: her same-weapon
   flavor swap does not free-refill ammo on exit (`sim.ts` ~3529, `"no free reload on exit
 either"` — an existing, already-general primitive, not new). Toggling the fix on/off and

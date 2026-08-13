@@ -1397,6 +1397,22 @@ export function runSim(
     RL: 280,
     MG: 10,
   };
+  // ⚠ BEFORE YOU RAISE THE ALARM ABOUT A BIG PER-SHOT NUMBER × A BIG SHOT COUNT — read this. It has
+  // been re-derived from scratch by at least three sessions, so the invariant AND its condition live
+  // here, at the number, not only in `addGauge` where the gate actually sits:
+  //   * Generation is LOCKED during the burst CHAIN (stages 1-3) and during FULL BURST (`addGauge`).
+  //     The lock is on those two states — it is NOT a property of weapon swaps.
+  //   * So a swap is gauge-locked only for the part of its duration that OVERLAPS them. A 10s swap
+  //     cast at stage 2 is covered end-to-end when the chain COMPLETES (this is why jill's window was
+  //     airtight — DECISIONS 2026-08-10, whose "locked for the entire swap window" wording describes
+  //     HER timing and does not generalize). When the chain EXPIRES the lock lifts mid-swap.
+  //   * Since 2026-08-13 the question is moot for real weapon changes: they generate NO gauge at all
+  //     (owner ruling; see `shotGauge`). Same-weapon FLAVOR swaps still generate normally.
+  //   * What DOES ripple into rotation timing from a swap is the RELOAD-CYCLE PHASE, which no lock
+  //     gates: changing a swap's ammo economy moves the unit's first post-swap shot by a few frames,
+  //     which shifts its gauge contribution once the lock lifts (jill 2026-08-10; velvet 2026-08-13,
+  //     where 10 reloads → 0 moved her first post-swap shot 30f and Full Bursts 90-126f). That is
+  //     real, faithful collateral — do not "fix" it by re-tuning gauge.
   const gaugePerShot = (u: UnitState) => {
     const entry = (
       gaugeTable as Record<
@@ -1460,6 +1476,20 @@ export function runSim(
     );
   };
   const shotGauge = (u: UnitState, frame: number, hitFraction = 1) => {
+    // A REAL weapon swap generates NO burst gauge (owner ruling 2026-08-13). Scoped to an actual
+    // weapon CHANGE: a same-weapon flavor swap (`sameWeapon` — chisato/clay/jill/frima, where the
+    // gun never changes and only its normals turn true) keeps feeding the bar as it always did.
+    //
+    // This is usually invisible, which is exactly why it went unnoticed: gauge is already locked
+    // for the whole burst chain and Full Burst (see addGauge), and a 10s swap cast at stage 2 sits
+    // almost entirely inside that window WHEN THE CHAIN COMPLETES. It only becomes reachable when
+    // the chain EXPIRES mid-swap — and only becomes LARGE for a high-cadence swap. Before this
+    // ruling, velvet's 60-rounds/sec MG was credited her SNIPER's per-shot energy (5.6, a charged
+    // SR shot) on every 1-frame round, refilling the whole bar in 0.3s and pulling later Full
+    // Bursts 90-126 frames earlier.
+    if (u.swap && !u.swap.sameWeapon) {
+      return;
+    }
     const rounds = u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
     addGauge(u, frame, gaugePerShot(u) * rounds * hitFraction);
   };
