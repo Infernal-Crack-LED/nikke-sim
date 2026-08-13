@@ -212,11 +212,19 @@ describe('ein — kit spec', () => {
       expect(applied.length).toBeGreaterThan(einBursts(base.events).length);
     });
 
-    it('DISCRIMINATING: at least one 70.12 apply lands on a rotation ein did NOT cast', () => {
-      // The nearest-wrong (burstCast keying) fires ONLY on ein's own casts — so every apply frame
-      // would coincide with an ein burstCast. stageEnter:3 fires on every stage-3 entry, so at least
-      // one 70.12 apply must land on a frame with no ein burstCast.
+    it("DISCRIMINATING: the applies land on the CHAIN's stage-3 entry frames, not on any cast", () => {
+      // Anchored to the entry frames themselves rather than to "not an ein cast". Under entry
+      // semantics the applies never coincide with ANY stage-3 cast (the entry leads it), so a
+      // not-ein-cast test is satisfied by that 30f offset alone even on rotations she DID open —
+      // it would pass under a burstCast misreading shifted by a frame. Equality with the stage-2
+      // cast frames is the real claim: the trigger follows the chain, not a caster.
+      const entryFrames = base.events
+        .filter((e) => e.kind === 'burstCast' && e.stage === 2)
+        .map((e) => e.frame);
       const einCastFrames = new Set(einBursts(base.events).map((c) => c.frame));
+      expect(entryFrames.length).toBeGreaterThan(0);
+      expect([...new Set(applied.map((b) => b.frame))]).toEqual(entryFrames);
+      // …and those frames are genuinely not her own casts, so the caster-keyed reading is excluded
       expect(applied.some((b) => !einCastFrames.has(b.frame))).toBe(true);
     });
 

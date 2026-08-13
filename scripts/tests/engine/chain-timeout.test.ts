@@ -1,22 +1,20 @@
-// ENGINE PRIMITIVE SPEC — the burst chain's TWO independent clocks (owner ruling 2026-08-13).
+// ENGINE PRIMITIVE SPEC — how long an unfinished burst chain survives (owner ruling 2026-08-13).
 //
-// A chain that opens but cannot finish has two deadlines that a single constant used to conflate:
+// CHAIN_TIMEOUT_FRAMES (600f/10s) is how long a chain that has opened but cannot finish lives before
+// it collapses and the gauge must refill from zero. The gauge stays LOCKED (`stage !== 0`) for that
+// whole time, so this constant governs what a failed chain costs the team in generation.
 //
-//   RESERVE  (STAGE_RESERVE_FRAMES, 120f/2s) — how long the auto WAITS at stage 2/3 for a filler to
-//            come off cooldown before it stops considering them. The auto's inter-activation grace,
-//            calibrated across the graded FB comps (DECISIONS 2026-07-21: 600f here over-allocated
-//            the leftmost of two alternating B3s, sakura-bloom-in-summer 6/4 vs the footage's 5/5).
-//   TIMEOUT  (CHAIN_TIMEOUT_FRAMES, 600f/10s) — how long the CHAIN ITSELF survives unfinished before
-//            it collapses and the gauge must refill from zero. A property of the game, not of the
-//            auto's patience (owner ruling 2026-08-13).
+// It used to be `STAGE_WINDOW_FRAMES` = 120f — a value calibrated for a DIFFERENT question (how long
+// the auto waits for a not-yet-ready filler, DECISIONS 2026-07-21) that expiry silently inherited, so
+// a stalled chain died 8s early. Splitting the two is what revealed that the filler-wait horizon is
+// itself unreachable once a ready unit may always fill a live chain: a not-ready unit can never cast,
+// so admitting or refusing it as a candidate changes nothing. That horizon was therefore DELETED, not
+// re-tuned — see the note at `windowFits` in sim.ts. There is consequently only ONE clock left to pin,
+// and this file pins it.
 //
-// Before the split, expiry inherited the reserve's 2s, so a stalled chain died 8s early and the bar
-// began refilling 8s early. THIS FILE PINS THE TIMEOUT ONLY — see the note above the third test for
-// why the reserve's own value is not covered here (and is currently not covered anywhere).
-//
-// Fixture: liter (B1) / maxwell-ordinary-mechanic (B2) / ada (B3). ada's 40s cooldown means the
-// SECOND chain reaches stage 3 with no Burst III available — the stall this spec exists to pin.
-// Deterministic (no seed).
+// Fixture: liter (B1) / maxwell-ordinary-mechanic (B2) / ada (B3). ada's 40s cooldown means most
+// chains reach stage 3 with no Burst III available and never get one inside the 10s window — the
+// stall this spec exists to pin. Deterministic (no seed).
 import { describe, expect, it } from 'vitest';
 import { runComp } from '../lib/harness.js';
 
@@ -68,13 +66,15 @@ describe('burst chain — reserve horizon and collapse timeout are INDEPENDENT c
     }
   });
 
-  // ⚠ NOT PINNED HERE — the RESERVE horizon's own value. Widening it to 10s (STAGE_WINDOW=600,
-  // the pre-2026-07-21 mistake) leaves every assertion in this file AND every graded FB count
-  // green: ada is ~22s out, so she is refused under either horizon. The calibration case that
-  // actually discriminates it — two alternating 40s B3s where a 10s horizon double-casts the
-  // leftmost (DECISIONS 2026-07-21, sakura-bloom-in-summer 6/4 vs the footage's 5/5) — is not in
-  // any committed comp, so that measured truth currently has NO automated pin. Filed in QUEUE.md;
-  // do not read this file's green as covering it.
+  // ⚠ WHAT THIS FILE DOES NOT COVER: nothing pins the DELETED filler-wait horizon, because there is
+  // nothing left to pin — it has no observable effect (proven by deleting the clause and finding
+  // every graded FB count, every damage total and four probe comps' rotations byte-identical at
+  // horizons of 1f, 120f and 600f, on both the default first-ready path and the legacy B3_LEFTMOST
+  // one). The measured truth it was calibrated against — two alternating 40s B3s allocating 5/5
+  // rather than 6/4 (DECISIONS 2026-07-21) — is now protected by the first-ready selection rule
+  // instead, and is NOT reproduced by any committed comp. That gap is real and is NOT filed
+  // anywhere: if a future change makes a waiting horizon observable again, this suite will not
+  // notice.
   it('the timeout does not manufacture Full Bursts: the count is unchanged, the stall just lasts longer', () => {
     // ada's 40s cooldown is the binding constraint here, not the chain clock — so a longer-lived
     // chain must NOT turn into an extra Full Burst. This is the arm that would catch a timeout so

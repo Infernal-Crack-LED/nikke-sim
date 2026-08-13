@@ -130,7 +130,10 @@ lives. Newest first within each section.
        entry claimed the change fixed a missing nuke buff — that was wrong and is corrected here.
     2. A chain that REACHES a stage and then expires (no eligible unit off cooldown) still ENTERED
        it, so entries outnumber casts wherever chains stall — in the maxwell-ordinary-mechanic
-       fixture, 10 stage-3 entries against 5 B3 casts, the other five expiring at 25.9s, 62.0s, …
+       fixture, 10 stage-3 entries against 5 B3 casts — four of the unfilled chains collapse (33.9s,
+       70.0s, 108.1s, 146.1s) and the last is still open when the fight ends. (Those collapse times
+       are the 10s ones from the chain-timeout ruling in the entry above; this example originally
+       quoted the pre-timeout 25.9s/62.0s, which the merge made self-contradictory.)
        This roughly doubles those units' proc counts in stalling comps and is the larger half of the
        change; it follows from the ruling's own wording ("it is now time to activate burst X"), not
        from a separate inference.
