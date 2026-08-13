@@ -372,6 +372,35 @@ describe('velvet — kit spec', () => {
   describe('V3 — S2 Full-Charge-inFb team buff: casterAtkPct 25.2 (flat) + chargeDamagePct 100.8, all allies, 3s', () => {
     const casterAtk = velBuffs(base.events, 'casterAtkPct');
     const chargeDmg = velBuffs(base.events, 'chargeDamagePct', 100.8);
+    // OWNER RULING 2026-08-12: her burst swap weapon does NOT full-charge, so the "Full Charge"
+    // activation cannot fire while she is swapped — her own burst window silently stopped feeding
+    // the team buff it looks like it should feed. The shipped gate was fbGate:'inFb' alone, and her
+    // 10s swap sits INSIDE the Full Burst window, so every swap shot was refreshing it.
+    // SKIPPED — OWNER RULING RECORDED, CONSEQUENCE ESCALATED (2026-08-12). The ruling is settled:
+    // her burst swap weapon does NOT full-charge, so "Activates when attacking with Full Charge
+    // during Full Burst" cannot fire while she is swapped. Encoding it (swapGate:'unswapped' beside
+    // the shipped fbGate:'inFb') makes the line fire ZERO times in this fixture, because the two
+    // gates are mutually exclusive for her: she casts B2 every rotation, her 10s swap opens ~1s
+    // BEFORE Full Burst and covers essentially all of it, and the ~1s unswapped tail is shorter
+    // than one charge cycle. So her signature support line becomes dead code in any comp where she
+    // bursts — which is every comp she is built for. That is too surprising to land silently: it
+    // implies either the swap/FB alignment is wrong for her, or the line is meant to be fed by a
+    // teammate-opened Full Burst she is not swapped for. Board-inert either way on the graded
+    // slice — T5 wind-weak reads byte-identical with and without the gate, because she never casts
+    // there at all. Un-skip together with the owner's answer, not before.
+    it.skip('the Full-Charge team buff cannot fire while she is swapped (the swap does not charge)', () => {
+      const swapWindows = velBursts(base.events).map(
+        (c) => [c.frame, c.frame + 10 * FPS] as [number, number]
+      );
+      const inSwap = casterAtk.filter((b) =>
+        swapWindows.some(([s, e]) => b.frame >= s && b.frame <= e)
+      );
+      expect(
+        inSwap.length,
+        `${inSwap.length} team-buff applications landed inside her own swap window, where she cannot full-charge`
+      ).toBe(0);
+    });
+
     it("casterAtkPct is a FLAT add of Velvet's ATK (value >> a percentage), in FB only, reaching all three allies", () => {
       expect(casterAtk.length).toBeGreaterThan(0);
       // flat ATK add (≈25.2% of Velvet's ATK ≈ 25133), NOT a 25.2 percentage scaler

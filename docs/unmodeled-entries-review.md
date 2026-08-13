@@ -1760,7 +1760,7 @@ Deals 50.33% of final ATK as additional damage.
 **Laplace (Treasure)** (laplace)
 
 - **skill2:** Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage.
-  - *Why:* skill2: the 132.45% full-charge additional hit is shotFired + swapGate:'unswapped' — it fires on base full-charge pulls only, NOT the swap beam (gauntlet 2026-07-26 S7 ruling: the burst labels beam damage 'Normal Damage', and both blind derivations read exclusion; the prior every-shot reading was a circular cite of the kit-silent chargeTimeSec ⚑). Confirm with a focus video: 132.45%-class popups should appear outside the 10s swap window and stop inside it
+  - *Why:* skill2: the 132.45% full-charge additional hit is shotFired + swapGate:'unswapped' — it fires on base full-charge pulls only, NOT the swap beam (gauntlet 2026-07-26 S7 ruling: the burst labels beam damage 'Normal Damage', and both blind derivations read exclusion; the prior every-shot reading was a circular cite of the kit-silent chargeTimeSec ⚑). OWNER-CONFIRMED 2026-08-12: the 132.45% additional hit fires on her BASE full-charge shots only, not on the swap beam. The gauntlet ruling stands and needs no footage
 
 **Little Mermaid** (little-mermaid)
 
