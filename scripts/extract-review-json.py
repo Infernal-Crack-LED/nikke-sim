@@ -87,15 +87,35 @@ def main() -> int:
         envelope = json.loads(raw)
     except json.JSONDecodeError:
         envelope = None
-    if isinstance(envelope, dict) and 'result' in envelope:
-        source = envelope['result']
-    else:
-        source = raw
+    source = (
+        envelope['result']
+        if isinstance(envelope, dict) and 'result' in envelope
+        else raw
+    )
 
     try:
         obj = extract(source)
+        # An envelope with trailing garbage (a stray brace, a concatenated log) fails the strict
+        # json.loads above, falls through to `source = raw`, and then extract()'s raw_decode happily
+        # returns the ENVELOPE itself — it ignores trailing garbage. Unwrap that case rather than
+        # writing session metadata to disk as if it were a verdict.
+        if isinstance(obj, dict) and 'result' in obj and 'verdict' not in obj:
+            obj = extract(obj['result'])
     except ValueError as e:
         print(f'{args.log_path}: {e}', file=sys.stderr)
+        return 1
+
+    # Shape check — the point of this tool is rescuing a VERDICT, so refuse loudly rather than write
+    # whatever JSON happened to appear first. Without this, any valid-JSON input that is not a
+    # dispatch envelope is copied out verbatim and reported as a successful rescue: a silent wrong
+    # file, which on a recovery tool is worse than the crash it replaced.
+    if not isinstance(obj, dict) or 'verdict' not in obj:
+        keys = ', '.join(sorted(obj)[:8]) if isinstance(obj, dict) else type(obj).__name__
+        print(
+            f'{args.log_path}: extracted JSON has no `verdict` field (got: {keys}) — '
+            'this is not a review/gate result; nothing written',
+            file=sys.stderr,
+        )
         return 1
 
     if args.model:

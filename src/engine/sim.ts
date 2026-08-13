@@ -1582,9 +1582,9 @@ export function runSim(
     : 600;
   let fbEndFrame = -1;
   // PREFB (default ON, 22f — `PREFB=off` reverts): when the B3 cast defers the FB start by
-  // FB_PRE_DELAY_FRAMES, the
-  // fbEndFrame set + fullBurstEnter + stored-hit release are scheduled here and fired that many
-  // frames later (during the gap fbEndFrame stays old, so "in FB" is correctly false).
+  // FB_PRE_DELAY_FRAMES, the fbEndFrame set + fullBurstEnter + stored-hit release are scheduled here
+  // and fired that many frames later (during the gap fbEndFrame stays old, so "in FB" is correctly
+  // false).
   let pendingFbStartFrame = -1;
   let pendingFbStartExtendSec = 0;
   // Kit-NAMED status windows on the boss (status name → expiry frame): opened by a 'targetStatus'
@@ -3245,9 +3245,9 @@ export function runSim(
     );
   };
 
-  // FB-entry emission (fullBurstEnter triggers + stored-hit releases + log) — extracted so it can
-  // fire inline at the B3 cast (default) OR be deferred by FB_PRE_DELAY_FRAMES (PREFB). fbEndFrame
-  // must already be set when this runs (the log reads it).
+  // FB-entry emission (fullBurstEnter triggers + stored-hit releases + log) — extracted so it can be
+  // deferred by FB_PRE_DELAY_FRAMES (the DEFAULT, 22f) OR fire inline at the B3 cast (`PREFB=off`).
+  // fbEndFrame must already be set when this runs (the log reads it).
   const emitFbEnter = (atFrame: number) => {
     // LEADING marker, symmetric with 'fullBurstEnd': emitted BEFORE the fullBurstEnter triggers and
     // the stored-hit releases below, so a consumer partitioning the stream on [start, end) captures
@@ -3643,8 +3643,9 @@ export function runSim(
           pendingFbStartExtendSec = pendingFbExtendSec;
           pendingFbExtendSec = 0;
         }
-        // FB entry fires inline at the B3 cast (default). With PREFB it is deferred — the scheduled
-        // block in the frame loop calls emitFbEnter() FB_PRE_DELAY_FRAMES later instead.
+        // FB entry is DEFERRED by default (FB_PRE_DELAY_FRAMES 22f) — the scheduled block in the
+        // frame loop calls emitFbEnter() that many frames later. This inline branch is the
+        // `PREFB=off` path only, which is what the `=== 0` guard below says.
         if (castStage === 3 && FB_PRE_DELAY_FRAMES === 0) {
           emitFbEnter(frame);
         }
