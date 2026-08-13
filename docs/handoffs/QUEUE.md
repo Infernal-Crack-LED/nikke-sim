@@ -117,6 +117,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
        (`snow-white-heavy-arms`). Note the earlier hypothesis that item 6 explained her heat was
        WRONG and is recorded as such: the fix moved her only 1.182 → 1.179, because her pool is
        cap-bound and the 20 ceiling absorbs the over-generation.
+       **→ Handoff: [2026-08-13-mihara-fit-exposure.md](2026-08-13-mihara-fit-exposure.md)** —
+       carries the established facts (so they are not re-derived), a ranked candidate list, the
+       per-channel method that avoids re-fitting, and the trace-integration gotcha that already
+       produced one nonsense number this session.
        `takina`'s is item 4 below and is still open.
    - **Held primitives, logged not built** (F11 discipline — one carrier each): `moran` S1
      DEF ▲/stack, `maxwell` `byFinalAtk`, `helm`'s held tag. Leave held; the log is the point.
