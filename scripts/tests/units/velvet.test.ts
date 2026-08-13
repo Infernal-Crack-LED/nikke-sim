@@ -97,8 +97,9 @@ const FIXTURE = {
 };
 
 // OFF-B2 FIXTURE — the mode Velvet is actually built for (owner ruling 2026-08-13). Adding crown
-// as a second Burst II hands her every stage-2 cast (shorter cooldown, so she is always first
-// ready): velvet casts ZERO bursts here, never swaps, and full-charges her SR straight through
+// as a second Burst II hands her every stage-2 cast — same 20s cooldown, but the first-ready reduce
+// keeps the LEFTMOST unit on ties (crown slot 1 < velvet slot 2), and velvet's cooldown never starts
+// because she never casts: velvet casts ZERO bursts here, never swaps, and full-charges her SR through
 // every Full Burst. That is the ONLY state in which S2 block 1 (the team buff) can fire, so the
 // two fixtures partition her kit — FIXTURE proves the swapped half, FIXTURE_OFF the unswapped one.
 const FIXTURE_OFF = {
@@ -149,7 +150,8 @@ const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart');
 const velDamage = (evs: SimEvent[]) =>
   evs.filter((e): e is Damage => e.kind === 'damage' && e.slug === 'velvet');
-// same readers against FIXTURE_OFF, where velvet sits in slot 2 rather than slot 1
+// buff reader for FIXTURE_OFF, where velvet is slot 2 rather than slot 1 (buffApply carries slot
+// indices, so this one MUST be re-slotted; the damage readers key on slug and need no variant).
 const offVelBuffs = (evs: SimEvent[], stat: string, value?: number) =>
   buffs(evs).filter(
     (b) =>
@@ -157,8 +159,6 @@ const offVelBuffs = (evs: SimEvent[], stat: string, value?: number) =>
       b.stat === stat &&
       (value === undefined || b.value === value)
   );
-const offVelDamage = (evs: SimEvent[]) =>
-  evs.filter((e): e is Damage => e.kind === 'damage' && e.slug === 'velvet');
 
 /** Full-burst windows [startFrame, endFrame] from the event stream. */
 function fbWindows(evs: SimEvent[]): [number, number][] {
@@ -489,14 +489,14 @@ describe('velvet — kit spec', () => {
     it('FIXTURE_OFF sanity: with crown taking every stage-2 cast, velvet never bursts and never swaps', () => {
       expect(velBursts(off.events).length).toBe(0);
       expect(
-        offVelDamage(off.events).filter(
+        velDamage(off.events).filter(
           (d) => d.srcSlot === 'normal' && d.atkPct === 7
         ).length
       ).toBe(0);
       expect(fbStarts(off.events).length).toBeGreaterThan(0);
     });
 
-    it("casterAtkPct is a FLAT add of Velvet's ATK (value >> a percentage), in FB only, reaching all three allies", () => {
+    it("casterAtkPct is a FLAT add of Velvet's ATK (value >> a percentage), in FB only, reaching all four allies", () => {
       expect(casterAtk.length).toBeGreaterThan(0);
       // flat ATK add (≈25.2% of Velvet's ATK ≈ 25133), NOT a 25.2 percentage scaler
       expect(casterAtk.every((b) => b.value > 1000)).toBe(true);
@@ -575,13 +575,13 @@ describe('velvet — kit spec', () => {
     // dominate (55 vs 54 in the sole-B2 fixture) and diverge at low volume like this. Engine-wide
     // hitCount semantics, not a velvet encoding choice — pinned so it cannot drift silently.
     it('PIN: her SR stays under the in-FB threshold, and cumulative counting leaks exactly one proc', () => {
-      const inFbShots = offVelDamage(off.events).filter(
+      const inFbShots = velDamage(off.events).filter(
         (d) =>
           d.srcSlot === 'normal' &&
           offWins.some(([a, z]) => d.frame >= a && d.frame <= z)
       ).length;
       expect(inFbShots).toBeLessThan(50); // kit-literal reading: zero procs
-      const hits = offVelDamage(off.events).filter(
+      const hits = velDamage(off.events).filter(
         (d) => d.srcSlot === 'skill2' && d.atkPct > 100
       );
       expect(hits.length).toBe(1); // engine's cumulative counter: one

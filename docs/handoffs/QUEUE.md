@@ -54,6 +54,22 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
+1. **⇒ OWNER QUESTION — what burst gauge does a SWAPPED weapon generate? (velvet, blocking her PR;
+   latent for every declared-class swap.)** `gaugePerShot` keys off the unit's OWN slug/weapon, so a
+   swap is credited the BASE weapon's per-trigger energy no matter what it is holding. Harmless while
+   swaps were slow; velvet's owner-ruled 60-rounds/sec MG makes each round worth the SNIPER's 5.6
+   energy (~336/s) instead of anything MG-like (class modal 0.1). Generation is locked during the
+   chain and Full Burst, so the leak is confined to FAILED-chain windows — she casts B2, no B3 is
+   ready, the chain expires mid-swap, and the rest of the magazine feeds the bar at sniper rate.
+   MEASURED (sole-B2 fixture): Full Bursts 3-5 land **90/100/126 frames earlier**; the FB _count_
+   holds only because `helm`'s 40s cooldown gates that fixture — a 20s Burst III could gain a window.
+   The datamined truth is that a swap loads a different shot spec with its own `burst_energy_pershot`,
+   which we do not have for her swap; the class modal is the engine's standing fallback but is a
+   DERIVED value, so this is an owner call, not a session call. Options: (a) scope `gaugePerShot` to
+   `u.swap?.weapon ?? u.char.weapon` (mirrors the existing `effWeapon` pattern; moves `k` SMG→SG and
+   `nayuta` SMG→SR too — A/B all three), (b) leave it and accept the artifact, (c) datamine the swap
+   shot ids. Documented in velvet's caveats meanwhile.
+
 1. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
    economy landing (DECISIONS) made her colder, not warmer: the faithful custom weapon fires 12
    uncharged shots where the old estimate fired 7 that inherited her SR ×2.5 `chargeMultiplier`.

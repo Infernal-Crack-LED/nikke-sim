@@ -32,8 +32,13 @@ lives. Newest first within each section.
     already documented as reachable only via a swap INTO MG, since the wind-up ladder is gated on
     the BASE weapon. Her swap is authored `weapon:'MG'`, `pullsPerSec:60`, `chargeTimeSec:0`,
     `maxAmmo:999`.
-  - **Board impact: none.** The regression snapshot is byte-identical — velvet appears in no graded
-    comp, and her only recording (T5 wind-weak) is one she never casts in. The change is judged on
+  - **Board impact: none, proven by A/B rather than by the gate.** The regression snapshot is
+    byte-identical, but that is weaker evidence than it looks: the `T5 wind-weak` comp is
+    `disabled: true` in `scripts/regression.ts`, so its snapshot assert never runs (and its committed
+    values are separately stale at base HEAD — an unrelated pre-existing drift worth its own
+    cleanup). The real proof is a direct A/B of that comp with and without the change: byte-identical
+    for all five units, because velvet never casts there and `swapGate` is vacuous on a unit that
+    never swaps. The change is judged on
     kit faithfulness, pinned by her spec test, which now runs TWO fixtures: the sole-B2 comp for the
     swapped mode and a crown-as-second-B2 comp for the unswapped mode, where she casts zero bursts.
   - **⚑ Left open deliberately.** The engine's `hitCount` counter is cumulative over ALL normal
