@@ -482,13 +482,19 @@ follow-up: `docs/handoffs/2026-07-26-support-rank-composite.md`.
   unit when its kit reduces ALLY cooldowns (`suppliesTeamCdr`, 12 units; self-only carriers do not
   qualify), else the no-op B1, which the baseline always keeps. The control's 7s fires on
   `fullBurstEnter`, NOT its own cast, so it cannot be suppressed by a tested B1 sharing its stage;
-  `build-bufferchart.ts` now loads the synthetic control overrides at all, which it never did. The leaderboard shows rows ≥ 0 only, minus
-  `HIDDEN_BUFFER_SLUGS` (chime, avistar) — `rankedBufferRows` (`src/ranks/buffer-rows.ts`) filters
-  both the chart bars and the share/pre-render table card, so ranks are numbered over one set; the
-  artifact itself keeps every row for the unit card. `EXCLUDED_BUFFER_SLUGS` is a second, harder
-  screen at the population filter — a kit that outright REDUCES team damage in the standard comp
-  would report a misleadingly negative % and never enters the board — and it is currently **empty**;
-  `scripts/probe/buffer-rotation-audit.ts --excluded` checks each entry against that criterion.
+  `build-bufferchart.ts` now loads the synthetic control overrides at all, which it never did. **The
+  population is `bufferPopulation()` (`src/ranks/buffer.ts`) — one function, called by the builder
+  and by `scripts/probe/buffer-rotation-audit.ts`, so the audit cannot describe a board that does
+  not ship.** Two exclusions bite there, before any value is computed, which means an excluded unit
+  has NO ROW in the artifact and nothing downstream can rank over it, count it in a field size or
+  draw it as a neighbour: `OFF_BOARD_BUFFER_SLUGS` (chime, avistar — held off by owner direction,
+  `src/ranks/buffer-rows.ts`) and `EXCLUDED_BUFFER_SLUGS` (a kit that outright REDUCES team damage
+  in the standard comp would report a misleadingly negative %; currently **empty**,
+  `buffer-rotation-audit.ts --excluded` checks each entry against that criterion). The leaderboard
+  then shows rows ≥ 0 only: `rankedBufferRows` filters the chart bars and the share/pre-render table
+  card, `onBoardBufferRows` the unit card (which keeps negative rows so it can quote a unit's own
+  value whatever its sign). Both still drop off-board slugs by name, as a backstop for a published
+  artifact built before the population filter landed.
 - **b1b2dps** — every sim-supported B1/B2 unit, ranked by own DPS in a Solo-style no-op control team.
   Four cells: Core 0 / Core 100 × neutral / elemental advantage. 40s-B1 and B2 templates include a
   no-op B1 with the standard 7 s team burst CDR; 20s-B1 rows rely on the tested unit's own CDR.

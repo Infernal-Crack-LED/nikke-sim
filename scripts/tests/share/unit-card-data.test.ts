@@ -25,6 +25,7 @@ import {
   type UnitCardSources,
   type UnitCardCharacter,
 } from '../../../src/infographics/core/unitCardData.js';
+import { OFF_BOARD_BUFFER_SLUGS } from '../../../src/ranks/buffer-rows.js';
 
 const load = <T>(rel: string): T | null => {
   const url = new URL(`../../../${rel}`, import.meta.url);
@@ -483,6 +484,81 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
       }
     }
   );
+});
+
+// Off-board buffers (src/ranks/buffer-rows.ts OFF_BOARD_BUFFER_SLUGS) are cut
+// from the board's POPULATION, so the shipped artifact has no row for them at
+// all. The card filters anyway, because the published-board fetch path can
+// serve an artifact built before that landed — and one stale row sitting ahead
+// of a unit silently shifts every rank below it. That is not hypothetical: the
+// card read Crown as #2 behind an off-board Chime until 2026-08-13, while the
+// web board (which has always filtered) read the same unit as #1.
+describe('buildUnitCardData — off-board buffers never occupy a rank', () => {
+  const staleArtifact = {
+    units: {
+      chime: { name: 'Chime', element: 'Fire' },
+      crown: { name: 'Crown', element: 'Iron' },
+      'unit-b': { name: 'Unit B', element: 'Wind' },
+    },
+    profiles: {},
+    cells: {
+      generic: [
+        ['chime', 142.7, null, null],
+        ['crown', 105.1, null, null],
+        ['unit-b', 12.3, null, null],
+      ],
+      typed: [],
+    },
+  };
+  const b2 = (slug: string, name: string): UnitCardCharacter => ({
+    slug,
+    name,
+    element: 'Iron',
+    weapon: 'AR',
+    burst: 'II',
+    class: 'Supporter',
+    manufacturer: null,
+    burstCooldownSec: 40,
+  });
+
+  it('a stale off-board row does not offset the ranks below it', () => {
+    const model = buildUnitCardData({
+      character: b2('crown', 'Crown'),
+      bufferchart: staleArtifact as any,
+    });
+    const tile = model.tiles[0];
+    expect(tile.title).toBe('Team Buffs');
+    expect(tile.rank).toBe(1); // #1, not #2 behind Chime
+    expect(tile.population).toBe(2); // and Chime is not counted in the field
+    // ...and the neighbourhood never draws the off-board unit as a neighbour.
+    expect(model.charts[0].rows.map((r) => r.slug)).toEqual([
+      'crown',
+      'unit-b',
+    ]);
+  });
+
+  it('an off-board unit reads unranked on its own card rather than #1', () => {
+    const model = buildUnitCardData({
+      character: b2('chime', 'Chime'),
+      bufferchart: staleArtifact as any,
+    });
+    expect(model.tiles[0].title).toBe('Team Buffs');
+    expect(model.tiles[0].rank).toBeNull();
+    expect(model.charts[0].unranked).toBe(true);
+  });
+
+  it.runIf(haveBoards)('no card anywhere draws an off-board row', () => {
+    for (const slug of Object.keys(characters.characters)) {
+      for (const chart of build(slug).charts) {
+        for (const row of chart.rows) {
+          expect(
+            OFF_BOARD_BUFFER_SLUGS.has(row.slug),
+            `${slug} → ${row.slug}`
+          ).toBe(false);
+        }
+      }
+    }
+  });
 });
 
 describe('buildUnitCardData — neighbourhood windows', () => {

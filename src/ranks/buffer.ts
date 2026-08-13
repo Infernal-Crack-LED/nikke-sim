@@ -43,6 +43,7 @@ import type { CharacterData, Element, SimConfig, Weapon } from '../types.js';
 import { prepareTeam, type UnitOptions } from '../prepare.js';
 import { runSim } from '../engine/sim.js';
 import type { RanksCtx } from './burstgen.js';
+import { OFF_BOARD_BUFFER_SLUGS } from './buffer-rows.js';
 import {
   CARRY_MG,
   CARRY_RL,
@@ -243,6 +244,39 @@ export const DUO_BUFFER_PROFILES: Record<
 // `npx tsx scripts/probe/buffer-rotation-audit.ts --excluded` checks each entry's
 // live value against the criterion.
 export const EXCLUDED_BUFFER_SLUGS = new Set<string>();
+
+// The board's population — THE definition, shared by the builder
+// (scripts/build-bufferchart.ts) and the rotation audit
+// (scripts/probe/buffer-rotation-audit.ts) so the audit cannot describe a
+// different board than the one that ships.
+//
+// A unit is in when it is sim-supported, is a Burst-1/Burst-2 or a Burst-3 the
+// archetype tags call a buffer, and is neither EXCLUDED (negative-value kits)
+// nor OFF-BOARD (kept off by name, owner direction). Both exclusions bite HERE,
+// before any value is computed: a unit that is not in the population has no row
+// in the artifact, so nothing downstream can rank over it, count it, or draw it
+// as a neighbour. `--explain <slug>` still reports on an excluded unit — it
+// takes any sim-supported slug and computes the value directly.
+export function bufferPopulation(
+  characters: Record<string, { simSupported?: boolean; burst?: string }>,
+  tags: Record<string, string[]>
+): string[] {
+  const population: string[] = [];
+  for (const [slug, c] of Object.entries(characters)) {
+    if (EXCLUDED_BUFFER_SLUGS.has(slug) || OFF_BOARD_BUFFER_SLUGS.has(slug)) {
+      continue;
+    }
+    if (!c.simSupported) {
+      continue;
+    }
+    if (c.burst === 'I' || c.burst === 'II') {
+      population.push(slug);
+    } else if (c.burst === 'III' && (tags[slug] ?? []).includes('buffer')) {
+      population.push(slug);
+    }
+  }
+  return population.sort();
+}
 
 // Does this unit supply the TEAM's burst-cooldown reduction?
 //

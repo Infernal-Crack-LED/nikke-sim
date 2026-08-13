@@ -16,11 +16,19 @@ export const AMMO_PER_LINE_T11 = 68.93;
 // Per-OL-line ammo breakpoints for a weapon with `base` rounds. Mirrors
 // bakery-bot apps/bot/src/commands/utility/max-ammo.ts buildAmmoTable: a line
 // count that doesn't cross a whole round is omitted (Math.floor), matching the
-// bot's rows exactly.
-export function buildAmmoTable(base: number, name: string): TableCardData {
+// bot's rows exactly. `perLinePct`/`tier` default to the T11 reference but let
+// callers with a tier picker (the site's /charge panel) render the tier the
+// user actually selected. Capped at 4 lines — no OL stat can roll more than 4
+// lines on a single build.
+export function buildAmmoTable(
+  base: number,
+  name: string,
+  perLinePct: number = AMMO_PER_LINE_T11,
+  tier: number = 11
+): TableCardData {
   const rows: string[][] = [];
-  for (let lines = 1; lines <= 5; lines++) {
-    const pct = lines * AMMO_PER_LINE_T11;
+  for (let lines = 1; lines <= 4; lines++) {
+    const pct = lines * perLinePct;
     const ammo = Math.floor(base * (1 + pct / 100));
     if (ammo <= base) {
       continue;
@@ -29,7 +37,7 @@ export function buildAmmoTable(base: number, name: string): TableCardData {
   }
   return {
     title: `Max Ammo — ${name}`,
-    subtitle: `Base ${base} rounds · T11 = ${AMMO_PER_LINE_T11}% ammo/line`,
+    subtitle: `Base ${base} rounds · T${tier} = ${perLinePct.toFixed(2)}% ammo/line`,
     columns: [
       { header: 'OL Lines' },
       { header: 'Ammo %', align: 'right' },
@@ -84,12 +92,14 @@ function chargeFrameBreakpoints(
   return rows;
 }
 
-// The best (lowest-frame) breakpoint `lines` OL lines of T11 CS reach.
+// The best (lowest-frame) breakpoint `lines` OL lines of CS at `perLinePct`
+// reach.
 function bestPerLine(
   baseFrames: number,
-  lines: number
+  lines: number,
+  perLinePct: number
 ): { frames: number; csNeeded: number } | null {
-  const totalCs = lines * CS_PER_LINE_T11;
+  const totalCs = lines * perLinePct;
   const bps = chargeFrameBreakpoints(baseFrames);
   let best: { frames: number; csNeeded: number } | null = null;
   for (const bp of bps) {
@@ -101,17 +111,22 @@ function bestPerLine(
 }
 
 // Mirrors the bot's buildChargeTable: rows are the best breakpoint per OL line
-// count (skipped when 1–5 lines reach nothing — only degenerate tiny bases).
+// count (skipped when 1–4 lines reach nothing — only degenerate tiny bases).
 // `latencyFrames` is the per-shot release latency (chargeLatencyFrames above —
-// 0 for autofire units); it only feeds the Shots/FB column.
+// 0 for autofire units); it only feeds the Shots/FB column. `perLinePct`/
+// `tier` default to the T11 reference but let callers with a tier picker (the
+// site's /charge panel) render the tier the user actually selected. Capped at
+// 4 lines — no OL stat can roll more than 4 lines on a single build.
 export function buildChargeTable(
   baseFrames: number,
   label: string,
-  latencyFrames: number = RELEASE_LATENCY_FRAMES
+  latencyFrames: number = RELEASE_LATENCY_FRAMES,
+  perLinePct: number = CS_PER_LINE_T11,
+  tier: number = 11
 ): TableCardData {
   const rows: string[][] = [];
-  for (let lines = 1; lines <= 5; lines++) {
-    const bp = bestPerLine(baseFrames, lines);
+  for (let lines = 1; lines <= 4; lines++) {
+    const bp = bestPerLine(baseFrames, lines, perLinePct);
     if (!bp) {
       continue;
     }
@@ -128,7 +143,7 @@ export function buildChargeTable(
   return {
     title: `Charge Speed — ${label}`,
     subtitle:
-      `Base ${baseFrames}f (${(baseFrames / 60).toFixed(2)}s) · T11 = ${CS_PER_LINE_T11}% CS/line · ` +
+      `Base ${baseFrames}f (${(baseFrames / 60).toFixed(2)}s) · T${tier} = ${perLinePct.toFixed(2)}% CS/line · ` +
       `shots per Full Burst (10s${latencyFrames === 0 ? ', autofire — no release latency' : `, +${latencyFrames}f release`})`,
     columns: [
       { header: 'OL Lines' },
