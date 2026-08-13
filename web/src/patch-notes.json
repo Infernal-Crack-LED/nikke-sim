@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-08-13",
+    "title": "Overall sim engine improvements",
+    "notes": [
+      "A batch of accuracy work across the burst rotation and individual unit kits: how long a burst chain stays open, when \"entering Burst Stage\" skills take effect, and several units' burst weapons now firing the way they do in game.",
+      "Most teams' predicted damage is unchanged. A few units move slightly, and Snow White: Heavy Arms is queued for a re-tune against her recorded fights."
+    ]
+  },
+  {
     "date": "2026-08-03",
     "title": "Sustain board: fairer test teams for long-cooldown healers and shielders",
     "notes": [
