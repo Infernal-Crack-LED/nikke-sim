@@ -14,8 +14,9 @@ import { JSDOM } from 'jsdom';
 import { readFileSync, readdirSync } from 'node:fs';
 import {
   rankedBufferRows,
-  HIDDEN_BUFFER_SLUGS,
+  OFF_BOARD_BUFFER_SLUGS,
 } from '../src/ranks/buffer-rows.js';
+import { computeRanksInputHash } from './artifact-input-hash.js';
 
 const artifacts = {
   'burstgen.json': JSON.parse(readFileSync('dist/burstgen.json', 'utf8')),
@@ -35,11 +36,67 @@ const bufferGeneric = rankedBufferRows(
 const bufferTyped = rankedBufferRows(artifacts['bufferchart.json'].cells.typed);
 const bufferTop = bufferGeneric[0][0];
 const bufferTopName = artifacts['bufferchart.json'].units[bufferTop].name;
-// Names the board must NOT render, so the filter is asserted on the rendered
-// DOM and not just trusted from the module it came from.
-const hiddenNames = [...HIDDEN_BUFFER_SLUGS]
-  .map((slug) => artifacts['bufferchart.json'].units[slug]?.name)
+// Off-board units are excluded at the SOURCE: the builder never puts them in
+// the population, so they are absent from the artifact's rows AND from its units
+// map — that is what keeps every consumer's rank numbering right, not the
+// render-time filter. Asserted at module scope so a builder regression fails the
+// smoke before any DOM work happens.
+//
+// ...but ONLY against an artifact this tree built. PR CI does not build the
+// boards: it FETCHES the published set (scripts/fetch-published-boards.ts, Step
+// 0 of the artifact-decoupling plan) and runs this tier with SKIP_BOARD_BUILD=1.
+// A published artifact predating the population filter still carries the
+// off-board rows, and decision 1 of that plan rules such staleness ADVISORY —
+// the deploy path rebuilds, so a PR must not block on it (the same escape hatch
+// board-hash-parity.test.ts takes, keyed the same way, on the artifact's own
+// inputsHash rather than on which env var the workflow happened to set). In that
+// mode what is under test is the render-time BACKSTOP, which is exactly the
+// thing that has to hold there — the DOM assertions below carry it. Announce
+// which mode ran: a source check that silently evaporates reads as a pass.
+const bufferArt = artifacts['bufferchart.json'];
+const bufferBuiltHere = bufferArt.inputsHash === computeRanksInputHash();
+if (bufferBuiltHere) {
+  for (const slug of OFF_BOARD_BUFFER_SLUGS) {
+    for (const board of ['generic', 'typed']) {
+      if (bufferArt.cells[board].some((e) => e[0] === slug)) {
+        throw new Error(
+          `bufferchart ${board} still carries off-board slug "${slug}" — ` +
+            'scripts/build-bufferchart.ts must filter it out of the population ' +
+            '(src/ranks/buffer.ts bufferPopulation)'
+        );
+      }
+    }
+    if (slug in bufferArt.units) {
+      throw new Error(
+        `bufferchart units map still carries off-board slug "${slug}"`
+      );
+    }
+  }
+  process.stdout.write(
+    '  ✓ bufferchart artifact was built from this tree and contains no off-board unit\n'
+  );
+} else {
+  process.stdout.write(
+    '  ⓘ bufferchart artifact was NOT built from this tree (published/stale — PR CI Step 0);\n' +
+      '    the population check is advisory here, so the render-time backstop is what is\n' +
+      '    under test below. Rebuild with `npm run ranks:all` to exercise the source check.\n'
+  );
+}
+// Names the board must NOT render, so the exclusion is asserted on the rendered
+// DOM too and not just trusted from the artifact. Read from the roster, not the
+// artifact's units map — the whole point is that the map no longer has them.
+const rosterNames = JSON.parse(
+  readFileSync('data/characters.json', 'utf8')
+).characters;
+const hiddenNames = [...OFF_BOARD_BUFFER_SLUGS]
+  .map((slug) => rosterNames[slug]?.name)
   .filter(Boolean);
+if (hiddenNames.length !== OFF_BOARD_BUFFER_SLUGS.size) {
+  throw new Error(
+    'an OFF_BOARD_BUFFER_SLUGS entry is not a roster slug — the DOM assertion ' +
+      'below would silently check nothing'
+  );
+}
 // Map buffer comp-profile ids to the badge text rendered by the frontend's
 // profileLabel(). Keep in sync with web/src/rankChartBars.ts.
 const PROFILE_LABELS = {

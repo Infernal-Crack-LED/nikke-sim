@@ -1,13 +1,16 @@
 // Buffer board pins (src/ranks/buffer.ts): comp shape, baseline delta,
 // typed-board derivation, and the B3-never-bursts rule.
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import {
   assemble,
   bufferValueFor,
+  bufferPopulation,
   rankBuffers,
   deriveCarrySpec,
   DUO_BUFFER_PROFILES,
 } from '../../../src/ranks/buffer.js';
+import { OFF_BOARD_BUFFER_SLUGS } from '../../../src/ranks/buffer-rows.js';
 import {
   NOOP_B1,
   NOOP_B2,
@@ -568,5 +571,40 @@ describe('buffer board', () => {
     expect(blancRows.map((r) => r.profile).sort()).toEqual(
       [null, DUO_BUFFER_PROFILES.blanc.id].sort()
     );
+  });
+});
+
+// The population is where BOTH exclusions bite — before a value is computed, so
+// an excluded unit has no row in the artifact and nothing downstream can rank
+// over it, count it in a field size, or draw it as a neighbour. Dropping a unit
+// only at render time is what left the unit card reading Crown as #2 behind an
+// off-board Chime (fixed 2026-08-13).
+describe('buffer board population', () => {
+  const tags = JSON.parse(
+    readFileSync(
+      new URL('../../../data/archetype-tags.json', import.meta.url),
+      'utf8'
+    )
+  ).tags as Record<string, string[]>;
+  const population = bufferPopulation(data.characters as any, tags);
+
+  it('excludes every off-board slug, and they are real roster buffers', () => {
+    for (const slug of OFF_BOARD_BUFFER_SLUGS) {
+      const c = (data.characters as any)[slug];
+      // If one of these stopped being a sim-supported B1/B2, the exclusion
+      // would "pass" for the wrong reason and stop protecting anything.
+      expect(c, slug).toBeTruthy();
+      expect(c.simSupported, slug).toBe(true);
+      expect(['I', 'II'], slug).toContain(c.burst);
+      expect(population, slug).not.toContain(slug);
+    }
+  });
+
+  it('keeps the ordinary buffers it is meant to rank', () => {
+    // controls: a premier B1, a profiled B2, a duo-profiled B2
+    for (const slug of ['liter', 'crown', 'mint']) {
+      expect(population, slug).toContain(slug);
+    }
+    expect(population.length).toBeGreaterThan(50);
   });
 });

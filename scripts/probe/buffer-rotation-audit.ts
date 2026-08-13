@@ -35,9 +35,11 @@ import type {
 } from '../../src/prepare.js';
 import {
   bufferValueFor,
+  bufferPopulation,
   suppliesTeamCdr,
   EXCLUDED_BUFFER_SLUGS,
 } from '../../src/ranks/buffer.js';
+import { OFF_BOARD_BUFFER_SLUGS } from '../../src/ranks/buffer-rows.js';
 import { NOOP_CHARACTERS } from '../../src/dpschart/noop.js';
 import type { RanksCtx } from '../../src/ranks/burstgen.js';
 
@@ -73,18 +75,9 @@ const cdOf = (slug: string): number =>
   (data.characters as any)[slug]?.burstCooldownSec ??
   40;
 
-// the board's own population filter (scripts/build-bufferchart.ts)
-const population = Object.entries(data.characters as any)
-  .filter(
-    ([slug, c]: [string, any]) =>
-      !EXCLUDED_BUFFER_SLUGS.has(slug) &&
-      c.simSupported &&
-      (c.burst === 'I' ||
-        c.burst === 'II' ||
-        (c.burst === 'III' && (tags[slug] ?? []).includes('buffer')))
-  )
-  .map(([slug]) => slug)
-  .sort();
+// the board's own population — the same function the builder calls, not a copy
+// of it, so this audit can never describe a board that does not ship
+const population = bufferPopulation(data.characters as any, tags);
 
 // --cdr: who is the team's burst-cooldown enabler, and is there exactly one?
 //
@@ -132,9 +125,12 @@ if (process.argv.includes('--cdr')) {
 if (process.argv.includes('--excluded')) {
   if (EXCLUDED_BUFFER_SLUGS.size === 0) {
     process.stdout.write(
-      'no units are currently excluded — EXCLUDED_BUFFER_SLUGS is empty, so ' +
-        'every simSupported buffer enters the board population ' +
-        '(src/ranks/buffer.ts, scripts/build-bufferchart.ts). Nothing to check.\n'
+      'no units are currently excluded on the negative-value criterion — ' +
+        'EXCLUDED_BUFFER_SLUGS is empty, so every simSupported buffer enters ' +
+        'the board population except the by-name OFF_BOARD_BUFFER_SLUGS ' +
+        `(${[...OFF_BOARD_BUFFER_SLUGS].sort().join(', ')}), which are held off ` +
+        'by owner direction and not by any number this mode could check ' +
+        '(src/ranks/buffer.ts, src/ranks/buffer-rows.ts). Nothing to check.\n'
     );
     process.exit(0);
   }

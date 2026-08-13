@@ -22,9 +22,9 @@ import type {
 import {
   rankBuffers,
   bufferValueFor,
+  bufferPopulation,
   COMP_PROFILES,
   DUO_BUFFER_PROFILES,
-  EXCLUDED_BUFFER_SLUGS,
   type BufferBoard,
   type BufferValue,
 } from '../src/ranks/buffer.js';
@@ -82,28 +82,18 @@ if (explainSlug && !data.characters[explainSlug].simSupported) {
   );
 }
 
-// EXCLUDED_BUFFER_SLUGS never enters the population: a kit that reduces team
-// damage in the standard comp would report a misleadingly negative % increase,
-// useless for ranking support value. The set is currently EMPTY — no unit meets
-// that criterion — so this filter passes everything through today. The artifact
-// keeps every row it computes, negatives included; the leaderboard trims those
-// at render time (src/ranks/buffer-rows.ts) so the unit card can still quote a
-// unit's own value.
-const population: string[] = [];
-for (const [slug, c] of Object.entries(data.characters)) {
-  if (EXCLUDED_BUFFER_SLUGS.has(slug)) {
-    continue;
-  }
-  if (!c.simSupported) {
-    continue;
-  }
-  if (c.burst === 'I' || c.burst === 'II') {
-    population.push(slug);
-  } else if (c.burst === 'III' && (tags[slug] ?? []).includes('buffer')) {
-    population.push(slug);
-  }
-}
-population.sort();
+// The population — see bufferPopulation() in src/ranks/buffer.ts for the rule.
+// Both of its exclusions bite here, before a single value is computed:
+// EXCLUDED_BUFFER_SLUGS (kits that would post a negative value; currently
+// empty) and OFF_BOARD_BUFFER_SLUGS (kept off by owner direction). An excluded
+// unit therefore has NO ROW in the artifact at all, which is what makes the
+// board's ranks correct for every consumer — a row present in the artifact but
+// dropped only at render time still occupies an index, and the unit card reads
+// ranks off that index (it showed Crown as #2 behind an off-board Chime until
+// 2026-08-13). The artifact keeps every row it does compute, negatives
+// included; the leaderboard trims those at render time
+// (src/ranks/buffer-rows.ts) so the unit card can still quote a unit's own value.
+const population = bufferPopulation(data.characters, tags);
 
 // --explain <slug>: why does this unit sit where it sits? Prints the shipped
 // value, then two ablations against it — the unit with its kit stripped
