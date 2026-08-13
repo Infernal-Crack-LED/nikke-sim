@@ -54,7 +54,26 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
-1. **⇒ OWNER QUESTION (blocks nothing else) — `velvet`'s S2 team buff: which premise is wrong?**
+1. **`snow-white-heavy-arms` is FIT-EXPOSED by the stage-entry correction — re-tune, do not
+   re-fudge.** The 2026-08-13 ruling (DECISIONS) re-times "entering Burst Stage N" to the chain's
+   stage TRANSITION, one step ahead of the stage-N cast. Her S2 ATK ▲73.92%/10s rides exactly that
+   trigger, and her magnitudes were hand-tuned against the old cast-frame timing, so she moved
+   0.954 → 0.946 (n=4) and crossed the ±5% band into ±8% — the board's only band movement from that
+   change. Same class as the 2026-07-21 rotation-fix exposure: the fix is right, the unit's fit was
+   standing on the bug. Re-tune her against her existing recordings; do NOT restore the old timing.
+
+2. **⚑ `hitCount` counts attacks the kit would not count (engine-wide, surfaced via `velvet`).** The
+   trigger's counter accrues on EVERY normal attack and the gate (`fbGate` etc.) is applied at
+   FIRING time, so a threshold crossing that the gate blocks still SPENDS its N. For a kit line
+   worded "landing 50 normal attack(s) **during Full Burst**", out-of-FB attacks should not advance
+   the counter at all. Measured divergence on velvet: the two readings converge where gated shots
+   dominate (55 procs vs the in-FB-only 54) and part company at low volume (1 vs 0 in her off-B2
+   fixture); both counts are pinned in `scripts/tests/units/velvet.test.ts` so it cannot drift
+   silently. Fix shape: a count-scope option on the trigger (count only while the gate passes).
+   Cross-cutting across every hitCount carrier ⇒ needs its own blast-radius pass, which is why it
+   was filed rather than made.
+
+3. **⇒ OWNER QUESTION (blocks nothing else) — `velvet`'s S2 team buff: which premise is wrong?**
    Her S2 activates "when attacking with Full Charge during Full Burst", and the owner ruled her
    burst swap does **not** full-charge. Encoding that (`swapGate: 'unswapped'` beside the shipped
    `fbGate: 'inFb'`) takes the line from 135 applications to **ZERO** in her control fixture — her
@@ -67,7 +86,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    either/or; do not enact. Parked as a skipped assertion in `scripts/tests/units/velvet.test.ts`;
    context in [2026-08-12-takina-laplace-swap-engine-work.md](2026-08-12-takina-laplace-swap-engine-work.md) §4.
 
-2. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
+4. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
    economy landing (DECISIONS) made her colder, not warmer: the faithful custom weapon fires 12
    uncharged shots where the old estimate fired 7 that inherited her SR ×2.5 `chargeMultiplier`.
    Her swap window is therefore ruled OUT as the explanation. The largest remaining ⚑ in her file is
