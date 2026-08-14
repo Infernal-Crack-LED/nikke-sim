@@ -157,7 +157,42 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
   does not prove a faster refill fixes the counts. That is a separate gated enactment pass.
 - It does not localize the cause inside the refill window. Per the 2026-08-13 pass, the FB-end →
   next-stage-1 span is indivisible to the instrument, so "gauge generates too slowly", "the chain
-  opens late", and "the real Full Burst is shorter than 10s" are still not separated.
+  opens late", and "the real Full Burst is shorter than 10s" are still not separated. **One in-window
+  candidate has since been EXCLUDED (2026-08-14):** post-Full-Burst reload-state starvation is not the
+  cause — the first 1s after FB end delivers 114.7% (iron sweep) / 140.7% (T5) of the steady-state
+  rate, i.e. the refill window is FRONT-LOADED, not ramping. Instrument:
+  `npx tsx scripts/battery/fb-count-matrix.ts --refill-starvation`, pinned by
+  `scripts/tests/battery/refill-starvation.test.ts`; the record lives in
+  [handoffs/2026-08-13-burst-generation-investigation-plan.md](handoffs/2026-08-13-burst-generation-investigation-plan.md)
+  item 1. **A second candidate has since been EXCLUDED as a primary cause (2026-08-14):**
+  missing/mis-scoped non-bullet gauge sources — the field-form census of every impact kind vs the
+  emission map is clean (every site measured or owner-ruled), the non-emitting kinds
+  (`storedHit` releases, `stackedNuke`) contribute ZERO on all nine comps by construction, and
+  non-damage skill applications land ~nothing fresh inside the refill windows. Its one live lever
+  is the `skillGauge` ÷hitsPerShot divisor for hitsPerShot > 1 (U28 residual): `anis-star`'s
+  labeled battery-3-A3 solo fixture EXCLUDES the shipped halved reading, and resolving it her way
+  closes ~12% of T5's cycle gap — real but not sufficient, and footage-gated. Instrument:
+  `npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources`, pinned by
+  `scripts/tests/battery/gauge-source-census.test.ts`; the record lives in the same handoff, item 2.
+  **A third candidate has since been EXCLUDED (2026-08-14):** a wrong per-unit focus-multiplier
+  column — all four focused charge units (`maxwell`, `anis-star` ×2, `scarlet-black-shadow`)
+  resolve to MEASURED columns via `characters.json` `chargeMultiplier`, and even the most
+  extreme wrong column (350) covers ≤22.4% (iron sweep) / ≤12.6% (T5) of the measured
+  shortfall. Instrument: `npx tsx scripts/battery/fb-count-matrix.ts --focus-columns`, pinned
+  by `scripts/tests/battery/focus-columns.test.ts`; the record lives in the same handoff, item 3.
+  **A fourth candidate has since been EXCLUDED (2026-08-14):** multi-hit gauge crediting — the
+  primary sources never distinguished LANDED pellets from trigger pulls, so the owner was asked
+  and ruled 2026-08-14: **a missed pellet generates nothing — per-landed crediting confirmed**
+  (U40 answered, DECISIONS 2026-08-14), and the
+  ceiling arm (`SGGAUGE=trigger`: full per-trigger SG gauge, gauge-only, default OFF, kept as the
+  refuted reading's A/B revert) lifts
+  SG-carrier generation +27–48% (team +7–17% on all five SG-seated comps) yet moves ZERO
+  Full-Burst counts anywhere on the 31-comp board — every SG comp stays exactly one short, and
+  the filmed comps seat no SG carrier at all (byte-identical between arms). The arm, instrument,
+  and pinning test live on branch `audit/item4-multihit`: `src/engine/sim.ts` (`SGGAUGE`),
+  `scripts/battery/fb-count-matrix.ts --multihit-crediting`,
+  `scripts/tests/battery/multihit-crediting.test.ts`; the record lives in the same handoff,
+  item 4.
 - Passing comps are not shown, so the claim "`N6` passes because it has ~2 cycles of slack rather
   than correct tempo" is **not** demonstrated here. Add the passing comps to the script's `OFF` list
   to test it.

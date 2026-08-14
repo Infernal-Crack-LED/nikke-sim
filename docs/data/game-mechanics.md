@@ -239,7 +239,9 @@ FB countdown (10s)`**. So gauge-full → FB-start ≈ 112f (~1.87s), not the old
   **Landing is Hit-Rate-dependent** (the shrinking circle pulls pellets onto the body): at HR 0 ≈
   near .813 / mid .712 / midfar .657 / far .607; at ▲38.91 ≈ .960/.873/.725/.710 — matching the
   owner's 728-pellet hand count (near-OFF measured 0.780, near-ON 0.931, etc.). Landing scales SG
-  shot damage AND per-pellet burst-gauge generation (`unigeoSgLanding` → the gauge feed); seeded
+  shot damage AND per-pellet burst-gauge generation (`unigeoSgLanding` → the gauge feed — the
+  per-LANDED-pellet gauge crediting is owner-CONFIRMED 2026-08-14: a missed pellet generates
+  nothing, U40); seeded
   runs draw whole landed-pellet counts as before. The boss silhouette is non-convex (hourglass +
   wide shoulders), which is why coverage stays nearly flat with range while the core shrinks 45% —
   the old "flat per-band table" (near 0.888 / mid 0.986 / far 0.74 / midfar 0.888, HR-blind,

@@ -3,7 +3,12 @@
 // per-unit sim/real ratios per variant. Not part of the product.
 //   npx tsx scripts/experiment.ts
 import { readFileSync } from 'node:fs';
-import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
+import type {
+  DataFile,
+  LevelMultiplier,
+  Element,
+  SimEvent,
+} from '../src/types.js';
 import { runSim, DEFAULT_MC_SEEDS } from '../src/engine/sim.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
 import type { OverrideFile } from '../src/skills/index.js';
@@ -610,7 +615,12 @@ export const COMPS: Comp[] = [
 // deep-clone an override and let the variant mutate it; return undefined = drop unit's override
 type Patch = Record<string, (o: OverrideFile) => OverrideFile>;
 
-export function run(comp: Comp, patch: Patch = {}, seed?: number) {
+export function run(
+  comp: Comp,
+  patch: Patch = {},
+  seed?: number,
+  onEvent?: (ev: SimEvent) => void
+) {
   const chars = comp.slugs.map((s) => data.characters[s]);
   const overrides: Record<string, OverrideFile | undefined> = {};
   for (const s of comp.slugs) {
@@ -628,6 +638,11 @@ export function run(comp: Comp, patch: Patch = {}, seed?: number) {
     focusSlug: comp.focus,
     seed,
   });
+  // Structured event tap for instruments (scripts/battery/fb-count-matrix.ts
+  // --refill-starvation). Zero-cost when unset; the sim result is byte-identical either way.
+  if (onEvent) {
+    cfg.onEvent = onEvent;
+  }
   // BOSSPELLET=small|medium|large — SG pellet-landing boss-size profile (seeded runs only).
   const bp = process.env.BOSSPELLET as 'small' | 'medium' | 'large' | undefined;
   if (bp) {

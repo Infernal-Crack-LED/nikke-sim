@@ -48,8 +48,10 @@ gauge-generation and focus rules (no efficiency fudge factor remains).
 
 Outside the near band only ~30% of a shotgun's 10 pellets land on the moving test boss
 (`SG_OUT_OF_NEAR_HIT_FRACTION = 0.3` ⚑, calibrated on the naga / dorothy-S / noir triple,
-all ~×2 hot at full volleys before it). Applies to damage AND gauge generation (missed
-pellets generate nothing). Consistent with the reticle-floor mechanism in §1 but
+all ~×2 hot at full volleys before it). Applies to damage AND gauge generation — the
+gauge half ("missed pellets generate nothing") was a calibration parenthetical here until
+the owner CONFIRMED it as a ruling 2026-08-14 (U40, DECISIONS): SG gauge credits per
+LANDED pellet. Consistent with the reticle-floor mechanism in §1 but
 calibrated independently.
 
 ## 5. Burst selection on auto

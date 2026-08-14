@@ -142,9 +142,34 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      (iron sweep) / 50% (T5)** of what the filmed fights require. **The open thread is whether burst
      GENERATION is computed correctly** — four scoped investigations, one per session, in
      [2026-08-13-burst-generation-investigation-plan.md](2026-08-13-burst-generation-investigation-plan.md):
-     (1) refill-window starvation from post-Full-Burst reload state, (2) missing non-bullet sources,
-     (3) the focused charge multiplier's per-unit column, (4) whether multi-hit weapons credit gauge
-     per landed hit or per trigger. Run them in that order, do not bundle.
+     ~~(1) refill-window starvation from post-Full-Burst reload state~~ **CLOSED 2026-08-14 —
+     NOT the cause** (first 1s after FB end delivers 114.7%/140.7% of steady state on the two
+     filmed comps — the window is FRONT-LOADED; instrument + fixture committed, plan doc carries
+     the record), ~~(2) missing non-bullet sources~~ **CLOSED 2026-08-14 — census clean for
+     comp-moving sources** (emission map fully ruled; non-emitting kinds contribute zero on all
+     nine comps; non-damage applications land nothing fresh in refill windows; the one live lever
+     is the `skillGauge` divisor for hitsPerShot > 1, where `anis-star`'s battery-3-A3 fixture
+     EXCLUDES the shipped halved reading — sized at ~12% of T5's cycle gap, footage-gated under
+     the U28 residual; plan doc carries the record), ~~(3) the focused charge multiplier's
+     per-unit column~~ **CLOSED 2026-08-14 — cannot explain the shortfall** (every seated
+     focused charge unit resolves to a MEASURED column via `characters.json` `chargeMultiplier`
+     — maxwell/anis-star 250, scarlet-black-shadow's enacted 1.5×; the only unmeasured column,
+     vesti-tactical-upgrade's pinned 200, seats no comp; even a maximally wrong column covers
+     ≤22% of the filmed shortfalls; instrument + fixture committed, plan doc carries the
+     record), ~~(4) multi-hit crediting (per landed hit vs per trigger)~~ **CLOSED 2026-08-14 —
+     EXCLUDED as the shortfall cause** (the primary sources never distinguished landed pellets
+     from trigger pulls — that IS the finding, and it is an owner question before a measurement;
+     the ceiling arm `SGGAUGE=trigger` lifts SG-carrier generation +27–48% / team +7–17% and
+     moves ZERO Full-Burst counts anywhere, every SG comp stays exactly one short, the filmed
+     comps seat no SG carrier at all; arm + instrument + fixture on branch `audit/item4-multihit`,
+     plan doc carries the record; the owner question was filed as open-questions U40 and ANSWERED
+     the same day — **no, a missed pellet does NOT generate**: per-landed crediting confirmed,
+     DECISIONS 2026-08-14, U40 moved to answered-questions). **All four items closed and NONE
+     explains the shortfall — the plan's
+     stop condition has been met: the remainder is not in any of the four generation candidates
+     and goes back to the owner rather than into a fifth speculative item.** Live residue: the
+     U28 `skillGauge` divisor residual (~12% of T5's cycle gap, footage-gated), and the separate
+     real-Full-Burst-duration measurement below.
    - **A SEPARATE small measurement still open:** read the real Full Burst duration off a visual that
      does NOT share the drain bar's under-render — the FB screen border / cut-in vignette, or a
      buff-icon timer — on either recording already on disk. **One clean "real FB ≈ 10s" converts this

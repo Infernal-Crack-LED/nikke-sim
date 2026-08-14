@@ -1293,6 +1293,23 @@ export function runSim(
   // against the old inflated landing and await their re-tune pass (DECISIONS 2026-07-22).
   const UNIGEO: 'off' | 'sg' | 'all' =
     ENV.UNIGEO === 'off' || ENV.UNIGEO === 'sg' ? ENV.UNIGEO : 'all';
+  // ── SG gauge-crediting arm (ENV.SGGAUGE='trigger'; default OFF = the live per-LANDED-pellet feed) ──
+  // Burst-generation investigation plan item 4 (docs/handoffs/2026-08-13-burst-generation-
+  // investigation-plan.md): does the game credit burst gauge per LANDED SG pellet (the live model —
+  // `bandSg.gauge`, the base-capped landed/base fraction) or per TRIGGER (the datamine's per-trigger
+  // `target_burst_energy_pershot` regardless of how many pellets land)? ANSWERED 2026-08-14 — owner
+  // ruling (U40): a MISSED pellet does NOT generate. The live per-landed crediting is CONFIRMED; the
+  // primary sources had never distinguished the two (the datamine column is per-trigger — its
+  // per-pellet × shot_count split is table structure, not a miss test — and the "fill counts HITS,
+  // not damage" lineage is gauge-vs-damage), which is why this arm was built to SIZE the difference:
+  // it forces the FULL per-trigger value on every SG spray pull — gauge ONLY: damage keeps the landed
+  // fraction, and `bandSg` is still drawn with the same rng sequence, so default/off runs stay
+  // byte-identical. The sizing measured +27–48% carrier generation (team +7–17% on all five SG-seated
+  // off-count comps) and ZERO Full-Burst movement anywhere — the refuted reading buys no burst
+  // boundary, so the arm survives only as the refuted-reading A/B revert (the `ROTMODEL=floor`
+  // precedent for owner-overturned mechanics). Do not re-open the question without new evidence.
+  // Instrument: `scripts/battery/fb-count-matrix.ts --multihit-crediting`; DECISIONS 2026-08-14.
+  const SG_GAUGE_TRIGGER = ENV.SGGAUGE === 'trigger';
   const coneSigmaFor = (weapon: string, hr: number): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
     if (scale === undefined) {
@@ -1373,11 +1390,17 @@ export function runSim(
   // shot row, both now modeled from measurements.
   const UNFOCUSED_CHARGE_GEN = 1.0;
   // Units pinned to FOCUS_CHARGE_GEN instead of their per-unit fullChargeBonus.
-  // vesti-tactical-upgrade (RL/Fire; fullChargeBonus 200, currently unmeasured, not
-  // sim-supported — no override exists yet) is included pre-emptively: the only measurement
-  // ever taken at the 200 column (cinderella (RL/Electric, "cindy")'s ~2.2-3.1x reads)
-  // contradicts 2.0x, so a future override for vesti-tactical-upgrade must not silently
-  // inherit an unmeasured value the moment it lands (implementation review, 2026-07-29).
+  // vesti-tactical-upgrade (RL/Fire; fullChargeBonus 200): her override landed 2026-08-01 and
+  // carries no charFixes.focusChargeMult, so this pin is LIVE — without it she would silently
+  // inherit her datamined 200 column, which has never been isolated on footage (her kit
+  // build's ⚑3 carries the recipe: a focused solo recording pins her real multiplier). The
+  // cinderella reads that once appeared to contradict the 200 column (~2.2-3.1x) were
+  // RETRACTED as reading errors when her own 2.0x was owner-confirmed TRUE (DECISIONS
+  // 2026-07-29 SUPERSEDES entry; docs/data/burst-gauge.md §4) — so this pin is NOT evidence
+  // the 200 column is wrong; it withholds an unmeasured value. Every other non-250 column is
+  // settled: alice 350 and scarlet-black-shadow 150 are measured + enacted, cinderella 200
+  // enacted via charFixes.focusChargeMult. (Implementation review 2026-07-29; comment
+  // refreshed 2026-08-13 to match the doc record.)
   const PENDING_TEAM_ISOLATION = new Set(['vesti-tactical-upgrade']);
   const focusIdx =
     cfg.focusSlug !== undefined
@@ -4226,7 +4249,11 @@ export function runSim(
     const sgFalloff =
       consolidating && consol ? consol.pelletFraction : bandSg.dmg;
     const sgGaugeFrac =
-      consolidating && consol ? consol.pelletFraction : bandSg.gauge;
+      consolidating && consol
+        ? consol.pelletFraction
+        : SG_GAUGE_TRIGGER
+          ? 1 // item-4 A/B arm: per-TRIGGER crediting — the full datamine per-trigger value regardless of landing
+          : bandSg.gauge;
     // The PARENT instance of this pull. Its final damage is recorded on the unit (below) so the
     // per-pull block dispatch further down can hand it to a `hitRepeat` rider — the dispatch
     // runs after this line, which is what makes "X% of the damage dealt by self" expressible.
@@ -4273,7 +4300,11 @@ export function runSim(
       });
     }
     u.pulls++;
-    shotGauge(u, frame, sgGaugeFrac); // out-of-near SG pellets that miss generate nothing (base-capped: +pellets buffs don't pump per-trigger energy)
+    // SG gauge feeds per LANDED pellet (base-capped: +pellets buffs don't pump per-trigger energy).
+    // "Missed pellets generate nothing" is OWNER-RULED 2026-08-14 (U40, DECISIONS) — the
+    // per-landed crediting is confirmed; `SGGAUGE=trigger` (see its declaration) is the
+    // refuted-reading A/B revert, which the item-4 audit sized at zero Full-Burst movement.
+    shotGauge(u, frame, sgGaugeFrac);
 
     const extraPerHit = stat(u, 'extraHitDamagePct', frame);
     if (extraPerHit > 0) {

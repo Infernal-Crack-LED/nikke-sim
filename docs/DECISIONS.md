@@ -9,7 +9,35 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-13, latest) Burst gauge generates in exactly ONE window per cycle: FB-end → chain-start.
+- **(2026-08-14, latest) A MISSED shotgun pellet generates NO burst gauge — SG gauge credits per
+  LANDED pellet, confirmed. `SGGAUGE=trigger` survives as the refuted reading's A/B revert.**
+  - **The ruling (owner, 2026-08-14).** Asked whether a missed SG pellet generates burst gauge
+    (per-landed-pellet vs per-trigger crediting — investigation-plan item 4, open-questions U40),
+    the owner answered: **no, it doesn't.** The engine's live model — `shotGauge(u, frame,
+    sgGaugeFrac)` in `firePull`, gauge scaled by the base-capped landed-pellet fraction — is
+    therefore the FAITHFUL one. Nothing changes in default behavior; this is a confirmation, not
+    a fix.
+  - **Why it was open.** The primary sources never distinguished the two: the datamine column is
+    per-trigger (`target_burst_energy_pershot`; its per-pellet × `shot_count` split is table
+    structure, not a miss test), the "fill counts HITS, not damage" lineage is gauge-vs-damage,
+    and the one explicit statement (auto-play.md §4 "missed pellets generate nothing") had ridden
+    the 2026-07-13 SG damage-falloff ⚑ calibration as a parenthetical with no gauge-side record.
+    No SG solo gauge-bar recording has ever been read (both solo anchors are charge weapons). The
+    item-4 audit therefore prescribed an owner ruling before a measurement — and got one.
+  - **The refuted reading is SIZED, so it stays dead.** The audit's ceiling arm
+    (`SGGAUGE=trigger`, sim.ts — full per-trigger gauge per SG spray pull, gauge-only, default
+    OFF) lifts SG-carrier generation +27–48% (team +7–17% on all five SG-seated off-count comps)
+    and moves **zero** Full-Burst counts anywhere (31-comp EV board: 0 FB movers; the four SG-free
+    comps byte-identical). Instrument: `scripts/battery/fb-count-matrix.ts --multihit-crediting`,
+    pinned by `scripts/tests/battery/multihit-crediting.test.ts`. The arm is kept — default OFF —
+    as the refuted reading's A/B revert, the same footing as `ROTMODEL=floor` for the overturned
+    post-FB chain-open block. Do not re-open without new evidence.
+  - **Consequence for the burst-generation thread.** Item 4 was the last of the plan's four
+    candidates; all four closed without explaining the filmed 39–50% generation shortfalls, so
+    the plan's stop condition stands: the remainder is not in any of the four generation
+    candidates and sits with the owner (handoff doc carries the status block).
+
+- **(2026-08-13) Burst gauge generates in exactly ONE window per cycle: FB-end → chain-start.
   Re-confirmed by the owner and pinned in three places so it stops being re-asked.**
   - **The ruling (owner, 2026-08-13).** "During the burst chain and full burst, gauge cannot be
     generated. It can only be generated during the period of time after a full burst ends and before

@@ -33,12 +33,19 @@ Primary sources:
 > FB") keeps getting re-derived by fresh sessions; also pinned in `CLAUDE.md` verified facts.
 
 - Gauge maximum = **10,000 energy** (UI shows 100.00%; 1% = 100 energy).
-- Fill counts **HITS, not damage**.
+- Fill counts **HITS, not damage**. (That rule is the gauge-vs-damage lineage — it does NOT
+  distinguish _hits landed_ from _trigger pulls_. The distinction was settled 2026-08-14:
+  **a MISSED pellet generates NOTHING — gauge credits per LANDED pellet, owner ruling (U40,
+  DECISIONS 2026-08-14).** The engine's per-landed crediting (`shotGauge`'s hit fraction) is
+  the confirmed-faithful model; the refuted per-trigger reading survives only as the
+  `SGGAUGE=trigger` A/B revert.)
 - Per trigger pull vs the **stage target** (the raid boss, and also the practice target)
   the gauge gains the unit's datamined **`target_burst_energy_pershot`** — universally
   exactly **2× the non-target base** across the entire table. The old "boss ×2" rule IS
   this column. Shotguns: the table value is per pellet; per trigger = value ×
-  `shot_count` (10). Multi-muzzle rows multiply by `muzzle_count`.
+  `shot_count` (10). Multi-muzzle rows multiply by `muzzle_count`. The per-trigger ×
+  shot_count form is table structure, not a miss test — for landing, gauge scales by the
+  landed fraction (owner ruling 2026-08-14, U40).
 - **Locked during Full Burst and during the chain** (stages 1–3; einkk, KR sources,
   user-confirmed 2026-07-13, re-confirmed 2026-08-04). The lock lifts the INSTANT Full
   Burst ends — there is NO lingering post-FB delay: the ~3-4s to the next chain is the
@@ -86,10 +93,13 @@ proc generation + her +6% team fill aura (the synergy aggregate folds these into
 per-shot number, which is why that column was retired). Independent cross-check: nikke-synergy's
 arena calculator lists per-shot values matching our BASE column for snipers/rifles/MGs
 (jill 1.1 = 110, takina 2.8 = 280, moran 0.25 = 25, crown 0.05 = 5), and its
-`special_burst_gauge` annotations catalogue per-unit skill-generation quirks we don't
-yet model (Ein's orb adds 560 every ~2.8s; Helm's kit adds a fixed 1,431; Liberalio and
-Snow White: Heavy Arms have per-shot-sequence bonuses) — likely where Ein's current
-0.7x residual lives. The blablalink/synergy-API `burstGaugePerShot` column was **dropped as a
+`special_burst_gauge` annotations catalogue per-unit skill-generation quirks — three of the
+four are now MODELED (gauge-source census 2026-08-14, investigation-plan item 2): Ein's orb adds
+560 every ~2.8s — ein.json encodes it as a zero-damage permanent DoT whose ticks drive
+`skillGauge`; Helm's kit adds a fixed 1,431 — her `flatPerTrigger` row; Liberalio's per-shot-
+sequence bonus — §7's ×6. Snow White: Heavy Arms' burst-fire pattern (~24 generating hits per 3s)
+remains the unmodeled one (U11c). Ein's open 0.7x team-fight residual (open-questions U8) is
+therefore no longer attributable to the orb by default. The blablalink/synergy-API `burstGaugePerShot` column was **dropped as a
 gauge source** — its semantics vary per unit (helm's 5.6 is her TARGET value, takina's
 2.8 is her BASE, trina's 14.4 is her target ×2, a2's 15.6 matches nothing datamined).
 
@@ -131,8 +141,9 @@ both `fullChargeBonus` 250, the modal value across the roster.
   (`fullChargeBonus / 100`), not a roster-wide flat 2.5 — engine: `gaugePerShot()`
   (`src/engine/sim.ts`). For the 250-family this is byte-identical to the old flat constant.
   Four units deviate: **alice 350 (3.5×)**, **cinderella 200 (2.0×)**,
-  **scarlet-black-shadow 150 (1.5×)**, `vesti-tactical-upgrade` 200 (out of scope, not
-  sim-supported). Live per-unit status:
+  **scarlet-black-shadow 150 (1.5×)**, `vesti-tactical-upgrade` 200 (sim-supported since
+  2026-08-01, but still pinned to the flat 2.5× by `PENDING_TEAM_ISOLATION` until her own
+  column is measured — her kit build's ⚑3 carries the recipe). Live per-unit status:
   - **scarlet-black-shadow: ENACTED at 1.5×.** Confirmed at two independent measured levels:
     a solo per-shot gauge-fill read (~1.42× observed) AND a team full-burst count
     (`docs/probes/720-kit-audit/scarlet black shadow.MP4`, 11 FBs measured — outside the old
