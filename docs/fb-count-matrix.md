@@ -129,6 +129,33 @@ T1's miss is weak evidence of anything: at 14.60s it needs `174.0/14.60 = 11.92`
 just under the integer boundary. A 0.2s period difference flips it — the same quantization
 sensitivity that makes comp counts a coarse readout in the first place.
 
+## Observations
+
+**The three "gauge filling" teams stop mid-refill, two of them barely.** Iron sweep is **0.30s** and
+T1 **0.80s** from a full bar at the buzzer — both would have opened another chain almost immediately.
+`misc B3s` is further out at 2.70s. None of these needs an error larger than the one measured.
+
+**Two teams start their final Full Burst in the last second and bank almost none of it.** T5
+wind-weak opens one at 179.2s and N5 at 178.9s — each counts a whole burst for ~1s of actual window.
+Shaving the measured gap moves that burst several seconds earlier, which is where their missing count
+comes from.
+
+**Generation rate does not discriminate.** `misc B3s` has the fastest team here (34.53, a 2.90s bar)
+and is still short by one; N2 and N5 are the slowest (~19.3, ~5.2s bar) and are short by the same
+one. A per-team gauge-rate error would not produce that — a per-cycle _time_ error would, which is
+consistent with the footage measurement.
+
+**Focus is worth ~30% of a team's generation, but only for charge weapons.** The focused unit is the
+top generator on 5 of 9 teams, driven by the ×2.5 charge-gauge bonus — `maxwell` at 8.37 is 32.7% of
+his team, `anis-star` 8.19 is 30.5%. It is not automatic: `rapi-red-hood` (MG) is focused on N1 and
+generates less than three teammates, as do `modernia` (MG) on N2 and `privaty` (AR) on N5, because
+non-charge weapons take no focus bonus.
+
+**Three comps run a 15s Full Burst, not 10s** — N3 and soda-tb control via `soda-twinkling-bunny`,
+N2 via `modernia`. Their cycles are structurally longer (~21s, ~20s), so a fixed per-cycle error
+costs them fewer bursts across the fight. Do not compare their counts to the 10s comps without
+accounting for it — and note these are exactly the comps the flat counterfactual undershoots.
+
 ## ⚑ Known staleness
 
 `scripts/regression.ts` records **N2 modernia wind** as "real ≥10 vs sim 8". The sim reads **9**
@@ -145,5 +172,8 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
 - Passing comps are not shown, so the claim "`N6` passes because it has ~2 cycles of slack rather
   than correct tempo" is **not** demonstrated here. Add the passing comps to the script's `OFF` list
   to test it.
+- The counterfactual column applies a flat −1.65s/cycle to seven comps that were never filmed. It is
+  an extrapolation, and the flat-vs-proportional question it raises is **unresolved** — see that
+  section's stop-clause.
 
 Live thread and next measurement: [handoffs/QUEUE.md](handoffs/QUEUE.md) item 2.
