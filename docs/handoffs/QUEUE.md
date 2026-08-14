@@ -127,18 +127,43 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    - **Encode-consistency candidates**: `anis` and `mica` both keep an `attacked`-N line unmodeled
      on "nothing feeds the trigger" grounds. Same call, so decide them together, not one at a time.
 
-2. **The burst-gauge ECONOMY cluster is down to ONE item: the charge-B3 gauge-fill-tempo gap.** The
-   2026-08-10 bundle's other three closed on 2026-08-13 without a pipeline — the U28 rider encoding
-   was encoded (answered by `burst-gauge.md` §5 + the `maiden-ice-rose` anchor; board movement zero),
-   the "double-emit" entry was closed as NOT a defect (that same anchor measures both emissions), and
-   the `fullChargeBonus` sourcing fix turned out to have landed 2026-08-08 in `ccee21f7`. Full record:
-   DECISIONS 2026-08-13 (burst-gauge economy cluster). **What remains is the tempo gap, and it wants
-   `/scientific-method` alone** — the compensating-errors bundling rationale is gone with the only
-   gauge-DOWN direction. Success criterion unchanged: the 4 disabled comps' measured FB counts,
-   re-enabled. The 2026-08-03 LOG record already names the step that lifts it MEDIUM→HIGH —
-   frame-measure the real FB-end → next-B1 gap on ONE disabled comp's footage, not a downstream proxy;
-   `docs/probes/u8/u8 g vid.mov` is "iron sweep run G" and is on disk. Handoff:
-   [2026-08-10-gauge-economy-findings.md](2026-08-10-gauge-economy-findings.md).
+2. **Tempo gap: MEASURED (2026-08-13, LOG). One question left — is the real Full Burst 10s?** The
+   `/scientific-method` pass is done and the measurement is in `docs/probe-runs.md` (2026-08-13): the
+   real burst cycle runs **1.662s / 1.649s per cycle faster** than the sim on two recordings, the cast
+   ladder is EXONERATED (real 1.383–1.400s vs the engine's 82f = 1.3667s), and **100% of the gap sits
+   in the FB-start → next-stage-1 span**. What is NOT settled is the split of that span: the
+   Full-Burst-duration lower bound (≥8.87s) leaves only 0.40–0.53s unexplained by "the real Full Burst
+   is shorter than the modeled 10s", below the pre-committed 0.6s margin — so the refill error is a
+   RANGE ([0.52, 1.66] s/cycle), not a value, and nothing was enacted.
+   - ⛔ **The framing changed 2026-08-13 (owner ruling): do NOT chase the cycle-time difference.**
+     Burst gauge is generated per HIT; there is no per-second gain and no timer that opens a chain, so
+     a "~1.65s/cycle" figure is a symptom in units the game does not have and there is no time
+     constant to change. Converted into the quantity that can be wrong, the sim feeds the bar **61%
+     (iron sweep) / 50% (T5)** of what the filmed fights require. **The open thread is whether burst
+     GENERATION is computed correctly** — four scoped investigations, one per session, in
+     [2026-08-13-burst-generation-investigation-plan.md](2026-08-13-burst-generation-investigation-plan.md):
+     (1) refill-window starvation from post-Full-Burst reload state, (2) missing non-bullet sources,
+     (3) the focused charge multiplier's per-unit column, (4) whether multi-hit weapons credit gauge
+     per landed hit or per trigger. Run them in that order, do not bundle.
+   - **A SEPARATE small measurement still open:** read the real Full Burst duration off a visual that
+     does NOT share the drain bar's under-render — the FB screen border / cut-in vignette, or a
+     buff-icon timer — on either recording already on disk. **One clean "real FB ≈ 10s" converts this
+     to H1 CONFIRMED on the already-measured gap** and unblocks a proposal; "≈8.9s" hands most of the
+     gap to Full-Burst duration instead. Instrument to extend: `scripts/probe/cycle-table.ts` +
+     `scan.ts --cycle-table` (committed, fixture-pinned).
+   - Generality is bounded: both recordings are `liberalio` comps and it appears in zero passing
+     comps, so it is perfectly confounded. Repeat on the `liberalio`-free shortfall comp
+     `misc B3s (run I order)` (sim 12 vs measured 13) before claiming an engine-general error.
+   - **The off-count set is NINE comps, not the four disabled ones, and five seat no `liberalio`** —
+     per-team rosters, focus, per-unit gauge rates, bar-fill times and where the 180s buzzer lands
+     are in [docs/fb-count-matrix.md](../fb-count-matrix.md) (regenerate:
+     `npx tsx scripts/battery/fb-count-matrix.ts`). Chain stall is 0.00s on all nine, so none of
+     these are burst-availability failures — every one is refill speed.
+   - ⚑ Side finding worth one pass: real stage1→stage2 reads 33f/32f vs the modeled 30f
+     `STAGE_CAST_GAP_FRAMES`. Runs against the gap, so it cannot have inflated the finding.
+   - Success criterion unchanged: the 4 disabled comps' measured FB counts, re-enabled. Enactment is a
+     SEPARATE gated pass — measurement ≠ enactment. Handoff:
+     [2026-08-10-gauge-economy-findings.md](2026-08-10-gauge-economy-findings.md).
 
 3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
    Recipe (unchanged, but the qualifying set is now exact): popup-read a qualifying all-enemies

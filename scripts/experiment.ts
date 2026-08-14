@@ -742,11 +742,36 @@ if (isMain) {
     '===== SCOPE LOCK basis: core 7, no cube, no doll, OL0, 10/10/10 ====='
   );
   // ONLY=<substring> runs a single comp (debug workflows pair it with DBG_UNIT/DBG_N).
+  // SLUGS=a,b,c,d,e overrides the selected comp's roster IN SLOT ORDER, without editing COMPS.
+  // Needed when a comp's stored roster and the ROSTER THAT WAS RECORDED differ: `iron sweep (run G)`
+  // pins its damage basis from one run but its full-burst count from a re-run with a different slot
+  // order, and slot order sets the camera focus (middle slot), which sets the ×2.5 charge-gauge
+  // bonus. Comparing sim rotation against that footage means simming the FOOTAGE's order.
+  // Damage `real` values are not remapped — with SLUGS set, read the rotation, not the ratios.
+  const slugOverride = process.env.SLUGS?.split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   for (const c of COMPS) {
     if (
       process.env.ONLY &&
       !c.name.toLowerCase().includes(process.env.ONLY.toLowerCase())
     ) {
+      continue;
+    }
+    if (slugOverride?.length) {
+      if (!process.env.ONLY) {
+        throw new Error(
+          "SLUGS= requires ONLY= (it rewrites ONE comp's roster)"
+        );
+      }
+      const unknown = slugOverride.filter((s) => !data.characters[s]);
+      if (unknown.length) {
+        throw new Error(`SLUGS= has unknown slug(s): ${unknown.join(', ')}`);
+      }
+      console.log(
+        `  [SLUGS] roster overridden → ${slugOverride.join(', ')} (focus = slot ${Math.min(2, slugOverride.length - 1) + 1}); damage ratios are NOT meaningful under this flag`
+      );
+      report({ ...c, slugs: slugOverride }, 'scope lock');
       continue;
     }
     report(c, 'scope lock');

@@ -691,3 +691,60 @@ scripts/verify.sh` is RED on 3 asserts in `scripts/tests/units/k.test.ts` — th
     (addGauge's lock IS real) and keep tracing rather than either dismissing the challenge or accepting its
     first-guess mechanism uncritically — the actual causal path (reload-phase carryover) was one primitive
     away from the owner's stated one, not the one they named.
+
+---
+
+## 2026-08-13 — burst-cycle TEMPO GAP: **LOG** (2-of-2 ACCEPT, driver MEDIUM / Fable MEDIUM)
+
+**Question.** Four comps sit `disabled: true` because the sim under-counts their measured full
+bursts by 1–2. Is the sim's burst cycle too slow, and does the discrepancy localize to the
+gauge-refill window? Measurement + LOG only (owner-scoped); no engine change in this pass.
+
+**Result.** Real steady-state cycle period is **1.662s (iron sweep run G) / 1.649s (T5 wind-weak)**
+shorter than the sim's. The cast ladder is EXONERATED (real 1.383–1.400s vs the engine's 82f =
+1.3667s), so 100% of the gap sits in the FB-start→next-stage-1 span. Attribution WITHIN that span is
+**unresolved**: the guard-corrected Full-Burst-duration lower bound leaves only 0.395–0.529s
+unexplained by a shorter-than-10s real Full Burst, below the pre-committed 0.6s margin. Full record:
+`docs/probe-runs.md` (2026-08-13 entry).
+
+**Verdicts.** Driver ACCEPT/MEDIUM (Q1 strong for the gap + ladder exoneration, weak for the
+attribution → partial; Q2 clean, nothing fitted; Q3 not gating; Q4 nothing enacted). Fable
+ACCEPT/MEDIUM, reached independently, striking two overclaims (the "0.013s agreement" as
+corroboration; any implication H0d is excluded) and making the tooling commit a CONDITION of landing
+the entry. Both capped below HIGH by the same two things: the evidence chain was not reproducible at
+verdict time, and the final label required interpreting an under-determined rule.
+
+### HARNESS LESSONS (four, and the first two are the valuable ones)
+
+1. **A guard added by the pre-op judge changed the verdict — against the hypothesis.** Guard 3b
+   (corroborate the end of the window that sets the Full-Burst duration bound) was added because a
+   late-end artifact would inflate the bound and "unfairly eliminate H0d, i.e. bias toward H1". It
+   then did exactly that: three windows' ends turned out to be isolated CV false positives stitched
+   on by `GAP_TOL=1.0s`, the bound fell 9.40s → 8.87s, condition (c) failed, and H1 was NOT confirmed
+   — **without the guard, all four conditions pass and this would have landed as CONFIRMED.** The
+   pre-op gate paid for itself in one run. Keep adding guards that are specified in the direction
+   that would embarrass the hypothesis.
+2. **The premise gate REFUTED the briefed method before a frame was read.** The handoff asked for an
+   FB-end → next-B1 measurement. That edge does not exist: the drain bar's last ~1.5s is not
+   rendered, so it is biased early by a NON-CONSTANT 1.2–1.8s — larger than the ~1.65s effect. A
+   confident, precise, wrong number was the default outcome of following the brief. The re-based
+   design (period + ladder, both frame-accurate) came out of the refutation. **Premise-verify the
+   INSTRUMENT, not just the anchors and values** — "can this tool see the thing?" is a load-bearing
+   premise and it had never been on the list before.
+3. **Pre-commit the STATISTIC, not just the threshold.** Condition (b) said "within ±0.15s" without
+   saying mean or median; on raw means one comp would have routed to a different outcome. The work
+   subagent disclosed the choice and its effect, which is the correct behaviour, but the plan should
+   not have left it open. Likewise the decision rule had a hole — "gap ≥1.0s but (c) fails" fired no
+   branch at all, and the label had to be reasoned to rather than read off. **A pre-committed rule
+   must be TOTAL over its own outcome space.**
+4. **A threshold calibrated on a number a guard later invalidates is a self-inflicted wound.** The
+   0.6s margin in condition (c) was computed from the 9.4s window that guard 3b rejects. Derive
+   thresholds from guard-CORRECTED quantities, or state that the threshold moves with the guard.
+
+**Also landed (the condition of this entry):** the guard logic is now committed at
+`scripts/probe/cycle-table.ts`, driven by `scan.ts --cycle-table`, pinned by
+`scripts/tests/probe/cycle-table.test.ts` against committed frame-trace fixtures in
+`docs/probe-data/` — so the measurement is reproducible without the gitignored recordings. A
+`SLUGS=` override on `scripts/experiment.ts` makes the footage-slot-order sim arm reproducible too.
+Both were `/tmp` scratch at verdict time, which is what capped Q1 at MEDIUM; per the 2026-07-29
+owner ruling an instrument cited as evidence must exist at a named path.

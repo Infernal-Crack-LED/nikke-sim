@@ -379,6 +379,7 @@ chronological measurement log → `docs/probe-runs.md`.
 | `read-total-damage.ts`                            | cumulative team total over the fight (the SG-lattice source)             | VLM @1 fps + monotonicity warnings                                                                                         | survey; individual totals need confirmation before a lattice fit rests on them                                                                     |
 | `read-burst-gauge.ts`                             | burst-state timeline + transitions, optional sim compare                 | `--classifier cv` (default) delegates to `scan.ts`; `--classifier vlm` is the old per-frame read                           | cv as above. ⚠ **vlm must not be used for FB counts** — 6 `full` transitions in a 30 s window where the truth is ≤2                                |
 | `read-pellets.ts` + `count-pellets.py` | SG **per-shot pellet landing** | CV pellet detection + crosshair tracking; per-frame `reds` + full-precision positions in `--dump-tracks` (2026-08-05); lifetime band `[band_lo, band_hi]` decoupled from `max_pellet_frames` | ⚑ **CANDIDATE, still ~1.4 pellets/shot COLD, cause UNIDENTIFIED — and every figure here is now ARM-ATTRIBUTED** (2026-08-06 sweep): the **−1.40** is `--residual-ab` (probe-runs §38, reproduces §19 exactly; n=5 shots, ONE clip, IN-SAMPLE); **mislocks ≈0** is `--lock-adjudication` (§22C/§34, a COUNT observable — ⚑ §37B shows count cannot see a mislock that gets refilled by non-pellet tracks, and §38C's n=1 relock is in tension with it); **−0.043/shot** is `--marker-net` (§31, 815 shots); **+0.50/shot** is `--band-production-ab` (§30B, 815 shots out-of-sample, measures what the landing MOVED, not movement toward truth). ⛔ Do not merge these into one unattributed sentence — they have different arms, bases and n. Not a landing measurement (U35) |
+| `cycle-table.ts` (via `scan.ts --cycle-table`)     | **burst-cycle tempo**: per-cycle period, the stage1→2→3→FB cast ladder, and a one-sided LOWER BOUND on real Full Burst duration | pure functions over `scan.ts`'s frame trace; guard 3a rejects late window starts, guard 3b re-derives each window END from the raw fill trace | ✅ deterministic, fixture-pinned (`scripts/tests/probe/cycle-table.test.ts` + committed frame traces in `docs/probe-data/tempo-cycle-*.json`, so it runs without the gitignored recordings). ⛔ the duration figure is a LOWER BOUND, never a Full Burst duration measurement — the bar under-renders |
 | `read-popups-vlm.ts`                              | per-hit **damage popups** (value, crit/core, position)                   | VLM per frame + dedup + confidence scoring + hit-value band membership                                                     | PROVISIONAL. Its useful output is the ranked `needsConfirmation[]`; the **auto-accept path is UNEXERCISED** and unproven                           |
 | `hit-values.ts` / `hit-bands.ts`                  | the per-unit **hit-value band table** (the attribution key)              | sim debug tap, no video                                                                                                    | deterministic. Overlapping bands CANNOT be attributed — that rule is upstream of every popup read                                                  |
 
@@ -388,6 +389,20 @@ any pellet measurement: `--dump-replay-fidelity` (does a dump replay what produc
 `--marker-semantics` / `--marker-net` (core-flag faithfulness, both channels), `--band-production-ab`
 (what `band_hi` buys per shot), `--mislock-rate` / `--lock-adjudication` (+ `--lock-adjudication-score`,
 which scores COMMITTED owner answers).
+
+⚑ **Two KNOWN DEFECTS in `scan-frames.py`, found 2026-08-13 and corrected in `cycle-table.ts` rather
+than in the worker** — changing the worker would move the Full-Burst counts it is 8/8-validated on.
+Anything reading `fullWindows[]` directly inherits both:
+
+- **Late start, 10 of 26 cycles measured.** The burst cut-in occludes the gauge HUD ~0.4s after the
+  bar first renders; if the last pre-occlusion frame has partly decayed, the re-appearance trips
+  `RESET_JUMP` and `full_windows()` discards the true opening sub-window, restarting **~0.417s late**.
+- **Tail stitching, 3 of 26 windows.** `GAP_TOL = 1.0s` welds isolated post-Full-Burst false-positive
+  frames onto a window's tail, inflating its duration by 0.55–0.88s. A draining bar is monotone, so a
+  trace going `0 → 0.037 → 0 → 0.044 → 0` is detector noise.
+
+Neither affects the FB **count**. Both affect window DURATIONS, which is why `fullWindows[].durationSec`
+must not be read as a Full Burst length.
 
 ⚑ **Two substrate rules, enforced by the tools themselves rather than by convention:**
 

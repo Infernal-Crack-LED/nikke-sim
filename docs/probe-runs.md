@@ -7396,3 +7396,78 @@ effect gets built in.
 
 ⛔ Nothing enacted. No localizer change, no constant, no threshold. Still **not magnitude** —
 `count_diff × mislock rate` remains §20D's refuted move.
+
+## Burst-cycle TEMPO GAP — the real cycle is ~1.65s/cycle faster than the sim (2026-08-13)
+
+`/scientific-method` run, **decision LOG** (2-of-2 ACCEPT, both MEDIUM). Packet + deliverable:
+`docs/handoffs/2026-08-13-tempo-gap-preop-packet.md`, `…-tempo-gap-deliverable.md`.
+Instrument: `scripts/probe/scan.ts --fps 60 --cycle-table` (+ `scripts/probe/cycle-table.ts`),
+pinned by `scripts/tests/probe/cycle-table.test.ts` against the committed frame-trace fixtures
+`docs/probe-data/tempo-cycle-{u8-g-iron-sweep,probe-u7-t5-wind-weak}.json`.
+Sim side: `DECOMP=1 SEEDS=1 ONLY=… [SLUGS=…] npx tsx scripts/experiment.ts`.
+
+**What was measured.** Steady-state burst-cycle PERIOD (Full-Burst start → next FB start) and the
+burst-chain cast LADDER (stage1→2→3→FB), on two recordings, every cycle, middle-60% window on both
+sides. Both quantities are DIFFERENCES WITHIN ONE VIDEO, so no fight-clock anchor enters them — the
+"video time ≠ fight time" confound cannot reach these numbers.
+
+| comp                                 | real period | sim period | gap        | real ladder (median) | sim ladder |
+| ------------------------------------ | ----------- | ---------- | ---------- | -------------------- | ---------- |
+| `iron sweep (run G)` (boss Electric) | 14.388s     | 16.050s    | **1.662s** | 1.400s               | 1.3667s    |
+| `T5 wind-weak` (boss Iron)           | 13.808s     | 15.457s    | **1.649s** | 1.383s               | 1.3667s    |
+
+Robustness: 1.53–2.01s across mean/median/all-cycles, three detection spines (drain-window start,
+stage-3 hexagon, stage-1 onset) and two sampling rates (20/60fps). ⚑ The 0.013s agreement between
+the two comps is COINCIDENCE, not precision — per-comp sd is 0.42–1.19s over n=8, so each gap
+carries ~0.15–0.4s of standard error. Do not quote it as corroboration (struck by the post-op judge).
+
+**What this establishes.**
+
+1. The real burst cycle is **~1.5–2.0s/cycle faster than the sim's**, on two independent recordings,
+   two teams, two boss elements. MEASURED.
+2. **The burst chain is EXONERATED.** The real stage1→FB ladder is 1.383–1.400s against the engine's
+   30f+30f+22f = 82f = 1.3667s — within 1–2 frames, and if anything LONGER. The rival "the modeled
+   chain is too slow" is dead; the ladder contributes −1% to −2% of the gap.
+3. **100% of the gap therefore sits in the FB-start → next-stage-1 span**, i.e. inside
+   `FB duration + gauge refill + the 30f pre-B1 gap`.
+
+**What this does NOT establish — the attribution is UNRESOLVED and that is the honest result.**
+Inside that span, FB-END and the gauge-full instant are BOTH unrendered, so it is one indivisible
+quantity. The Full-Burst-duration lower bound (≥8.733s iron / ≥8.867s T5, guard-corrected) leaves
+only 0.395–0.529s of the gap unexplained by "the real Full Burst is shorter than the modeled 10s" —
+below the plan's pre-committed 0.6s margin. So H0d is **disfavoured but not excluded**, and the
+refill-window error is a RANGE, never a point: **iron [0.529, 1.662] s/cycle, T5 [0.516, 1.649]**.
+The span also cannot distinguish "gauge generates too slowly" from "the chain opens late after
+gauge-full" from a per-shot-table or focus-multiplier error.
+
+**Generality is BOUNDED.** Both recordings are among the four `disabled: true` comps and `liberalio`
+is their common slug; it appears in zero passing comps, so its presence is perfectly confounded with
+the flag. This does not establish an engine-general refill error. The `liberalio`-free comp in the
+same shortfall class (`misc B3s (run I order)`, sim 12 vs measured 13) is not measured here.
+
+**Two defects found in the committed scanner** (`scripts/probe/scan-frames.py`), corrected in
+`cycle-table.ts` rather than in the worker — changing the worker would move the full-burst counts it
+is 8/8-validated on:
+
+- **LATE START, 10 of 26 cycles.** The burst cut-in occludes the gauge HUD for ~0.4s just after the
+  bar first renders. If the last pre-occlusion frame has already partly decayed, the re-appearance
+  trips `RESET_JUMP=0.25`, `full_windows()` discards the true opening sub-window (shorter than
+  `WINDOW_MIN=3.0`), and the window restarts **~0.417s late**. Guard 3a rejects those cycles from the
+  duration bound by requiring the window to start where the engine's 22f B3→FB delay says it must.
+- **TAIL STITCHING, 3 of 26 windows.** `GAP_TOL=1.0s` welds isolated post-FB false-positive frames
+  onto a window's tail, inflating its duration by 0.55–0.88s. A draining bar is monotone, so a trace
+  going `0 → 0.037 → 0 → 0.044 → 0` is detector noise. Guard 3b re-derives each end from the raw fill
+  trace and keeps only contiguous runs of ≥3 frames.
+  ⚑ **This defect decided the run's verdict.** Without guard 3b the bound reads 9.40s, condition (c)
+  passes, and the outcome would have been H1 CONFIRMED. The guard — added by the pre-op judge
+  precisely to catch a late-end artifact biasing toward the hypothesis — is the whole difference.
+
+⚑ **Open, unexplained, runs AGAINST the gap so it cannot inflate the finding:** real stage1→stage2
+medians read 33f (iron) / 32f (T5) against the modeled 30f `STAGE_CAST_GAP_FRAMES`. Possibly a
+detection-onset threshold, possibly real. Worth one measurement before anyone touches that constant.
+
+⛔ **Nothing enacted.** No engine constant, no override, no snapshot, no `disabled: true` removal.
+Owner-scoped to measurement + LOG. The named next step that would resolve the attribution is a
+real-Full-Burst-duration read via a visual that does NOT share the drain bar's under-render (the
+Full Burst screen border/cut-in vignette, or a buff-icon timer) — one clean "real FB ≈ 10s"
+observation converts this into H1 CONFIRMED on the already-measured gap.

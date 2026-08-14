@@ -25,6 +25,13 @@ Primary sources:
 
 ## 1. Core rules
 
+> **THE GENERATING WINDOW (owner ruling, re-confirmed 2026-08-13 — settled, do not re-measure).**
+> Burst gauge is generated in **exactly one window per cycle: after a Full Burst ENDS and before the
+> next burst chain STARTS.** During the chain (stages 1–3) and during Full Burst, **nothing**
+> generates gauge — not bullets, skill hits, DoT ticks, riders, or "Gain Burst Gauge X%" effects.
+> Opening the chain zeroes the bar. Stated positively here because the negative form ("locked during
+> FB") keeps getting re-derived by fresh sessions; also pinned in `CLAUDE.md` verified facts.
+
 - Gauge maximum = **10,000 energy** (UI shows 100.00%; 1% = 100 energy).
 - Fill counts **HITS, not damage**.
 - Per trigger pull vs the **stage target** (the raid boss, and also the practice target)
