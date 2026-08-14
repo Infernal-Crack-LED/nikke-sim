@@ -131,8 +131,9 @@ both `fullChargeBonus` 250, the modal value across the roster.
   (`fullChargeBonus / 100`), not a roster-wide flat 2.5 — engine: `gaugePerShot()`
   (`src/engine/sim.ts`). For the 250-family this is byte-identical to the old flat constant.
   Four units deviate: **alice 350 (3.5×)**, **cinderella 200 (2.0×)**,
-  **scarlet-black-shadow 150 (1.5×)**, `vesti-tactical-upgrade` 200 (out of scope, not
-  sim-supported). Live per-unit status:
+  **scarlet-black-shadow 150 (1.5×)**, `vesti-tactical-upgrade` 200 (sim-supported since
+  2026-08-01, but still pinned to the flat 2.5× by `PENDING_TEAM_ISOLATION` until her own
+  column is measured — her kit build's ⚑3 carries the recipe). Live per-unit status:
   - **scarlet-black-shadow: ENACTED at 1.5×.** Confirmed at two independent measured levels:
     a solo per-shot gauge-fill read (~1.42× observed) AND a team full-burst count
     (`docs/probes/720-kit-audit/scarlet black shadow.MP4`, 11 FBs measured — outside the old

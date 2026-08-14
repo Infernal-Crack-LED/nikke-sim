@@ -1373,11 +1373,17 @@ export function runSim(
   // shot row, both now modeled from measurements.
   const UNFOCUSED_CHARGE_GEN = 1.0;
   // Units pinned to FOCUS_CHARGE_GEN instead of their per-unit fullChargeBonus.
-  // vesti-tactical-upgrade (RL/Fire; fullChargeBonus 200, currently unmeasured, not
-  // sim-supported — no override exists yet) is included pre-emptively: the only measurement
-  // ever taken at the 200 column (cinderella (RL/Electric, "cindy")'s ~2.2-3.1x reads)
-  // contradicts 2.0x, so a future override for vesti-tactical-upgrade must not silently
-  // inherit an unmeasured value the moment it lands (implementation review, 2026-07-29).
+  // vesti-tactical-upgrade (RL/Fire; fullChargeBonus 200): her override landed 2026-08-01 and
+  // carries no charFixes.focusChargeMult, so this pin is LIVE — without it she would silently
+  // inherit her datamined 200 column, which has never been isolated on footage (her kit
+  // build's ⚑3 carries the recipe: a focused solo recording pins her real multiplier). The
+  // cinderella reads that once appeared to contradict the 200 column (~2.2-3.1x) were
+  // RETRACTED as reading errors when her own 2.0x was owner-confirmed TRUE (DECISIONS
+  // 2026-07-29 SUPERSEDES entry; docs/data/burst-gauge.md §4) — so this pin is NOT evidence
+  // the 200 column is wrong; it withholds an unmeasured value. Every other non-250 column is
+  // settled: alice 350 and scarlet-black-shadow 150 are measured + enacted, cinderella 200
+  // enacted via charFixes.focusChargeMult. (Implementation review 2026-07-29; comment
+  // refreshed 2026-08-13 to match the doc record.)
   const PENDING_TEAM_ISOLATION = new Set(['vesti-tactical-upgrade']);
   const focusIdx =
     cfg.focusSlug !== undefined

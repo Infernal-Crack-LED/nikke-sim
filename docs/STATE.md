@@ -109,9 +109,10 @@ reloads, or generates gauge; mags start full. On auto the chain is:
 
 Standing rotation facts: focus-unit charge weapons make gauge at their per-unit `fullChargeBonus/100`
 multiplier (focus-only; middle slot by default) — ×2.5 for the 250-family (the roster majority);
-alice 3.5×, cinderella 2.0× (owner override, `charFixes.focusChargeMult`), scarlet-black-shadow
-1.5×; vesti-tactical-upgrade pinned to the flat 2.5× (`PENDING_TEAM_ISOLATION`, not yet
-sim-supported). Burst-cast damage lands **before** Full Burst — it misses the +50% FB major and FB-entry
+alice 3.5× (measured), cinderella 2.0× (owner-confirmed TRUE 2026-07-29, `charFixes.focusChargeMult`),
+scarlet-black-shadow 1.5× (measured); vesti-tactical-upgrade pinned to the flat 2.5×
+(`PENDING_TEAM_ISOLATION` — sim-supported since 2026-08-01, her 200 column still unmeasured).
+Burst-cast damage lands **before** Full Burst — it misses the +50% FB major and FB-entry
 auras, but buffs live at cast (incl. allies' same-rotation burst-granted buffs) still apply. Full-burst
 counts are cooldown/chain arithmetic — deterministic run-to-run except at boss-transition/chain
 collisions. → DECISIONS 2026-07-13 (chain/POST_FB/22f/focus/burst-cast), 2026-07-21 (window 600→120,
