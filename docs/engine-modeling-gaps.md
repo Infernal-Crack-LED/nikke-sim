@@ -197,15 +197,16 @@
   `extraHitDamagePct` path now crits at caster rate per SSOT §2b (never cores; FB by landing time was
   already correct). Population was exactly three overrides — `modernia`, `nayuta`, `neon-vision-eye` —
   all kit-verbatim coefficients, none calibrated-absorbed, so no de-credit was applied. → A32 (U13),
-  DECISIONS 2026-07-22. **Residual gap at the same call site (NOT crit):** `extraHitDamagePct` generates
-  no burst gauge while an equivalent `flatDamage` proc emits `skillGauge` per proc, and it is a summed
-  stat so a per-rider `flavor` cannot be represented (moot for crit now that true damage CAN crit,
-  owner ruling 2026-07-25; the summed stat still can't distinguish flavor for other flavor-gated behavior).
-  The gauge half is **LIVE on all three carriers today** (they generate less gauge than the same kit
-  line would under `flatDamage`, and the one measured function rider DOES generate gauge — so it is a
-  probable under-generation, not a neutral unknown); the flavor half is genuinely inert (no
-  true-flavored rider exists). Either way the two encodings are not interchangeable; swapping one for
-  the other on a unit silently changes its gauge economy. → U28.
+  DECISIONS 2026-07-22. **Residual gap at the same call site (NOT crit) — the GAUGE half CLOSED
+  2026-08-13:** `extraHitDamagePct` now emits `skillGauge` per impact exactly as an equivalent
+  `flatDamage` proc does, so the two encodings are interchangeable in gauge terms and re-encoding a
+  unit between them no longer silently changes its economy. Board movement zero, structurally: every
+  carrier's rider is a `burstCast` buff of 7-15s, so its window sits inside the chain + Full-Burst
+  lock and 100% of emissions are swallowed (`scripts/battery/u28-gauge-ab.ts --lock-census`).
+  **Still open:** the stat is SUMMED, so a per-rider `flavor` cannot be represented (moot for crit now
+  that true damage CAN crit, owner ruling 2026-07-25; it still can't distinguish flavor for other
+  flavor-gated behavior) and two riders on one unit would emit gauge ONCE where two `flatDamage`
+  riders emit twice. No unit carries two today. → U28.
 - **Theme 13 (ally-granted Max HP inert, e3):** audit re-confirmed ally-granted `casterMaxHpPct`/
   `targetMaxHpPct` do not feed a teammate's `atkOfMaxHpPct` (rouge/noir/trina), neutralizing the
   Max-HP double-counts as damage-irrelevant.
@@ -705,50 +706,22 @@ arcana-fortune-mate, isabel (per-unit SG landing residuals). Per-unit landing is
 (open-questions **A31 (U17)** — the class table stands, class-wide far 0.66 rejected); the open tail is
 isabel's mid/midfar clock-drift re-derive (**U27**). The pull-vs-pellet 10× lever stays open.
 
-### 20. `gauge-per-shot.json` `fullChargeBonus` — partly synthesized, disagrees with `characters.json` for 6/44 SR/RL units
+### 20. `gauge-per-shot.json` `fullChargeBonus` — ✅ FIXED 2026-08-08 (recorded 2026-08-13)
 
-Flagged by the implementation review of the 2026-07-29 per-unit focus-multiplier landing
-(`docs/DECISIONS.md` same date). `fullChargeBonus` is now a LIVE engine input
-(`gaugePerShot`, `src/engine/sim.ts`) rather than dead data, which exposes two pre-existing
-data-quality issues:
+`gaugePerShot` sources the SR/RL full-charge focus multiplier from `characters.json`
+`chargeMultiplier`; `data/gauge-per-shot.json`'s `fullChargeBonus` is now an explicit override
+only when `characters.json` reports 0 (the non-charge marker — `raven` is the one live case).
+That retires the 6 synthesized `class-modal-SR`/`class-modal-RL` rows as a live source and stops
+the four no-row 3.5x units (`belorta`, `n102`, `yan`, `yuni`) from silently running at the `?? 250`
+fallback. `u.focusChargeMult` (`charFixes.focusChargeMult`) and the `magDumpRof` /
+`PENDING_TEAM_ISOLATION` pins still take priority over both sources.
 
-- **6 of 42 SR/RL gauge rows are `class-modal-SR`/`class-modal-RL`** — a synthesized 250 fill,
-  not a per-unit datamined value, but now consumed identically to a real row. Includes
-  `takina` (one of the two original measured 2.5x anchors — she confirms the class modal, not
-  independently the per-unit rule; `maiden-ice-rose` 250, `scarlet-black-shadow` 150, `alice`
-  350 are genuinely datamined and remain the rule's real confirmations).
-- **4 SR/RL units have `chargeMultiplier: 350` in `characters.json` but NO gauge row at all**
-  (`belorta`, `n102`, `yan`, `yuni`) — the `?? 250` fallback runs them at 2.5x when the repo's
-  own `characters.json` says 3.5x. None is sim-supported today (no override), so this is
-  currently latent, the same shape as `vesti-tactical-upgrade` (now explicitly pinned in
-  `PENDING_TEAM_ISOLATION`, see the same DECISIONS entry) but not yet enumerated/guarded.
-- **One live disagreement**: `raven` (RL, sim-supported) has gauge-row `fullChargeBonus: 250`
-  vs `characters.json` `chargeMultiplier: 0` — the two sources are one resync apart from
-  agreeing on 0, which the `fcb > 0` guard (landed same date) now treats as "missing" rather
-  than zeroing her gauge, but the underlying source disagreement is unresolved.
-
-**Suggested fix (not yet done):** source the multiplier from `characters.json.chargeMultiplier`
-with the gauge row as an explicit override only when it disagrees, or add a lint/validator that
-fails when an SR/RL unit gains an override while its `chargeMultiplier` is neither 250 nor its
-gauge-row value — the same gated-decision treatment scarlet-black-shadow got. Until then: any
-NEW override landing on an SR/RL unit should cross-check `chargeMultiplier` against
-`gauge-per-shot.json` before assuming the fallback/table value is correct.
-
-### 22. Burst-Skill-Damage amplifiers (jackal/trina) — ✅ CAPABILITY + BOTH PRODUCERS LANDED 2026-08-10
-
-"Burst Skill damage of skills with 'Affects 1 enemy unit(s)' / 'Affects all enemies' in the
-description ▲X%" had no StatKey and no scope gate (the audit-F3 gap; both units' specs pinned the
-omission). Landed: `burstSkillSingleDamagePct` / `burstSkillAoeDamagePct` — additive Damage-Up
-terms read ONLY by burst-slot hits carrying the matching `burstDesc` tag (⚑ additive placement per
-the "○○ Damage ▲" family rule, unmeasured for these members; a popup read of an amped nuke pins
-it). Producers: `jackal` (38.91/15s, B1 → covers the chain's B3 cast) and `trina` Spread Roots
-(435.6/5s — the kit's enemy-count==1 gate is always true at solo scope; Wilted Roots ≥2-enemies
-branch stays unmodeled verbatim). Tagged beneficiaries so far: `scarlet`, `liberalio` (kit-verified
-"■ Affects all enemies" damage lines); **remaining candidates tag as each unit is reviewed**
-(phase-4 checklist item — the census scan found ~33 all-enemies + ~6 single-enemy burst-damage
-carriers, each needing its Affects-clause verified against the damage line before tagging).
-Board: zero movement on pinned comps (no producer+tagged-beneficiary pair); N3 iron measured
-`liberalio` 0.877 → 0.924 COLD▼ with all non-beneficiaries unchanged.
+The lint asked for here exists: `scripts/tests/data/gauge-per-shot-source.test.ts` fails if any
+SR/RL unit's two sources disagree, or if a `chargeMultiplier: 0` unit gains a gauge row outside the
+known exceptions, and pins the four no-row units so a future resync cannot reintroduce the silent
+fallback. Landed in `ccee21f7`; it carried no DECISIONS entry, so this section still read
+"not yet done" three days later and was queued as open work — the retroactive record is
+DECISIONS 2026-08-13 (burst-gauge economy cluster).
 
 ### 21. "Buff my NEXT round" per-pull `durationShots` budget — ✅ FIXED 2026-08-08
 

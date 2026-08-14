@@ -149,7 +149,10 @@ const PRE_B1_GAP_FRAMES = ENV.PREB1GAP === 'off' ? 0 : STAGE_CAST_GAP_FRAMES; //
 // PREFB (frame-measured 2026-07-21, chisato.mov): a 22f delay between the B3 cast and the FB
 // countdown actually starting (b3 → 22f → 10s FB). Likely the mechanistic reason instant burst-cast
 // attacks miss the +50% (they land in this gap, before FB begins — today modeled via per-unit noFb
-// flags). Default OFF (inert). `PREFB=1` enables. INVESTIGATION ITEM (owner). (open-questions U16.)
+// flags). Default ON (22f); `PREFB=off` disables. (open-questions U16.) ⚑ This line said "Default OFF
+// (inert). `PREFB=1` enables" until 2026-08-13 — stale prose contradicting the code one line below it
+// AND the unit tests (vesti-tactical-upgrade / mihara-bonding-chain treat cast+22f as live). Caught by
+// code review when a new comment leaned on the 22f default two screens away from text denying it.
 const FB_PRE_DELAY_FRAMES = ENV.PREFB === 'off' ? 0 : 22; // default ON (frame-measured 22f B3->FB)
 const FULL_BURST_FRAMES = 10 * FPS;
 // AUTO RELEASE LATENCY (2026-07-13 reframe; docs/data/charge-weapons.md §2): "old-style"
@@ -1578,9 +1581,10 @@ export function runSim(
     ? Number(ENV.CHAIN_TIMEOUT)
     : 600;
   let fbEndFrame = -1;
-  // PREFB (default off): when the B3 cast should defer the FB start by FB_PRE_DELAY_FRAMES, the
-  // fbEndFrame set + fullBurstEnter + stored-hit release are scheduled here and fired that many
-  // frames later (during the gap fbEndFrame stays old, so "in FB" is correctly false).
+  // PREFB (default ON, 22f — `PREFB=off` reverts): when the B3 cast defers the FB start by
+  // FB_PRE_DELAY_FRAMES, the fbEndFrame set + fullBurstEnter + stored-hit release are scheduled here
+  // and fired that many frames later (during the gap fbEndFrame stays old, so "in FB" is correctly
+  // false).
   let pendingFbStartFrame = -1;
   let pendingFbStartExtendSec = 0;
   // Kit-NAMED status windows on the boss (status name → expiry frame): opened by a 'targetStatus'
@@ -3241,9 +3245,9 @@ export function runSim(
     );
   };
 
-  // FB-entry emission (fullBurstEnter triggers + stored-hit releases + log) — extracted so it can
-  // fire inline at the B3 cast (default) OR be deferred by FB_PRE_DELAY_FRAMES (PREFB). fbEndFrame
-  // must already be set when this runs (the log reads it).
+  // FB-entry emission (fullBurstEnter triggers + stored-hit releases + log) — extracted so it can be
+  // deferred by FB_PRE_DELAY_FRAMES (the DEFAULT, 22f) OR fire inline at the B3 cast (`PREFB=off`).
+  // fbEndFrame must already be set when this runs (the log reads it).
   const emitFbEnter = (atFrame: number) => {
     // LEADING marker, symmetric with 'fullBurstEnd': emitted BEFORE the fullBurstEnter triggers and
     // the stored-hit releases below, so a consumer partitioning the stream on [start, end) captures
@@ -3294,8 +3298,8 @@ export function runSim(
   };
 
   for (let frame = 0; frame < totalFrames; frame++) {
-    // PREFB: a deferred full-burst start fires here, FB_PRE_DELAY_FRAMES after the B3 cast (default
-    // off → pendingFbStartFrame stays -1, so this is inert/byte-identical).
+    // PREFB: a deferred full-burst start fires here, FB_PRE_DELAY_FRAMES after the B3 cast. This is
+    // the DEFAULT path (22f); `PREFB=off` sets the delay to 0 and the start fires inline instead.
     if (pendingFbStartFrame >= 0 && frame >= pendingFbStartFrame) {
       fbEndFrame =
         frame + FULL_BURST_FRAMES + Math.round(pendingFbStartExtendSec * FPS);
@@ -3639,8 +3643,9 @@ export function runSim(
           pendingFbStartExtendSec = pendingFbExtendSec;
           pendingFbExtendSec = 0;
         }
-        // FB entry fires inline at the B3 cast (default). With PREFB it is deferred — the scheduled
-        // block in the frame loop calls emitFbEnter() FB_PRE_DELAY_FRAMES later instead.
+        // FB entry is DEFERRED by default (FB_PRE_DELAY_FRAMES 22f) — the scheduled block in the
+        // frame loop calls emitFbEnter() that many frames later. This inline branch is the
+        // `PREFB=off` path only, which is what the `=== 0` guard below says.
         if (castStage === 3 && FB_PRE_DELAY_FRAMES === 0) {
           emitFbEnter(frame);
         }
@@ -4279,6 +4284,47 @@ export function runSim(
       // here — but that is fine: true damage CAN crit (owner ruling 2026-07-25, in-game confirmed;
       // reverses the 2026-07-21 §2c "cannot crit" ruling), so a true-flavored rider critting at the
       // caster rate via RIDER_CRIT is CORRECT and needs no per-source flavor exemption.
+      //
+      // U28: an additional-damage impact generates the caster's flat target per-shot value, exactly as
+      // the equivalent `flatDamage` rider does (docs/data/burst-gauge.md §5). The measurement of record
+      // is maiden-ice-rose (slug maiden-ice-rose, RL/Electric — NOT the SG unit `maiden`) solo:
+      // 12.55%/pull in two sub-steps, 910 (weapon 364x2.5) + 364 (rider, flat), and her rider IS a
+      // shotFired -> flatDamage block, so the emission this adds is the one already measured on the
+      // other encoding of the same kit shape. Before this, re-encoding a rider from `extraHitDamagePct`
+      // to `flatDamage` silently changed a unit's gauge economy (U28).
+      // ONE emission per pull, not one per summed rider: `extraHitDamagePct` is a SUMMED stat dealt as
+      // a single impact, so the emission count matches the impact count. All four carriers today hold
+      // exactly one rider each (modernia, nayuta, neon-blue-ocean, neon-vision-eye), so this is exact;
+      // if a unit ever carries two, the summed pair would still emit once where two `flatDamage` riders
+      // emit twice — the residual half of U28, which needs the stat to stop being summed to fix.
+      //
+      // DBG_RIDERGAUGE=1 taps this emission site (slug / frame / whether `addGauge`'s chain+FB lock
+      // swallows it). `scripts/battery/u28-gauge-ab.ts --lock-census` reads it, and is why this line
+      // moves no comp: every carrier's rider window closes inside the lock BY MECHANISM. The argument
+      // is PER-CARRIER and depends on the unit's burst stage — do not collapse it into one sentence:
+      //   * neon-vision-eye (10s) and neon-blue-ocean (7s) are Burst III, so the cast that grants the
+      //     rider IS the cast that opens a 10s Full Burst starting 22f later — window strictly inside.
+      //   * modernia (15s) is Burst III too and looks like an exception; she is not. The SAME
+      //     `burstCast` grants `fullBurstExtend: 5`, so HER Full Burst runs cast+22f .. cast+15.37s
+      //     (ROT=1 log: her FBs run 15.0s, everyone else's 10.0s). Never reason about her against the
+      //     nominal 10s.
+      //   * nayuta (10s) is Burst II — her cast opens the STAGE-3 window, not a Full Burst, so the
+      //     `stage !== 0` half of the lock is what covers her, not `fbEndFrame`. If the chain
+      //     completes she is locked through Full Burst; if it COLLAPSES, `stageExpireFrame` is her
+      //     cast + CHAIN_TIMEOUT_FRAMES (600f) and her rider expires at cast + 600f, and since buffs
+      //     die on `expiresFrame <= frame` while the stage resets on `frame >= stageExpireFrame`, the
+      //     exposure hole is exactly ZERO frames. ⚑ That coincidence is default-only: under the
+      //     `CHAIN_TIMEOUT=120` A/B arm the chain collapses 8s before her rider expires and she WOULD
+      //     generate. Her rider is also dormant in the control shape (crown takes every B2 cast), so
+      //     the T5 wind-weak census row is her only empirical coverage.
+      // What WOULD expose the emission generally: a rider window that outlives the Full Burst its own
+      // cast opens (none today), or a chain that expires while a window is still live.
+      if (ENV.DBG_RIDERGAUGE) {
+        console.error(
+          `[u28] ${u.char.slug} f=${frame} locked=${fbEndFrame > frame || stage !== 0}`
+        );
+      }
+      skillGauge(u, frame);
       dealDamage(u, extraPerHit * u.char.hitsPerShot, frame, {
         crit: RIDER_CRIT,
         core: false,

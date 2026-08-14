@@ -583,28 +583,39 @@ against the sim's chain log to see WHERE the two missing chains fail to open.
 A32 closed the crit divergence between the two encodings of function "additional damage". Two
 divergences remain at the same call site. **They are not the same kind of open:**
 
-1. **Burst gauge — LIVE ON ALL THREE CARRIERS RIGHT NOW, not inert.** A `flatDamage` proc calls
-   `skillGauge` (one target-base HIT of generation: `targetPerTrigger / hitsPerShot`, no
-   `flatPerTrigger`, no charge/focus ×2.5). `extraHitDamagePct` generates **nothing**. So `modernia`,
-   `nayuta` and `neon-vision-eye` each generate less burst gauge today than the same kit line would
-   under the other encoding — an active difference in their gauge totals, and therefore potentially in
-   their rotations. Whether it is an ERROR is what is unmeasured, but the direction is not neutral:
-   the one MEASURED function rider (`maiden-ice-rose`, `burst-gauge.md`:145) **does** generate gauge —
-   a visible second bar sub-step per pull. That is positive evidence these three riders SHOULD be
-   generating something and are not, i.e. a probable live UNDER-generation pending the measurement,
-   not merely an unproven hypothetical.
-   Scale of the thing being lost: `modernia`'s S1 rider (which IS `flatDamage`) fires 2×/pull at
-   `per/2` each, ~+50% on top of her weapon's own generation — her override keeps that encoding
-   specifically to preserve the economy her measured-exact rotation depends on. So re-encoding a unit
-   between the two primitives silently changes its rotation.
+1. **Burst gauge — RESOLVED 2026-08-13.** `extraHitDamagePct` now calls `skillGauge` at the same call
+   site as an equivalent `flatDamage` proc (one target-base HIT of generation:
+   `targetPerTrigger / hitsPerShot`, `/10` for SG, no `flatPerTrigger`, no charge/focus ×2.5), so the
+   two encodings of one kit line are interchangeable in gauge terms and re-encoding a unit between
+   them no longer silently changes its rotation. Landed as an encoding fix, not a measurement: the
+   documented rule (`burst-gauge.md` §5, every skill/additional-damage impact generates) and the one
+   MEASURED function rider (`maiden-ice-rose`, `burst-gauge.md`:145 — a visible second bar sub-step
+   per pull) already answered the direction. → DECISIONS 2026-08-13.
+   **Board effect: none, BY MECHANISM** (census: `scripts/battery/u28-gauge-ab.ts --lock-census`, 0
+   unlocked emissions in every comp run). A field-form sweep finds exactly four carriers, one rider
+   each, all `burstCast`-triggered — but the covering argument is PER-CARRIER, keyed to burst stage:
+   `neon-vision-eye` (10s) and `neon-blue-ocean` (7s) are Burst III, so the granting cast opens a 10s
+   FB 22f later and the window is strictly inside it; `modernia` (15s) is Burst III whose same
+   `burstCast` grants `fullBurstExtend: 5`, so her window closes inside her OWN 15.37s FB; `nayuta`
+   (10s) is Burst **II** and opens no FB at all — the `stage !== 0` half of the lock covers her, and
+   on a chain collapse her rider's 600f expiry coincides exactly with `stageExpireFrame`, a zero-frame
+   hole (⚑ default-only: `CHAIN_TIMEOUT=120` would open a real 8s one). ⚑ Two write-ups of this got it
+   wrong in opposite directions — do not re-derive `modernia` against a nominal 10s FB (reads as a
+   false 4.6s exposed tail), and do not extend the Burst-III argument to `nayuta`. What would expose
+   the emission: a rider window outliving the Full Burst its own cast opens, or a chain expiring while
+   a window is live.
+   **Residual (the half still open):** `extraHitDamagePct` is a SUMMED stat dealt as ONE impact, so
+   two riders on one unit would emit once where two `flatDamage` riders emit twice. No unit carries
+   two today; fixing it means the stat stops being summed.
 2. **Flavor — moot for crit (2026-07-25).** `extraHitDamagePct` is a SUMMED buff stat, so an individual rider
    has no `flavor`. This no longer matters for crit: true damage CAN crit (owner ruling 2026-07-25, in-game
    confirmed; reverses §2c), so a true-flavored rider critting at the caster rate is CORRECT and needs no
    per-source exemption. (The summed-stat flavor distinction could still matter for other flavor-gated
    behavior, e.g. `trueDamagePct` buff gating.)
 
-**Also unmeasured (the reason this is a question, not just a TODO):** whether function additional
-damage _should_ generate burst gauge at high hit rates. The `skillGauge` constant is anchored on ONE
+**Still unmeasured — and it is a `skillGauge`-WIDE question, not an `extraHitDamagePct` one** (it
+rides identically on every `flatDamage` and DoT carrier, and did so before the 2026-08-13 landing):
+the per-impact MAGNITUDE at high hit rates. The `skillGauge` constant is anchored on ONE
 measurement — `maiden-ice-rose`, RL, `hitsPerShot` 1, where "one hit" and "one trigger" coincide
 (`burst-gauge.md`:145, two visible bar sub-steps per pull: +9.1% weapon then +3.45% rider). The
 `/hitsPerShot` divisor — and the hardcoded `/10` for SG — generalizes from that single case and is
@@ -612,10 +623,12 @@ UNVERIFIED for `hitsPerShot > 1`; every unit where the divisor actually bites (`
 carrier at 10) rides extrapolation. Note also the measured rider sub-step reads 3.45% vs the modeled
 3.64%, a small unexplained residual on the exact constant the whole path is anchored to.
 
-**Gate:** a focus recording with a readable gauge bar on an `extraHitDamagePct` carrier
-(`modernia` Destroy Mode is the natural probe — MG hit rates make any per-hit generation obvious),
-plus a `hitsPerShot > 1` bar read to pin the divisor. Until then: do NOT re-encode a unit between the
-two primitives, and do NOT author a true-flavored rider. → A32 (U13), DECISIONS 2026-07-22.
+**Gate:** a `hitsPerShot > 1` gauge-bar read to pin the divisor — `modernia` Destroy Mode is still the
+natural probe (MG hit rates make per-hit generation obvious), though note her rider now generates
+entirely inside the gauge lock, so the probe must read the BAR, not infer from her rotation. Until
+then: do NOT author a true-flavored rider (the flavor half of the asymmetry is unchanged). The
+"do not re-encode a unit between the two primitives" rule is LIFTED for gauge as of 2026-08-13.
+→ A32 (U13), DECISIONS 2026-07-22 + 2026-08-13.
 
 ### U27 — isabel's mid/midfar SG landing needs a clock-drift-corrected re-derive (split out of U17, 2026-07-22)
 

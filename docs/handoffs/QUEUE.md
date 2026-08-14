@@ -127,16 +127,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    - **Encode-consistency candidates**: `anis` and `mica` both keep an `attacked`-N line unmodeled
      on "nothing feeds the trigger" grounds. Same call, so decide them together, not one at a time.
 
-2. **The burst-gauge ECONOMY cluster still wants its one batched `/scientific-method` pass** — the
-   only thread from the 2026-08-10 faithfulness sweep that is still open, and it had fallen off this
-   queue entirely (found 2026-08-13 while archiving that sweep's handoffs). It stays in
-   [2026-08-10-gauge-economy-findings.md](2026-08-10-gauge-economy-findings.md), which is
-   deliberately NOT archived. Four measured items to land TOGETHER, because their directions
-   partially cancel (compensating-errors rule): (a) the charge-B3 fill-tempo channel — success
-   criterion is the 4 disabled comps' measured FB counts, re-enabled; (b) reproduce-then-fix the
-   double-emit log entry (gauge-DOWN); (c) the U28 rider encoding fix so both encodings emit
-   identically (gauge-UP); (d) source the focus multiplier from `characters.json.chargeMultiplier`
-   with the gauge row as an explicit override, plus a validator lint. A/B the FULL measured timeline.
+2. **The burst-gauge ECONOMY cluster is down to ONE item: the charge-B3 gauge-fill-tempo gap.** The
+   2026-08-10 bundle's other three closed on 2026-08-13 without a pipeline — the U28 rider encoding
+   was encoded (answered by `burst-gauge.md` §5 + the `maiden-ice-rose` anchor; board movement zero),
+   the "double-emit" entry was closed as NOT a defect (that same anchor measures both emissions), and
+   the `fullChargeBonus` sourcing fix turned out to have landed 2026-08-08 in `ccee21f7`. Full record:
+   DECISIONS 2026-08-13 (burst-gauge economy cluster). **What remains is the tempo gap, and it wants
+   `/scientific-method` alone** — the compensating-errors bundling rationale is gone with the only
+   gauge-DOWN direction. Success criterion unchanged: the 4 disabled comps' measured FB counts,
+   re-enabled. The 2026-08-03 LOG record already names the step that lifts it MEDIUM→HIGH —
+   frame-measure the real FB-end → next-B1 gap on ONE disabled comp's footage, not a downstream proxy;
+   `docs/probes/u8/u8 g vid.mov` is "iron sweep run G" and is on disk. Handoff:
+   [2026-08-10-gauge-economy-findings.md](2026-08-10-gauge-economy-findings.md).
 
 3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
    Recipe (unchanged, but the qualifying set is now exact): popup-read a qualifying all-enemies
@@ -204,3 +206,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    silently. Fix shape: a count-scope option on the trigger (count only while the gate passes).
    Cross-cutting across every hitCount carrier ⇒ needs its own blast-radius pass, which is why it
    was filed rather than made.
+
+7. **The cross-family bridges validate reply SYNTAX, not reply SHAPE — a valid-JSON non-verdict is
+   written as a result file with a ✓.** `scripts/kit-autonomy/dispatch-kimi.sh` (~~:202) and
+   `dispatch-claude.sh` (~~:170) gate on `jq empty`, so a reply like `{"foo":"bar"}` passes, gets
+   `model` stamped, and lands as `$OUT` looking exactly like a real verdict. The rescue path
+   (`scripts/extract-review-json.py`) got a `verdict` shape check on 2026-08-13, so the guarantee now
+   holds on one of the two paths that can produce a result file. Fix shape: the same check in both
+   bridges before the `model` injection. Surfaced as a FOLLOW-UP by the round-4 code review of the
+   U28 branch (`scratchpad/gates/2026-08-13-u28-gauge/result-r4.json`); filed rather than made
+   because it was outside that diff's intent and the bridges are shared by every gate skill.
