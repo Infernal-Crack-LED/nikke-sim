@@ -180,40 +180,70 @@ function parseRotation(log: string[]) {
  */
 function endState(
   log: string[],
-  refillSec: number
-): { state: string; detail: string } {
+  extendedLog: string[]
+): { state: string; detail: string; shortBySec: number } {
   const { fbs, stages } = parseRotation(log);
   const lastFb = fbs[fbs.length - 1];
+
+  // How far short the fight actually ended, MEASURED by re-running past the buzzer (DURATION=) and
+  // reading when the next chain would have opened — NOT estimated from the mean refill.
+  //
+  // ⚑ An earlier version of this script estimated it as `meanRefill − elapsedRefill`, and was wrong
+  // by up to 4x (iron sweep read "short by 1.32s"; it is actually 0.30s). Two reasons, both fatal to
+  // the estimate: the FINAL refill is not the mean one — per-cycle refills vary with boss
+  // transitions, buff state and reload phase — and gauge does not accrue linearly in time anyway
+  // (charge weapons deliver it in lumps, MG wind-up ramps, reloads pause it). For the same reason
+  // this reports TIME, never "the bar is N% full": the gauge level at the buzzer is not exposed by
+  // the engine, and elapsed-refill-fraction is not a proxy for it.
+  const ext = parseRotation(extendedLog);
+  const nextFb = ext.fbs.find((f) => f.start > FIGHT_SEC);
+  const lastEnd = lastFb ? lastFb.end : 0;
+  const nextB1 = ext.stages.find((s) => s.stage === 1 && s.t > lastEnd);
+  const gaugeFullAt = nextB1 ? nextB1.t - PRE_B1_SEC : NaN;
+  const shortBySec = nextFb ? nextFb.start - FIGHT_SEC : NaN;
+  const nextTxt = nextFb
+    ? ` — next Full Burst would start ${nextFb.start.toFixed(1)}s, i.e. ${shortBySec.toFixed(2)}s past the buzzer`
+    : '';
 
   if (lastFb && lastFb.end > FIGHT_SEC && lastFb.start <= FIGHT_SEC) {
     return {
       state: 'MID-FULL-BURST',
-      detail: `${(lastFb.end - FIGHT_SEC).toFixed(2)}s of Full Burst left (started ${lastFb.start.toFixed(1)}s, would end ${lastFb.end.toFixed(1)}s)`,
+      detail: `${(lastFb.end - FIGHT_SEC).toFixed(2)}s of Full Burst left (started ${lastFb.start.toFixed(1)}s, would end ${lastFb.end.toFixed(1)}s)${nextTxt}`,
+      shortBySec,
     };
   }
 
-  const fbEnd = lastFb ? lastFb.end : 0;
   // a chain cast after the last Full Burst ended means the chain is still climbing at the buzzer
-  const openChain = stages.filter((s) => s.t > fbEnd && s.t <= FIGHT_SEC);
+  const openChain = stages.filter((s) => s.t > lastEnd && s.t <= FIGHT_SEC);
   if (openChain.length) {
     const top = openChain[openChain.length - 1];
     return {
       state: 'MID-CHAIN',
-      detail: `B${'I'.repeat(top.stage)} cast at ${top.t.toFixed(1)}s was the last step; waiting on B${'I'.repeat(Math.min(3, top.stage + 1))}`,
+      detail: `B${'I'.repeat(top.stage)} cast at ${top.t.toFixed(1)}s was the last step${nextTxt}`,
+      shortBySec,
     };
   }
 
-  const filling = FIGHT_SEC - fbEnd;
-  const pct = refillSec > 0 ? Math.min(100, (filling / refillSec) * 100) : NaN;
   return {
     state: 'GAUGE FILLING',
-    detail: `${filling.toFixed(2)}s into a refill that needs ~${refillSec.toFixed(2)}s — bar ~${pct.toFixed(0)}% (short by ~${Math.max(0, refillSec - filling).toFixed(2)}s)`,
+    detail:
+      `refilling for ${(FIGHT_SEC - lastEnd).toFixed(2)}s (since the ${lastEnd.toFixed(1)}s Full Burst ended); ` +
+      `the bar would fill at ${gaugeFullAt.toFixed(1)}s — ${Math.max(0, gaugeFullAt - FIGHT_SEC).toFixed(2)}s short of full${nextTxt}`,
+    shortBySec,
   };
 }
+
+/** The measured tempo gap: real cycle minus sim cycle, docs/probe-runs.md 2026-08-13. */
+const MEASURED_GAP_SEC = 1.65;
 
 const rows = OFF.map((off) => {
   const comp = resolve(off);
   const res = run(comp, {}, undefined);
+  // Second run PAST the buzzer, purely to read when the next chain/Full Burst would have landed.
+  // Diagnostic only — see the DURATION note in scripts/experiment.ts.
+  process.env.DURATION = '215';
+  const ext = run(comp, {}, undefined);
+  delete process.env.DURATION;
   const { fbs, stages } = parseRotation(res.rotationLog);
 
   const buildSec = res.gaugeBuildTimeSec;
@@ -248,6 +278,17 @@ const rows = OFF.map((off) => {
     ? refills.reduce((a, b) => a + b, 0) / refills.length
     : NaN;
 
+  const firstFb = fbs.length ? fbs[0].start : NaN;
+  const lo = Math.floor(fbs.length * 0.2);
+  const hi = Math.ceil(fbs.length * 0.8);
+  const periods: number[] = [];
+  for (let i = lo + 1; i < hi; i++) {
+    periods.push(fbs[i].start - fbs[i - 1].start);
+  }
+  const period = periods.length
+    ? periods.reduce((a, b) => a + b, 0) / periods.length
+    : NaN;
+
   const focusSlug =
     comp.focus ?? comp.slugs[Math.min(2, comp.slugs.length - 1)];
 
@@ -262,8 +303,14 @@ const rows = OFF.map((off) => {
     focusSlug,
     stallSec: res.rotationStallSec,
     buildSec,
-    end: endState(res.rotationLog, meanRefill),
+    end: endState(res.rotationLog, ext.rotationLog),
     fbDur: fbs.length ? fbs[0].end - fbs[0].start : NaN,
+    // COUNTERFACTUAL, NOT A PREDICTION: what the count becomes if the measured tempo gap is applied
+    // as a FLAT per-cycle subtraction. This is an extrapolation from the two comps that were
+    // actually filmed onto seven that were not; where it misses, the MISS is the interesting part.
+    period,
+    counterfactual:
+      1 + Math.floor((FIGHT_SEC - firstFb) / (period - MEASURED_GAP_SEC)),
   };
 });
 
@@ -306,6 +353,13 @@ if (process.argv.includes('--json')) {
       `  Full Burst length   : ${r.fbDur.toFixed(2)}s   |  refilling for ${r.buildSec.toFixed(1)}s of the 180s fight   |  chain stall ${r.stallSec.toFixed(2)}s`
     );
     console.log(`  AT THE 180s BUZZER  : ${r.end.state} — ${r.end.detail}`);
+    const mNum = Array.isArray(r.off.measured)
+      ? r.off.measured[0]
+      : r.off.measured;
+    console.log(
+      `  COUNTERFACTUAL      : period ${r.period.toFixed(2)}s − 1.65s = ${(r.period - 1.65).toFixed(2)}s  =>  ${r.counterfactual} FBs vs measured ${mNum}` +
+        `  ${r.counterfactual === mNum ? '[MATCH]' : r.counterfactual > mNum ? '[OVERSHOOTS]' : '[still short]'}`
+    );
   }
   console.log(
     `\n${'='.repeat(96)}\n` +

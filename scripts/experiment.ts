@@ -633,6 +633,16 @@ export function run(comp: Comp, patch: Patch = {}, seed?: number) {
   if (bp) {
     cfg.bossPelletProfile = bp;
   }
+  // DURATION=<sec> — run PAST the 180s scope-lock fight. Diagnostic only: it answers "how much
+  // longer would this team need to reach one more Full Burst", which is otherwise unanswerable
+  // because the gauge level at the buzzer is not exposed and generation is too lumpy (charge
+  // shots, MG wind-up, reloads) to infer from elapsed time. NEVER use it for damage or ratios —
+  // the boss range script's transitions stop at 176s, so past 180s the boss neither transitions
+  // nor goes unhittable, which is not a real fight.
+  const durationOverride = Number(process.env.DURATION);
+  if (durationOverride > 0) {
+    cfg.durationSec = durationOverride;
+  }
   const prepared = prepareTeam(chars, unitOpts, {
     overrides,
     skillLevels,

@@ -63,47 +63,71 @@ plus rate variation across the fight (MG wind-up, reload downtime, buff uptime).
 
 ## Where the 180s buzzer lands
 
-| comp                      | state at 180s     | detail                                               |
-| ------------------------- | ----------------- | ---------------------------------------------------- |
-| iron sweep (run G)        | **gauge filling** | 2.90s into a 4.22s refill — bar ~69%, short by 1.32s |
-| T1 wind-weak              | **gauge filling** | 2.90s into a 4.18s refill — bar ~69%, short by 1.28s |
-| misc B3s (run I order)    | **gauge filling** | 0.90s into a 3.05s refill — bar ~30%, short by 2.15s |
-| N2 modernia wind          | mid-Full-Burst    | 0.50s left (started 165.5s)                          |
-| N1 rapi/quency wind       | mid-Full-Burst    | 3.70s left (started 173.7s)                          |
-| soda-tb control           | mid-Full-Burst    | 4.70s left (started 169.7s)                          |
-| N5 snowwhite-HA fire      | mid-Full-Burst    | 8.90s left (started 178.9s)                          |
-| T5 wind-weak              | mid-Full-Burst    | 9.20s left (started 179.2s)                          |
-| N3 scarlet/liberalio iron | mid-Full-Burst    | 10.00s left (started 175.0s, 15s window)             |
+**Measured, not estimated.** Each comp is re-run past the buzzer (`DURATION=215`) so the next
+chain/Full Burst is _observed_ rather than inferred. The "short by" column is the time from the
+buzzer to the next Full Burst the team would actually have started.
+
+| comp                      | state at 180s     | detail                                                         | next FB would start |
+| ------------------------- | ----------------- | -------------------------------------------------------------- | ------------------- |
+| iron sweep (run G)        | **gauge filling** | refilling 2.90s; bar fills at 180.3s — **0.30s short of full** | 182.2s (+2.20s)     |
+| T1 wind-weak              | **gauge filling** | refilling 2.90s; bar fills at 180.8s — **0.80s short of full** | 182.6s (+2.60s)     |
+| misc B3s (run I order)    | **gauge filling** | refilling 0.90s; bar fills at 182.7s — 2.70s short of full     | 184.6s (+4.60s)     |
+| N2 modernia wind          | mid-Full-Burst    | 0.50s left (started 165.5s)                                    | 186.1s (+6.10s)     |
+| N1 rapi/quency wind       | mid-Full-Burst    | 3.70s left (started 173.7s)                                    | 189.5s (+9.50s)     |
+| soda-tb control           | mid-Full-Burst    | 4.70s left (started 169.7s)                                    | 189.4s (+9.40s)     |
+| N5 snowwhite-HA fire      | mid-Full-Burst    | 8.90s left (started 178.9s)                                    | 196.7s (+16.70s)    |
+| T5 wind-weak              | mid-Full-Burst    | 9.20s left (started 179.2s)                                    | 194.0s (+14.00s)    |
+| N3 scarlet/liberalio iron | mid-Full-Burst    | 10.00s left (started 175.0s, 15s window)                       | 195.3s (+15.30s)    |
 
 **No comp ends mid-chain**, and **chain stall is 0.00s on all nine** — no team is ever waiting on a
-burst cooldown. The missing bursts are not a burst-availability problem; they are refill speed.
+burst cooldown. The missing bursts are not a burst-availability problem; they are cycle speed.
 
-## Observations
+> ⚑ **These figures replace an earlier estimate that was wrong by up to 4×.** The first version of
+> this doc derived "short by" as `mean refill − elapsed refill` and reported a _bar percentage_. Both
+> were unsound: the FINAL refill is not the mean one (per-cycle refills vary with boss transitions,
+> buff state and reload phase — iron sweep's last refill is 3.2s against a 4.22s mean, so it read
+> "1.32s short" when the true figure is 0.30s), and elapsed-refill-fraction is not a gauge level at
+> all, because generation is lumpy (charge weapons deliver it in discrete shots, MG wind-up ramps,
+> reloads pause it). **The gauge level at the buzzer is not exposed by the engine and is not reported
+> here.** Everything above is time.
 
-**Two teams start their final Full Burst in the last second and bank almost none of it.** T5
-wind-weak opens one at 179.2s and N5 at 178.9s — each counts a full burst for ~1s of actual window.
-These are the cleanest cases in the set: shaving the measured ~1.65s/cycle off the refill moves that
-burst several seconds earlier, which is exactly the missing count.
+## Does the measured tempo gap actually explain these counts?
 
-**The three "gauge filling" teams need accumulated error, and have room for it.** Iron sweep and T1
-both stop at ~69% of a bar, ~1.3s short. Over 11 cycles a 1.65s/cycle error is ~18s — far more than
-enough. `misc B3s` at ~30% needs ~2.15s across 12 cycles. None of these require the error to be
-larger than what was measured.
+The 2026-08-13 measurement gives one number — the real cycle runs **~1.65s/cycle** shorter than the
+sim's — taken from two recordings. Applying it as a **flat per-cycle subtraction** to all nine and
+recomputing `1 + floor((180 − firstFB) / (period − 1.65))`:
 
-**Generation rate does not discriminate.** `misc B3s` has the fastest team here (34.53, a 2.90s bar)
-and is still short by one; N2 and N5 are the slowest (~19.3, ~5.2s bar) and are short by the same
-one. A per-team gauge-rate error would not produce that — a per-cycle _time_ error would, which is
-consistent with the footage measurement.
+| comp                      | sim period | −1.65s | predicted | measured |                               |
+| ------------------------- | ---------- | ------ | --------- | -------- | ----------------------------- |
+| iron sweep (run G)        | 16.05s     | 14.40s | 13        | 13       | **MATCH** (filmed — circular) |
+| T5 wind-weak              | 15.46s     | 13.81s | 13        | 13       | **MATCH** (filmed — circular) |
+| N1 rapi/quency wind       | 15.36s     | 13.71s | 13        | 13       | **MATCH**                     |
+| N5 snowwhite-HA fire      | 17.25s     | 15.60s | 12        | 12       | **MATCH**                     |
+| N2 modernia wind          | 20.02s     | 18.37s | 10        | ≥10      | **MATCH**                     |
+| T1 wind-weak              | 16.25s     | 14.60s | 12        | 13       | still short                   |
+| N3 scarlet/liberalio iron | 21.38s     | 19.73s | 9         | 10       | still short                   |
+| soda-tb control           | 21.08s     | 19.43s | 9         | 10       | still short                   |
+| misc B3s (run I order)    | 14.91s     | 13.26s | **14**    | 13       | overshoots                    |
 
-**Focus placement is worth more than it looks, but only for charge weapons.** The focused unit is the
-top generator on 5 of 9 teams, driven by the ×2.5 charge-gauge bonus — `maxwell` at 8.37 is 32.7% of
-his team, `anis-star` 8.19 is 30.5%. It is not automatic: `rapi-red-hood` (MG) is focused on N1 and
-generates less than three teammates, as do `modernia` (MG) on N2 and `privaty` (AR) on N5, because
-non-charge weapons take no focus bonus.
+**Five of nine match, and three of those five were never filmed** (N1, N5, N2 — all `liberalio`-free).
+That is the strongest evidence so far that the tempo gap is engine-general rather than something
+about the comps that happened to get measured.
 
-**Three comps run a 15s Full Burst, not 10s** — N3 and soda-tb control via `soda-twinkling-bunny`,
-N2 via `modernia`. Their cycles are structurally longer, so a fixed per-cycle error costs them fewer
-bursts over the fight. Do not compare their counts to the 10s comps without accounting for it.
+**The misses are the interesting part, and they are ordered by cycle length.** The single overshoot
+is the _shortest_ cycle in the set (misc B3s, 14.91s); two of the three undershoots are the _longest_
+(N3 21.38s, soda-tb 21.08s). That is the signature of an error **proportional** to cycle time rather
+than a flat constant: a flat 1.65s is 11.1% of misc B3s's cycle but only 7.7% of N3's.
+
+⛔ **That is a hypothesis generated by fitting counts, not a result.** It is exactly the
+fit-to-data move the evidence rules exist to prevent, and it is recorded here only as something the
+next measurement can test. The two filmed comps cannot discriminate flat from proportional — their
+cycles are 16.05s and 15.46s, within 4% of each other, so both models fit both points about equally.
+Resolving it needs a cycle measured on a comp with a **long** cycle (N3 or soda-tb control, ~21s) or
+a **short** one (misc B3s, ~14.9s).
+
+T1's miss is weak evidence of anything: at 14.60s it needs `174.0/14.60 = 11.92` cycles and lands
+just under the integer boundary. A 0.2s period difference flips it — the same quantization
+sensitivity that makes comp counts a coarse readout in the first place.
 
 ## ⚑ Known staleness
 
