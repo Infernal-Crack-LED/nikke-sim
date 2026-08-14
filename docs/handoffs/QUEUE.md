@@ -144,6 +144,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    - Generality is bounded: both recordings are `liberalio` comps and it appears in zero passing
      comps, so it is perfectly confounded. Repeat on the `liberalio`-free shortfall comp
      `misc B3s (run I order)` (sim 12 vs measured 13) before claiming an engine-general error.
+   - **The off-count set is NINE comps, not the four disabled ones, and five seat no `liberalio`** —
+     per-team rosters, focus, per-unit gauge rates, bar-fill times and where the 180s buzzer lands
+     are in [docs/fb-count-matrix.md](../fb-count-matrix.md) (regenerate:
+     `npx tsx scripts/battery/fb-count-matrix.ts`). Chain stall is 0.00s on all nine, so none of
+     these are burst-availability failures — every one is refill speed.
    - ⚑ Side finding worth one pass: real stage1→stage2 reads 33f/32f vs the modeled 30f
      `STAGE_CAST_GAP_FRAMES`. Runs against the gap, so it cannot have inflated the finding.
    - Success criterion unchanged: the 4 disabled comps' measured FB counts, re-enabled. Enactment is a
