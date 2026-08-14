@@ -14,37 +14,6 @@ DECISIONS leaves the stale question here reading as live — always move it.
 
 ## UNANSWERED
 
-### U40 — Does a MISSED SG pellet generate burst gauge? (per-landed-pellet vs per-trigger crediting) (opened 2026-08-14)
-
-The engine feeds SG burst gauge by the LANDED-pellet fraction (`shotGauge(u, frame, sgGaugeFrac)`
-in `firePull`), but **no primary source ever distinguished landed pellets from trigger pulls**: the
-datamine column is per-trigger (`target_burst_energy_pershot`; its per-pellet × `shot_count` split
-is table structure, not a miss test), the "fill counts HITS, not damage" lineage is
-gauge-vs-damage, and the one explicit statement — auto-play.md §4 "(missed pellets generate
-nothing)" — rode the 2026-07-13 SG damage-falloff ⚑ calibration as a parenthetical. No SG solo
-gauge-bar recording has ever been read (both solo anchors are charge weapons). Filed by the
-burst-generation investigation plan item 4 (the plan's own predicted outcome: "an owner question
-before it is a measurement").
-
-**Sizing (2026-08-14, the A/B that opened this):** the ceiling arm `SGGAUGE=trigger` (full
-per-trigger gauge per SG pull, gauge-only, default OFF — branch `audit/item4-multihit`,
-worktree-isolated per CLAUDE.md rule 8, pending the owner's merge call) lifts SG-carrier
-generation +27–48% (team +7–17% on all five SG-seated off-count comps) and moves **zero**
-Full-Burst counts anywhere — instrument: `npx tsx scripts/battery/fb-count-matrix.ts
---multihit-crediting`, pinned by `scripts/tests/battery/multihit-crediting.test.ts`. So the answer
-is **not** a shortfall suspect (all four plan items closed without explaining the 39–50% filmed
-shortfalls); it is a faithfulness question worth ~7–17% of SG-seated generation rates.
-
-**Resolving it:** an owner ruling, or an SG solo gauge-bar recording read with the committed
-`scripts/probe/gauge-fill.py` (shape/small-step calibrated on the maiden anchor): does one spray
-pull at known range step the bar by the per-trigger table value (900 for noir/soda — trigger
-crediting) or by landed/base of it (landed crediting)? MG belt rounds are NOT part of the question
-— the sim already credits every round per pull and has no MG miss model.
-
-**Do not** enact either crediting model off a board move — the A/B above shows the board cannot
-discriminate (zero FB movement either way the shortfall sits), which is exactly the fit-to-data
-trap the measurement ≠ enactment rule exists to block.
-
 ### U39 — `snow-white-heavy-arms` Fully Active: is the volley delivered by USES or by TIME? (opened 2026-08-11, re-filed)
 
 Her burst "Seven Dwarves Fully Active" is modeled as a weapon swap carrying the same 69.04% shot at

@@ -349,9 +349,11 @@ damage-model constant and the fitting-to-data risk is maximal here.
 > **Verdict per the decision rule:** even the ceiling of the "missed pellets generate" hypothesis
 > buys no burst boundary anywhere, and the two filmed shortfalls cannot be touched by SG crediting
 > at all — item 4 cannot explain the shortfall. The owner question ("does a missed SG pellet
-> generate burst gauge?") is filed as open-questions **U40** with this sizing attached: the answer
-> moves SG-seated generation rates ~7–17% (faithfulness), but is no longer a shortfall suspect.
-> Nothing enacted on main; the arm stays default-OFF until a ruling or footage settles it.
+> generate burst gauge?") was filed as open-questions **U40** with this sizing attached — and the
+> owner ANSWERED it the same day: **no, it doesn't.** The live per-landed-pellet crediting is
+> CONFIRMED (DECISIONS 2026-08-14); the per-trigger arm survives default-OFF as the refuted
+> reading's A/B revert. Nothing enacted — the ruling confirms the shipped model, and U40 moved to
+> answered-questions.
 
 **QUESTION.** `shotGauge(u, frame, hitFraction)` scales gauge by a hit fraction (sim.ts:1483-1500),
 and shotguns feed it per pellet while MGs credit `hitsPerShot` rounds per pull. Does the game credit
@@ -413,9 +415,10 @@ result and it goes back to the owner rather than into a fifth speculative item.
 > crediting — the per-trigger CEILING arm buys zero Full Bursts anywhere) together account for
 > well under the measured 39–50% shortfall. Per the stop condition, the remainder is not in any of
 > the four generation candidates, and the thread goes back to the owner rather than into a fifth
-> speculative item. Live residue: **U40** (the owner question from item 4 — faithfulness, not
-> shortfall), the **U28 divisor residual** (footage-gated), and the separate **real Full Burst
-> duration** measurement (QUEUE item 2).
+> speculative item. Live residue: the **U28 divisor residual** (footage-gated) and the separate
+> **real Full Burst duration** measurement (QUEUE item 2). Item 4's owner question (**U40** —
+> does a missed pellet generate?) was ANSWERED 2026-08-14: no — per-landed crediting confirmed,
+> nothing left to enact.
 
 **Every item is findings-only.** None of them changes an engine constant, an override, or a snapshot
 in the session that discovers it. Enactment is a separate gated pass with fresh context — the

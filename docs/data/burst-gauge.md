@@ -34,16 +34,18 @@ Primary sources:
 
 - Gauge maximum = **10,000 energy** (UI shows 100.00%; 1% = 100 energy).
 - Fill counts **HITS, not damage**. (That rule is the gauge-vs-damage lineage — it does NOT
-  distinguish _hits landed_ from _trigger pulls_; no primary source ever has. Whether a MISSED
-  SG pellet generates is open-questions U40: the engine credits per LANDED pellet — a default
-  assumption inherited from the damage-falloff calibration, not a ruling.)
+  distinguish _hits landed_ from _trigger pulls_. The distinction was settled 2026-08-14:
+  **a MISSED pellet generates NOTHING — gauge credits per LANDED pellet, owner ruling (U40,
+  DECISIONS 2026-08-14).** The engine's per-landed crediting (`shotGauge`'s hit fraction) is
+  the confirmed-faithful model; the refuted per-trigger reading survives only as the
+  `SGGAUGE=trigger` A/B revert.)
 - Per trigger pull vs the **stage target** (the raid boss, and also the practice target)
   the gauge gains the unit's datamined **`target_burst_energy_pershot`** — universally
   exactly **2× the non-target base** across the entire table. The old "boss ×2" rule IS
   this column. Shotguns: the table value is per pellet; per trigger = value ×
   `shot_count` (10). Multi-muzzle rows multiply by `muzzle_count`. The per-trigger ×
-  shot_count form is table structure, not a miss test — the landed-vs-trigger crediting
-  question (U40) is orthogonal to it.
+  shot_count form is table structure, not a miss test — for landing, gauge scales by the
+  landed fraction (owner ruling 2026-08-14, U40).
 - **Locked during Full Burst and during the chain** (stages 1–3; einkk, KR sources,
   user-confirmed 2026-07-13, re-confirmed 2026-08-04). The lock lifts the INSTANT Full
   Burst ends — there is NO lingering post-FB delay: the ~3-4s to the next chain is the

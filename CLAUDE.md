@@ -95,6 +95,12 @@ overrides/**` edit while other sessions may be active — do the work in a dedic
   repeatedly by fresh sessions; it is settled and needs no measurement. Detail:
   [docs/data/burst-gauge.md](docs/data/burst-gauge.md) §1/§3, [game-mechanics.md](docs/data/game-mechanics.md) §6.
   Engine: the `addGauge` lock (`src/engine/sim.ts`).
+- **(owner ruling 2026-08-14) A MISSED shotgun pellet generates NO burst gauge — SG gauge credits
+  per LANDED pellet.** The datamine per-trigger column and the "fill counts HITS, not damage"
+  lineage never distinguished landed hits from trigger pulls; the owner settled it (U40,
+  DECISIONS 2026-08-14). The engine's per-landed feed (`shotGauge`'s hit fraction, `firePull`) is
+  the confirmed model. `SGGAUGE=trigger` is the refuted reading's default-OFF A/B revert — sized at
+  +27–48% carrier generation and zero Full-Burst movement; do not re-open without new evidence.
 - (2026-07-13) Scope-lock validation basis + single-run repeatability 0.5–3.5%/unit; ±3% goal is
   judged on multi-run averages with a declared camera-focus unit.
 - (2026-07-13) Full-burst counts are cooldown/chain arithmetic — deterministic run-to-run except

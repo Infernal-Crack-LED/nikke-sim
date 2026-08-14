@@ -161,13 +161,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      from trigger pulls — that IS the finding, and it is an owner question before a measurement;
      the ceiling arm `SGGAUGE=trigger` lifts SG-carrier generation +27–48% / team +7–17% and
      moves ZERO Full-Burst counts anywhere, every SG comp stays exactly one short, the filmed
-     comps seat no SG carrier at all; arm + instrument + fixture on branch `audit/item4-multihit`
-     pending the owner's merge call, plan doc carries the record; the owner question is filed as
-     open-questions U40). **All four items closed and NONE explains the shortfall — the plan's
+     comps seat no SG carrier at all; arm + instrument + fixture on branch `audit/item4-multihit`,
+     plan doc carries the record; the owner question was filed as open-questions U40 and ANSWERED
+     the same day — **no, a missed pellet does NOT generate**: per-landed crediting confirmed,
+     DECISIONS 2026-08-14, U40 moved to answered-questions). **All four items closed and NONE
+     explains the shortfall — the plan's
      stop condition has been met: the remainder is not in any of the four generation candidates
-     and goes back to the owner rather than into a fifth speculative item.** Live residue: U40
-     (faithfulness, not shortfall), the U28 `skillGauge` divisor residual (~12% of T5's cycle gap,
-     footage-gated), and the separate real-Full-Burst-duration measurement below.
+     and goes back to the owner rather than into a fifth speculative item.** Live residue: the
+     U28 `skillGauge` divisor residual (~12% of T5's cycle gap, footage-gated), and the separate
+     real-Full-Burst-duration measurement below.
    - **A SEPARATE small measurement still open:** read the real Full Burst duration off a visual that
      does NOT share the drain bar's under-render — the FB screen border / cut-in vignette, or a
      buff-icon timer — on either recording already on disk. **One clean "real FB ≈ 10s" converts this

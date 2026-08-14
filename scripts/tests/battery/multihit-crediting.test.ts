@@ -1,15 +1,20 @@
 // Pins the MULTI-HIT CREDITING AUDIT — item 4 of the 2026-08-13 burst-generation investigation
 // plan (docs/handoffs/2026-08-13-burst-generation-investigation-plan.md).
 //
-// THE QUESTION the audit answers: do multi-hit weapons credit burst gauge per LANDED hit or per
+// THE QUESTION IS ANSWERED (owner ruling 2026-08-14, U40): a MISSED pellet does NOT generate
+// burst gauge — the live per-LANDED-pellet crediting is CONFIRMED. This fixture keeps the
+// audit's sizing of the REFUTED per-trigger reading (and the arm's scoping byte-identity), so a
+// future change to the SG gauge path, the landing model, or the `SGGAUGE=trigger` revert arm
+// trips a re-run; DECISIONS 2026-08-14.
+//
+// THE QUESTION the audit sized: do multi-hit weapons credit burst gauge per LANDED hit or per
 // TRIGGER? The engine feeds SG gauge by the landed-pellet fraction (sim.ts firePull →
-// shotGauge(u, frame, sgGaugeFrac); "missed pellets generate nothing" is the live DEFAULT
-// ASSUMPTION, carried into the gauge channel by the 2026-07-13 damage-falloff calibration),
-// while MG belt rounds and single-bullet weapons credit full per-trigger gauge. The audit A/Bs
-// the live feed against the per-trigger arm (`SGGAUGE=trigger`, sim.ts — gauge-only; damage
-// keeps the landed fraction, rng streams identical, default OFF) over the nine off-count comps
-// plus the plan's designated SG-spray regression anchor (dorothy-serendipity's two comps, whose
-// 80-pellet → 3-big-shot consolidation amplifies pellet errors into large swings).
+// shotGauge(u, frame, sgGaugeFrac)), while MG belt rounds and single-bullet weapons credit full
+// per-trigger gauge. The audit A/Bs the live feed against the per-trigger arm (`SGGAUGE=trigger`,
+// sim.ts — gauge-only; damage keeps the landed fraction, rng streams identical, default OFF)
+// over the nine off-count comps plus the plan's designated SG-spray regression anchor
+// (dorothy-serendipity's two comps, whose 80-pellet → 3-big-shot consolidation amplifies pellet
+// errors into large swings).
 //
 // THE SOURCE FINDING (the plan's premise 2): the primary sources NEVER distinguished landed hits
 // from trigger pulls for gauge. The datamine column is per-trigger (its per-pellet × shot_count
@@ -17,8 +22,8 @@
 // gauge-vs-damage, not hits-vs-misses; the ONE explicit statement (auto-play.md §4 "missed
 // pellets generate nothing") rode a DAMAGE-falloff calibration as a parenthetical and was never
 // calibrated for gauge; both solo gauge anchors are charge weapons — no SG gauge-bar recording
-// has ever been read. So "does a missed pellet generate?" is an OWNER QUESTION, and this audit
-// only SIZES it.
+// has ever been read. So "does a missed pellet generate?" went to the owner as a ruling
+// question (the plan's own prescription), and the owner answered NO (2026-08-14).
 //
 // THE FINDINGS this fixture guards (measured 2026-08-14, deterministic EV runs):
 //   * THE ARM MOVES ZERO FULL-BURST COUNTS. Every SG-seated off-count comp stays exactly one
@@ -36,10 +41,10 @@
 //     while her own gauge still moves +27–33% — the anchor is alive, not inert.
 //   * CONSEQUENCE (decision rule): even the most favorable SG crediting — full per-trigger
 //     gauge, the ceiling of the "missed pellets generate" hypothesis — closes NONE of the
-//     measured shortfall. Item 4 is EXCLUDED as the shortfall cause. The owner question stays
-//     open as a faithfulness matter (SG-seated generation rates move 7–17% with the answer) but
-//     is no longer a shortfall suspect, and nothing here licenses enacting either crediting
-//     model without a ruling or an SG solo gauge-bar measurement.
+//     measured shortfall. Item 4 is EXCLUDED as the shortfall cause. The owner then answered
+//     the crediting question itself (2026-08-14, U40): missed pellets do NOT generate — the
+//     live per-landed model is confirmed, the per-trigger arm is the refuted reading, and
+//     nothing here licenses ever enacting it without new evidence.
 //
 // WHY THESE PINS: the decision quantities (zero FB movement on a large generation lift, the
 // SG-free byte-identity, the carrier set) ARE the finding; pinned so any engine change to the

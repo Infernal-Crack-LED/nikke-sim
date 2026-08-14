@@ -1326,3 +1326,30 @@ ever showed a flat per-shot fill rate instead, that would be worth reopening.
 
 Recording persisted: `docs/probe-data/raven-solo-burstgen.json`; measurement log:
 `docs/probe-runs.md` 2026-07-30.
+
+### U40 — Does a MISSED SG pellet generate burst gauge? (opened 2026-08-14, ANSWERED 2026-08-14)
+
+**ANSWERED 2026-08-14 (owner ruling; the live engine confirmed, nothing enacted).** Asked whether
+a missed SG pellet generates burst gauge — per-landed-pellet vs per-trigger crediting — the owner
+answered: **no, it doesn't.** The engine's live model (SG gauge scaled by the base-capped
+LANDED-pellet fraction, `shotGauge(u, frame, sgGaugeFrac)` in `firePull`) is therefore the
+faithful one. → DECISIONS 2026-08-14; pinned in `CLAUDE.md` verified facts, burst-gauge.md §1,
+auto-play.md §4, game-mechanics.md §6.
+
+**Why it was open:** no primary source ever distinguished the two. The datamine column is
+per-trigger (`target_burst_energy_pershot`; its per-pellet × `shot_count` split is table
+structure, not a miss test); the "fill counts HITS, not damage" lineage is gauge-vs-damage; the
+one explicit statement (auto-play.md §4 "missed pellets generate nothing") had ridden the
+2026-07-13 SG damage-falloff ⚑ calibration as a parenthetical; no SG solo gauge-bar recording has
+ever been read (both solo anchors are charge weapons). Filed by the burst-generation
+investigation plan item 4, which prescribed an owner ruling before a measurement.
+
+**The refuted reading is SIZED, so it stays dead:** the ceiling arm `SGGAUGE=trigger` (full
+per-trigger gauge per SG spray pull, gauge-only, default OFF — kept as the refuted reading's A/B
+revert, `ROTMODEL=floor` precedent) lifts SG-carrier generation +27–48% (team +7–17% on all five
+SG-seated off-count comps) and moves **zero** Full-Burst counts anywhere (31-comp EV board: 0 FB
+movers; the four SG-free comps byte-identical). Instrument:
+`scripts/battery/fb-count-matrix.ts --multihit-crediting`, pinned by
+`scripts/tests/battery/multihit-crediting.test.ts`. Do not re-open without new evidence — and do
+not enact crediting changes off board movement: the board cannot discriminate here, which is the
+fit-to-data trap the measurement ≠ enactment rule exists to block.
