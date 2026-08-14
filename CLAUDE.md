@@ -87,6 +87,14 @@ overrides/**` edit while other sessions may be active — do the work in a dedic
 
 ## Verified facts (do not re-derive)
 
+- **(owner ruling, re-confirmed 2026-08-13 — STOP ASKING THIS) Burst gauge generates ONLY in the
+  window between one Full Burst ENDING and the next burst chain STARTING.** Nothing generates gauge
+  during the burst chain (stages 1–3) or during Full Burst — no bullet, skill hit, DoT tick, rider or
+  "Gain Burst Gauge X%" effect. Positively stated: the ONE generating window per cycle is
+  `FB-end → chain-start`, and the chain's own opening zeroes the bar. This is asked and re-derived
+  repeatedly by fresh sessions; it is settled and needs no measurement. Detail:
+  [docs/data/burst-gauge.md](docs/data/burst-gauge.md) §1/§3, [game-mechanics.md](docs/data/game-mechanics.md) §6.
+  Engine: the `addGauge` lock (`src/engine/sim.ts`).
 - (2026-07-13) Scope-lock validation basis + single-run repeatability 0.5–3.5%/unit; ±3% goal is
   judged on multi-run averages with a declared camera-focus unit.
 - (2026-07-13) Full-burst counts are cooldown/chain arithmetic — deterministic run-to-run except

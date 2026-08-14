@@ -9,7 +9,28 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-13, latest) True damage is a FLAVOR, not a property change — so what may CORE depends on
+- **(2026-08-13, latest) Burst gauge generates in exactly ONE window per cycle: FB-end → chain-start.
+  Re-confirmed by the owner and pinned in three places so it stops being re-asked.**
+  - **The ruling (owner, 2026-08-13).** "During the burst chain and full burst, gauge cannot be
+    generated. It can only be generated during the period of time after a full burst ends and before
+    the burst chain starts." Nothing bypasses it — not bullets, skill hits, DoT ticks, riders, or
+    "Gain Burst Gauge X%" effects. Opening the chain zeroes the bar.
+  - **Nothing changed; this is a recording, not a fix.** The engine already implements it (the
+    `addGauge` lock in `src/engine/sim.ts`) and both mechanics docs already stated it. The problem was
+    findability: it appeared only as a mid-bullet NEGATIVE ("locked during FB and the chain"), so
+    fresh sessions kept re-deriving it as if open — the owner reports asking for it to be written down
+    permanently several times.
+  - **Where it now lives, stated POSITIVELY:** `CLAUDE.md` "Verified facts (do not re-derive)" (the
+    first thing a session reads), `docs/data/burst-gauge.md` §1 as a callout above the core rules, and
+    `docs/data/game-mechanics.md` §6. Positive framing is the point: "the generating window is
+    FB-end → chain-start" answers the question a session is actually asking, where "locked during FB"
+    only answers half of it and leaves the chain ambiguous.
+  - **Consequence for the open tempo-gap work.** The FB-end → next-B1 gap is therefore the WHOLE
+    generating budget of a cycle — a shortfall there cannot be explained by uncounted generation
+    inside the chain or the Full Burst, which removes a whole family of candidate mechanisms before
+    the footage is read.
+
+- **(2026-08-13) True damage is a FLAVOR, not a property change — so what may CORE depends on
   the SOURCE, weapon vs skill. Engine already conformant; recorded as a pin, no code change.**
   - **The ruling (owner, 2026-08-13).** "True damage just functions like pierce where it changes the
     flavor of the damage, not the properties of the damage. If a WEAPON is dealing true damage, it can

@@ -172,9 +172,11 @@ at full charge; unfocused charge units generate flat ×1.0 — both sides MEASUR
 recordings plus a paired two-unit experiment with only the focus changed). Focus defaults
 to the middle slot (owner convention; recordings with a different focus perturb the fight
 they record). Skill
-hits and DoT ticks generate the caster's flat target value (no charge bonus). Opening
-the burst chain CONSUMES the gauge, and hits during the chain or Full Burst generate
-nothing. No auto-play efficiency factor exists (the old 0.7 ⚑ compensated for the chain
+hits and DoT ticks generate the caster's flat target value (no charge bonus).
+**Gauge is generated in exactly ONE window per cycle: after a Full Burst ENDS and before the
+next burst chain STARTS** (owner ruling, re-confirmed 2026-08-13 — settled, do not re-measure).
+Opening the chain CONSUMES the gauge, and during the chain (stages 1-3) or Full Burst NOTHING
+generates it — not bullets, skill hits, DoT ticks, riders, or "Gain Burst Gauge X%" effects. No auto-play efficiency factor exists (the old 0.7 ⚑ compensated for the chain
 mechanics, now modeled directly). Full model + sources + the two solo measurements:
 **[burst-gauge.md](burst-gauge.md)**. Engine: `gaugePerShot`/`addGauge`/`skillGauge`.
 
