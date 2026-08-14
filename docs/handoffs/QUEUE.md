@@ -150,9 +150,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      nine comps; non-damage applications land nothing fresh in refill windows; the one live lever
      is the `skillGauge` divisor for hitsPerShot > 1, where `anis-star`'s battery-3-A3 fixture
      EXCLUDES the shipped halved reading — sized at ~12% of T5's cycle gap, footage-gated under
-     the U28 residual; plan doc carries the record),
-     (3) the focused charge multiplier's per-unit column, (4) whether multi-hit weapons credit gauge
-     per landed hit or per trigger. Run them in that order, do not bundle.
+     the U28 residual; plan doc carries the record), ~~(3) the focused charge multiplier's
+     per-unit column~~ **CLOSED 2026-08-14 — cannot explain the shortfall** (every seated
+     focused charge unit resolves to a MEASURED column via `characters.json` `chargeMultiplier`
+     — maxwell/anis-star 250, scarlet-black-shadow's enacted 1.5×; the only unmeasured column,
+     vesti-tactical-upgrade's pinned 200, seats no comp; even a maximally wrong column covers
+     ≤22% of the filmed shortfalls; instrument + fixture committed, plan doc carries the
+     record), (4) whether multi-hit weapons credit gauge per landed hit or per trigger. Only
+     (4) remains; do not bundle it with anything.
    - **A SEPARATE small measurement still open:** read the real Full Burst duration off a visual that
      does NOT share the drain bar's under-render — the FB screen border / cut-in vignette, or a
      buff-icon timer — on either recording already on disk. **One clean "real FB ≈ 10s" converts this

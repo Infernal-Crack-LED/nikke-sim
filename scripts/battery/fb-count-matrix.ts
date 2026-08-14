@@ -43,7 +43,14 @@ const gaugeTable = JSON.parse(
     new URL('../../data/gauge-per-shot.json', import.meta.url),
     'utf8'
   )
-) as Record<string, { targetPerTrigger?: number; flatPerTrigger?: number }>;
+) as Record<
+  string,
+  {
+    targetPerTrigger?: number;
+    flatPerTrigger?: number;
+    fullChargeBonus?: number;
+  }
+>;
 
 const FIGHT_SEC = 180;
 /** gauge-full -> B1 cast (`PRE_B1_GAP_FRAMES`, 30f). Subtracted to recover the refill's true end. */
@@ -1390,6 +1397,292 @@ function printGaugeSources(reports: GaugeSourceCompReport[]) {
   }
 }
 
+// ============================================================================
+// FOCUS-COLUMN AUDIT — item 3 of the 2026-08-13 burst-generation investigation
+// plan (docs/handoffs/2026-08-13-burst-generation-investigation-plan.md).
+// Run it: npx tsx scripts/battery/fb-count-matrix.ts --focus-columns
+//
+// QUESTION: the focused charge unit's gauge multiplier is sourced per unit — the engine ladder
+// (gaugePerShot(), src/engine/sim.ts): charFixes.focusChargeMult → magDumpRof /
+// PENDING_TEAM_ISOLATION pin (flat 2.5) → characters.json chargeMultiplier (>0) →
+// gauge-per-shot.json fullChargeBonus (>0) → 250. Does every off-count comp's focused charge
+// unit resolve to a MEASURED or OWNER-CONFIRMED column?
+//
+// The audit is a DATA read, not a sim behaviour question: it re-walks the ladder against the
+// data files + override charFixes, grades the resolved column against the column record
+// (docs/data/burst-gauge.md §4; DECISIONS 2026-07-29 — the per-unit landing, the
+// alice/cinderella follow-up, and the SUPERSEDES entry), and sizes how much of each filmed
+// comp's shortfall a wrong column could account for. buildRows() supplies the rates.
+// ============================================================================
+
+export type FocusColumnStatus =
+  'measured' | 'owner-confirmed' | 'unmeasured' | 'n/a';
+
+export type FocusMultSource =
+  | 'charFixes.focusChargeMult'
+  | 'magDumpRof pin (flat 2.5)'
+  | 'PENDING_TEAM_ISOLATION pin (flat 2.5)'
+  | 'characters.json chargeMultiplier'
+  | 'gauge-per-shot.json fullChargeBonus'
+  | 'default 250';
+
+/** The column record under audit, at COLUMN granularity (the 200 column is per-unit, below). */
+const FOCUS_COLUMN_BASIS: Record<
+  number,
+  { status: FocusColumnStatus; basis: string }
+> = {
+  250: {
+    status: 'measured',
+    basis:
+      'modal family — both solo anchors are 250-column units, pixel-exact: maiden-ice-rose 364×2.5=910(+364 rider), takina 560×2.5=1400 (burst-gauge.md §4/§6)',
+  },
+  350: {
+    status: 'measured',
+    basis:
+      'alice solo shot-count bound [16.67%, 20.0%) contains the 3.5× prediction 19.6%/shot and excludes flat 2.5× (DECISIONS 2026-07-29 follow-up); the other 350 carriers (belorta/n102/yan/yuni) ride the same datamined column + owner-confirmed rule and seat no comp',
+  },
+  150: {
+    status: 'measured',
+    basis:
+      'scarlet-black-shadow — solo per-shot ~1.42× (5% match) AND a team 11-FB count outside the flat-2.5× model (DECISIONS 2026-07-29 landing)',
+  },
+};
+
+/** The 200 column, graded per-unit — the only column where the unit, not the number, decides. */
+const FOCUS_200_BASIS: Record<
+  string,
+  { status: FocusColumnStatus; basis: string }
+> = {
+  cinderella: {
+    status: 'owner-confirmed',
+    basis:
+      'charFixes.focusChargeMult 2.0; focusChargeMult = chargeMultiplier/100 confirmed TRUE for her, the ~2.2–3.1× reads RETRACTED as reading errors (DECISIONS 2026-07-29 SUPERSEDES entry)',
+  },
+  'vesti-tactical-upgrade': {
+    status: 'unmeasured',
+    basis:
+      'pinned flat 2.5× by PENDING_TEAM_ISOLATION until a focused solo recording isolates her own column (her kit build ⚑3 carries the recipe)',
+  },
+};
+
+function focusColumnStatus(
+  slug: string,
+  column: number
+): { status: FocusColumnStatus; basis: string } {
+  if (column === 200) {
+    return (
+      FOCUS_200_BASIS[slug] ?? {
+        status: 'unmeasured',
+        basis: 'unknown 200-column unit — no record',
+      }
+    );
+  }
+  return (
+    FOCUS_COLUMN_BASIS[column] ?? {
+      status: 'unmeasured',
+      basis: `column ${column} has no record — unrecognised column is LOUD`,
+    }
+  );
+}
+
+/**
+ * Mirror of the engine's pin set (PENDING_TEAM_ISOLATION in src/engine/sim.ts — not exported,
+ * and this audit reads data files, not engine state). The fixture pins the only consequence
+ * that matters here: no seated focus unit is a member, so the pin list cannot alter any row.
+ */
+const PENDING_TEAM_ISOLATION_MIRROR = new Set(['vesti-tactical-upgrade']);
+const FOCUS_CHARGE_GEN_FLAT = 2.5; // src/engine/sim.ts FOCUS_CHARGE_GEN — the pin's value
+/** Largest live column — the most extreme upward error a wrong column could carry. */
+const MAX_LIVE_FOCUS_COLUMN = 350;
+
+export interface FocusColumnReport {
+  comp: string;
+  focusSlug: string;
+  weapon: string;
+  /** SR/RL base weapon — the only weapons the focus bonus applies to (gaugePerShot's isCharge) */
+  isChargeFocus: boolean;
+  /** null when the focus bonus does not apply (non-charge focus) */
+  resolvedMult: number | null;
+  source: FocusMultSource | null;
+  columnStatus: FocusColumnStatus;
+  /** the focused unit's gauge/60f (per second of refilling) and the team's rate */
+  focusPer60: number;
+  teamRate: number;
+  /**
+   * Filmed comps only: CEILING on how much of the measured generation shortfall a wrong column
+   * could explain — the focused unit's whole rate scaled from its resolved column to the largest
+   * live column (350). A ceiling because skill-gen does not scale with the focus multiplier.
+   * null without a filmed cycle.
+   */
+  maxAltUpsideGaugePerSec: number | null;
+  shortfallRateGaugePerSec: number | null;
+  maxAltUpsideCoverPct: number | null;
+}
+
+export function auditFocusColumns(): FocusColumnReport[] {
+  const rows = buildRows();
+  return rows.map((r) => {
+    const focus = r.focusSlug;
+    const c = data.characters[focus];
+    const weapon = c?.weapon ?? '?';
+    const isChargeFocus = weapon === 'SR' || weapon === 'RL';
+    const focusPer60 = r.per.find((u) => u.slug === focus)?.per60 ?? NaN;
+    const teamRate = r.teamRate;
+    const shortfallRate = r.required
+      ? r.required.realRate - r.required.simRate
+      : null;
+
+    if (!isChargeFocus) {
+      return {
+        comp: r.off.name,
+        focusSlug: focus,
+        weapon,
+        isChargeFocus,
+        resolvedMult: null,
+        source: null,
+        columnStatus: 'n/a' as const,
+        focusPer60,
+        teamRate,
+        maxAltUpsideGaugePerSec: null,
+        shortfallRateGaugePerSec: shortfallRate,
+        maxAltUpsideCoverPct: null,
+      };
+    }
+
+    // The engine ladder, walked against the data files + override charFixes.
+    const fixes = loadOverride(focus)?.charFixes;
+    let resolvedMult: number;
+    let source: FocusMultSource;
+    if (fixes?.focusChargeMult !== undefined) {
+      resolvedMult = fixes.focusChargeMult;
+      source = 'charFixes.focusChargeMult';
+    } else if (fixes?.magDumpRof) {
+      resolvedMult = FOCUS_CHARGE_GEN_FLAT;
+      source = 'magDumpRof pin (flat 2.5)';
+    } else if (PENDING_TEAM_ISOLATION_MIRROR.has(focus)) {
+      resolvedMult = FOCUS_CHARGE_GEN_FLAT;
+      source = 'PENDING_TEAM_ISOLATION pin (flat 2.5)';
+    } else {
+      const charMult = c?.chargeMultiplier ?? 0;
+      const fcb = gaugeTable[focus]?.fullChargeBonus;
+      if (charMult > 0) {
+        resolvedMult = charMult / 100;
+        source = 'characters.json chargeMultiplier';
+      } else if (fcb && fcb > 0) {
+        resolvedMult = fcb / 100;
+        source = 'gauge-per-shot.json fullChargeBonus';
+      } else {
+        resolvedMult = 2.5;
+        source = 'default 250';
+      }
+    }
+
+    const { status } = focusColumnStatus(focus, Math.round(resolvedMult * 100));
+    const upside =
+      focusPer60 * (MAX_LIVE_FOCUS_COLUMN / 100 / resolvedMult - 1);
+    return {
+      comp: r.off.name,
+      focusSlug: focus,
+      weapon,
+      isChargeFocus,
+      resolvedMult,
+      source,
+      columnStatus: status,
+      focusPer60,
+      teamRate,
+      maxAltUpsideGaugePerSec: upside,
+      shortfallRateGaugePerSec: shortfallRate,
+      maxAltUpsideCoverPct:
+        shortfallRate !== null && shortfallRate > 0
+          ? (upside / shortfallRate) * 100
+          : null,
+    };
+  });
+}
+
+export interface FocusColumnCensusRow {
+  slug: string;
+  weapon: string;
+  /** characters.json chargeMultiplier (0 = the non-charge marker) */
+  charMult: number;
+  /** gauge-per-shot.json fullChargeBonus, null when the unit has no row */
+  fcb: number | null;
+  /** the engine ladder's data-level column, pins aside */
+  resolvedColumn: number;
+  status: FocusColumnStatus;
+  seatedInOffComps: boolean;
+}
+
+/** Roster-wide column census: every SR/RL unit's data-level resolution + record status. */
+export function focusColumnCensus(): FocusColumnCensusRow[] {
+  const seated = new Set(OFF.flatMap((o) => resolve(o).slugs));
+  const rows: FocusColumnCensusRow[] = [];
+  for (const [slug, c] of Object.entries(data.characters)) {
+    if (c.weapon !== 'SR' && c.weapon !== 'RL') {
+      continue;
+    }
+    const charMult = c.chargeMultiplier ?? 0;
+    const fcb = gaugeTable[slug]?.fullChargeBonus ?? null;
+    const resolvedColumn =
+      charMult > 0 ? charMult : fcb !== null && fcb > 0 ? fcb : 250;
+    rows.push({
+      slug,
+      weapon: c.weapon,
+      charMult,
+      fcb,
+      resolvedColumn,
+      status: focusColumnStatus(slug, resolvedColumn).status,
+      seatedInOffComps: seated.has(slug),
+    });
+  }
+  return rows.sort((a, b) => a.slug.localeCompare(b.slug));
+}
+
+function printFocusColumns(
+  reports: FocusColumnReport[],
+  census: FocusColumnCensusRow[]
+) {
+  console.log(
+    '\n===== FOCUS-COLUMN AUDIT — investigation-plan item 3 =====\n' +
+      'Per comp: who holds the camera focus, whether the focus bonus applies (SR/RL only),\n' +
+      'which column the engine ladder resolves, and the record behind that column\n' +
+      "(burst-gauge.md §4, DECISIONS 2026-07-29). Decision rule: every off-count comp's focused\n" +
+      'charge unit on a measured or owner-confirmed column ⇒ the item cannot explain the shortfall.\n'
+  );
+  for (const r of reports) {
+    if (!r.isChargeFocus) {
+      console.log(
+        `  ${r.comp.padEnd(28)} focus=${r.focusSlug.padEnd(24)} ${r.weapon} — no focus path (non-charge weapon)`
+      );
+      continue;
+    }
+    console.log(
+      `  ${r.comp.padEnd(28)} focus=${r.focusSlug.padEnd(24)} ${r.weapon} → ×${r.resolvedMult?.toFixed(1)} via ${r.source} — column ${r.columnStatus.toUpperCase()}`
+    );
+    if (r.maxAltUpsideCoverPct !== null) {
+      console.log(
+        `      wrong-column ceiling: +${r.maxAltUpsideGaugePerSec!.toFixed(2)} gauge/s at the most extreme live column (350)` +
+          ` vs the measured shortfall ${r.shortfallRateGaugePerSec!.toFixed(2)} gauge/s ⇒ covers ≤${r.maxAltUpsideCoverPct.toFixed(1)}%`
+      );
+    }
+  }
+  console.log(
+    "\nROSTER CENSUS — every SR/RL unit's data-level column (characters.json chargeMultiplier,\n" +
+      'gauge-per-shot.json fullChargeBonus fallback, 250 default), graded against the record.\n' +
+      'Non-250 columns and source disagreements only:\n'
+  );
+  for (const row of census) {
+    const outlier = row.resolvedColumn !== 250;
+    const mismatch = row.fcb !== null && row.charMult !== row.fcb;
+    if (!outlier && !mismatch) {
+      continue;
+    }
+    console.log(
+      `  ${row.slug.padEnd(28)} ${row.weapon}  charMult=${row.charMult} fcb=${row.fcb ?? '—'} → column ${row.resolvedColumn} ${row.status.toUpperCase()}${row.seatedInOffComps ? '  [SEATED in an off-count comp]' : ''}${mismatch ? '  [SOURCES DISAGREE]' : ''}`
+    );
+  }
+}
+
 // The matrix + audits run only on direct CLI invocation — vitest imports the audit functions
 // without paying for nine 180s sims (the experiment.ts isMain pattern).
 const isMain = import.meta.url === `file://${process.argv[1]}`;
@@ -1407,6 +1700,15 @@ if (isMain) {
       console.log(JSON.stringify(reports, null, 2));
     } else {
       printGaugeSources(reports);
+    }
+  } else if (process.argv.includes('--focus-columns')) {
+    const reports = auditFocusColumns();
+    if (process.argv.includes('--json')) {
+      console.log(
+        JSON.stringify({ reports, census: focusColumnCensus() }, null, 2)
+      );
+    } else {
+      printFocusColumns(reports, focusColumnCensus());
     }
   } else {
     const rows = buildRows();

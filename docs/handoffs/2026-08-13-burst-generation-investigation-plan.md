@@ -223,6 +223,35 @@ same session** (measurement ≠ enactment). If the census is clean, say so and c
 
 ## Item 3 — Is the FOCUSED charge multiplier's per-unit sourcing right?
 
+> **RESOLVED 2026-08-14 — CLOSED, cannot explain the shortfall (record and close).** The audit
+> ran as specified: each of the nine off-count comps' focused unit was resolved down the engine
+> ladder (`charFixes.focusChargeMult` → `magDumpRof`/`PENDING_TEAM_ISOLATION` pin →
+> `characters.json` `chargeMultiplier` → `gauge-per-shot.json` `fullChargeBonus` → 250) and the
+> resolved column graded against the record (`docs/data/burst-gauge.md` §4, DECISIONS
+> 2026-07-29). Only FOUR comps focus a charge weapon, and all four resolve to MEASURED columns
+> via the PRIMARY source, with no pin or charFixes in the path: **maxwell 250** (iron sweep),
+> **anis-star 250** (T5 + T1), **scarlet-black-shadow 150** (N3). 250 is the family measured
+> twice over (maiden-ice-rose + takina solo anchors, pixel-exact); 150 is enacted off two
+> independent measurements (solo ~1.42× + team 11-FB count). The other five comps focus
+> non-charge weapons (AR/MG/SG) that take no focus bonus at all. T1's recorded run reportedly
+> focused scarlet-black-shadow rather than the sim roster's anis-star (comp note) — both
+> columns are measured, so the verdict is robust to that ambiguity. The record check stands as
+> stated in WHY below: the three 2026-07-29 DECISIONS entries (per-unit landing,
+> alice/cinderella follow-up, SUPERSEDES) closed the 350/200/150 columns, and the ONLY
+> unmeasured column — `vesti-tactical-upgrade`'s pinned-2.5 200 — seats no comp (off-count or
+> otherwise). The sizing confirms it could not have mattered anyway: even with the column wrong
+> in the most extreme direction, scaling the focused unit's whole rate to the largest live
+> column (350) covers **≤22.4%** of iron sweep's measured generation shortfall (3.35 vs
+> 14.94 gauge/s) and **≤12.6%** of T5's (3.27 vs 26.03) — ceilings, because skill-gen does not
+> scale with the focus multiplier. Committed instrument:
+> `npx tsx scripts/battery/fb-count-matrix.ts --focus-columns` (`auditFocusColumns` + the
+> roster-wide `focusColumnCensus` in `scripts/battery/fb-count-matrix.ts`), pinned by
+> `scripts/tests/battery/focus-columns.test.ts`. The census surfaced one documented benign
+> source disagreement — `raven` (characters.json multiplier 0 vs gauge row 250; the engine's
+> fallback resolves her to the measured 250 family, DECISIONS 2026-07-29 step-7) — and the
+> four no-gauge-row 350 carriers (belorta/n102/yan/yuni), who seat no comp and ride the same
+> datamined column + owner-confirmed rule as alice. Nothing enacted; nothing to enact.
+
 ⚠ **Re-scoped.** The obvious version of this item — "unfocused charge units are missing the
 full-charge bonus" — is **already refuted by measurement** (see the settled list above). Do not run
 that. What remains is the _focused_ side's per-unit value — and a 2026-08-13 review found even that

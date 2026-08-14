@@ -174,6 +174,12 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
   closes ~12% of T5's cycle gap — real but not sufficient, and footage-gated. Instrument:
   `npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources`, pinned by
   `scripts/tests/battery/gauge-source-census.test.ts`; the record lives in the same handoff, item 2.
+  **A third candidate has since been EXCLUDED (2026-08-14):** a wrong per-unit focus-multiplier
+  column — all four focused charge units (`maxwell`, `anis-star` ×2, `scarlet-black-shadow`)
+  resolve to MEASURED columns via `characters.json` `chargeMultiplier`, and even the most
+  extreme wrong column (350) covers ≤22.4% (iron sweep) / ≤12.6% (T5) of the measured
+  shortfall. Instrument: `npx tsx scripts/battery/fb-count-matrix.ts --focus-columns`, pinned
+  by `scripts/tests/battery/focus-columns.test.ts`; the record lives in the same handoff, item 3.
 - Passing comps are not shown, so the claim "`N6` passes because it has ~2 cycles of slack rather
   than correct tempo" is **not** demonstrated here. Add the passing comps to the script's `OFF` list
   to test it.
