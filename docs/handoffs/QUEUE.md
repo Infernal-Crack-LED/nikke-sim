@@ -135,7 +135,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    Full-Burst-duration lower bound (≥8.87s) leaves only 0.40–0.53s unexplained by "the real Full Burst
    is shorter than the modeled 10s", below the pre-committed 0.6s margin — so the refill error is a
    RANGE ([0.52, 1.66] s/cycle), not a value, and nothing was enacted.
-   - **THE NEXT MEASUREMENT, and it is small:** read the real Full Burst duration off a visual that
+   - ⛔ **The framing changed 2026-08-13 (owner ruling): do NOT chase the cycle-time difference.**
+     Burst gauge is generated per HIT; there is no per-second gain and no timer that opens a chain, so
+     a "~1.65s/cycle" figure is a symptom in units the game does not have and there is no time
+     constant to change. Converted into the quantity that can be wrong, the sim feeds the bar **61%
+     (iron sweep) / 50% (T5)** of what the filmed fights require. **The open thread is whether burst
+     GENERATION is computed correctly** — four scoped investigations, one per session, in
+     [2026-08-13-burst-generation-investigation-plan.md](2026-08-13-burst-generation-investigation-plan.md):
+     (1) refill-window starvation from post-Full-Burst reload state, (2) missing non-bullet sources,
+     (3) the focused charge multiplier's per-unit column, (4) whether multi-hit weapons credit gauge
+     per landed hit or per trigger. Run them in that order, do not bundle.
+   - **A SEPARATE small measurement still open:** read the real Full Burst duration off a visual that
      does NOT share the drain bar's under-render — the FB screen border / cut-in vignette, or a
      buff-icon timer — on either recording already on disk. **One clean "real FB ≈ 10s" converts this
      to H1 CONFIRMED on the already-measured gap** and unblocks a proposal; "≈8.9s" hands most of the
