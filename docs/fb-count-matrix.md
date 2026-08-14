@@ -108,12 +108,10 @@ mechanical floor (Full Burst + 0.5s pre-B1 + chain span), required rate = one ba
 **Only these two comps can be converted** — the other seven have no filmed cycle, so no generation
 requirement can be derived for them. Nothing here extrapolates onto them.
 
-**The shortfall is large and robust; the exact percentage is not.** Both figures assume the real Full
-Burst is exactly 10s. It is only bounded at ≥8.87s (`docs/probe-runs.md`), and a shorter real Full
-Burst lengthens the real refill and shrinks the shortfall — at 9.4s the two read 74% and 61%. Under
-every value in the bounded range the sim under-feeds the bar substantially, so **"the sim is missing
-a large fraction of burst generation" survives the uncertainty even though "it generates 61%" does
-not.**
+**The percentages are no longer hedged.** The 10s Full Burst both figures assume is an owner ruling
+(2026-08-14, DECISIONS): **Full Burst is exactly 10s unless an ability extends or shortens it**, so
+the old ≥8.87s footage bound no longer softens the conversion — the sim generates **61% / 50%** of
+what the two filmed fights require, and the whole gap is burst generation.
 
 ⇒ **The open investigation is whether burst generation is computed correctly** — per-shot values,
 shots actually landed, and any source not being counted — not cycle timing.

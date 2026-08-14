@@ -170,12 +170,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      and goes back to the owner rather than into a fifth speculative item.** Live residue: the
      U28 `skillGauge` divisor residual (~12% of T5's cycle gap, footage-gated), and the separate
      real-Full-Burst-duration measurement below.
-   - **A SEPARATE small measurement still open:** read the real Full Burst duration off a visual that
-     does NOT share the drain bar's under-render — the FB screen border / cut-in vignette, or a
-     buff-icon timer — on either recording already on disk. **One clean "real FB ≈ 10s" converts this
-     to H1 CONFIRMED on the already-measured gap** and unblocks a proposal; "≈8.9s" hands most of the
-     gap to Full-Burst duration instead. Instrument to extend: `scripts/probe/cycle-table.ts` +
-     `scan.ts --cycle-table` (committed, fixture-pinned).
+   - ~~The real-Full-Burst-duration measurement~~ **CLOSED 2026-08-14 by owner ruling — dead end,
+     do not measure: Full Burst is EXACTLY 10s unless an ability extends or shortens it**
+     (DECISIONS 2026-08-14). That converts the tempo gap to H1 CONFIRMED at the point estimates —
+     the sim feeds the bar **61% (iron sweep) / 50% (T5)** of required, all of it GENERATION — and
+     sharpens a contradiction: iron sweep's five SRs carry measured per-shot values, measured
+     focus/unfocused multipliers, and zero gauge kit lines, yet the real fight generates ~38.6
+     gauge/s where those values produce 23.7. Some settled premise breaks in TEAM context, or a
+     source with no sim primitive exists.
+   - **The open next measurement (PRIMARY, no new footage): read the refill-window FILL-TRACE
+     shape** — real gauge/s + step structure (many-small-steps ⇒ more hits than modeled;
+     bigger-steps ⇒ per-hit credit larger in team; steps-with-no-sim-counterpart ⇒ unmodeled
+     source; early-full ⇒ bar/threshold premise) — on the two recordings already on disk.
+     In flight 2026-08-14 via `/scientific-method`. Ranked avenue list + hypothesis classes:
+     [2026-08-14-burst-generation-remaining-avenues.md](2026-08-14-burst-generation-remaining-avenues.md).
+     Instrument to extend: `scripts/probe/scan.ts` + `cycle-table.ts` (committed, fixture-pinned).
    - Generality is bounded: both recordings are `liberalio` comps and it appears in zero passing
      comps, so it is perfectly confounded. Repeat on the `liberalio`-free shortfall comp
      `misc B3s (run I order)` (sim 12 vs measured 13) before claiming an engine-general error.
