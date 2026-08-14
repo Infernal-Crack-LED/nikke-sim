@@ -79,6 +79,13 @@ findable modeling error, not a timing subtlety. It is robust to the Full-Burst-d
 > `scripts/battery/fb-count-matrix.ts`), pinned by `scripts/tests/battery/refill-starvation.test.ts`.
 > Team-wide ≥0.9s silences inside 2 windows per comp are the boss unhittable transitions, not
 > reload starvation. Nothing enacted; nothing to enact.
+>
+> **Out-of-scope observation (P3 verifier, filed not fixed — `src/engine/**` is protected):** the
+> FSM comment at `sim.ts:3743-3745` still claims the fight-start deploy delay is "Default 0 → this
+> never triggers", contradicting the constant at `sim.ts:62` (`ENV.FIGHTDELAY ?? 0.133` → ~8f,
+> LANDED 2026-07-21). The code is authoritative; the comment is stale and needs an owner-approved
+> one-line touch. It does not affect this audit: the delay cancels in the reconstruction check
+> (both `gaugeBuildTimeSec` and the first-fill span count it).
 
 **Run this one first.** It is the only candidate that is invisible to every existing check by
 construction, and it needs no footage.
