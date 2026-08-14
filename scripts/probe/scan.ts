@@ -44,6 +44,12 @@ import {
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  buildCycleTable,
+  fbDurationLowerBound,
+  steadyStatePeriods,
+} from './cycle-table.js';
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PY = join(HERE, '.venv', 'bin', 'python3');
 const WORKER = join(HERE, 'scan-frames.py');
@@ -314,6 +320,21 @@ const gaps = confirmed
   .slice(1)
   .map((c, i) => Math.round((c.videoT - confirmed[i].videoT) * 10) / 10);
 
+// ---- --cycle-table: per-cycle burst tempo decomposition (guards 3a/3b) ----
+// Off by default: it re-derives every window END from the raw fill trace, which CORRECTS two
+// `scan-frames.py` defects (late starts from cut-in occlusion, tails stitched on by GAP_TOL) but
+// deliberately does NOT change the FB counts this scanner is 8/8-validated on. See cycle-table.ts.
+const cycleTable = flags['cycle-table'] === 'true';
+const frames = (raw.gauge?.frames ?? []).map((f) => ({
+  videoT: f.t,
+  fill: f.fill,
+}));
+const cycleRows = cycleTable
+  ? buildCycleTable({ windows, chains, frames })
+  : null;
+const cycleBound = cycleRows ? fbDurationLowerBound(cycleRows) : null;
+const cycleSteady = cycleRows ? steadyStatePeriods(cycleRows) : null;
+
 const result = {
   video,
   fps,
@@ -344,6 +365,13 @@ const result = {
   // register a column, so a nominal 10s window reads ~8.2s. Useful for RELATIVE comparison
   // (an FB extension shows as a longer window), never as an absolute duration measurement.
   fullWindows: windows,
+  cycleTable: cycleRows
+    ? {
+        rows: cycleRows,
+        fbDurationLowerBound: cycleBound,
+        steadyState: cycleSteady,
+      }
+    : null,
   nukeEvents: (raw.nuke?.events ?? []).map((e) => ({
     videoT: e.t,
     fightT: fightT(e.t),
@@ -409,6 +437,30 @@ if (result.nukeEvents.length) {
 if (expect != null) {
   console.log(
     `  ${confirmed.length === expect ? 'PASS' : 'FAIL'} — expected ${expect}, scanned ${confirmed.length}`
+  );
+}
+
+if (cycleRows && cycleBound && cycleSteady) {
+  console.log('\n  [cycle-table] per-cycle burst tempo (guards 3a/3b applied)');
+  console.log(
+    '   i  fbStart   period    ladder  fb->s1   nomDur  corrDur  g3aRes  Q'
+  );
+  for (const r of cycleRows) {
+    const f = (v: number | null, w: number, d = 3) =>
+      (v == null ? '–' : v.toFixed(d)).padStart(w);
+    console.log(
+      `  ${String(r.index).padStart(2)}  ${f(r.fbStart, 7)}  ${f(r.period, 7)}  ${f(r.ladder, 7)}  ${f(r.fbToNextStage1, 6)}  ${f(r.nominalDuration, 6, 2)}  ${f(r.correctedDuration, 7)}  ${f(r.guard3aResidual, 6)}  ${r.qualifies ? 'Q' : '.'}${r.tailStitched ? '  ⚠tail-stitched' : ''}`
+    );
+  }
+  console.log(
+    `  steady-state period (middle 60%, n=${cycleSteady.periods.length}): mean ${cycleSteady.mean.toFixed(3)}s  median ${cycleSteady.median.toFixed(3)}s  sd ${cycleSteady.sd.toFixed(3)}s`
+  );
+  console.log(
+    `  FB-duration LOWER BOUND ${cycleBound.bound?.toFixed(3) ?? '–'}s (cycle ${cycleBound.cycle ?? '–'}; ` +
+      `${cycleBound.qualifyingCycles.length} qualified, ${cycleBound.excludedCycles.length} excluded by guard 3a)`
+  );
+  console.log(
+    '  ⚠ the bound is a LOWER BOUND on Full Burst duration, never a duration measurement — the bar under-renders.'
   );
 }
 
