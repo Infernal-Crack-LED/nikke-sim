@@ -164,7 +164,16 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
   `npx tsx scripts/battery/fb-count-matrix.ts --refill-starvation`, pinned by
   `scripts/tests/battery/refill-starvation.test.ts`; the record lives in
   [handoffs/2026-08-13-burst-generation-investigation-plan.md](handoffs/2026-08-13-burst-generation-investigation-plan.md)
-  item 1.
+  item 1. **A second candidate has since been EXCLUDED as a primary cause (2026-08-14):**
+  missing/mis-scoped non-bullet gauge sources — the field-form census of every impact kind vs the
+  emission map is clean (every site measured or owner-ruled), the non-emitting kinds
+  (`storedHit` releases, `stackedNuke`) contribute ZERO on all nine comps by construction, and
+  non-damage skill applications land ~nothing fresh inside the refill windows. Its one live lever
+  is the `skillGauge` ÷hitsPerShot divisor for hitsPerShot > 1 (U28 residual): `anis-star`'s
+  labeled battery-3-A3 solo fixture EXCLUDES the shipped halved reading, and resolving it her way
+  closes ~12% of T5's cycle gap — real but not sufficient, and footage-gated. Instrument:
+  `npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources`, pinned by
+  `scripts/tests/battery/gauge-source-census.test.ts`; the record lives in the same handoff, item 2.
 - Passing comps are not shown, so the claim "`N6` passes because it has ~2 cycles of slack rather
   than correct tempo" is **not** demonstrated here. Add the passing comps to the script's `OFF` list
   to test it.

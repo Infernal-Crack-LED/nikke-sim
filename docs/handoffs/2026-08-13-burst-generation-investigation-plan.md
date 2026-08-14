@@ -134,6 +134,59 @@ generation shortfall is not licence to retune them.
 
 ## Item 2 — Is any non-bullet gauge source missing or mis-scoped?
 
+> **RESOLVED 2026-08-14 — census clean for comp-moving sources; one zero-contribution FINDING,
+> one fixture-conflicting magnitude question (tracked, not enacted).** The audit ran as
+> specified: a field-form census of `EffectDef` kinds vs the gauge-emission map
+> (`GAUGE_KIND_CENSUS` — compile-time exhaustive over the union; every override file walked at
+> runtime, unknown kinds throw), then a dynamic census of all nine off-count comps with the
+> event tap, partitioning skill/burst damage instances and buff applications into UNLOCKED
+> regions ([0, first gauge-full) + each [FB-end, next gauge-full) refill window) vs the
+> chain + Full-Burst lock. Committed instrument:
+> `npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources`, pinned by
+> `scripts/tests/battery/gauge-source-census.test.ts`. Findings:
+>
+> 1. **Emission map CLEAN.** Every emission site is measured or owner-ruled: `flatDamage`
+>    (maiden rider anchor), `dot` (wiki3 Haran), `hitRepeat` (owner D4 2026-08-10; ⚑ the
+>    specific mechanic is unmeasured but its sole carrier `emilia` seats no comp), the U28
+>    `extraHitDamagePct` rider (encoded 2026-08-13, bounded), `fillGauge` (chain-lock ruling
+>    2026-07-30), `shotGauge` (datamine + solo anchors; real weapon swaps no-gauge, ruling
+>    2026-08-13). Nothing emits that lacks a ruling behind it.
+> 2. **FINDING per the decision rule — `stackedNuke` (Maiden:IR MP) deals its impact with no
+>    `skillGauge` and no ruling behind the omission** (unlike its `storedHit` sibling, whose
+>    no-emission carries the owner 2026-08-04 ruling in code comments). Contribution is ZERO by
+>    construction — its only trigger is `burstCast`, which always runs inside the chain lock —
+>    and its sole carrier (`maiden-ice-rose`) seats none of the nine comps. Reported, not
+>    enacted; a one-line comment belongs on the call site in a gated pass (`src/engine/**` is
+>    protected).
+> 3. **Non-emitting kinds contribute ZERO on all nine comps** — the dynamic half is the proof:
+>    the only seated carrier is `rapi-red-hood` (`storedHit`, N1), whose releases are FB-locked
+>    by construction (her 7 unlocked skill impacts are the co-authored `flatDamage` attach
+>    rider). `storedHit` releases, `stackedNuke`, and the Pierce double-hit all land exclusively
+>    inside the lock or ride an already-counted trigger.
+> 4. **NEW EVIDENCE on the tracked divisor question (U28 residual — the `skillGauge` ÷hitsPerShot
+>    for hitsPerShot > 1 is UNVERIFIED).** The census sized the exposure and found an existing
+>    labeled fixture in conflict with the shipped divisor: **`anis-star` (RL, hitsPerShot 2)
+>    battery 3 A3 solo measures ~10.7–11.3%/pull; the shipped model generates 8.9%/pull**
+>    (700 shot + 140 rider halved, ×1.06 aura) — BELOW the measured band, while the fixture's
+>    own decomposition (proc = full 280, NOT halved) is compatible. She is the only divisor
+>    carrier on the four comps she seats (T5/T1/misc B3s/N5: +42–59 gauge/fight if resolved her
+>    way ≈ 0.2s refill per cycle on T5 ≈ 12% of its 1.65s cycle gap); `modernia` (MG, hps 2,
+>    1330 unlocked rider impacts on N2: +66.5 gauge/fight) is the other; every SG carrier's
+>    skill hits land exclusively inside the lock (zero exposure). The mechanism (divisor 1 vs
+>    two impacts per pull — her rockets may each carry a proc) stays footage-gated per the U28
+>    residual; this item adds the fixture conflict + sizing, nothing enacted.
+> 5. **Non-damage skill applications (burst-gauge.md §5, _trick_ MEDIUM-confidence rule,
+>    unmodeled) CANNOT explain the filmed shortfalls**: fresh applications inside the steady
+>    refill windows are **0 on iron sweep and 0 on T5** (1 across all 90 steady windows of the
+>    nine comps) — kit activations cluster on `burstCast`/`fullBurstEnter` triggers, which are
+>    locked, so the class's lower bound is exactly zero of the 38.7 / 49.7 gauge-per-cycle
+>    shortfalls. Its upper bound rides buff refreshes, which are not applications in-game.
+>
+> **Net: item 2 supplies none of the 39–50% shortfall** — its one live lever (the divisor)
+> closes ~12% of one comp's cycle gap and is measurement-gated anyway. The remainder of the
+> thread's stop condition is unchanged. Nothing enacted; nothing here changes an engine
+> constant, an override, or a snapshot.
+
 **QUESTION.** Skill hits, DoT ticks and riders all feed the bar via `skillGauge` (sim.ts:1522, one
 target-base hit per impact). Is every source that generates in-game actually emitting, and is
 anything emitting that should not?

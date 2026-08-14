@@ -145,7 +145,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      ~~(1) refill-window starvation from post-Full-Burst reload state~~ **CLOSED 2026-08-14 —
      NOT the cause** (first 1s after FB end delivers 114.7%/140.7% of steady state on the two
      filmed comps — the window is FRONT-LOADED; instrument + fixture committed, plan doc carries
-     the record), (2) missing non-bullet sources,
+     the record), ~~(2) missing non-bullet sources~~ **CLOSED 2026-08-14 — census clean for
+     comp-moving sources** (emission map fully ruled; non-emitting kinds contribute zero on all
+     nine comps; non-damage applications land nothing fresh in refill windows; the one live lever
+     is the `skillGauge` divisor for hitsPerShot > 1, where `anis-star`'s battery-3-A3 fixture
+     EXCLUDES the shipped halved reading — sized at ~12% of T5's cycle gap, footage-gated under
+     the U28 residual; plan doc carries the record),
      (3) the focused charge multiplier's per-unit column, (4) whether multi-hit weapons credit gauge
      per landed hit or per trigger. Run them in that order, do not bundle.
    - **A SEPARATE small measurement still open:** read the real Full Burst duration off a visual that

@@ -628,6 +628,16 @@ natural probe (MG hit rates make per-hit generation obvious), though note her ri
 entirely inside the gauge lock, so the probe must read the BAR, not infer from her rotation. Until
 then: do NOT author a true-flavored rider (the flavor half of the asymmetry is unchanged). The
 "do not re-encode a unit between the two primitives" rule is LIFTED for gauge as of 2026-08-13.
+**2026-08-14 (gauge-source census, investigation-plan item 2):** an EXISTING labeled fixture already
+bears on the divisor — `anis-star` (RL, hitsPerShot 2) battery-3-A3 solo (probe-runs.md) measured
+~10.7–11.3%/pull, and the shipped model generates only 8.9%/pull (700 focused shot + 140 rider
+HALVED by the divisor, ×1.06 aura) — below the band, while the fixture's own decomposition (proc =
+full 280, not halved) is compatible. She seats four of the nine off-count comps (+42–59 gauge/fight
+if resolved her way ≈ 0.2s refill per cycle on T5 ≈ 12% of its cycle gap); `modernia`'s exposure is
++66.5 gauge/fight on N2 (1330 unlocked rider impacts); every SG carrier's skill hits land inside
+the lock (zero exposure). The census nominates anis-star as the mechanism probe: divisor 1 vs TWO
+impacts per pull (her rockets may each carry a proc) — gauge-equivalent resolutions, distinguishable
+only by popup/footage. Instrument: `npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources`.
 → A32 (U13), DECISIONS 2026-07-22 + 2026-08-13.
 
 ### U27 — isabel's mid/midfar SG landing needs a clock-drift-corrected re-derive (split out of U17, 2026-07-22)

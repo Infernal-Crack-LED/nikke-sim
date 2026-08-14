@@ -86,10 +86,13 @@ proc generation + her +6% team fill aura (the synergy aggregate folds these into
 per-shot number, which is why that column was retired). Independent cross-check: nikke-synergy's
 arena calculator lists per-shot values matching our BASE column for snipers/rifles/MGs
 (jill 1.1 = 110, takina 2.8 = 280, moran 0.25 = 25, crown 0.05 = 5), and its
-`special_burst_gauge` annotations catalogue per-unit skill-generation quirks we don't
-yet model (Ein's orb adds 560 every ~2.8s; Helm's kit adds a fixed 1,431; Liberalio and
-Snow White: Heavy Arms have per-shot-sequence bonuses) — likely where Ein's current
-0.7x residual lives. The blablalink/synergy-API `burstGaugePerShot` column was **dropped as a
+`special_burst_gauge` annotations catalogue per-unit skill-generation quirks — three of the
+four are now MODELED (gauge-source census 2026-08-14, investigation-plan item 2): Ein's orb adds
+560 every ~2.8s — ein.json encodes it as a zero-damage permanent DoT whose ticks drive
+`skillGauge`; Helm's kit adds a fixed 1,431 — her `flatPerTrigger` row; Liberalio's per-shot-
+sequence bonus — §7's ×6. Snow White: Heavy Arms' burst-fire pattern (~24 generating hits per 3s)
+remains the unmodeled one (U11c). Ein's open 0.7x team-fight residual (open-questions U8) is
+therefore no longer attributable to the orb by default. The blablalink/synergy-API `burstGaugePerShot` column was **dropped as a
 gauge source** — its semantics vary per unit (helm's 5.6 is her TARGET value, takina's
 2.8 is her BASE, trina's 14.4 is her target ×2, a2's 15.6 matches nothing datamined).
 

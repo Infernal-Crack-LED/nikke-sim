@@ -26,15 +26,24 @@
 // hand; `resolve()` throws rather than silently simming a team nobody recorded.) The single
 // deliberate exception is documented at its call site.
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 
 import type { SimResult } from '../../src/engine/sim.js';
+import type { EffectDef } from '../../src/skills/types.js';
+import { loadOverride } from '../../src/skills/overrides-node.js';
 import type { DataFile, SimEvent } from '../../src/types.js';
 import { COMPS, run } from '../experiment.js';
 
 const data: DataFile = JSON.parse(
   readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8')
 );
+
+const gaugeTable = JSON.parse(
+  readFileSync(
+    new URL('../../data/gauge-per-shot.json', import.meta.url),
+    'utf8'
+  )
+) as Record<string, { targetPerTrigger?: number; flatPerTrigger?: number }>;
 
 const FIGHT_SEC = 180;
 /** gauge-full -> B1 cast (`PRE_B1_GAP_FRAMES`, 30f). Subtracted to recover the refill's true end. */
@@ -718,7 +727,670 @@ export function auditRefillStarvation(): RefillStarvationReport[] {
   });
 }
 
-// The matrix + audit run only on direct CLI invocation — vitest imports `refillStarvation`
+// ============================================================================
+// NON-BULLET GAUGE-SOURCE CENSUS — item 2 of the 2026-08-13 burst-generation
+// investigation plan (docs/handoffs/2026-08-13-burst-generation-investigation-plan.md).
+// Run it: npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources
+//
+// QUESTION: skill hits, DoT ticks and riders all feed the bar via `skillGauge()` — one
+// target-base hit per impact. Is every source that generates in-game actually emitting,
+// and is anything emitting that should not? The solo gauge anchors are both BULLET
+// measurements on charge weapons, so a whole effect kind missing from the emission map is
+// invisible to them and to damage tests (gauge and damage are separate channels). The
+// 2026-08-13 U28 pass already fixed one such asymmetry (`extraHitDamagePct`) and bounded
+// it board-inert; this census covers the REMAINING impact kinds.
+//
+// METHOD (field-form census, per the census-holes lesson — make unrecognised input LOUD):
+//   PART 1 (static): `GAUGE_KIND_CENSUS` is a `Record<EffectDef['kind'], …>` — exhaustive
+//   over the schema union at COMPILE time, so a new effect kind added to
+//   `src/skills/types.ts` fails the typecheck here. Every override file is then walked at
+//   RUNTIME and each encountered kind must resolve in the record, so unrecognised input
+//   throws instead of passing silently. `ENGINE_IMPACT_PATHS` covers the impact paths that
+//   are not effect kinds (weapon pulls, the Pierce double-hit, the extraHitDamagePct rider).
+//   PART 2 (dynamic): each of the nine off-count comps runs with the event tap. Skill/burst
+//   damage instances and buff applications are partitioned into UNLOCKED regions —
+//   [0, first gauge-full) and each [FB-end, next gauge-full) refill window — vs the
+//   chain + Full-Burst lock where `addGauge` swallows the emission. The partition is the
+//   observable: a no-emission kind whose impacts can never land unlocked contributes exactly
+//   zero, and any future engine change that leaks one out of the lock moves the pinned counts
+//   (scripts/tests/battery/gauge-source-census.test.ts).
+// ============================================================================
+
+type GaugeEmission =
+  | 'skillGauge-per-impact'
+  | 'shotGauge-per-pull'
+  | 'direct-gauge'
+  | 'no-emission';
+
+type GaugeRuling =
+  'measured' | 'owner-ruling' | 'unmeasured-precedent' | 'unexamined' | 'n/a';
+
+export interface KindCensusRow {
+  /** the kind produces at least one damage impact on the boss */
+  impact: boolean;
+  emission: GaugeEmission;
+  ruling: GaugeRuling;
+  /** file:line anchors + the measurement / ruling behind the row */
+  basis: string;
+}
+
+// Exhaustive over EffectDef['kind'] — a new kind in types.ts breaks this literal at
+// typecheck (the LOUD half of the census). Line numbers verified 2026-08-14.
+export const GAUGE_KIND_CENSUS: Record<EffectDef['kind'], KindCensusRow> = {
+  flatDamage: {
+    impact: true,
+    emission: 'skillGauge-per-impact',
+    ruling: 'measured',
+    basis:
+      'sim.ts:2693 (instant) + sim.ts:4008 (delaySec landing); maiden-ice-rose rider anchor — 12.55%/pull = 910 weapon + 364 flat rider (burst-gauge.md §6); owner D4 2026-08-10',
+  },
+  hitRepeat: {
+    impact: true,
+    emission: 'skillGauge-per-impact',
+    ruling: 'owner-ruling',
+    basis:
+      'sim.ts:2730; owner D4 2026-08-10 (a function-damage instance that lands SHOULD generate); ⚑ the %-of-hit repeat itself is UNMEASURED — the engine follows the function-damage precedent (types.ts kind note); sole carrier emilia, seats no off-count comp',
+  },
+  dot: {
+    impact: true,
+    emission: 'skillGauge-per-impact',
+    ruling: 'measured',
+    basis:
+      'sim.ts:4034 on each tick; wiki3 Haran S1 DoT 290/tick ≈ her SR base (burst-gauge.md §5); emission is at TICK time, so a DoT started in-FB keeps feeding after FB end',
+  },
+  storedHit: {
+    impact: true,
+    emission: 'no-emission',
+    ruling: 'owner-ruling',
+    basis:
+      'releases ONLY during Full Burst — the FB-entry batch (sim.ts:3283) and the instantInFb loop (sim.ts:3984), both commented under the owner 2026-08-04 ruling that in-FB generation is impossible; the attach itself is bookkeeping (its co-authored flatDamage is the emitting impact). Sole carrier rapi-red-hood',
+  },
+  stackedNuke: {
+    impact: true,
+    emission: 'no-emission',
+    ruling: 'unexamined',
+    basis:
+      'sim.ts:3089 deals the impact with NO skillGauge and no ruling comment — but the contribution is zero by construction: its only trigger is burstCast ⇒ stage ≠ 0 ⇒ addGauge (sim.ts:1464) is locked. Sole carrier maiden-ice-rose; seats none of the nine off-count comps. FINDING per the plan decision rule — reported, not enacted',
+  },
+  weaponSwap: {
+    impact: false,
+    emission: 'shotGauge-per-pull',
+    ruling: 'owner-ruling',
+    basis:
+      'no impact of its own — swap shots route through firePull → shotGauge (sim.ts:4282); a REAL weapon change generates NO gauge (owner 2026-08-13, the u.swap guard in shotGauge sim.ts:1489); same-weapon flavor swaps keep feeding',
+  },
+  fillGauge: {
+    impact: false,
+    emission: 'direct-gauge',
+    ruling: 'owner-ruling',
+    basis:
+      'sim.ts:2810; discrete "Fills Burst Gauge X%" respects the same chain + FB lock as continuous generation (owner 2026-07-30; burst-gauge.md §5)',
+  },
+  buff: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'stat grant; no boss impact',
+  },
+  resource: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'owner resource-pool bookkeeping',
+  },
+  heal: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'recovery events only',
+  },
+  shield: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'shield events only',
+  },
+  targetStatus: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'boss status window only',
+  },
+  burstEligibility: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'rotation eligibility only',
+  },
+  burstFirst: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'cast-order only',
+  },
+  reenterStage: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'stage hold only',
+  },
+  advantageVs: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'element tag only',
+  },
+  burstCdr: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'cooldown reduction only',
+  },
+  escalating: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis:
+      'wrapper — deals nothing itself; its steps are censused recursively by the runtime walk',
+  },
+  fullBurstExtend: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'Full-Burst duration only',
+  },
+  unlimitedAmmo: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'ammo economy only',
+  },
+  consumeAmmo: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'ammo economy only',
+  },
+  gainPierce: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'pierce tag only',
+  },
+  convertExcess: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'derived-stat conversion only',
+  },
+  addStack: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'stack bookkeeping only',
+  },
+  instantReload: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'ammo economy only',
+  },
+  stun: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'no boss impact modeled',
+  },
+  ignored: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis:
+      'offline-parser-only; validate-overrides rejects it in a shipped file',
+  },
+  unsupported: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis:
+      'offline-parser-only; validate-overrides rejects it in a shipped file',
+  },
+};
+
+// Impact paths that are NOT effect kinds — the rest of the emission map.
+export const ENGINE_IMPACT_PATHS: {
+  path: string;
+  emission: GaugeEmission;
+  ruling: GaugeRuling;
+  basis: string;
+}[] = [
+  {
+    path: 'normal weapon pull (firePull)',
+    emission: 'shotGauge-per-pull',
+    ruling: 'measured',
+    basis:
+      'sim.ts:4282; datamined CharacterShotTable + the two solo anchors (burst-gauge.md §6); the SG hitFraction question belongs to plan item 4',
+  },
+  {
+    path: 'Pierce double-hit (second instance of the same pull)',
+    emission: 'no-emission',
+    ruling: 'measured',
+    basis:
+      'sim.ts:4272; gauge is per TRIGGER PULL (burst-gauge.md §1), validated at roster scale by the rl3 cross-check (§7) — one pull, one emission',
+  },
+  {
+    path: 'extraHitDamagePct rider (summed stat, one impact per pull)',
+    emission: 'skillGauge-per-impact',
+    ruling: 'measured',
+    basis:
+      'sim.ts:4333; U28 encoded 2026-08-13 under the maiden anchor equivalence; board-inert BY MECHANISM per carrier (u28-gauge-ab.ts --lock-census)',
+  },
+];
+
+/** The `skillGauge()` value for one impact of this unit — mirrors sim.ts:1528 exactly. */
+export function skillImpactGauge(slug: string): number {
+  const c = data.characters[slug];
+  const row = gaugeTable[slug];
+  const per =
+    (row?.targetPerTrigger ?? CENSUS_GAUGE_MODAL_BY_WEAPON[c.weapon] ?? 40) /
+    100;
+  return per / (c.weapon === 'SG' ? 10 : c.hitsPerShot || 1);
+}
+
+// mirror of sim.ts's fallback table (no-row units take their weapon-class modal)
+const CENSUS_GAUGE_MODAL_BY_WEAPON: Record<string, number> = {
+  AR: 40,
+  SMG: 20,
+  SG: 400,
+  SR: 560,
+  RL: 280,
+  MG: 10,
+};
+
+/** Impact kinds that produce a boss impact but emit NO gauge. */
+export const NO_EMIT_KINDS: EffectDef['kind'][] = ['storedHit', 'stackedNuke'];
+/** Impact kinds that emit but whose specific mechanic never had its own measurement. */
+export const UNMEASURED_EMIT_KINDS: EffectDef['kind'][] = ['hitRepeat'];
+
+function walkEffects(
+  effects: EffectDef[],
+  visit: (kind: EffectDef['kind']) => void
+) {
+  for (const e of effects) {
+    visit(e.kind);
+    if (e.kind === 'escalating') {
+      walkEffects(e.steps, visit);
+    }
+  }
+}
+
+const OVERRIDE_SLOTS = ['skill1', 'skill2', 'burst'] as const;
+
+/** Visit every effect kind in an override file (all slots, escalating recursed). */
+function walkOverride(
+  o: NonNullable<ReturnType<typeof loadOverride>>,
+  visit: (kind: EffectDef['kind']) => void
+) {
+  for (const slot of OVERRIDE_SLOTS) {
+    for (const b of o[slot] ?? []) {
+      walkEffects(b.effects ?? [], visit);
+    }
+  }
+}
+
+export interface KindUsage {
+  kind: EffectDef['kind'];
+  /** carriers across src/skills/overrides/ (sorted slugs) */
+  slugs: string[];
+}
+
+/**
+ * Runtime half of the field-form census: walk EVERY override file and require each
+ * encountered effect kind to resolve in GAUGE_KIND_CENSUS — unrecognised input throws
+ * instead of passing silently. Returns the kind → carrier map.
+ */
+export function censusOverrideKinds(): KindUsage[] {
+  const dir = new URL('../../src/skills/overrides/', import.meta.url);
+  const files = readdirSync(dir).filter((f) => f.endsWith('.json'));
+  if (files.length === 0) {
+    throw new Error('gauge-source census: no override files found');
+  }
+  const usage = new Map<EffectDef['kind'], Set<string>>();
+  for (const f of files) {
+    const slug = f.replace(/\.json$/, '');
+    const o = loadOverride(slug);
+    if (!o) {
+      throw new Error(`gauge-source census: ${slug} did not load`);
+    }
+    walkOverride(o, (kind) => {
+      if (!(kind in GAUGE_KIND_CENSUS)) {
+        throw new Error(
+          `gauge-source census: effect kind "${kind}" (${slug}) has no classification — ` +
+            'add it to GAUGE_KIND_CENSUS before anything else reads this file'
+        );
+      }
+      if (!usage.has(kind)) {
+        usage.set(kind, new Set());
+      }
+      usage.get(kind)!.add(slug);
+    });
+  }
+  return [...usage.entries()]
+    .map(([kind, slugs]) => ({ kind, slugs: [...slugs].sort() }))
+    .sort((a, b) => a.kind.localeCompare(b.kind));
+}
+
+export interface DivisorExposure {
+  slug: string;
+  weapon: string;
+  /** the live skillGauge divisor: hitsPerShot (10 for SG) */
+  divisor: number;
+  unlockedImpacts: number;
+  /** gauge shipped: impacts × per/divisor */
+  gaugeShipped: number;
+  /** gauge under the divisor-1 hypothesis (the U28-residual upper bound) */
+  gaugeIfDivisorOne: number;
+}
+
+export interface GaugeSourceCompReport {
+  comp: string;
+  slugs: string[];
+  /** steady-state refill windows (excludes the fight-opening first fill) */
+  steadyWindows: number;
+  /** skill/burst damage instances landing UNLOCKED — one skillGauge each, reaching the bar */
+  unlockedImpacts: number;
+  /** skill/burst instances inside the chain + FB lock — emitted, swallowed by addGauge */
+  lockedImpacts: number;
+  perUnitUnlockedImpacts: Record<string, number>;
+  /** seated carriers of the no-emission impact kinds (storedHit / stackedNuke) */
+  noEmitCarriers: { slug: string; kinds: EffectDef['kind'][] }[];
+  /** seated carriers of unmeasured-emission kinds (hitRepeat) */
+  unmeasuredEmitCarriers: { slug: string; kinds: EffectDef['kind'][] }[];
+  /** hitsPerShot > 1 carriers with unlocked skill impacts — the skillGauge divisor question */
+  divisor: DivisorExposure[];
+  /** buff applications inside the steady refill windows (proxy for non-damage skill applications) */
+  buffAppliesSteadyAll: number;
+  buffAppliesSteadyFresh: number;
+  /** buff applications in the fight-opening first fill (reported, not per-cycled) */
+  buffAppliesFirstFill: number;
+  /** buff applications with no caster (item/doll-origin — excluded from the gauge estimate) */
+  buffAppliesNullCaster: number;
+  /**
+   * Estimated gauge per steady cycle if every non-damage skill APPLICATION generated the
+   * caster's flat per-impact value (burst-gauge.md §5, note.com/_trick_, MEDIUM confidence,
+   * unmodeled). lower = fresh applications only; upper = all incl. refreshes. Proxy biases
+   * documented at print: heal/shield/status applications uncounted (low), stack refreshes
+   * overcount (high).
+   */
+  nonDmgAppGaugePerCycle: { lower: number; upper: number };
+  /** filmed comps only: the measured generation shortfall these estimates are held against */
+  shortfallRateGaugePerSec: number | null;
+  shortfallPerCycleGauge: number | null;
+}
+
+/**
+ * Run the non-bullet gauge-source census over ALL NINE off-count comps. Exported so the
+ * vitest fixture can pin the decision quantities without shelling out.
+ */
+export function auditGaugeSources(): GaugeSourceCompReport[] {
+  const rows = buildRows();
+  return OFF.map((off) => {
+    const comp = resolve(off);
+    const events: SimEvent[] = [];
+    const res = run(comp, {}, undefined, (ev) => events.push(ev));
+
+    // ---- unlocked regions: [0, first gauge-full) + each [FB end, next gauge-full).
+    const fbEnds: number[] = [];
+    const b1Casts: number[] = [];
+    for (const ev of events) {
+      if (ev.kind === 'fullBurstEnd') {
+        fbEnds.push(ev.sec);
+      } else if (ev.kind === 'burstCast' && ev.stage === 1) {
+        b1Casts.push(ev.sec);
+      }
+    }
+    interface Region {
+      start: number;
+      end: number;
+      firstFill: boolean;
+    }
+    const regions: Region[] = [];
+    if (b1Casts.length) {
+      regions.push({ start: 0, end: b1Casts[0] - PRE_B1_SEC, firstFill: true });
+    }
+    for (const s of fbEnds) {
+      const b1 = b1Casts.find((t) => t > s);
+      const end = b1 !== undefined ? b1 - PRE_B1_SEC : FIGHT_SEC;
+      if (end > s) {
+        regions.push({ start: s, end, firstFill: false });
+      }
+    }
+    const steadyWindows = regions.filter((r) => !r.firstFill).length;
+    let ri = 0;
+    const regionAt = (sec: number): number => {
+      while (ri < regions.length && regions[ri].end <= sec) {
+        ri++;
+      }
+      return ri < regions.length && sec >= regions[ri].start ? ri : -1;
+    };
+
+    // ---- single fold over the frame-ordered stream (pointer stays monotonic)
+    const perUnitUnlockedImpacts: Record<string, number> = {};
+    for (const s of comp.slugs) {
+      perUnitUnlockedImpacts[s] = 0;
+    }
+    const divisorHits = new Map<string, number>();
+    let unlockedImpacts = 0;
+    let lockedImpacts = 0;
+    let baSteadyAll = 0;
+    let baSteadyFresh = 0;
+    let baFirstFill = 0;
+    let baNullCaster = 0;
+    let steadyGaugeAll = 0;
+    let steadyGaugeFresh = 0;
+    for (const ev of events) {
+      if (
+        ev.kind === 'damage' &&
+        (ev.bucket === 'skill' || ev.bucket === 'burst')
+      ) {
+        if (regionAt(ev.sec) >= 0) {
+          unlockedImpacts++;
+          perUnitUnlockedImpacts[ev.slug] =
+            (perUnitUnlockedImpacts[ev.slug] ?? 0) + 1;
+          const c = data.characters[ev.slug];
+          if ((c.hitsPerShot ?? 1) > 1) {
+            divisorHits.set(ev.slug, (divisorHits.get(ev.slug) ?? 0) + 1);
+          }
+        } else {
+          lockedImpacts++;
+        }
+      } else if (ev.kind === 'buffApply') {
+        const k = regionAt(ev.sec);
+        if (k < 0) {
+          continue;
+        }
+        if (ev.casterIdx == null) {
+          baNullCaster++;
+          continue;
+        }
+        const caster = res.units[ev.casterIdx];
+        const gv = caster ? skillImpactGauge(caster.slug) : 0;
+        if (regions[k].firstFill) {
+          baFirstFill++;
+        } else {
+          baSteadyAll++;
+          steadyGaugeAll += gv;
+          if (!ev.refresh) {
+            baSteadyFresh++;
+            steadyGaugeFresh += gv;
+          }
+        }
+      }
+    }
+
+    // ---- seated carriers of the special kinds
+    const carriersOf = (
+      wanted: EffectDef['kind'][]
+    ): { slug: string; kinds: EffectDef['kind'][] }[] => {
+      const out: { slug: string; kinds: EffectDef['kind'][] }[] = [];
+      for (const slug of comp.slugs) {
+        const o = loadOverride(slug);
+        const found = new Set<EffectDef['kind']>();
+        if (o) {
+          walkOverride(o, (kind) => {
+            if (wanted.includes(kind)) {
+              found.add(kind);
+            }
+          });
+        }
+        if (found.size) {
+          out.push({ slug, kinds: [...found].sort() });
+        }
+      }
+      return out;
+    };
+
+    const divisor: DivisorExposure[] = [...divisorHits.entries()]
+      .map(([slug, n]) => {
+        const c = data.characters[slug];
+        const row = gaugeTable[slug];
+        const per =
+          (row?.targetPerTrigger ??
+            CENSUS_GAUGE_MODAL_BY_WEAPON[c.weapon] ??
+            40) / 100;
+        const div = c.weapon === 'SG' ? 10 : c.hitsPerShot || 1;
+        return {
+          slug,
+          weapon: c.weapon,
+          divisor: div,
+          unlockedImpacts: n,
+          gaugeShipped: n * (per / div),
+          gaugeIfDivisorOne: n * per,
+        };
+      })
+      .sort((a, b) => b.unlockedImpacts - a.unlockedImpacts);
+
+    const row = rows.find((r) => r.off.name === off.name);
+    const shortfallRateGaugePerSec = row?.required
+      ? row.required.realRate - row.required.simRate
+      : null;
+    const shortfallPerCycleGauge = row?.required
+      ? (row.required.realRate - row.required.simRate) * row.required.realRefill
+      : null;
+
+    return {
+      comp: off.name,
+      slugs: comp.slugs,
+      steadyWindows,
+      unlockedImpacts,
+      lockedImpacts,
+      perUnitUnlockedImpacts,
+      noEmitCarriers: carriersOf(NO_EMIT_KINDS),
+      unmeasuredEmitCarriers: carriersOf(UNMEASURED_EMIT_KINDS),
+      divisor,
+      buffAppliesSteadyAll: baSteadyAll,
+      buffAppliesSteadyFresh: baSteadyFresh,
+      buffAppliesFirstFill: baFirstFill,
+      buffAppliesNullCaster: baNullCaster,
+      nonDmgAppGaugePerCycle: {
+        lower: steadyWindows > 0 ? steadyGaugeFresh / steadyWindows : 0,
+        upper: steadyWindows > 0 ? steadyGaugeAll / steadyWindows : 0,
+      },
+      shortfallRateGaugePerSec,
+      shortfallPerCycleGauge,
+    };
+  });
+}
+
+function printGaugeSources(reports: GaugeSourceCompReport[]) {
+  console.log(
+    '\n===== NON-BULLET GAUGE-SOURCE CENSUS — investigation-plan item 2 =====\n' +
+      'PART 1 — field-form census of effect kinds vs the gauge emission map.\n' +
+      'GAUGE_KIND_CENSUS is exhaustive over EffectDef at compile time; the override walk\n' +
+      'below throws on any kind it does not classify (unrecognised input is LOUD).\n'
+  );
+  const usage = censusOverrideKinds();
+  const byKind = new Map(usage.map((u) => [u.kind, u.slugs]));
+  const kinds = Object.keys(GAUGE_KIND_CENSUS) as EffectDef['kind'][];
+  for (const kind of kinds) {
+    const row = GAUGE_KIND_CENSUS[kind];
+    const carriers = byKind.get(kind) ?? [];
+    if (!row.impact && row.emission === 'no-emission' && !carriers.length) {
+      continue; // inert-and-unused kinds stay out of the print; the record still covers them
+    }
+    console.log(
+      `  ${kind.padEnd(18)} ${'impact:' + (row.impact ? 'YES' : 'no').padEnd(4)} ` +
+        `${row.emission.padEnd(22)} ${row.ruling.padEnd(21)} carriers=${carriers.length}`
+    );
+    console.log(`      ${row.basis}`);
+  }
+  console.log('\n  Impact paths that are not effect kinds:');
+  for (const p of ENGINE_IMPACT_PATHS) {
+    console.log(`  ${p.path.padEnd(48)} ${p.emission.padEnd(22)} ${p.ruling}`);
+    console.log(`      ${p.basis}`);
+  }
+
+  console.log(
+    '\nPART 2 — dynamic census: nine off-count comps, skill/burst impacts + buff applications\n' +
+      'partitioned into UNLOCKED regions ([0, first gauge-full) + each post-FB refill window)\n' +
+      'vs the chain + Full-Burst lock. unlocked = emission reaches the bar; locked = swallowed.\n'
+  );
+  for (const r of reports) {
+    console.log(
+      `\n${'='.repeat(96)}\n${r.comp} — ${r.steadyWindows} steady refill windows`
+    );
+    console.log(
+      `  skill/burst impacts: ${r.unlockedImpacts} unlocked (each one skillGauge, reaching the bar) | ${r.lockedImpacts} locked`
+    );
+    for (const [slug, n] of Object.entries(r.perUnitUnlockedImpacts)) {
+      if (n > 0) {
+        console.log(
+          `      ${slug.padEnd(26)} ${String(n).padStart(5)} unlocked impacts × ${skillImpactGauge(slug).toFixed(3)} gauge`
+        );
+      }
+    }
+    if (r.noEmitCarriers.length) {
+      for (const c of r.noEmitCarriers) {
+        console.log(
+          `  NO-EMIT KIND SEATED: ${c.slug} (${c.kinds.join(', ')}) — releases are FB-locked by construction; zero contribution`
+        );
+      }
+    } else {
+      console.log('  no seated carrier of a no-emission impact kind');
+    }
+    if (r.unmeasuredEmitCarriers.length) {
+      for (const c of r.unmeasuredEmitCarriers) {
+        console.log(
+          `  UNMEASURED-EMIT KIND SEATED: ${c.slug} (${c.kinds.join(', ')})`
+        );
+      }
+    }
+    if (r.divisor.length) {
+      for (const d of r.divisor) {
+        console.log(
+          `  DIVISOR EXPOSURE (U28 residual): ${d.slug} (${d.weapon}, ÷${d.divisor}) — ${d.unlockedImpacts} unlocked impacts; ` +
+            `shipped ${d.gaugeShipped.toFixed(1)} gauge vs ${d.gaugeIfDivisorOne.toFixed(1)} if the divisor were 1 ` +
+            `(+${(d.gaugeIfDivisorOne - d.gaugeShipped).toFixed(1)} over the fight)`
+        );
+      }
+    }
+    console.log(
+      `  non-damage skill APPLICATIONS (proxy: buff applies, unlocked): ` +
+        `${r.buffAppliesSteadyFresh} fresh / ${r.buffAppliesSteadyAll} incl. refreshes across ${r.steadyWindows} steady windows` +
+        ` (+${r.buffAppliesFirstFill} in the first fill, ${r.buffAppliesNullCaster} null-caster excluded)`
+    );
+    console.log(
+      `    estimate if each generated the caster's per-impact value: ` +
+        `${r.nonDmgAppGaugePerCycle.lower.toFixed(1)}–${r.nonDmgAppGaugePerCycle.upper.toFixed(1)} gauge/cycle` +
+        (r.shortfallPerCycleGauge !== null
+          ? `   vs the measured shortfall ${r.shortfallPerCycleGauge.toFixed(1)} gauge/cycle ` +
+            `(${r.shortfallRateGaugePerSec!.toFixed(1)} gauge/s of refill)`
+          : '   (no filmed cycle — no shortfall figure for this comp)')
+    );
+  }
+}
+
+// The matrix + audits run only on direct CLI invocation — vitest imports the audit functions
 // without paying for nine 180s sims (the experiment.ts isMain pattern).
 const isMain = import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
@@ -728,6 +1400,13 @@ if (isMain) {
       console.log(JSON.stringify(reports, null, 2));
     } else {
       printRefillStarvation(reports);
+    }
+  } else if (process.argv.includes('--gauge-sources')) {
+    const reports = auditGaugeSources();
+    if (process.argv.includes('--json')) {
+      console.log(JSON.stringify(reports, null, 2));
+    } else {
+      printGaugeSources(reports);
     }
   } else {
     const rows = buildRows();
