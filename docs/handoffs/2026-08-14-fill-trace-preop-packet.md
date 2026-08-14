@@ -155,3 +155,31 @@ boundary closure) — no outcome is consistent with more than one full explanati
 **What this test CANNOT establish:** per-unit attribution (team-sum trace); absolute low-fill
 levels; anything about SG-seated comps (neither filmed comp seats one); the game's internal
 gauge-full instant (only render-relative offsets).
+
+## D. Revisions executed (pre-op judge verdict: APPROVED-WITH-REVISIONS, 2026-08-14)
+
+- **R1 (coverage denominator pinned).** The ≥50% clean-coverage window-drop rule is computed over
+  the **VISIBLE span (bar-paint → gauge-full)**, not the full FB-end → gauge-full window — the
+  opening blind spot is a structural instrument limit, not a per-window quality failure. Every
+  window additionally reports `visibleFraction = visible span ÷ whole window` so the post-op judge
+  can weigh how much of each window was actually seen.
+- **R2 (bridged increments pre-committed).** An increment that BRIDGES an excluded run (gain-pulse,
+  nonMonotonic, occlusion) — i.e. the delta between the last clean frame before and the first clean
+  frame after — **counts toward the cumulative clean-span rate (endpoint arithmetic, feeds R) but
+  is EXCLUDED from the frame-increment histogram and the surplus-event census**; bridged increments
+  are binned separately and reported with their span lengths. This stops H0b (gain-pulse) from
+  mimicking H-A's upper-quantile signature.
+- **R3 (symmetric closure reporting).** On the CONFIRM branch (median R ≥ 1.3), the deliverable
+  additionally computes what fraction of the measured 1.65s/cycle tempo gap the visible-span
+  surplus (plus any measured boundary corrections) arithmetically recovers. If <50%, the verdict
+  wording is **"in-window under-crediting PRESENT, gap PARTIALLY attributed (X%)"** — never "gap
+  explained".
+
+**Judge risk flags carried into the run:** (i) the ~0.45s pre-B1 correction inside H-E tensions
+the FRAME-MEASURED `PRE_B1_GAP_FRAMES = 30f` (chisato.mov 2026-07-21) — the boundary offset here
+is a logged read against a measured constant, never grounds to refit it, and any future enactment
+needs same-tier frame evidence reconciled with the chisato measurement; (ii) compensating-errors
+rule holds — if H-E wins, any follow-up enactment lands the full measured timeline together;
+(iii) if the optional misc B3s (run I) arm is skipped, the deliverable must NAME the
+`liberalio`-common-to-both-comps confound as live; (iv) the deliverable must cite the instrument
+branch+commit paths so the evidence is re-runnable.
