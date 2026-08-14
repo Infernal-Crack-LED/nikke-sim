@@ -60,11 +60,19 @@ Hypothesis classes the next measurement must discriminate:
    bar. T5 seats two unvalidated families (`cinderella-crystal-wave` MG, `nayuta` SMG). One solo
    gauge-bar recording of an MG or SMG unit validates a whole family — and if H-A is real, a
    TEAM-seated bar read of the same unit sizes the team scaling directly.
-4. **`liberalio` charge-speed-effect immunity (cheap code check, in flight 2026-08-14).** His S2
-   grants "immunity to Increase/Decrease Charge Speed effects"; he seats BOTH filmed comps plus
-   T1 and N3. If the sim applies a team charge-speed buff to his cadence that the game blocks (or
-   the reverse), his gauge/s and damage both move. Findings-only check of override + engine
-   plumbing.
+4. **`liberalio` charge-speed-effect immunity — CHECKED 2026-08-14: LIVE defect in iron sweep
+   (run G), inert in his other three seated comps.** His skill2 is kit-literal ("Immunity to
+   Increase/Decrease Charge Speed effects, continuous"); the override already documents that only
+   his own-buff case is enforced (`excludeSelf`) and **no receiving-side immunity primitive
+   exists** — `sim.ts`'s charge-time formula sums every active `chargeSpeedPct` unconditionally.
+   In iron sweep, `maxwell`'s skill1 (+4.48% charge speed to top-2 static-ATK allies on
+   `fullBurstEnter`) reaches him (confirmed via `DBG_BUFFS`), and an A/B with it zeroed moves him
+   94→92 pulls, 518.9M→494.8M damage — the sim over-credits him ~4.9%, and his sim/real ratio
+   would improve 1.071 → 1.021 if the immunity were enforced. Team FB count unchanged (11 both
+   arms). **Direction note: this runs AGAINST the generation shortfall** — enforcing it lowers
+   sim generation slightly, so it cannot be part of the missing ~39%. Enactment (a receiving-side
+   immunity primitive, engine + schema) is kit-literal → encode + `/code-review` lane, on a
+   worktree, **awaiting owner approval** (proposed in QUEUE).
 5. **`snow-white-heavy-arms` U11c burst-fire quirk** — ~24 generating hits per 3s, documented
    unmodeled (`docs/data/burst-gauge.md` §2), seated in off-count N5. Not a filmed-comp mover but
    a known missing generation source on the off-count list; keep it on the residue ledger.

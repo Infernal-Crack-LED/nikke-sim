@@ -181,10 +181,35 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    - **The open next measurement (PRIMARY, no new footage): read the refill-window FILL-TRACE
      shape** — real gauge/s + step structure (many-small-steps ⇒ more hits than modeled;
      bigger-steps ⇒ per-hit credit larger in team; steps-with-no-sim-counterpart ⇒ unmodeled
-     source; early-full ⇒ bar/threshold premise) — on the two recordings already on disk.
-     In flight 2026-08-14 via `/scientific-method`. Ranked avenue list + hypothesis classes:
+     source; early-full ⇒ bar/threshold premise) — on the recordings already on disk.
+     Ranked avenue list + hypothesis classes:
      [2026-08-14-burst-generation-remaining-avenues.md](2026-08-14-burst-generation-remaining-avenues.md).
-     Instrument to extend: `scripts/probe/scan.ts` + `cycle-table.ts` (committed, fixture-pinned).
+     - **`/scientific-method` step-0 premise gate RAN 2026-08-14 — 3 of 4 premises REFUTED as
+       assumed; the measurement is gated on an INSTRUMENT PHASE (cheap lane) first.** Verifier
+       findings: the tempo-cycle fixtures carry the FB DRAIN bar only (fill ≡ 0 across every
+       refill window — `scan.ts`'s crop does not contain the charging bar); NO team-HUD fill
+       calibration exists (`gauge-fill.py` is solo-validated only, MIS-LOCKS on team HUD — the
+       `alice focused.MP4` 128px sub-lock produced stuck 44–57% reads; low-fill readings are
+       owner-ruled UI artifacts; large-step magnitude carries an unresolved ~1.0–1.3% hot bias
+       — do not enact constants from it); the sim exposes NO per-credit gauge amounts
+       (`DBG_GAUGE` hard-capped at fight-time < 30s, `fillGauge` bypasses `addGauge` and is
+       invisible to every tap/event — verified live: `cinderella-crystal-wave`'s +12 landed
+       inside a T5 refill window unlogged). CONFIRMED: both scanned videos on disk +
+       re-scannable (smoke re-scan reproduced fixture cycles), and **seven of nine off-count
+       comps have recordings** — incl. TWO of the `liberalio`-free `misc B3s (run I order)`
+       (`docs/probes/u8/u8 i vid.mov`, `docs/probes/tb2/tb2 4 vid.MP4`), so the tempo-gap
+       generality gap is closable with existing footage.
+     - **Instrument phase (in flight 2026-08-14, worktree agents; tooling = cheap lane,
+       `verify.sh` + fixtures are the gate):** (a) a TEAM-HUD mode for
+       `scripts/probe/gauge-fill.py` — explicit team-bar lock (~177–185 px, geometry notes in
+       `docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md` §team) + a committed
+       validation fixture scored against sim-INDEPENDENT labels (full-state instants vs the
+       validated chain ladder; window-sum normalization; NEVER against the per-shot table —
+       that is the quantity under test); (b) a committed sim-side per-frame gauge-credit
+       schedule driver (event tap + per-unit constants, endpoint-checked against
+       `gaugeGenerated`, spot-validated by truncated-run `durationSec` diffs after asserting
+       prefix determinism; no engine edit). The pre-op plan goes to the Fable judge only after
+       both instruments carry green fixtures.
    - Generality is bounded: both recordings are `liberalio` comps and it appears in zero passing
      comps, so it is perfectly confounded. Repeat on the `liberalio`-free shortfall comp
      `misc B3s (run I order)` (sim 12 vs measured 13) before claiming an engine-general error.
