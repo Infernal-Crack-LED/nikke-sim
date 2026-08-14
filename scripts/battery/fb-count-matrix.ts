@@ -53,6 +53,9 @@ interface OffComp {
   focusOverride?: string;
   /** measured truth (video-counted) */
   measured: number | [number, number];
+  /** filmed steady-state cycle period, where one exists (docs/probe-runs.md 2026-08-13). Only these
+   *  comps can be converted into a generation requirement — the rest have no measured cycle. */
+  measuredPeriodSec?: number;
   /** how the gate currently absorbs the divergence */
   status: Status;
   note: string;
@@ -77,6 +80,7 @@ const OFF: OffComp[] = [
       'liberalio',
     ],
     measured: [13, 14],
+    measuredPeriodSec: 14.388,
     status: 'disabled',
     note: 'FOOTAGE slot order, not the regression roster. CV re-scan 2026-08-13 reads 13.',
   },
@@ -84,6 +88,7 @@ const OFF: OffComp[] = [
     name: 'T5 wind-weak',
     from: 'T5 wind-weak probe (boss Iron)',
     measured: 13,
+    measuredPeriodSec: 13.808,
     status: 'disabled',
     note: '13/13 splash-counted, caster order exact; in the scanner labeled 8/8 set. Real cycle measured 13.808s vs sim 15.457s.',
   },
@@ -178,72 +183,42 @@ function parseRotation(log: string[]) {
  * Where the 180s fight stops, in cycle terms. Three states, mirroring the engine's own:
  * inside a Full Burst, inside the burst chain (which stage), or refilling the gauge.
  */
-function endState(
-  log: string[],
-  extendedLog: string[]
-): { state: string; detail: string; shortBySec: number } {
+function endState(log: string[]): { state: string; detail: string } {
   const { fbs, stages } = parseRotation(log);
   const lastFb = fbs[fbs.length - 1];
 
-  // How far short the fight actually ended, MEASURED by re-running past the buzzer (DURATION=) and
-  // reading when the next chain would have opened — NOT estimated from the mean refill.
+  // ⚑ THE FIGHT ENDS AT 180s. Nothing here reasons about what "would have happened" afterwards —
+  // there is no after. This reports only the state the fight actually ended in.
   //
-  // ⚑ An earlier version of this script estimated it as `meanRefill − elapsedRefill`, and was wrong
-  // by up to 4x (iron sweep read "short by 1.32s"; it is actually 0.30s). Two reasons, both fatal to
-  // the estimate: the FINAL refill is not the mean one — per-cycle refills vary with boss
-  // transitions, buff state and reload phase — and gauge does not accrue linearly in time anyway
-  // (charge weapons deliver it in lumps, MG wind-up ramps, reloads pause it). For the same reason
-  // this reports TIME, never "the bar is N% full": the gauge level at the buzzer is not exposed by
-  // the engine, and elapsed-refill-fraction is not a proxy for it.
-  const ext = parseRotation(extendedLog);
-  const nextFb = ext.fbs.find((f) => f.start > FIGHT_SEC);
-  const lastEnd = lastFb ? lastFb.end : 0;
-  const nextB1 = ext.stages.find((s) => s.stage === 1 && s.t > lastEnd);
-  const gaugeFullAt = nextB1 ? nextB1.t - PRE_B1_SEC : NaN;
-  const shortBySec = nextFb ? nextFb.start - FIGHT_SEC : NaN;
-  const nextTxt = nextFb
-    ? ` — next Full Burst would start ${nextFb.start.toFixed(1)}s, i.e. ${shortBySec.toFixed(2)}s past the buzzer`
-    : '';
-
+  // It also does NOT report a gauge percentage. The gauge level is not exposed by the engine, and
+  // elapsed-refill-time is not a proxy for it: generation counts HITS, and hits do not arrive
+  // uniformly (charge weapons fire in discrete shots, MG wind-up ramps, reloads pause the feed).
   if (lastFb && lastFb.end > FIGHT_SEC && lastFb.start <= FIGHT_SEC) {
     return {
       state: 'MID-FULL-BURST',
-      detail: `${(lastFb.end - FIGHT_SEC).toFixed(2)}s of Full Burst left (started ${lastFb.start.toFixed(1)}s, would end ${lastFb.end.toFixed(1)}s)${nextTxt}`,
-      shortBySec,
+      detail: `Full Burst opened ${lastFb.start.toFixed(1)}s and was still live at the buzzer (${(FIGHT_SEC - lastFb.start).toFixed(2)}s of it inside the fight)`,
     };
   }
 
-  // a chain cast after the last Full Burst ended means the chain is still climbing at the buzzer
-  const openChain = stages.filter((s) => s.t > lastEnd && s.t <= FIGHT_SEC);
+  const lastEnd = lastFb ? lastFb.end : 0;
+  const openChain = stages.filter((s2) => s2.t > lastEnd && s2.t <= FIGHT_SEC);
   if (openChain.length) {
     const top = openChain[openChain.length - 1];
     return {
       state: 'MID-CHAIN',
-      detail: `B${'I'.repeat(top.stage)} cast at ${top.t.toFixed(1)}s was the last step${nextTxt}`,
-      shortBySec,
+      detail: `B${'I'.repeat(top.stage)} cast at ${top.t.toFixed(1)}s was the last chain step of the fight`,
     };
   }
 
   return {
     state: 'GAUGE FILLING',
-    detail:
-      `refilling for ${(FIGHT_SEC - lastEnd).toFixed(2)}s (since the ${lastEnd.toFixed(1)}s Full Burst ended); ` +
-      `the bar would fill at ${gaugeFullAt.toFixed(1)}s — ${Math.max(0, gaugeFullAt - FIGHT_SEC).toFixed(2)}s short of full${nextTxt}`,
-    shortBySec,
+    detail: `refilling for the final ${(FIGHT_SEC - lastEnd).toFixed(2)}s (last Full Burst ended ${lastEnd.toFixed(1)}s); the bar never filled`,
   };
 }
-
-/** The measured tempo gap: real cycle minus sim cycle, docs/probe-runs.md 2026-08-13. */
-const MEASURED_GAP_SEC = 1.65;
 
 const rows = OFF.map((off) => {
   const comp = resolve(off);
   const res = run(comp, {}, undefined);
-  // Second run PAST the buzzer, purely to read when the next chain/Full Burst would have landed.
-  // Diagnostic only — see the DURATION note in scripts/experiment.ts.
-  process.env.DURATION = '215';
-  const ext = run(comp, {}, undefined);
-  delete process.env.DURATION;
   const { fbs, stages } = parseRotation(res.rotationLog);
 
   const buildSec = res.gaugeBuildTimeSec;
@@ -279,6 +254,21 @@ const rows = OFF.map((off) => {
     : NaN;
 
   const firstFb = fbs.length ? fbs[0].start : NaN;
+  const fbDur0 = fbs.length ? fbs[0].end - fbs[0].start : NaN;
+  // median chain span = FIRST stage cast of the chain -> Full Burst start (the definition
+  // decomposeCycles() uses). It must anchor to the chain's OPENING cast, not merely the last stage
+  // before the burst — that is the B3 cast, 22 frames out, and using it under-states the floor by
+  // ~1s and silently inflates the derived refill.
+  const spans = fbs
+    .map((f, i) => {
+      const prevEnd = i > 0 ? fbs[i - 1].end : 0;
+      const opening = stages.find((x) => x.t > prevEnd && x.t < f.start);
+      return opening ? f.start - opening.t : NaN;
+    })
+    .filter((x) => !isNaN(x));
+  const chainSpan = spans.length
+    ? [...spans].sort((a, b) => a - b)[Math.floor(spans.length / 2)]
+    : NaN;
   const lo = Math.floor(fbs.length * 0.2);
   const hi = Math.ceil(fbs.length * 0.8);
   const periods: number[] = [];
@@ -303,14 +293,28 @@ const rows = OFF.map((off) => {
     focusSlug,
     stallSec: res.rotationStallSec,
     buildSec,
-    end: endState(res.rotationLog, ext.rotationLog),
+    end: endState(res.rotationLog),
     fbDur: fbs.length ? fbs[0].end - fbs[0].start : NaN,
-    // COUNTERFACTUAL, NOT A PREDICTION: what the count becomes if the measured tempo gap is applied
-    // as a FLAT per-cycle subtraction. This is an extrapolation from the two comps that were
-    // actually filmed onto seven that were not; where it misses, the MISS is the interesting part.
     period,
-    counterfactual:
-      1 + Math.floor((FIGHT_SEC - firstFb) / (period - MEASURED_GAP_SEC)),
+    firstFb,
+    // GENERATION SHORTFALL — only computable where the real cycle was actually filmed.
+    // Burst gauge is generated per HIT; there is no per-second mechanic and no timer that opens a
+    // chain. So a cycle-time difference is a SYMPTOM, and the quantity that can actually be wrong is
+    // how much gauge the team feeds the bar. Converting: the real refill is the filmed period minus
+    // the mechanical floor, and the required rate is one bar over that.
+    required: off.measuredPeriodSec
+      ? (() => {
+          const floor = fbDur0 + PRE_B1_SEC + chainSpan;
+          const realRefill = off.measuredPeriodSec - floor;
+          return {
+            floor,
+            realRefill,
+            simRate: 100 / meanRefill,
+            realRate: 100 / realRefill,
+            ratio: meanRefill / realRefill,
+          };
+        })()
+      : null,
   };
 });
 
@@ -353,18 +357,22 @@ if (process.argv.includes('--json')) {
       `  Full Burst length   : ${r.fbDur.toFixed(2)}s   |  refilling for ${r.buildSec.toFixed(1)}s of the 180s fight   |  chain stall ${r.stallSec.toFixed(2)}s`
     );
     console.log(`  AT THE 180s BUZZER  : ${r.end.state} — ${r.end.detail}`);
-    const mNum = Array.isArray(r.off.measured)
-      ? r.off.measured[0]
-      : r.off.measured;
-    console.log(
-      `  COUNTERFACTUAL      : period ${r.period.toFixed(2)}s − 1.65s = ${(r.period - 1.65).toFixed(2)}s  =>  ${r.counterfactual} FBs vs measured ${mNum}` +
-        `  ${r.counterfactual === mNum ? '[MATCH]' : r.counterfactual > mNum ? '[OVERSHOOTS]' : '[still short]'}`
-    );
+    if (r.required) {
+      const q = r.required;
+      console.log(
+        `  GENERATION SHORTFALL: filmed cycle ${r.off.measuredPeriodSec!.toFixed(2)}s − floor ${q.floor.toFixed(2)}s = ${q.realRefill.toFixed(2)}s of real refill`
+      );
+      console.log(
+        `                        fight needs ${q.realRate.toFixed(1)} gauge/s · sim feeds ${q.simRate.toFixed(1)} gauge/s` +
+          `  =>  sim generates ${(100 / q.ratio).toFixed(0)}% of what is required`
+      );
+    }
   }
   console.log(
     `\n${'='.repeat(96)}\n` +
-      'Read the buzzer line against the shortfall: a team ending MID-CHAIN or late in a refill was\n' +
-      'close to one more Full Burst, so a faster refill recovers the missing count directly. A team\n' +
+      'Burst gauge is generated per HIT — there is no per-second gain and no timer that opens a\n' +
+      'chain. So the actionable quantity is the GENERATION SHORTFALL line, not any cycle-time\n' +
+      'difference: the question is whether the sim feeds the bar the right amount, not whether a\n' +
       'ending early in a refill is short by more than one cycle of error.\n'
   );
 }
