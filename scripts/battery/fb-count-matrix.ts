@@ -1503,7 +1503,13 @@ export function multihitSnapshot(): MultihitCompSnapshot[] {
       (a, u) => a + (buildSec > 0 ? u.gaugeGenerated / buildSec : 0),
       0
     );
-    return { name: label, fullBursts: res.fullBursts, teamRate, buildSec, units };
+    return {
+      name: label,
+      fullBursts: res.fullBursts,
+      teamRate,
+      buildSec,
+      units,
+    };
   });
 }
 
@@ -1595,7 +1601,9 @@ export function auditMultihitCrediting(): MultihitCreditingAudit {
   const reports: MultihitCreditingReport[] = baseline.map((b) => {
     const entry = panel.find((p) => p.label === b.name);
     if (!entry) {
-      throw new Error(`multihit-crediting audit: ${b.name} dropped from the panel`);
+      throw new Error(
+        `multihit-crediting audit: ${b.name} dropped from the panel`
+      );
     }
     const t = trigByName.get(b.name);
     if (!t) {
@@ -1964,6 +1972,886 @@ function printFocusColumns(
   }
 }
 
+// ============================================================================
+// PER-FRAME GAUGE-CREDIT SCHEDULE — the sim-side credit timeline.
+// Run it: npx tsx scripts/battery/fb-count-matrix.ts --credit-schedule [--json]
+//         [--comp="T5 wind-weak"] [--exact-samples=N]
+//
+// WHAT IT PRODUCES: for every UNLOCKED region of a comp — the fight-opening first fill and each
+// [Full-Burst-end, gauge-full) refill window, the only frames where `addGauge` is not swallowed —
+// the ordered list of (frame, unit slug, credited amount, source kind). That is the quantity a
+// real fill trace can be compared against frame-for-frame; the existing --refill-starvation audit
+// deliberately spreads a unit's WHOLE-FIGHT `gaugeGenerated` uniformly over its window hits, which
+// is fine for a delivery-ratio but cannot say what the bar was fed on any given frame.
+//
+// WHY IT IS A RECONSTRUCTION: the event tap (`cfg.onEvent`) carries no gauge amounts — only that a
+// `shot` or `damage` instance happened, with unit and frame. So the amounts are rebuilt from the
+// same inputs the engine reads (data/gauge-per-shot.json, the weapon-class modal fallback, the
+// camera-focus charge multiplier, the live `burstGenPct` buff sum, the skillGauge divisor), and
+// `fillGauge` — which BYPASSES `addGauge` entirely and is invisible to every tap and to DBG_GAUGE —
+// is rebuilt from its trigger (team ammo spend). A reconstruction is only worth as much as its
+// checks, so the driver self-reports THREE independent ones and refuses to be quietly wrong:
+//
+//   (a) ENDPOINT — each unit's schedule must sum to the engine's own uncapped
+//       `SimResult.units[].gaugeGenerated`. Catches a missed source, a wrong amount, a wrong
+//       lock mask. Residuals are reported per unit, not hidden behind a boolean.
+//   (b) DBG_GAUGE — `src/engine/sim.ts` logs every `addGauge`-routed credit as
+//       `[g] t=… slug +X gauge=Y` for the first 30s. sim.ts reads ENV at MODULE LOAD, so the arm
+//       runs in a CHILD PROCESS (same pattern as --multihit-crediting), and every logged line is
+//       matched against the schedule within print rounding. This is engine truth for the shot and
+//       skill channels; it is structurally blind to fillGauge, which is what (c) is for.
+//   (c) TRUNCATED-RUN — `cfg.durationSec` only bounds the frame loop, so a shorter run is a strict
+//       prefix of a longer one. Diffing per-unit `gaugeGenerated` across durationSec = f/60 and
+//       (f+1)/60 reads the engine's ACTUAL credit at frame f — including fillGauge. Sampled at
+//       `exactSamples` credit frames (fill credits sampled first, since they are the only ones the
+//       other two checks cannot see). The prefix property is itself asserted, not assumed.
+//
+// Anything the reconstruction cannot do exactly is pushed onto `unreconstructed` and printed
+// LOUD — never silently approximated.
+// ============================================================================
+
+/** Where a credit came from. `fill` bypasses addGauge (no DBG_GAUGE line, no event). */
+export type GaugeCreditKind = 'shot' | 'skill' | 'fill';
+
+export interface GaugeCredit {
+  frame: number;
+  sec: number;
+  slug: string;
+  unitIdx: number;
+  kind: GaugeCreditKind;
+  /** gauge percent fed to the team bar (100 = one full bar), pre-clamp */
+  amount: number;
+  /** index into `windows` */
+  window: number;
+}
+
+export interface CreditWindow {
+  index: number;
+  /** the fight-opening fill is NOT a steady-state cycle; it is kept and labeled */
+  kind: 'first-fill' | 'refill';
+  startFrame: number;
+  endFrame: number;
+  startSec: number;
+  endSec: number;
+  /** the 180s buzzer cut this window short (the bar never filled) */
+  truncated: boolean;
+  credits: number;
+  gauge: number;
+}
+
+export interface CreditScheduleChecks {
+  endpoint: {
+    slug: string;
+    scheduled: number;
+    engine: number;
+    residual: number;
+  }[];
+  endpointMaxAbsResidual: number;
+  endpointOk: boolean;
+  dbgGauge: {
+    /** `[g]` lines the engine printed (first 30s of fight time) */
+    lines: number;
+    matched: number;
+    /** engine lines with no matching scheduled credit */
+    unmatchedEngine: string[];
+    /** scheduled addGauge-routed credits in the first 30s with no engine line */
+    unmatchedSchedule: string[];
+    ok: boolean;
+  };
+  prefixDeterminism: {
+    ok: boolean;
+    detail: string;
+  };
+  truncated: {
+    frame: number;
+    slug: string;
+    /** every source kind the schedule placed on this (frame, unit) */
+    kinds: GaugeCreditKind[];
+    scheduled: number;
+    engineStep: number;
+    ok: boolean;
+  }[];
+  truncatedSamples: number;
+  truncatedOk: boolean;
+}
+
+export interface CreditScheduleReport {
+  comp: string;
+  slugs: string[];
+  focusSlug: string;
+  fightSec: number;
+  windows: CreditWindow[];
+  credits: GaugeCredit[];
+  perUnitScheduled: Record<string, number>;
+  /** LOUD: every credit path this reconstruction could NOT rebuild exactly on this comp */
+  unreconstructed: string[];
+  checks: CreditScheduleChecks;
+}
+
+/** The comps the schedule is emitted for: the two with a filmed steady-state cycle. */
+export const CREDIT_SCHEDULE_COMPS = ['iron sweep (run G)', 'T5 wind-weak'];
+
+/** gauge-full -> B1 cast, in FRAMES (`PRE_B1_GAP_FRAMES`). The lock closes at gauge-full. */
+const PRE_B1_FRAMES = 30;
+const FIGHT_FRAMES = FIGHT_SEC * 60;
+/** DBG_GAUGE's hard cap (`frame < 30 * FPS` in addGauge). */
+const DBG_GAUGE_FRAME_CAP = 30 * 60;
+/** addGauge prints with toFixed(2); a match must survive that rounding. */
+const DBG_PRINT_EPS = 0.005 + 1e-9;
+/** Floating-point slack for a sum of a few thousand doubles. */
+const SUM_EPS = 1e-6;
+
+interface RawBlock {
+  slot: string;
+  mode?: string;
+  formation?: string;
+  teamHas?: unknown;
+  delaySec?: number;
+  trigger: { kind: string; count?: number };
+  effects: EffectDef[];
+}
+
+/** The blocks the ENGINE would run for this unit in this comp: mode-selected, ungated. */
+function activeRawBlocks(
+  slug: string,
+  selectedMode: string | undefined,
+  warn: (s: string) => void
+): RawBlock[] {
+  const ov = loadOverride(slug) as unknown as
+    (Record<string, unknown> & { modes?: string[] }) | undefined;
+  if (!ov) {
+    return [];
+  }
+  const mode = selectedMode ?? ov.modes?.[0];
+  const out: RawBlock[] = [];
+  for (const slot of ['skill1', 'skill2', 'burst'] as const) {
+    for (const b of (ov[slot] ?? []) as RawBlock[]) {
+      const carriesGaugePath = (b.effects ?? []).some(
+        (e) => e.kind === 'weaponSwap' || e.kind === 'fillGauge'
+      );
+      if (!carriesGaugePath) {
+        continue;
+      }
+      // The engine's activeBlocks filter is mode + formation + teamHas (sim.ts). Across the whole
+      // override roster exactly ONE gauge-path block carries any of them, and it is `mode`
+      // (cinderella-crystal-wave's Snipe weaponSwap) — so mode is implemented and the other two
+      // throw a LOUD flag rather than being silently assumed inactive.
+      if (b.formation !== undefined || b.teamHas !== undefined) {
+        warn(
+          `${slug}: gauge-path block in ${slot} carries a formation/teamHas gate this ` +
+            'reconstruction does not evaluate — swap/fill timing may be wrong'
+        );
+      }
+      if (b.delaySec !== undefined) {
+        warn(
+          `${slug}: gauge-path block in ${slot} carries delaySec=${b.delaySec}, ` +
+            'which this reconstruction does not offset'
+        );
+      }
+      if (b.mode !== undefined && b.mode !== mode) {
+        continue;
+      }
+      out.push(b);
+    }
+  }
+  return out;
+}
+
+interface SwapWindow {
+  from: number;
+  to: number;
+  sameWeapon: boolean;
+  maxShots?: number;
+}
+
+/**
+ * Build the schedule for one off-count comp and run all three validation checks.
+ *
+ * `exactSamples` = how many credit frames the truncated-run check re-derives from the engine
+ * (2 extra 180s-bounded sims each). 0 skips it; the vitest fixture runs a small N.
+ */
+export function creditScheduleFor(
+  offName: string,
+  opts: { exactSamples?: number; dbgGauge?: boolean } = {}
+): CreditScheduleReport {
+  const off = OFF.find((o) => o.name === offName);
+  if (!off) {
+    throw new Error(
+      `credit-schedule: no comp named "${offName}" — known: ${OFF.map((o) => o.name).join(', ')}`
+    );
+  }
+  const comp = resolve(off);
+  const events: SimEvent[] = [];
+  const res = run(comp, {}, undefined, (ev) => events.push(ev));
+  const slugs = comp.slugs;
+  const unreconstructed: string[] = [];
+  const warn = (s: string) => {
+    if (!unreconstructed.includes(s)) {
+      unreconstructed.push(s);
+    }
+  };
+
+  const focusIdx =
+    comp.focus !== undefined
+      ? Math.max(0, slugs.indexOf(comp.focus))
+      : Math.min(2, slugs.length - 1);
+  const focusSlug = slugs[focusIdx];
+
+  // ---- UNLOCKED regions, frame-exact.
+  // addGauge is locked while `fbEndFrame > frame || stage !== 0`. `stage` leaves 0 on the
+  // gauge-full frame, which is PRE_B1_GAP_FRAMES (30f) BEFORE the B1 cast the tap reports, and
+  // returns to 0 on the `fullBurstEnd` frame itself (sim.ts sets stage = 0 in that same block,
+  // before any unit fires). A chain that EXPIRES also returns stage to 0; that path is not an
+  // event, so it is read off the rotation log and flagged, since the log's 0.1s precision cannot
+  // place it to the frame.
+  const fbEndFrames: number[] = [];
+  const b1Frames: number[] = [];
+  for (const ev of events) {
+    if (ev.kind === 'fullBurstEnd') {
+      fbEndFrames.push(ev.frame);
+    } else if (ev.kind === 'burstCast' && ev.stage === 1) {
+      b1Frames.push(ev.frame);
+    }
+  }
+  for (const line of res.rotationLog) {
+    if (line.includes('CHAIN EXPIRED')) {
+      warn(
+        `chain expiry at ${line.trim()} — the refill restarts mid-cycle and the rotation log ` +
+          'only carries 0.1s precision, so this window boundary is +/-3 frames'
+      );
+    }
+  }
+  const lockFrames = b1Frames
+    .map((f) => f - PRE_B1_FRAMES)
+    .sort((a, b) => a - b);
+  const unlockFrames = [0, ...fbEndFrames].sort((a, b) => a - b);
+  const windows: CreditWindow[] = unlockFrames.map((start, i) => {
+    const end = lockFrames.find((x) => x > start) ?? FIGHT_FRAMES;
+    return {
+      index: i,
+      kind: i === 0 ? ('first-fill' as const) : ('refill' as const),
+      startFrame: start,
+      endFrame: end,
+      startSec: start / 60,
+      endSec: end / 60,
+      truncated: end >= FIGHT_FRAMES,
+      credits: 0,
+      gauge: 0,
+    };
+  });
+  let wi = 0;
+  const windowAt = (frame: number): number => {
+    while (wi < windows.length && windows[wi].endFrame <= frame) {
+      wi++;
+    }
+    return wi < windows.length && frame >= windows[wi].startFrame ? wi : -1;
+  };
+
+  // ---- weapon-swap windows. A REAL weapon change generates NO shot gauge (owner ruling
+  // 2026-08-13) and also switches gaugePerShot off the charge path, so the schedule needs the
+  // swap's live span. Reconstructed from the unit's OWN swap-granting block + the tap's burstCast
+  // events; the uses-based (`maxShots`) exit is applied by counting the unit's shots in the span.
+  const swapWindows: Record<string, SwapWindow[]> = {};
+  const shotFramesBy: Record<string, number[]> = {};
+  for (const s of slugs) {
+    swapWindows[s] = [];
+    shotFramesBy[s] = [];
+  }
+  for (const ev of events) {
+    if (ev.kind === 'shot') {
+      shotFramesBy[ev.slug]?.push(ev.frame);
+    }
+  }
+  const fillBlocks: { slug: string; count: number; pct: number }[] = [];
+  for (const s of slugs) {
+    for (const b of activeRawBlocks(s, comp.modes?.[s], warn)) {
+      for (const e of b.effects) {
+        if (e.kind === 'weaponSwap') {
+          const dur = Math.round((e.durationSec ?? 0) * 60);
+          const sameWeapon = e.sameWeapon === true;
+          if (
+            b.trigger.kind === 'passive' ||
+            b.trigger.kind === 'battleStart'
+          ) {
+            swapWindows[s].push({
+              from: 0,
+              to: dur,
+              sameWeapon,
+              maxShots: e.maxShots,
+            });
+          } else if (b.trigger.kind === 'burstCast') {
+            for (const ev of events) {
+              if (ev.kind === 'burstCast' && ev.slug === s) {
+                swapWindows[s].push({
+                  from: ev.frame,
+                  to: ev.frame + dur,
+                  sameWeapon,
+                  maxShots: e.maxShots,
+                });
+              }
+            }
+          } else {
+            warn(
+              `${s}: weaponSwap on a "${b.trigger.kind}" trigger — this reconstruction only ` +
+                'places passive/battleStart/burstCast swaps, so its shot credits may be wrong'
+            );
+          }
+        } else if (e.kind === 'fillGauge') {
+          if (b.trigger.kind === 'teamAmmo' && b.trigger.count !== undefined) {
+            fillBlocks.push({ slug: s, count: b.trigger.count, pct: e.pct });
+          } else {
+            warn(
+              `${s}: fillGauge on a "${b.trigger.kind}" trigger — this reconstruction only ` +
+                'places teamAmmo-triggered fills, so its fill credits are MISSING'
+            );
+          }
+        }
+      }
+    }
+  }
+  for (const s of slugs) {
+    for (const w of swapWindows[s]) {
+      if (w.maxShots == null) {
+        continue;
+      }
+      const inside = shotFramesBy[s].filter((f) => f >= w.from && f < w.to);
+      if (inside.length >= w.maxShots) {
+        // the uses-based exit fires right AFTER the Nth shot (sim.ts firePull)
+        w.to = inside[w.maxShots - 1] + 1;
+      }
+    }
+  }
+  const swapAt = (s: string, frame: number): SwapWindow | undefined =>
+    swapWindows[s].find((w) => frame >= w.from && frame < w.to);
+
+  // ---- live burstGenPct, per unit. addGauge multiplies every credit by
+  // `burstGenMult * (1 + stat(burstGenPct)/100)`; the static half is folded into the engine's
+  // burstGenMult from `extraStats` (cube/OL/doll), the dynamic half is a buff, and buff grants ARE
+  // on the tap. Reconstructed by replaying buffApply keyed exactly as the engine does (one entry
+  // per key, value * stacks, live while expiresFrame is null or in the future).
+  interface LiveBuff {
+    value: number;
+    stacks: number;
+    expiresFrame: number | null;
+  }
+  const bgLive: Record<string, Map<string, LiveBuff>> = {};
+  for (const s of slugs) {
+    bgLive[s] = new Map();
+  }
+  const bgApplies = events.filter(
+    (e): e is Extract<SimEvent, { kind: 'buffApply' }> =>
+      e.kind === 'buffApply' &&
+      e.stat === 'burstGenPct' &&
+      e.targetSlug !== null
+  );
+  if (bgApplies.length) {
+    for (const s of slugs) {
+      for (const b of activeRawBlocksAll(s, comp.modes?.[s])) {
+        for (const e of b.effects) {
+          if (
+            e.kind === 'buff' &&
+            e.stat === 'burstGenPct' &&
+            (e.rampSec !== undefined || e.whileSwapped !== undefined)
+          ) {
+            warn(
+              `${s}: a burstGenPct buff carries rampSec/whileSwapped, which the buffApply event ` +
+                'does not expose — the live multiplier may be wrong'
+            );
+          }
+        }
+      }
+    }
+  }
+  let bgPtr = 0;
+  const burstGenPctAt = (slug: string, frame: number): number => {
+    while (bgPtr < bgApplies.length && bgApplies[bgPtr].frame <= frame) {
+      const b = bgApplies[bgPtr];
+      bgLive[b.targetSlug!]?.set(b.key, {
+        value: b.value,
+        stacks: b.stacks,
+        expiresFrame: b.expiresFrame,
+      });
+      bgPtr++;
+    }
+    let sum = 0;
+    for (const v of bgLive[slug]?.values() ?? []) {
+      if (v.expiresFrame === null || v.expiresFrame > frame) {
+        sum += v.value * v.stacks;
+      }
+    }
+    return sum;
+  };
+
+  // ---- gaugePerShot: the engine's own ladder (sim.ts), sourced from the same two data files.
+  const gaugePerShot = (
+    slug: string,
+    idx: number,
+    swapped: boolean
+  ): number => {
+    const c = data.characters[slug];
+    const row = gaugeTable[slug];
+    const per =
+      (row?.targetPerTrigger ?? CENSUS_GAUGE_MODAL_BY_WEAPON[c.weapon] ?? 40) /
+      100;
+    const flat = (row?.flatPerTrigger ?? 0) / 100;
+    const isCharge = (c.weapon === 'SR' || c.weapon === 'RL') && !swapped;
+    if (!isCharge) {
+      return per + flat;
+    }
+    const ov = loadOverride(slug) as unknown as
+      | { charFixes?: { focusChargeMult?: number; magDumpRof?: boolean } }
+      | undefined;
+    const charMult = c.chargeMultiplier ?? 0;
+    const fcb = row?.fullChargeBonus;
+    const focusMult =
+      ov?.charFixes?.focusChargeMult ??
+      (ov?.charFixes?.magDumpRof || slug === 'vesti-tactical-upgrade'
+        ? 2.5 // FOCUS_CHARGE_GEN
+        : (charMult > 0 ? charMult : fcb && fcb > 0 ? fcb : 250) / 100);
+    // UNFOCUSED_CHARGE_GEN = 1.0 (measured, battery 3 A1/A2)
+    return per * (idx === focusIdx ? focusMult : 1.0) + flat;
+  };
+
+  // SG spray is the one shot channel whose hit fraction is NOT on the tap (it is a per-band
+  // landed-pellet fraction resolved inside firePull). Neither scheduled comp seats one; say so
+  // rather than crediting a full trigger and letting the endpoint check argue about it.
+  for (const s of slugs) {
+    if (data.characters[s].weapon === 'SG') {
+      warn(
+        `${s}: SG spray — the per-band LANDED-pellet gauge fraction is resolved inside firePull ` +
+          'and is not on the event tap, so its shot credits are approximated at a full trigger'
+      );
+    }
+  }
+  for (const s of slugs) {
+    for (const b of activeRawBlocksAll(s, comp.modes?.[s])) {
+      for (const e of b.effects) {
+        if (e.kind === 'storedHit' || e.kind === 'stackedNuke') {
+          warn(
+            `${s}: carries a ${e.kind} impact, which produces a damage event but emits NO gauge — ` +
+              'if one lands unlocked the schedule over-credits it (the endpoint check is the arbiter)'
+          );
+        }
+      }
+    }
+  }
+
+  // ---- fold the frame-ordered event stream into the schedule.
+  const credits: GaugeCredit[] = [];
+  const perUnitScheduled: Record<string, number> = {};
+  for (const s of slugs) {
+    perUnitScheduled[s] = 0;
+  }
+  const push = (
+    frame: number,
+    slug: string,
+    unitIdx: number,
+    kind: GaugeCreditKind,
+    amount: number
+  ) => {
+    const w = windowAt(frame);
+    if (w < 0) {
+      return; // locked: addGauge/fillGauge both swallow it
+    }
+    credits.push({
+      frame,
+      sec: frame / 60,
+      slug,
+      unitIdx,
+      kind,
+      amount,
+      window: w,
+    });
+    perUnitScheduled[slug] += amount;
+    windows[w].credits++;
+    windows[w].gauge += amount;
+  };
+  const teamAmmoResidual = new Map<number, number>(
+    fillBlocks.map((_, i) => [i, 0])
+  );
+  for (const ev of events) {
+    if (ev.kind === 'shot') {
+      const c = data.characters[ev.slug];
+      const sw = swapAt(ev.slug, ev.frame);
+      // shotGauge: a REAL weapon change emits nothing at all; a same-weapon flavor swap still
+      // feeds the bar (and off the non-charge branch, since `isCharge` reads `!u.swap`).
+      if (!(sw && !sw.sameWeapon)) {
+        const rounds = c.weapon === 'MG' ? c.hitsPerShot : 1;
+        const energy =
+          gaugePerShot(ev.slug, ev.unitIdx, sw !== undefined) * rounds;
+        push(
+          ev.frame,
+          ev.slug,
+          ev.unitIdx,
+          'shot',
+          energy * (1 + burstGenPctAt(ev.slug, ev.frame) / 100)
+        );
+      }
+      // teamAmmo accrual: every non-unlimited pull spends `consumed` rounds off the BASE weapon's
+      // economy, and every teamAmmo block on the team counts them (sim.ts firePull).
+      if (!ev.unlimitedAmmo && fillBlocks.length) {
+        const consumed = c.weapon === 'MG' ? c.hitsPerShot : 1;
+        fillBlocks.forEach((fb, i) => {
+          let r = (teamAmmoResidual.get(i) ?? 0) + consumed;
+          while (r >= fb.count) {
+            r -= fb.count;
+            const idx = slugs.indexOf(fb.slug);
+            push(ev.frame, fb.slug, idx, 'fill', fb.pct);
+          }
+          teamAmmoResidual.set(i, r);
+        });
+      }
+    } else if (
+      ev.kind === 'damage' &&
+      (ev.bucket === 'skill' || ev.bucket === 'burst')
+    ) {
+      // skillGauge: one target-base impact per skill/burst damage instance (flatDamage procs,
+      // hitRepeat, flighted landings, DoT ticks, the extraHitDamagePct rider).
+      push(
+        ev.frame,
+        ev.slug,
+        ev.unitIdx,
+        'skill',
+        skillImpactGauge(ev.slug) * (1 + burstGenPctAt(ev.slug, ev.frame) / 100)
+      );
+    }
+  }
+
+  // ================= CHECK (a): endpoint =================
+  const endpoint = res.units.map((u) => ({
+    slug: u.slug,
+    scheduled: perUnitScheduled[u.slug] ?? 0,
+    engine: u.gaugeGenerated,
+    residual: (perUnitScheduled[u.slug] ?? 0) - u.gaugeGenerated,
+  }));
+  const endpointMaxAbsResidual = endpoint.reduce(
+    (m, e) => Math.max(m, Math.abs(e.residual)),
+    0
+  );
+
+  // ================= CHECK (b): DBG_GAUGE first 30s =================
+  const dbg =
+    opts.dbgGauge === false
+      ? {
+          lines: 0,
+          matched: 0,
+          unmatchedEngine: [],
+          unmatchedSchedule: [],
+          ok: true,
+        }
+      : matchDbgGauge(off.name, credits);
+
+  // ================= CHECK (c): truncated-run =================
+  const nSamples = opts.exactSamples ?? 20;
+  /**
+   * Per-unit cumulative `gaugeGenerated` over frames [0, frame-1], read from a truncated run.
+   *
+   * The half-frame offset is load-bearing: the engine's loop bound is `cfg.durationSec * FPS`, and
+   * `frame / 60 * 60` is not exactly `frame` in binary floating point — 1939/60*60 rounds UP, so a
+   * naive `durationSec = frame/60` silently runs ONE FRAME TOO MANY and reports a credit as
+   * already-counted (observed on T5 wind-weak, frame 1939). Landing the bound half a frame short
+   * makes the truncation unambiguous.
+   */
+  const gaugeThrough = (frame: number): Record<string, number> => {
+    const r = run(comp, {}, undefined, undefined, {
+      durationSec: (frame - 0.5) / 60,
+    });
+    return Object.fromEntries(r.units.map((u) => [u.slug, u.gaugeGenerated]));
+  };
+  const truncated: CreditScheduleChecks['truncated'] = [];
+  let prefixOk = true;
+  let prefixDetail = 'not run (exactSamples = 0)';
+  if (nSamples > 0 && credits.length) {
+    // The prefix property itself: a durationSec = 180 run must reproduce the default run exactly
+    // (nothing but the loop bound reads it), and the cumulative must be monotone across the
+    // sampled boundaries.
+    const full = Object.fromEntries(
+      run(comp, {}, undefined, undefined, { durationSec: FIGHT_SEC }).units.map(
+        (u) => [u.slug, u.gaugeGenerated]
+      )
+    );
+    const mismatched = res.units.filter(
+      (u) => Math.abs(full[u.slug] - u.gaugeGenerated) > SUM_EPS
+    );
+    prefixOk = mismatched.length === 0;
+    prefixDetail = prefixOk
+      ? 'durationSec=180 reproduces the default run per-unit exactly; cumulative monotone across sampled boundaries'
+      : `durationSec=180 diverges from the default run for ${mismatched.map((u) => u.slug).join(', ')}`;
+
+    // Sample fill credits FIRST — they are the only kind neither (a) nor (b) can localize.
+    const byPriority = [
+      ...credits.filter((c) => c.kind === 'fill'),
+      ...credits.filter((c) => c.kind !== 'fill'),
+    ];
+    const fills = credits.filter((c) => c.kind === 'fill').length;
+    const picked: GaugeCredit[] = [];
+    const seenFrames = new Set<number>();
+    const stride = Math.max(1, Math.floor(byPriority.length / nSamples));
+    for (let i = 0; i < byPriority.length && picked.length < nSamples; i += 1) {
+      const c = byPriority[i];
+      if (seenFrames.has(c.frame)) {
+        continue;
+      }
+      // dense-sample the fills, stride-sample the rest
+      if (i >= fills && (i - fills) % stride !== 0) {
+        continue;
+      }
+      seenFrames.add(c.frame);
+      picked.push(c);
+    }
+    const cache = new Map<number, Record<string, number>>();
+    const at = (f: number) => {
+      let v = cache.get(f);
+      if (!v) {
+        v = gaugeThrough(f);
+        cache.set(f, v);
+      }
+      return v;
+    };
+    let prevFrame = -1;
+    let prevSum = -1;
+    for (const c of picked.sort((a, b) => a.frame - b.frame)) {
+      const before = at(c.frame);
+      const after = at(c.frame + 1);
+      const sumBefore = Object.values(before).reduce((a, b) => a + b, 0);
+      if (prevFrame >= 0 && sumBefore + SUM_EPS < prevSum) {
+        prefixOk = false;
+        prefixDetail = `cumulative gauge DROPPED between frame ${prevFrame} and ${c.frame} — durationSec is not a strict prefix`;
+      }
+      prevFrame = c.frame;
+      prevSum = sumBefore;
+      // every unit's step at this frame, against everything the schedule placed there
+      for (const s of slugs) {
+        const step = (after[s] ?? 0) - (before[s] ?? 0);
+        const here = credits.filter((x) => x.frame === c.frame && x.slug === s);
+        const sched = here.reduce((a, x) => a + x.amount, 0);
+        if (Math.abs(step) < SUM_EPS && Math.abs(sched) < SUM_EPS) {
+          continue;
+        }
+        truncated.push({
+          frame: c.frame,
+          slug: s,
+          // every kind the schedule placed on this (frame, unit) — a frame can carry a pull, its
+          // rider and a fill at once, so this is a list rather than one guessed label
+          kinds: [...new Set(here.map((x) => x.kind))].sort(),
+          scheduled: sched,
+          engineStep: step,
+          ok: Math.abs(step - sched) < 1e-6,
+        });
+      }
+    }
+  }
+
+  const checks: CreditScheduleChecks = {
+    endpoint,
+    endpointMaxAbsResidual,
+    endpointOk: endpointMaxAbsResidual < SUM_EPS,
+    dbgGauge: dbg,
+    prefixDeterminism: { ok: prefixOk, detail: prefixDetail },
+    truncated,
+    truncatedSamples: new Set(truncated.map((t) => t.frame)).size,
+    truncatedOk: truncated.every((t) => t.ok),
+  };
+
+  return {
+    comp: off.name,
+    slugs,
+    focusSlug,
+    fightSec: FIGHT_SEC,
+    windows,
+    credits,
+    perUnitScheduled,
+    unreconstructed,
+    checks,
+  };
+}
+
+/** Every block the engine would run for this unit, mode-filtered — used for the LOUD scans. */
+function activeRawBlocksAll(
+  slug: string,
+  selectedMode: string | undefined
+): RawBlock[] {
+  const ov = loadOverride(slug) as unknown as
+    (Record<string, unknown> & { modes?: string[] }) | undefined;
+  if (!ov) {
+    return [];
+  }
+  const mode = selectedMode ?? ov.modes?.[0];
+  const out: RawBlock[] = [];
+  for (const slot of ['skill1', 'skill2', 'burst'] as const) {
+    for (const b of (ov[slot] ?? []) as RawBlock[]) {
+      if (b.mode !== undefined && b.mode !== mode) {
+        continue;
+      }
+      out.push(b);
+    }
+  }
+  return out;
+}
+
+/**
+ * CHECK (b). sim.ts reads its debug env at MODULE LOAD, so DBG_GAUGE cannot be toggled in
+ * process — the arm runs in a child, exactly like the --multihit-crediting trigger arm. Every
+ * `[g]` line the engine printed (fight time < 30s) is matched against the schedule's
+ * addGauge-routed credits at the same frame and unit, within the log's toFixed(2) rounding.
+ * `fill` credits are excluded BY CONSTRUCTION: fillGauge bypasses addGauge and prints nothing.
+ */
+function matchDbgGauge(
+  offName: string,
+  credits: GaugeCredit[]
+): CreditScheduleChecks['dbgGauge'] {
+  const raw = execFileSync(
+    'npx',
+    ['tsx', fileURLToPath(import.meta.url), `--credit-schedule-dbg=${offName}`],
+    {
+      encoding: 'utf8',
+      maxBuffer: 1 << 26,
+      env: { ...process.env, DBG_GAUGE: '1' },
+    }
+  );
+  const lines = raw
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('[g] '));
+  // pool the schedule's addGauge-routed credits by frame+slug, so several credits on one frame
+  // (a pull plus its rider) are matched as a multiset rather than by position
+  const pool = new Map<string, number[]>();
+  for (const c of credits) {
+    if (c.kind === 'fill' || c.frame >= DBG_GAUGE_FRAME_CAP) {
+      continue;
+    }
+    const k = `${c.frame}|${c.slug}`;
+    const arr = pool.get(k) ?? [];
+    arr.push(c.amount);
+    pool.set(k, arr);
+  }
+  let matched = 0;
+  const unmatchedEngine: string[] = [];
+  for (const line of lines) {
+    const m = line.match(/^\[g\] t=([\d.]+) (\S+) \+(-?[\d.]+) gauge=/);
+    if (!m) {
+      unmatchedEngine.push(`${line}  (unparseable)`);
+      continue;
+    }
+    const frame = Math.round(parseFloat(m[1]) * 60);
+    const k = `${frame}|${m[2]}`;
+    const arr = pool.get(k);
+    const want = parseFloat(m[3]);
+    const at = arr?.findIndex((a) => Math.abs(a - want) <= DBG_PRINT_EPS) ?? -1;
+    if (arr && at >= 0) {
+      arr.splice(at, 1);
+      matched++;
+    } else {
+      unmatchedEngine.push(line);
+    }
+  }
+  const unmatchedSchedule: string[] = [];
+  for (const [k, arr] of pool) {
+    for (const a of arr) {
+      unmatchedSchedule.push(`${k} +${a.toFixed(2)}`);
+    }
+  }
+  return {
+    lines: lines.length,
+    matched,
+    unmatchedEngine,
+    unmatchedSchedule,
+    ok: unmatchedEngine.length === 0 && unmatchedSchedule.length === 0,
+  };
+}
+
+/** Child-process entry point for CHECK (b): run the comp so addGauge's `[g]` lines hit stdout. */
+function emitDbgGauge(offName: string) {
+  const off = OFF.find((o) => o.name === offName);
+  if (!off) {
+    throw new Error(`credit-schedule-dbg: no comp named "${offName}"`);
+  }
+  run(resolve(off), {}, undefined);
+}
+
+/** Schedule + checks for both filmed comps. Exported so the vitest fixture can pin them. */
+export function auditCreditSchedule(
+  opts: { exactSamples?: number; dbgGauge?: boolean; comps?: string[] } = {}
+): CreditScheduleReport[] {
+  return (opts.comps ?? CREDIT_SCHEDULE_COMPS).map((n) =>
+    creditScheduleFor(n, opts)
+  );
+}
+
+function printCreditSchedule(reports: CreditScheduleReport[]) {
+  console.log(
+    '\n===== PER-FRAME GAUGE-CREDIT SCHEDULE =====\n' +
+      'Every gauge credit the sim feeds the bar, by frame, unit, amount and source, over the\n' +
+      'UNLOCKED regions only (the fight-opening first fill + each [FB-end, gauge-full) refill).\n' +
+      'kinds: shot = one trigger pull (shotGauge) | skill = one skill/burst impact (skillGauge)\n' +
+      '       fill = a "Fills Burst Gauge X%" effect, which BYPASSES addGauge (no log, no event).\n'
+  );
+  for (const r of reports) {
+    console.log(
+      `\n${'='.repeat(96)}\n${r.comp} — focus ${r.focusSlug} — ${r.windows.length} unlocked regions, ${r.credits.length} credits`
+    );
+    if (r.unreconstructed.length) {
+      console.log('\n  ⚑ NOT RECONSTRUCTED EXACTLY:');
+      for (const u of r.unreconstructed) {
+        console.log(`      - ${u}`);
+      }
+    }
+    console.log('\n  VALIDATION');
+    console.log(
+      `    (a) endpoint      : ${r.checks.endpointOk ? 'PASS' : 'FAIL'} — max |schedule - engine gaugeGenerated| = ${r.checks.endpointMaxAbsResidual.toExponential(2)}`
+    );
+    for (const e of r.checks.endpoint) {
+      console.log(
+        `          ${e.slug.padEnd(26)} scheduled ${e.scheduled.toFixed(4).padStart(11)}  engine ${e.engine.toFixed(4).padStart(11)}  residual ${e.residual.toExponential(2)}`
+      );
+    }
+    console.log(
+      `    (b) DBG_GAUGE     : ${r.checks.dbgGauge.ok ? 'PASS' : 'FAIL'} — ${r.checks.dbgGauge.matched}/${r.checks.dbgGauge.lines} engine [g] lines matched (first 30s; fillGauge is invisible here by construction)`
+    );
+    for (const l of r.checks.dbgGauge.unmatchedEngine.slice(0, 8)) {
+      console.log(`          unmatched engine line: ${l}`);
+    }
+    for (const l of r.checks.dbgGauge.unmatchedSchedule.slice(0, 8)) {
+      console.log(`          unmatched scheduled  : ${l}`);
+    }
+    console.log(
+      `    (c) truncated run : ${r.checks.truncatedOk ? 'PASS' : 'FAIL'} — ${r.checks.truncated.filter((t) => t.ok).length}/${r.checks.truncated.length} per-unit steps over ${r.checks.truncatedSamples} sampled frames`
+    );
+    for (const t of r.checks.truncated.filter((x) => !x.ok).slice(0, 8)) {
+      console.log(
+        `          f=${t.frame} ${t.slug}: scheduled ${t.scheduled.toFixed(4)} vs engine step ${t.engineStep.toFixed(4)}`
+      );
+    }
+    console.log(
+      `        prefix determinism: ${r.checks.prefixDeterminism.ok ? 'HELD' : 'BROKEN'} — ${r.checks.prefixDeterminism.detail}`
+    );
+
+    console.log(
+      `\n  ${'window'.padEnd(7)} ${'span (s)'.padEnd(17)} ${'len'.padStart(6)} ${'credits'.padStart(8)} ${'gauge'.padStart(8)}  per-unit gauge`
+    );
+    for (const w of r.windows) {
+      const per = r.slugs
+        .map((s) => {
+          const g = r.credits
+            .filter((c) => c.window === w.index && c.slug === s)
+            .reduce((a, c) => a + c.amount, 0);
+          return g > 0 ? `${s} ${g.toFixed(1)}` : null;
+        })
+        .filter(Boolean)
+        .join(', ');
+      console.log(
+        `  ${String(w.index).padEnd(7)} ${`${w.startSec.toFixed(2)}-${w.endSec.toFixed(2)}`.padEnd(17)} ${(w.endFrame - w.startFrame + 'f').padStart(6)} ${String(w.credits).padStart(8)} ${w.gauge.toFixed(1).padStart(8)}  ${per}${w.truncated ? '   [truncated at the buzzer]' : ''}`
+      );
+    }
+  }
+  console.log(
+    `\n${'='.repeat(96)}\n` +
+      'Use --json for the full (frame, slug, amount, kind) list per window. This instrument makes\n' +
+      'NO claim about the game — it reports what the SIM credits, for a measurement to be held\n' +
+      'against.\n'
+  );
+}
+
 // The matrix + audits run only on direct CLI invocation — vitest imports the audit functions
 // without paying for nine 180s sims (the experiment.ts isMain pattern).
 const isMain = import.meta.url === `file://${process.argv[1]}`;
@@ -2001,6 +2889,31 @@ if (isMain) {
   } else if (process.argv.includes('--multihit-arm-snapshot')) {
     // child-process entry point for the audit's trigger arm (arm = caller's env)
     console.log(JSON.stringify(multihitSnapshot()));
+  } else if (process.argv.some((a) => a.startsWith('--credit-schedule-dbg='))) {
+    // child-process entry point for the schedule's DBG_GAUGE arm (env = caller's)
+    emitDbgGauge(
+      process.argv
+        .find((a) => a.startsWith('--credit-schedule-dbg='))!
+        .split('=')
+        .slice(1)
+        .join('=')
+    );
+  } else if (process.argv.includes('--credit-schedule')) {
+    const compArg = process.argv.find((a) => a.startsWith('--comp='));
+    const samplesArg = process.argv.find((a) =>
+      a.startsWith('--exact-samples=')
+    );
+    const reports = auditCreditSchedule({
+      comps: compArg ? [compArg.slice('--comp='.length)] : undefined,
+      exactSamples: samplesArg
+        ? Number(samplesArg.slice('--exact-samples='.length))
+        : undefined,
+    });
+    if (process.argv.includes('--json')) {
+      console.log(JSON.stringify(reports, null, 2));
+    } else {
+      printCreditSchedule(reports);
+    }
   } else {
     const rows = buildRows();
     if (process.argv.includes('--json')) {

@@ -1,0 +1,131 @@
+// Pins the PER-FRAME GAUGE-CREDIT SCHEDULE instrument
+// (`npx tsx scripts/battery/fb-count-matrix.ts --credit-schedule`).
+//
+// WHAT THE INSTRUMENT IS: the sim-side credit timeline — for every UNLOCKED region of a comp (the
+// fight-opening first fill, and each [Full-Burst-end, gauge-full) refill window), the ordered
+// (frame, unit, amount, source kind) list of everything fed to the burst bar. It exists so a
+// later gated measurement can compare the SIM's credit timeline against a real fill trace
+// frame-for-frame; the sibling --refill-starvation audit deliberately spreads a unit's
+// whole-fight `gaugeGenerated` uniformly over its window hits, which cannot say what the bar was
+// fed on any given frame.
+//
+// WHY THE FIXTURE ASSERTS CHECKS, NOT NUMBERS: the amounts are a RECONSTRUCTION — the event tap
+// carries no gauge values — so what has to stay true is that the reconstruction still reproduces
+// the engine. The instrument self-reports three INDEPENDENT checks and this fixture is the gate
+// on all three:
+//   (a) ENDPOINT — per-unit schedule sums equal the engine's own uncapped
+//       `SimResult.units[].gaugeGenerated`. Catches a missed source, a wrong amount, a wrong lock
+//       mask, anywhere in the fight.
+//   (b) DBG_GAUGE — every `[g] t=… slug +X gauge=Y` line sim.ts prints for the first 30s is
+//       matched against the schedule within the log's toFixed(2) rounding. Engine truth for the
+//       shot + skill channels, and structurally BLIND to fillGauge (which bypasses `addGauge`).
+//   (c) TRUNCATED-RUN — `cfg.durationSec` only bounds the frame loop, so a shorter run is a strict
+//       prefix. Diffing per-unit `gaugeGenerated` across two adjacent frame boundaries reads the
+//       engine's ACTUAL credit at that frame — the ONLY check that can see a fillGauge amount.
+//
+// THE COMP: `T5 wind-weak` (nayuta / cinderella-crystal-wave / anis-star / liberalio / velvet,
+// boss Iron), one of the two comps with a filmed steady-state cycle. It is the deliberate choice
+// over `iron sweep (run G)` because it seats all three credit kinds — including
+// cinderella-crystal-wave's `teamAmmo 200 → fillGauge 12%`, the channel that emits no event and
+// no log line and is therefore the one a naive tap-only reader silently drops.
+//
+// RUNTIME: the schedule itself is ONE 180s sim. Check (b) spawns a child process (sim.ts reads
+// its debug env at module load), check (c) costs two truncated sims per sampled frame — so the
+// fixture samples 6 frames instead of the CLI's 20. Re-derive, don't re-pin: if a check fails,
+// run the instrument and read WHY before touching anything here.
+import { describe, expect, it } from 'vitest';
+import {
+  CREDIT_SCHEDULE_COMPS,
+  creditScheduleFor,
+} from '../../battery/fb-count-matrix.js';
+
+describe('per-frame gauge-credit schedule', () => {
+  const r = creditScheduleFor('T5 wind-weak', { exactSamples: 6 });
+
+  it('is emitted for the two filmed comps', () => {
+    expect(CREDIT_SCHEDULE_COMPS).toEqual([
+      'iron sweep (run G)',
+      'T5 wind-weak',
+    ]);
+  });
+
+  it('reconstructs every credit path on this comp (nothing flagged inexact)', () => {
+    expect(r.unreconstructed).toEqual([]);
+  });
+
+  it('seats all three credit kinds, including the tap-invisible fillGauge channel', () => {
+    const kinds = new Set(r.credits.map((c) => c.kind));
+    expect([...kinds].sort()).toEqual(['fill', 'shot', 'skill']);
+    const fills = r.credits.filter((c) => c.kind === 'fill');
+    expect(fills.length).toBeGreaterThan(0);
+    // cinderella-crystal-wave is the carrier (skill1 `teamAmmo 200 → fillGauge 12%`)
+    expect(new Set(fills.map((c) => c.slug))).toEqual(
+      new Set(['cinderella-crystal-wave'])
+    );
+    for (const f of fills) {
+      expect(f.amount).toBeCloseTo(12, 10);
+    }
+  });
+
+  it('CHECK (a): every unit’s schedule sums to the engine’s gaugeGenerated', () => {
+    expect(r.checks.endpointMaxAbsResidual).toBeLessThan(1e-6);
+    expect(r.checks.endpointOk).toBe(true);
+    for (const e of r.checks.endpoint) {
+      expect(e.scheduled).toBeCloseTo(e.engine, 9);
+    }
+  });
+
+  it('CHECK (b): every DBG_GAUGE line the engine printed is matched', () => {
+    expect(r.checks.dbgGauge.lines).toBeGreaterThan(0);
+    expect(r.checks.dbgGauge.unmatchedEngine).toEqual([]);
+    expect(r.checks.dbgGauge.unmatchedSchedule).toEqual([]);
+    expect(r.checks.dbgGauge.matched).toBe(r.checks.dbgGauge.lines);
+  });
+
+  it('CHECK (c): sampled truncated-run steps equal the scheduled amounts', () => {
+    expect(r.checks.truncatedSamples).toBe(6);
+    expect(r.checks.truncated.length).toBeGreaterThan(0);
+    for (const t of r.checks.truncated) {
+      expect(t.engineStep).toBeCloseTo(t.scheduled, 9);
+    }
+    expect(r.checks.truncatedOk).toBe(true);
+  });
+
+  it('the truncated-run check covers the fillGauge channel specifically', () => {
+    // The point of sampling fills FIRST: (a) only proves the fight TOTAL and (b) cannot see this
+    // channel at all, so without a truncated step on a fill frame the amount is unvalidated.
+    const fillSteps = r.checks.truncated.filter((t) =>
+      t.kinds.includes('fill')
+    );
+    expect(fillSteps.length).toBeGreaterThan(0);
+    for (const t of fillSteps) {
+      expect(t.engineStep).toBeCloseTo(t.scheduled, 9);
+    }
+  });
+
+  it('durationSec is a strict prefix of the full run', () => {
+    expect(r.checks.prefixDeterminism.ok).toBe(true);
+  });
+
+  it('windows are the unlocked regions: one first fill, then one per Full-Burst end', () => {
+    expect(r.windows[0].kind).toBe('first-fill');
+    expect(r.windows[0].startFrame).toBe(0);
+    expect(r.windows.filter((w) => w.kind === 'refill').length).toBe(
+      r.windows.length - 1
+    );
+    for (const w of r.windows) {
+      expect(w.endFrame).toBeGreaterThan(w.startFrame);
+      // a window's gauge is one bar's worth (over-cap rides the last credit) unless the buzzer
+      // cut it short
+      if (!w.truncated) {
+        expect(w.gauge).toBeGreaterThanOrEqual(100);
+      }
+    }
+    // every credit lands inside the window it is filed under
+    for (const c of r.credits) {
+      const w = r.windows[c.window];
+      expect(c.frame).toBeGreaterThanOrEqual(w.startFrame);
+      expect(c.frame).toBeLessThan(w.endFrame);
+    }
+  });
+});

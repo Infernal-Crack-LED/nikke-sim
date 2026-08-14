@@ -8,6 +8,34 @@
 > npx tsx scripts/battery/fb-count-matrix.ts --json   # machine-readable
 > ```
 >
+> The same file carries the gauge instruments the investigation added: `--refill-starvation`,
+> `--gauge-sources`, `--focus-columns`, `--multihit-crediting`, and `--credit-schedule` (below).
+
+## The per-frame gauge-credit schedule (`--credit-schedule`)
+
+```sh
+npx tsx scripts/battery/fb-count-matrix.ts --credit-schedule [--json]
+npx tsx scripts/battery/fb-count-matrix.ts --credit-schedule --comp="T5 wind-weak" --exact-samples=40
+```
+
+Everything above is a RATE — gauge per second of refilling. This one is the **timeline**: for each
+unlocked region of a comp (the fight-opening first fill, and each `[Full-Burst-end, gauge-full)`
+refill window — the only frames where `addGauge` is not swallowed), the ordered
+`(frame, unit slug, amount, source kind)` list of every credit fed to the bar, plus per-window
+metadata. Kinds are `shot` (one trigger pull), `skill` (one skill/burst impact) and `fill` (a
+"Fills Burst Gauge X%" effect, which bypasses `addGauge` entirely). It is emitted for the two
+comps with a filmed steady-state cycle, **iron sweep (run G)** and **T5 wind-weak**, so a later
+gated measurement can hold a real fill trace against the sim's credit timeline frame-for-frame.
+
+The event tap carries no gauge amounts, so the amounts are a RECONSTRUCTION from the same inputs
+the engine reads — and the driver self-reports three independent checks rather than asking to be
+trusted: **(a)** each unit's schedule sums to the engine's own uncapped `gaugeGenerated`;
+**(b)** every `[g]` line `DBG_GAUGE` prints for the first 30 s is matched within print rounding
+(a child process, since `sim.ts` reads its debug env at module load); **(c)** truncated runs at
+adjacent `durationSec` boundaries re-derive the engine's actual credit at sampled frames — the only
+check that can see a `fillGauge` amount. Anything it cannot rebuild exactly is printed under
+`⚑ NOT RECONSTRUCTED EXACTLY`. Pinned by `scripts/tests/battery/credit-schedule.test.ts`.
+
 > **Every number here is the SIM's**, deterministic path (`SEEDS=1` equivalent, `seed=undefined`).
 > The only real-world figures are the `measured` column and the cycle periods cited in the
 > commentary — those come from `docs/probe-runs.md` (2026-08-13 tempo-gap entry).
