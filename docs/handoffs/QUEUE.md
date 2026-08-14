@@ -156,8 +156,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      — maxwell/anis-star 250, scarlet-black-shadow's enacted 1.5×; the only unmeasured column,
      vesti-tactical-upgrade's pinned 200, seats no comp; even a maximally wrong column covers
      ≤22% of the filmed shortfalls; instrument + fixture committed, plan doc carries the
-     record), (4) whether multi-hit weapons credit gauge per landed hit or per trigger. Only
-     (4) remains; do not bundle it with anything.
+     record), ~~(4) multi-hit crediting (per landed hit vs per trigger)~~ **CLOSED 2026-08-14 —
+     EXCLUDED as the shortfall cause** (the primary sources never distinguished landed pellets
+     from trigger pulls — that IS the finding, and it is an owner question before a measurement;
+     the ceiling arm `SGGAUGE=trigger` lifts SG-carrier generation +27–48% / team +7–17% and
+     moves ZERO Full-Burst counts anywhere, every SG comp stays exactly one short, the filmed
+     comps seat no SG carrier at all; arm + instrument + fixture on branch `audit/item4-multihit`
+     pending the owner's merge call, plan doc carries the record; the owner question is filed as
+     open-questions U40). **All four items closed and NONE explains the shortfall — the plan's
+     stop condition has been met: the remainder is not in any of the four generation candidates
+     and goes back to the owner rather than into a fifth speculative item.** Live residue: U40
+     (faithfulness, not shortfall), the U28 `skillGauge` divisor residual (~12% of T5's cycle gap,
+     footage-gated), and the separate real-Full-Burst-duration measurement below.
    - **A SEPARATE small measurement still open:** read the real Full Burst duration off a visual that
      does NOT share the drain bar's under-render — the FB screen border / cut-in vignette, or a
      buff-icon timer — on either recording already on disk. **One clean "real FB ≈ 10s" converts this

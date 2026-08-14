@@ -303,6 +303,56 @@ damage-model constant and the fitting-to-data risk is maximal here.
 
 ## Item 4 — Do multi-hit weapons credit gauge per LANDED hit or per trigger?
 
+> **RESOLVED 2026-08-14 — EXCLUDED as the shortfall cause; the owner question stays OPEN as a
+> faithfulness matter (record and close).** The audit ran as specified: source question first,
+> then the ENV-gated A/B.
+>
+> **Source census (premise 2) — the predicted finding: the primary sources NEVER distinguished
+> landed hits from trigger pulls.** The datamine column is per-trigger (`target_burst_energy_pershot`;
+> its per-pellet × `shot_count` split is table structure, not a miss test); the "fill counts HITS,
+> not damage" lineage (note.com/\_trick\_, wiki3, nikke.gg) is gauge-vs-damage, not hits-vs-misses;
+> the ONE explicit statement — auto-play.md §4 "(missed pellets generate nothing)" — is a
+> parenthetical on the 2026-07-13 SG damage-falloff ⚑ calibration with no independent gauge-side
+> record; and no SG solo gauge-bar recording has ever been read (both solo anchors are charge
+> weapons). Per this item's method, that makes it an owner question before a measurement.
+>
+> **Step-0 premises re-derived (code, this session):** (1) `hitFraction` is fed at ONE call site
+> only (firePull → `shotGauge`) and only for SG spray: landed/base pellets (Bernoulli per pellet
+> under a seed, else the expected mean; base-capped per the A4 "+pellets buffs don't pump
+> per-trigger energy" decision); AR/SMG/SR/RL/MG all pass 1. (3) MG `hitsPerShot` = belt rounds
+> per pull and each round is credited as a gauge hit (`shotGauge` rounds × per-round table value;
+> DECISIONS 2026-08-11 round definition pinned on `neve`; the §7 rl3 cross-check passed all MGs
+> within ±15%) — no MG miss model exists anywhere, so landed-vs-trigger does not arise for MG.
+>
+> **A/B sizing (committed instrument, default OFF):** `SGGAUGE=trigger` (src/engine/sim.ts) forces
+> the full datamine per-trigger value on every SG spray pull — gauge ONLY; damage keeps the landed
+> fraction, rng streams untouched. Instrument:
+> `npx tsx scripts/battery/fb-count-matrix.ts --multihit-crediting`, pinned by
+> `scripts/tests/battery/multihit-crediting.test.ts` — all three live on branch
+> **`audit/item4-multihit`** (worktree-isolated per CLAUDE.md rule 8; verify.sh green there; the
+> arm-OFF default proven payload-byte-identical by a full five-artifact board rebuild; pending the
+> owner's merge/PR call). Panel = the nine off-count comps + the two `dorothy-serendipity` anchor
+> comps.
+>
+> **Measured (deterministic EV):** the arm lifts SG-carrier generation **+27–48%** (noir
+> 12.93→16.92 gauge/60f, soda-twinkling-bunny 7.65→10.63 on her control, naga 3.07→4.54,
+> arcana-fortune-mate 2.31→3.41, dorothy 4.93→6.24 PH) — team generation **+7–17% on all five
+> SG-seated off-count comps** — and moves **ZERO Full-Burst counts anywhere**: every SG comp stays
+> exactly one short (N3 9/10, misc B3s 12/13, soda-tb 9/10, N2 9/≥10, N5 11/12), both dorothy
+> anchor comps hold 12/12, and the full 31-comp EV board shows 0 FB movers (damage collateral
+> ≤+7.7%, SG comps only, rotation-coupling). The four SG-free comps — including the two filmed
+> comps that carry the only quantified 39–50% shortfalls — are byte-identical between arms by
+> construction and observation. The known sensitivity points the OTHER way: lowering SG gauge via
+> faithful landing dropped N5 11→10 (2026-08-03, scientific-method harness), but raising it to the
+> per-trigger CEILING cannot lift it back to its measured 12.
+>
+> **Verdict per the decision rule:** even the ceiling of the "missed pellets generate" hypothesis
+> buys no burst boundary anywhere, and the two filmed shortfalls cannot be touched by SG crediting
+> at all — item 4 cannot explain the shortfall. The owner question ("does a missed SG pellet
+> generate burst gauge?") is filed as open-questions **U40** with this sizing attached: the answer
+> moves SG-seated generation rates ~7–17% (faithfulness), but is no longer a shortfall suspect.
+> Nothing enacted on main; the arm stays default-OFF until a ruling or footage settles it.
+
 **QUESTION.** `shotGauge(u, frame, hitFraction)` scales gauge by a hit fraction (sim.ts:1483-1500),
 and shotguns feed it per pellet while MGs credit `hitsPerShot` rounds per pull. Does the game credit
 gauge for pellets/rounds that MISS?
@@ -355,6 +405,17 @@ than measured, and "does a missed pellet generate burst gauge" is likely one of 
 **Stop condition for the whole thread:** if items 1–4 together account for well under the measured
 39–50% shortfall, the remainder is NOT in generation and the frame above is wrong — that is a real
 result and it goes back to the owner rather than into a fifth speculative item.
+
+> **STATUS 2026-08-14 — ALL FOUR ITEMS CLOSED; THE STOP CONDITION HAS BEEN MET.** Item 1 (refill
+> starvation — front-loaded, not starved), item 2 (non-bullet sources — census clean for comp
+> movers; the one live lever is the footage-gated `skillGauge` divisor at ~12% of T5's cycle gap),
+> item 3 (focus columns — all seated resolves measured, ceiling ≤22%), and item 4 (multi-hit
+> crediting — the per-trigger CEILING arm buys zero Full Bursts anywhere) together account for
+> well under the measured 39–50% shortfall. Per the stop condition, the remainder is not in any of
+> the four generation candidates, and the thread goes back to the owner rather than into a fifth
+> speculative item. Live residue: **U40** (the owner question from item 4 — faithfulness, not
+> shortfall), the **U28 divisor residual** (footage-gated), and the separate **real Full Burst
+> duration** measurement (QUEUE item 2).
 
 **Every item is findings-only.** None of them changes an engine constant, an override, or a snapshot
 in the session that discovers it. Enactment is a separate gated pass with fresh context — the

@@ -149,8 +149,10 @@ weapon-matched SG pair, three-way cross-validated).
 **KNOWN INTERIM STATE — SG override calibration debt:** the old landing sat 12–24% above the
 measured landing, so SG-unit board readings regressed (mean |ratio−1| 0.084 → 0.131) until the
 **SG override re-tune** follow-up pass lands. The N5 fire comp's Full-Burst shortfall (real 12 vs
-sim 10) is **open-questions U29** (pre-existing burst-generation question, not a UNIGEO regression).
-The isabel mid/midfar clock-drift re-derive stays open (**U27**).
+sim 11 as of 2026-08-14) is **open-questions U29** (pre-existing burst-generation question, not a
+UNIGEO regression; its per-pellet-vs-per-trigger gauge angle was SIZED and EXCLUDED 2026-08-14 by
+investigation-plan item 4 → see U40). The isabel mid/midfar clock-drift re-derive stays open
+(**U27**).
 
 ## 5. Opt-in kit primitives inventory
 

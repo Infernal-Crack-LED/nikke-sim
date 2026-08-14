@@ -180,6 +180,18 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
   extreme wrong column (350) covers ≤22.4% (iron sweep) / ≤12.6% (T5) of the measured
   shortfall. Instrument: `npx tsx scripts/battery/fb-count-matrix.ts --focus-columns`, pinned
   by `scripts/tests/battery/focus-columns.test.ts`; the record lives in the same handoff, item 3.
+  **A fourth candidate has since been EXCLUDED (2026-08-14):** multi-hit gauge crediting — the
+  primary sources never distinguished LANDED pellets from trigger pulls (the engine's
+  per-landed-pellet feed descends from a damage-falloff calibration parenthetical), and the
+  ceiling arm (`SGGAUGE=trigger`: full per-trigger SG gauge, gauge-only, default OFF) lifts
+  SG-carrier generation +27–48% (team +7–17% on all five SG-seated comps) yet moves ZERO
+  Full-Burst counts anywhere on the 31-comp board — every SG comp stays exactly one short, and
+  the filmed comps seat no SG carrier at all (byte-identical between arms). The arm, instrument,
+  and pinning test live on branch `audit/item4-multihit` (worktree-isolated per CLAUDE.md rule 8,
+  verify.sh green, pending the owner's merge call): `src/engine/sim.ts` (`SGGAUGE`),
+  `scripts/battery/fb-count-matrix.ts --multihit-crediting`,
+  `scripts/tests/battery/multihit-crediting.test.ts`; the record + owner question (U40) live in
+  the same handoff, item 4.
 - Passing comps are not shown, so the claim "`N6` passes because it has ~2 cycles of slack rather
   than correct tempo" is **not** demonstrated here. Add the passing comps to the script's `OFF` list
   to test it.
