@@ -142,7 +142,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      (iron sweep) / 50% (T5)** of what the filmed fights require. **The open thread is whether burst
      GENERATION is computed correctly** — four scoped investigations, one per session, in
      [2026-08-13-burst-generation-investigation-plan.md](2026-08-13-burst-generation-investigation-plan.md):
-     (1) refill-window starvation from post-Full-Burst reload state, (2) missing non-bullet sources,
+     ~~(1) refill-window starvation from post-Full-Burst reload state~~ **CLOSED 2026-08-14 —
+     NOT the cause** (first 1s after FB end delivers 114.7%/140.7% of steady state on the two
+     filmed comps — the window is FRONT-LOADED; instrument + fixture committed, plan doc carries
+     the record), (2) missing non-bullet sources,
      (3) the focused charge multiplier's per-unit column, (4) whether multi-hit weapons credit gauge
      per landed hit or per trigger. Run them in that order, do not bundle.
    - **A SEPARATE small measurement still open:** read the real Full Burst duration off a visual that

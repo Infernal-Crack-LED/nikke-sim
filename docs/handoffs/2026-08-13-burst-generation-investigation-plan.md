@@ -57,6 +57,29 @@ findable modeling error, not a timing subtlety. It is robust to the Full-Burst-d
 
 ## Item 1 — Is the refill window starved by post-Full-Burst reload state?
 
+> **RESOLVED 2026-08-14 — NOT THE CAUSE (record and close).** The audit ran exactly as specified:
+> per-unit gauge-eligible hits bucketed by time-since-FB-end over all 11 steady-state refill
+> windows of each filmed comp. The first 1s after FB end delivers **114.7%** (iron sweep) and
+> **140.7%** (T5) of the window-tail steady-state rate — ≥80% on both comps, so reload state is
+> exonerated by the pre-committed rule. The window is FRONT-LOADED (units leave FB with
+> full/restored magazines and live buffs), the exact opposite of a ramp; no unit's first post-FB
+> hit lands on a reload completion (reloadBoundFirsts = 0 everywhere). Robust to the baseline
+> choice (vs the whole-window average the first 1s still delivers ~111%/~127%). One sub-80%
+> per-unit reading — `liberalio` 68% on iron sweep — is charge-PHASE timing (median first hit
+> 1.12s ≈ her charge cycle; 0/11 reload-bound), not starvation.
+>
+> Step-0 premises were re-derived blind (three fresh-context verifiers, 2026-08-14): the FB
+> boundaries write NO ammo/reload/charge phase field directly (state carries across; only
+> FB-keyed kit blocks can touch it and none are seated in these comps); `unlimitedAmmo` lapse
+> leaves the mag at its pre-window level and `nayuta`'s timed swap exit refills to full at FB end;
+> `gaugeBuildTimeSec` is a rotation-state counter, not a pure firing window (it ticks through
+> deploy delay, boss-unhittable transitions at 33/70/106/144/176s, and per-unit reloads) — so the
+> audit buckets hit EVENTS directly. Committed instrument:
+> `npx tsx scripts/battery/fb-count-matrix.ts --refill-starvation` (`auditRefillStarvation` in
+> `scripts/battery/fb-count-matrix.ts`), pinned by `scripts/tests/battery/refill-starvation.test.ts`.
+> Team-wide ≥0.9s silences inside 2 windows per comp are the boss unhittable transitions, not
+> reload starvation. Nothing enacted; nothing to enact.
+
 **Run this one first.** It is the only candidate that is invisible to every existing check by
 construction, and it needs no footage.
 

@@ -157,7 +157,14 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
   does not prove a faster refill fixes the counts. That is a separate gated enactment pass.
 - It does not localize the cause inside the refill window. Per the 2026-08-13 pass, the FB-end →
   next-stage-1 span is indivisible to the instrument, so "gauge generates too slowly", "the chain
-  opens late", and "the real Full Burst is shorter than 10s" are still not separated.
+  opens late", and "the real Full Burst is shorter than 10s" are still not separated. **One in-window
+  candidate has since been EXCLUDED (2026-08-14):** post-Full-Burst reload-state starvation is not the
+  cause — the first 1s after FB end delivers 114.7% (iron sweep) / 140.7% (T5) of the steady-state
+  rate, i.e. the refill window is FRONT-LOADED, not ramping. Instrument:
+  `npx tsx scripts/battery/fb-count-matrix.ts --refill-starvation`, pinned by
+  `scripts/tests/battery/refill-starvation.test.ts`; the record lives in
+  [handoffs/2026-08-13-burst-generation-investigation-plan.md](handoffs/2026-08-13-burst-generation-investigation-plan.md)
+  item 1.
 - Passing comps are not shown, so the claim "`N6` passes because it has ~2 cycles of slack rather
   than correct tempo" is **not** demonstrated here. Add the passing comps to the script's `OFF` list
   to test it.
