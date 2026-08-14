@@ -26,7 +26,9 @@
 // hand; `resolve()` throws rather than silently simming a team nobody recorded.) The single
 // deliberate exception is documented at its call site.
 
+import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import type { SimResult } from '../../src/engine/sim.js';
 import type { EffectDef } from '../../src/skills/types.js';
@@ -1398,6 +1400,285 @@ function printGaugeSources(reports: GaugeSourceCompReport[]) {
 }
 
 // ============================================================================
+// MULTI-HIT CREDITING AUDIT — item 4 of the 2026-08-13 burst-generation
+// investigation plan (docs/handoffs/2026-08-13-burst-generation-investigation-plan.md).
+// Run it: npx tsx scripts/battery/fb-count-matrix.ts --multihit-crediting
+//
+// QUESTION: do multi-hit weapons credit gauge per LANDED hit or per TRIGGER? The engine feeds
+// SG gauge by the landed-pellet fraction (`shotGauge(u, frame, sgGaugeFrac)` in firePull —
+// "missed pellets generate nothing" is the live DEFAULT ASSUMPTION, carried into the gauge
+// channel by the 2026-07-13 damage-falloff calibration, never ruled or measured for gauge),
+// while MG rounds and every single-bullet weapon credit full per-trigger gauge. The primary
+// sources never distinguished the two (the datamine column is per-trigger; its per-pellet ×
+// shot_count split is table structure, not a miss test; the "fill counts HITS, not damage"
+// lineage is gauge-vs-damage, not hits-vs-misses; no SG solo gauge-bar recording has ever been
+// read — both solo anchors are charge weapons). So this audit does NOT settle the question —
+// it SIZES it: an A/B between the live per-landed feed and the per-trigger arm
+// (`SGGAUGE=trigger`, src/engine/sim.ts), default OFF, gauge-only (damage keeps the landed
+// fraction, rng streams identical).
+//
+// METHOD: the baseline arm runs in-process; the trigger arm runs in a CHILD PROCESS because
+// sim.ts reads ENV at module load. Both arms snapshot the same panel — the nine off-count
+// comps plus the two dorothy-serendipity comps (the plan's designated SG-spray regression
+// anchor: her 80-pellet → 3-big-shot consolidation amplifies pellet errors into large swings).
+// The decision quantities are the Full-Burst counts + team generation rates under each arm.
+// Comps with NO SG carrier are the scoping sanity check — non-SG paths pass hitFraction = 1 by
+// construction, so they must be byte-identical between arms (and this audit pins that). Per
+// the plan's decision rule, a board move here LOCALIZES the lever; it does not license landing
+// anything — "does a missed pellet generate?" is an owner ruling or a footage measurement.
+// ============================================================================
+
+export type MultihitArm = 'baseline' | 'trigger';
+
+/** The plan's SG-spray regression anchor comps (dorothy-serendipity seats both). */
+export const MULTIHIT_ANCHOR_COMPS = [
+  'PH water B3s (boss Fire)',
+  'N9 redhood/elegg electric (boss Electric)',
+] as const;
+
+export interface MultihitUnitSnapshot {
+  slug: string;
+  gaugeGenerated: number;
+  totalDamage: number;
+  pulls: number;
+}
+
+export interface MultihitCompSnapshot {
+  name: string;
+  fullBursts: number;
+  teamRate: number;
+  buildSec: number;
+  units: MultihitUnitSnapshot[];
+}
+
+interface MultihitPanelEntry {
+  label: string;
+  comp: (typeof COMPS)[number];
+  measured: number | [number, number] | null;
+  status: Status | 'anchor';
+}
+
+/** The audit panel: nine off-count comps + the two dorothy anchor comps. */
+function multihitPanel(): MultihitPanelEntry[] {
+  const anchors = MULTIHIT_ANCHOR_COMPS.map((name) => {
+    const c = COMPS.find((x) => x.name === name);
+    if (!c) {
+      throw new Error(
+        `multihit-crediting audit: no comp named "${name}" in scripts/experiment.ts`
+      );
+    }
+    return {
+      label: name,
+      comp: c,
+      measured: null,
+      status: 'anchor' as const,
+    };
+  });
+  return [
+    ...OFF.map((off) => ({
+      label: off.name,
+      comp: resolve(off),
+      measured: off.measured,
+      status: off.status,
+    })),
+    ...anchors,
+  ];
+}
+
+/**
+ * One-arm snapshot of the whole panel (deterministic EV runs). This is also the child-process
+ * entry point (`--multihit-arm-snapshot`): the arm is selected entirely by the caller's env.
+ */
+export function multihitSnapshot(): MultihitCompSnapshot[] {
+  return multihitPanel().map(({ label, comp }) => {
+    const res = run(comp, {}, undefined);
+    const buildSec = res.gaugeBuildTimeSec;
+    const units = res.units.map((u) => ({
+      slug: u.slug,
+      gaugeGenerated: u.gaugeGenerated,
+      totalDamage: u.totalDamage,
+      pulls: u.pulls,
+    }));
+    const teamRate = units.reduce(
+      (a, u) => a + (buildSec > 0 ? u.gaugeGenerated / buildSec : 0),
+      0
+    );
+    return { name: label, fullBursts: res.fullBursts, teamRate, buildSec, units };
+  });
+}
+
+function hasSgSwapEffect(effects: EffectDef[]): boolean {
+  return effects.some(
+    (e) =>
+      (e.kind === 'weaponSwap' && e.weapon === 'SG') ||
+      (e.kind === 'escalating' && hasSgSwapEffect(e.steps))
+  );
+}
+
+/**
+ * How a unit feeds the SG pellet path: its char weapon is SG, or an override declares a
+ * weaponSwap with weapon 'SG' (k's burst shotgun — the only swap carrier today; her gauge feed
+ * is inert by the FB lock, but the census stays engine-shaped rather than char-static).
+ */
+export function sgCarrierVia(slug: string): 'weapon' | 'swap' | null {
+  if (data.characters[slug]?.weapon === 'SG') {
+    return 'weapon';
+  }
+  const o = loadOverride(slug);
+  if (o) {
+    for (const slot of OVERRIDE_SLOTS) {
+      for (const b of o[slot] ?? []) {
+        if (hasSgSwapEffect(b.effects ?? [])) {
+          return 'swap';
+        }
+      }
+    }
+  }
+  return null;
+}
+
+export interface MultihitCarrierRow {
+  slug: string;
+  via: 'weapon' | 'swap';
+  /** gauge per 60f of refilling, each arm */
+  basePer60: number;
+  trigPer60: number;
+  /** uncapped gaugeGenerated, each arm */
+  baseTotal: number;
+  trigTotal: number;
+  /** total damage, each arm (rotation collateral — the arm itself touches gauge only) */
+  baseDamage: number;
+  trigDamage: number;
+}
+
+export interface MultihitCreditingReport {
+  comp: string;
+  status: Status | 'anchor';
+  measured: number | [number, number] | null;
+  hasSgCarrier: boolean;
+  baseFb: number;
+  trigFb: number;
+  baseTeamRate: number;
+  trigTeamRate: number;
+  carriers: MultihitCarrierRow[];
+}
+
+export interface MultihitCreditingAudit {
+  /** always 'trigger' — the arm this audit sizes against the live baseline */
+  arm: MultihitArm;
+  reports: MultihitCreditingReport[];
+}
+
+export function auditMultihitCrediting(): MultihitCreditingAudit {
+  if (process.env.SGGAUGE !== undefined) {
+    throw new Error(
+      `multihit-crediting audit: SGGAUGE is set (${process.env.SGGAUGE}) — the baseline arm ` +
+        'must run on the live engine; unset SGGAUGE and re-run'
+    );
+  }
+  const baseline = multihitSnapshot();
+  // sim.ts reads ENV at module load, so the trigger arm runs in a child process. Spawn THIS
+  // file by absolute path so the child's isMain check holds from any cwd.
+  const raw = execFileSync(
+    'npx',
+    ['tsx', fileURLToPath(import.meta.url), '--multihit-arm-snapshot'],
+    {
+      encoding: 'utf8',
+      maxBuffer: 1 << 26,
+      env: { ...process.env, SGGAUGE: 'trigger' },
+    }
+  );
+  const trigger = JSON.parse(raw) as MultihitCompSnapshot[];
+  const trigByName = new Map(trigger.map((c) => [c.name, c]));
+  const panel = multihitPanel();
+
+  const reports: MultihitCreditingReport[] = baseline.map((b) => {
+    const entry = panel.find((p) => p.label === b.name);
+    if (!entry) {
+      throw new Error(`multihit-crediting audit: ${b.name} dropped from the panel`);
+    }
+    const t = trigByName.get(b.name);
+    if (!t) {
+      throw new Error(
+        `multihit-crediting audit: trigger arm produced no snapshot for ${b.name}`
+      );
+    }
+    const carriers: MultihitCarrierRow[] = b.units
+      .filter((u) => sgCarrierVia(u.slug) !== null)
+      .map((u) => {
+        const tu = t.units.find((x) => x.slug === u.slug);
+        if (!tu) {
+          throw new Error(
+            `multihit-crediting audit: ${u.slug} missing from the trigger arm of ${b.name}`
+          );
+        }
+        return {
+          slug: u.slug,
+          via: sgCarrierVia(u.slug)!,
+          basePer60: b.buildSec > 0 ? u.gaugeGenerated / b.buildSec : NaN,
+          trigPer60: t.buildSec > 0 ? tu.gaugeGenerated / t.buildSec : NaN,
+          baseTotal: u.gaugeGenerated,
+          trigTotal: tu.gaugeGenerated,
+          baseDamage: u.totalDamage,
+          trigDamage: tu.totalDamage,
+        };
+      });
+    return {
+      comp: b.name,
+      status: entry.status,
+      measured: entry.measured,
+      hasSgCarrier: carriers.length > 0,
+      baseFb: b.fullBursts,
+      trigFb: t.fullBursts,
+      baseTeamRate: b.teamRate,
+      trigTeamRate: t.teamRate,
+      carriers,
+    };
+  });
+  return { arm: 'trigger', reports };
+}
+
+function printMultihitCrediting(audit: MultihitCreditingAudit) {
+  console.log(
+    '\n===== MULTI-HIT CREDITING — SG gauge per LANDED pellet (live) vs per TRIGGER (SGGAUGE=trigger) =====\n' +
+      'Deterministic EV runs, gauge-only arm (damage keeps the landed fraction). FB = Full Bursts.\n' +
+      'The game-behaviour question is OPEN — these numbers size it for the owner ruling.\n'
+  );
+  for (const r of audit.reports) {
+    const m =
+      r.measured === null
+        ? '(anchor comp — no measured count)'
+        : Array.isArray(r.measured)
+          ? `measured ${r.measured.join('-')}`
+          : `measured ${r.measured}`;
+    const tag = r.hasSgCarrier ? 'SG-SEATED' : 'SG-FREE (sanity)';
+    console.log(
+      `\n${'='.repeat(96)}\n${r.comp}  [${tag}]  —  FB ${r.baseFb} → ${r.trigFb}  (${m}, ${r.status})`
+    );
+    console.log(
+      `  team generation  ${r.baseTeamRate.toFixed(2)} → ${r.trigTeamRate.toFixed(2)} gauge/60f` +
+        (r.baseTeamRate > 0
+          ? `  (+${(((r.trigTeamRate - r.baseTeamRate) / r.baseTeamRate) * 100).toFixed(1)}%)`
+          : '')
+    );
+    for (const c of r.carriers) {
+      console.log(
+        `  ${c.slug.padEnd(26)} via ${c.via.padEnd(6)}  gauge ${c.basePer60.toFixed(2)} → ${c.trigPer60.toFixed(2)}/60f` +
+          `   total ${c.baseTotal.toFixed(0)} → ${c.trigTotal.toFixed(0)}` +
+          `   dmg ${(c.baseDamage / 1e6).toFixed(1)}M → ${(c.trigDamage / 1e6).toFixed(1)}M`
+      );
+    }
+    if (!r.hasSgCarrier) {
+      console.log(
+        r.baseFb === r.trigFb && r.baseTeamRate === r.trigTeamRate
+          ? '  byte-identical between arms — the arm is SG-scoped (non-SG hitFraction = 1 by construction)'
+          : '  ⚠ MOVED DESPITE NO SG CARRIER — the arm is leaking past the SG path'
+      );
+    }
+  }
+}
+
+// ============================================================================
 // FOCUS-COLUMN AUDIT — item 3 of the 2026-08-13 burst-generation investigation
 // plan (docs/handoffs/2026-08-13-burst-generation-investigation-plan.md).
 // Run it: npx tsx scripts/battery/fb-count-matrix.ts --focus-columns
@@ -1710,6 +1991,16 @@ if (isMain) {
     } else {
       printFocusColumns(reports, focusColumnCensus());
     }
+  } else if (process.argv.includes('--multihit-crediting')) {
+    const audit = auditMultihitCrediting();
+    if (process.argv.includes('--json')) {
+      console.log(JSON.stringify(audit, null, 2));
+    } else {
+      printMultihitCrediting(audit);
+    }
+  } else if (process.argv.includes('--multihit-arm-snapshot')) {
+    // child-process entry point for the audit's trigger arm (arm = caller's env)
+    console.log(JSON.stringify(multihitSnapshot()));
   } else {
     const rows = buildRows();
     if (process.argv.includes('--json')) {

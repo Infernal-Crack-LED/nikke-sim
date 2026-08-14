@@ -1293,6 +1293,20 @@ export function runSim(
   // against the old inflated landing and await their re-tune pass (DECISIONS 2026-07-22).
   const UNIGEO: 'off' | 'sg' | 'all' =
     ENV.UNIGEO === 'off' || ENV.UNIGEO === 'sg' ? ENV.UNIGEO : 'all';
+  // ── SG gauge-crediting arm (ENV.SGGAUGE='trigger'; default OFF = the live per-LANDED-pellet feed) ──
+  // Burst-generation investigation plan item 4 (docs/handoffs/2026-08-13-burst-generation-
+  // investigation-plan.md): does the game credit burst gauge per LANDED SG pellet (the live model —
+  // `bandSg.gauge`, the base-capped landed/base fraction) or per TRIGGER (the datamine's per-trigger
+  // `target_burst_energy_pershot` regardless of how many pellets land)? The primary sources never
+  // distinguished the two: the datamine column is per-trigger (its per-pellet × shot_count split is
+  // table structure, not a miss test), the "fill counts HITS, not damage" lineage is gauge-vs-damage,
+  // and the one explicit statement (auto-play.md §4 "missed pellets generate nothing") rode a DAMAGE
+  // falloff calibration as a parenthetical. This arm forces the FULL per-trigger value on every SG
+  // spray pull — gauge ONLY: damage keeps the landed fraction, and `bandSg` is still drawn with the
+  // same rng sequence, so default/off runs stay byte-identical. It exists to SIZE the difference for
+  // the owner ruling (or a future SG solo gauge-bar measurement); it does not settle the question.
+  // Instrument: `scripts/battery/fb-count-matrix.ts --multihit-crediting`.
+  const SG_GAUGE_TRIGGER = ENV.SGGAUGE === 'trigger';
   const coneSigmaFor = (weapon: string, hr: number): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
     if (scale === undefined) {
@@ -4232,7 +4246,11 @@ export function runSim(
     const sgFalloff =
       consolidating && consol ? consol.pelletFraction : bandSg.dmg;
     const sgGaugeFrac =
-      consolidating && consol ? consol.pelletFraction : bandSg.gauge;
+      consolidating && consol
+        ? consol.pelletFraction
+        : SG_GAUGE_TRIGGER
+          ? 1 // item-4 A/B arm: per-TRIGGER crediting — the full datamine per-trigger value regardless of landing
+          : bandSg.gauge;
     // The PARENT instance of this pull. Its final damage is recorded on the unit (below) so the
     // per-pull block dispatch further down can hand it to a `hitRepeat` rider — the dispatch
     // runs after this line, which is what makes "X% of the damage dealt by self" expressible.
@@ -4279,7 +4297,11 @@ export function runSim(
       });
     }
     u.pulls++;
-    shotGauge(u, frame, sgGaugeFrac); // out-of-near SG pellets that miss generate nothing (base-capped: +pellets buffs don't pump per-trigger energy)
+    // SG gauge feeds per LANDED pellet by default (base-capped: +pellets buffs don't pump
+    // per-trigger energy). "Missed pellets generate nothing" is the live DEFAULT ASSUMPTION, not a
+    // measurement — the per-trigger arm (`SGGAUGE=trigger`, see its declaration) sizes the other
+    // reading (investigation-plan item 4; the primary sources never distinguished the two).
+    shotGauge(u, frame, sgGaugeFrac);
 
     const extraPerHit = stat(u, 'extraHitDamagePct', frame);
     if (extraPerHit > 0) {
