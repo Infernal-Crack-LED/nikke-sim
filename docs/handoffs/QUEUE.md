@@ -127,19 +127,45 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    - **Encode-consistency candidates**: `anis` and `mica` both keep an `attacked`-N line unmodeled
      on "nothing feeds the trigger" grounds. Same call, so decide them together, not one at a time.
 
-2. **Burst-generation thread — pickup packet: [2026-08-14-burst-gen-next-session.md](2026-08-14-burst-gen-next-session.md)**
-   (on `main`; read it INSTEAD of re-deriving the thread — verified-facts block, artifact map,
-   traps). State in one line: Full Burst owner-ruled EXACTLY 10s (footage-confirmed 10.13–10.22s);
-   the cycle gap decomposes 93.5–97% into refill-window duration on all three filmed comps; the
-   four-item generation plan is fully CLOSED; the fill-trace classification measurement returned
-   **CANNOT-MEASURE** (2-of-2 ACCEPT HIGH, LOG — `docs/probe-runs.md` 2026-08-14); the suggestive
-   ~1.7–2.0× in-window rate ratio is LOGGED, not a verdict. Remaining steps (detail + method in
-   the pickup packet): (1) instrument preludes — opening-window observable, reader flag-taxonomy
-   leak, SG gauge-fraction event tap (owner-gated engine touch); (2) NEW `/scientific-method`
-   pre-op on the bar-paint-anchored statistic to classify H-A/H-B/H-C; (3) the `anis-star`
-   `skillGauge`-divisor pipeline (existing battery-3 fixture first); (4) recording asks (solo
-   MG/SMG gauge-bar read; T1 wind-weak has no video); (5) residue ledger
-   (`snow-white-heavy-arms` U11c, `ein` U8, stage1→2 33f observation).
+2. **Burst-generation thread — steps 1a/1b/2/3 of the 2026-08-14 pickup packet LANDED 2026-08-15**
+   (packet CLOSED → `closed/`; records: `scientific-method-harness.md` 2026-08-15 entries ×2, the
+   preop packets `2026-08-15-anis-star-divisor-preop-packet.md` +
+   `2026-08-15-classification-preop-packet.md`, PRs #120/#121, branch
+   `measure/habc-classification`). State in one line: the in-window generation elevation is
+   measured FRESH at a **1.6–1.9× band** on both filmed arms (LOG, 2-of-2); classification of
+   WHERE it lives is INCONCLUSIVE on both arms by the pre-committed rules (iron sweep's H-C
+   reading survives only as a candidate — struck by the blind gate on the closure clause + noise
+   power); the `anis-star` divisor read returned CANNOT-MEASURE at n≥8, with a pixel-free
+   counting bound excluding BOTH candidate encodings (shipped 8.90 AND un-halved 10.39 %/pull) and
+   sub-steps permanently unresolvable at 60fps on that footage; the opening-window observable
+   shows ~0 banked during the drain hold (hypothesis-tier — promotion needs NEW footage or an
+   owner ruling); the team reader's flag-taxonomy leak is CLOSED (`offCurve`). Open items:
+   - **Owner: merge PR #120** (step-1 instruments) **and PR #121** (divisor measurement); then the
+     classification branch `measure/habc-classification` lands as the third PR (push is
+     owner-gated). `docs/STATE.md` reader-table rows for the new instruments
+     (`offCurve`/`--reflag`/`--diag`/`opening`/`classify`) go WITH those merges, not before.
+   - **Owner-gated engine touch (packet step 1c):** SG landed-pellet gauge fraction onto the
+     event tap — unblocks the misc B3s sim arm and later N2/N3/N5/`soda-twinkling-bunny` credit
+     analyses.
+   - **Judge-named next measurements (classification thread, ranked):** (1) same-regime C4 re-run
+     — quiet-noise floor on offCurve-reflagged/between-shot spans; decides whether iron sweep's
+     H-C candidate re-stamps (single cheapest resolver); (2) a pre-registered noise-corrected
+     ceiling test (subtract falseRate × quietBins); (3) source-hunt the excess event instants
+     (clustered-at-visual-cause supports H-C, scattered refutes); (4) a third comp with a
+     non-vacuous ceiling (T5's was cap-saturated — the H-C detector was effectively n=1); (5) a
+     symmetric-E_min statistic as its OWN pre-op (T5's O/S were structurally uninterpretable with
+     the one-sided threshold).
+   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record (her bar zeroes at
+     21.73s — a longer file contains a second clean window free; targets n≥8 + a second
+     count-to-fill); `modernia` Destroy-Mode bar read (U28's named probe — independent unit AND
+     the separate `extraHitDamagePct` site); one solo MG or SMG gauge-bar read
+     (`cinderella-crystal-wave` MG / `nayuta` SMG — no non-charge per-shot row is bar-validated);
+     T1 wind-weak video (screenshot only).
+   - **Residue ledger (findings-only, unchanged):** `snow-white-heavy-arms` U11c burst-fire
+     generation quirk (~24 hits/3s, seats N5); `ein` U8 0.7× team residual (N2); stage1→2 real
+     33f/32f vs modeled 30f (runs AGAINST the gap).
+   - Liberalio patch-note draft awaiting owner approval (prior session's approval was
+     chat-ephemeral, never recorded — not published).
 3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
    Recipe (unchanged, but the qualifying set is now exact): popup-read a qualifying all-enemies
    burst nuke cast INSIDE vs OUTSIDE a `trina` Spread Roots window and compare against
