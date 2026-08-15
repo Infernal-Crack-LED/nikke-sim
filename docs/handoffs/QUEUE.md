@@ -170,12 +170,57 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      and goes back to the owner rather than into a fifth speculative item.** Live residue: the
      U28 `skillGauge` divisor residual (~12% of T5's cycle gap, footage-gated), and the separate
      real-Full-Burst-duration measurement below.
-   - **A SEPARATE small measurement still open:** read the real Full Burst duration off a visual that
-     does NOT share the drain bar's under-render — the FB screen border / cut-in vignette, or a
-     buff-icon timer — on either recording already on disk. **One clean "real FB ≈ 10s" converts this
-     to H1 CONFIRMED on the already-measured gap** and unblocks a proposal; "≈8.9s" hands most of the
-     gap to Full-Burst duration instead. Instrument to extend: `scripts/probe/cycle-table.ts` +
-     `scan.ts --cycle-table` (committed, fixture-pinned).
+   - ~~The real-Full-Burst-duration measurement~~ **CLOSED 2026-08-14 by owner ruling — dead end,
+     do not measure: Full Burst is EXACTLY 10s unless an ability extends or shortens it**
+     (DECISIONS 2026-08-14). That converts the tempo gap to H1 CONFIRMED at the point estimates —
+     the sim feeds the bar **61% (iron sweep) / 50% (T5)** of required, all of it GENERATION — and
+     sharpens a contradiction: iron sweep's five SRs carry measured per-shot values, measured
+     focus/unfocused multipliers, and zero gauge kit lines, yet the real fight generates ~38.6
+     gauge/s where those values produce 23.7. Some settled premise breaks in TEAM context, or a
+     source with no sim primitive exists.
+   - **The open next measurement (PRIMARY, no new footage): read the refill-window FILL-TRACE
+     shape** — real gauge/s + step structure (many-small-steps ⇒ more hits than modeled;
+     bigger-steps ⇒ per-hit credit larger in team; steps-with-no-sim-counterpart ⇒ unmodeled
+     source; early-full ⇒ bar/threshold premise) — on the recordings already on disk.
+     Ranked avenue list + hypothesis classes:
+     [2026-08-14-burst-generation-remaining-avenues.md](2026-08-14-burst-generation-remaining-avenues.md).
+     - **`/scientific-method` step-0 premise gate RAN 2026-08-14 — 3 of 4 premises REFUTED as
+       assumed; the measurement is gated on an INSTRUMENT PHASE (cheap lane) first.** Verifier
+       findings: the tempo-cycle fixtures carry the FB DRAIN bar only (fill ≡ 0 across every
+       refill window — `scan.ts`'s crop does not contain the charging bar); NO team-HUD fill
+       calibration exists (`gauge-fill.py` is solo-validated only, MIS-LOCKS on team HUD — the
+       `alice focused.MP4` 128px sub-lock produced stuck 44–57% reads; low-fill readings are
+       owner-ruled UI artifacts; large-step magnitude carries an unresolved ~1.0–1.3% hot bias
+       — do not enact constants from it); the sim exposes NO per-credit gauge amounts
+       (`DBG_GAUGE` hard-capped at fight-time < 30s, `fillGauge` bypasses `addGauge` and is
+       invisible to every tap/event — verified live: `cinderella-crystal-wave`'s +12 landed
+       inside a T5 refill window unlogged). CONFIRMED: both scanned videos on disk +
+       re-scannable (smoke re-scan reproduced fixture cycles), and **seven of nine off-count
+       comps have recordings** — incl. TWO of the `liberalio`-free `misc B3s (run I order)`
+       (`docs/probes/u8/u8 i vid.mov`, `docs/probes/tb2/tb2 4 vid.MP4`), so the tempo-gap
+       generality gap is closable with existing footage.
+     - **RUN COMPLETE 2026-08-14 → LOG (2-of-2 ACCEPT, both HIGH).** Full record:
+       `docs/probe-runs.md` 2026-08-14 entry + `docs/handoffs/scientific-method-harness.md`.
+       Verdict on the pre-committed statistic: **CANNOT-MEASURE** (dispersion ceiling blown by
+       the window-opening blind spot × inverted fill shapes — sim front-loads, real back-loads;
+       no H-A/H-B/H-C stamp). What LANDED as measurements: the cycle gap decomposes 93.5–97%
+       into refill-window duration on all three arms incl. the `liberalio`-free one; a footage
+       10.13–10.22s Full-Burst span read (consistent with the owner's exactly-10s ruling); the
+       real gauge-full→FB ladder is 1.75–1.77s vs modeled 1.8667s with the missing ~0.47s
+       relocated between stage 3 and FB (logged, NOT refit grounds for `PRE_B1_GAP_FRAMES`).
+     - **Branches pending owner PR:** `instrument/gauge-fill-team` (`b93ab217`),
+       `instrument/gauge-credit-schedule` (`df9efdf1`), `measure/fill-trace` (`f8cd76b9` —
+       deliverable, replay bundles, comparison tool + vitests). All verify-green.
+     - **Named next steps (from the blind post-op judge; a NEW pre-op is required — the
+       bar-paint-anchored statistic cannot be promoted retroactively):** (a) an opening-window
+       observable — does ANY gauge bank during the ~1.5s widget-hold after the drain bar
+       empties? (settles whether the real window opens at FB-end or at bar-paint, and converts
+       the struck low-fill read into a measurement); (b) close the reader's flag-taxonomy leak
+       (12 of 36 windows carry unexplained clean-set monotonicity violations, worst 91%);
+       (c) tap the SG per-landed-pellet gauge fraction onto the event stream so the third arm's
+       credit amounts validate; then (d) a new pre-op with a pre-committed rule on the
+       `[barPaint, green-full]`-anchored statistic to classify the suggestive ~1.7–2.0×
+       in-window ratio (H-A per-hit scaling vs H-B extra hits vs H-C unmodeled source).
    - Generality is bounded: both recordings are `liberalio` comps and it appears in zero passing
      comps, so it is perfectly confounded. Repeat on the `liberalio`-free shortfall comp
      `misc B3s (run I order)` (sim 12 vs measured 13) before claiming an engine-general error.
