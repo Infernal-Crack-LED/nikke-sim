@@ -1,0 +1,4222 @@
+{
+  "slug": "anis-star-solo-a3-gauge-reread",
+  "date": "2026-08-15",
+  "video": "docs/probes/burst tests/a2 anis star.MP4",
+  "plan": "docs/handoffs/2026-08-15-anis-star-divisor-preop-packet.md",
+  "videoMeta": {
+    "container": "1206x2622 portrait, rotation 90 (2622x1206 landscape after ffmpeg auto-rotate)",
+    "fps": 60,
+    "durationSec": 22.53,
+    "gameTimerAnchor": "03:00 timer reads 02:58 at video t~9s, 02:54 at t~13s, 02:50 at t~17s, 02:45 at t~21s (1fps full-frame sampling, +-1s)"
+  },
+  "identity": {
+    "confirmed": "anis-star (Anis: Star, RL/Electric/Burst I/Defender) SOLO - no teammate in any sampled frame",
+    "evidence": [
+      "full frames at 1fps across the whole video (t~2,3,5,9,13,17,21s): exactly one character model on field in every frame; entry cut-in shows a single portrait",
+      "ammo counter is a 6-magazine (006 after reload, 005 after first shot) matching data/characters.json anis-star ammo 6",
+      "charge % HUD present (charge weapon); fire-instant display 118-126% (render-only overcharge display per owner ruling 2026-07-29)",
+      "Burst I cast observed at video t~20.4-21.7 (cast overlay AMMO 000 / CHARGE 100% / TIME LIMIT) with the stage-II hand-off hexagon counting 08.32s at the right HUD edge and no teammate to receive it - matches the docs/probe-runs.md A3 entry's recorded burst-chain collapse"
+    ],
+    "provenance": "docs/probe-runs.md Part A3 entry (battery 3, 2026-07-13). The a2-prefixed TEAM pair (a2 takina focus.MP4 / a2 crown focus.mov) are the A1/A2 recordings (probe-runs.md:485-509); this file is the A3 solo despite sharing the a2 filename prefix.",
+    "inventory": "only candidate solo anis-star recording under docs/probes/ (find -iname '*anis*': this file plus one unrelated screenshot '713 probe runs/run D (no anis).png')"
+  },
+  "instrumentPrelude": {
+    "reader": "scripts/probe/gauge-fill.py (solo path)",
+    "fixtureReproduction": {
+      "method": "ffmpeg fps=30,crop=400:160:2350:430 over docs/probes/tb2/tb2 3 maiden.MP4; gauge-fill.py --fps 30 --calib-frame 300",
+      "result": "bar self-calibrated 138px; all 450 reads of scripts/tests/fixtures/gauge-fill-maiden-ice-rose-30fps.json reproduced identically (0 missing, 0 mismatched by t/state/fillRaw)",
+      "note": "whole-video default calibration hit the documented intro-fade mis-lock (200px MAX bound) and the script warned as designed; --calib-frame 300 locks 138px"
+    },
+    "vitest": "scripts/tests/gauge-fill-anchor.test.ts + scripts/tests/gauge-fill-team.test.ts: 17/17 pass",
+    "quantizationBound": "+-1 column of the 138px bar = +-0.725 percentage points per reading (calibration doc + script header)",
+    "toleranceDerivation": "0.725 > 0.35, so per the pre-committed rule the tolerance becomes 2 x 0.725 = +-1.45 percentage points; stated before the target numbers were read. Widened half-open windows: H0 [7.45,10.35), H1/H1b [8.94,11.84), overlap [8.94,10.35) doubly consistent, H-band >= 11.84. The packet's original +-0.35 windows are also reported for comparison."
+  },
+  "readerInvocation": {
+    "frames": "ffmpeg fps=30 (and fps=60) crop=400:160:2350:430 over the target video",
+    "command": "gauge-fill.py --frames <dir> --fps 30 --calib-frame 300 (60fps: --calib-frame 600)",
+    "barLock": {
+      "borderRow": 71,
+      "x0": 252,
+      "x1": 390,
+      "widthPx": 138
+    },
+    "lockNote": "138px, matching the measured solo extent; no MIN/MAX-bound warning"
+  },
+  "perPullTable": [
+    {
+      "pull": 1,
+      "firedAtSec": 8.82,
+      "ammoAfter": "005 (full frame t~9)",
+      "creditAtSec": 9.12,
+      "before": 2.2,
+      "after": 11.6,
+      "deltaPct": 9.4,
+      "subSteps": "+8.7 at 9.12 then +0.7 (one column) at 9.22 - the only pull showing a second event; one column is inside quantization, ambiguous",
+      "chargeDisplay": "not sampled at fire",
+      "included": false,
+      "reason": "R3 exclusion: opening pull from the rendered 2.2 border floor; partial-charge opener cannot be excluded (maiden-ice-rose precedent) and its delta reads 2 columns below the steady family"
+    },
+    {
+      "pull": 2,
+      "firedAtSec": 9.8,
+      "ammoAfter": "004 (full frame t=9.95)",
+      "creditAtSec": 10.1,
+      "before": 11.6,
+      "after": 22.5,
+      "deltaPct": 10.9,
+      "subSteps": "single 60fps frame, unresolved",
+      "chargeDisplay": "118% at t=9.95 (render-only display)",
+      "included": true,
+      "reason": "clean"
+    },
+    {
+      "pull": 3,
+      "firedAtSec": 10.78,
+      "ammoAfter": "003",
+      "creditAtSec": 11.08,
+      "before": 22.5,
+      "after": 34.1,
+      "deltaPct": 11.6,
+      "subSteps": "single 60fps frame, unresolved",
+      "chargeDisplay": "-",
+      "included": true,
+      "reason": "clean"
+    },
+    {
+      "pull": 4,
+      "firedAtSec": 11.77,
+      "ammoAfter": "002",
+      "creditAtSec": 12.07,
+      "before": 34.1,
+      "after": 45.7,
+      "deltaPct": 11.6,
+      "subSteps": "single 60fps frame, unresolved",
+      "chargeDisplay": "-",
+      "included": true,
+      "reason": "clean"
+    },
+    {
+      "pull": 5,
+      "firedAtSec": 12.75,
+      "ammoAfter": "001 (full frames t~13, t=12.95)",
+      "creditAtSec": 13.05,
+      "before": 45.7,
+      "after": 55.8,
+      "deltaPct": 10.1,
+      "subSteps": "single 60fps frame, unresolved",
+      "chargeDisplay": "126% at t=12.95 (render-only display)",
+      "included": true,
+      "reason": "clean; a one-column transient dip to 55.1 at 13.83-13.98 recovers to 55.8 before pull 6 (reader noise, does not touch either plateau)"
+    },
+    {
+      "pull": 6,
+      "firedAtSec": 13.73,
+      "ammoAfter": "000 -> reload 14.0-16.0",
+      "creditAtSec": 14.03,
+      "before": 55.8,
+      "after": 67.4,
+      "deltaPct": 11.6,
+      "subSteps": "single 60fps frame, unresolved",
+      "chargeDisplay": "-",
+      "included": true,
+      "reason": "clean; end plateau 67.4 stable 14.03-15.98"
+    },
+    {
+      "pull": 7,
+      "firedAtSec": 17.15,
+      "ammoAfter": "005 (montage: 006->005 between t=17.1 and 17.2)",
+      "creditAtSec": null,
+      "before": null,
+      "after": null,
+      "deltaPct": null,
+      "subSteps": "unresolvable",
+      "chargeDisplay": "-",
+      "included": false,
+      "reason": "R2(b)/R3 exclusion: a screen-tint artifact span corrupts the reader t=16.0-17.97 (rendered fill drifts DOWN 67.4->63.0 then climbs by single columns - gauge cannot fall in a refill window - then flashes 81.2->95.7->100.0 'filling' at 17.25-17.72 and descends back to 79.0); neither endpoint of this pull is readable"
+    },
+    {
+      "pull": 8,
+      "firedAtSec": 18.05,
+      "ammoAfter": "004 (montage: 005->004 between t=18.0 and 18.1)",
+      "creditAtSec": 18.37,
+      "before": 79.0,
+      "after": 89.9,
+      "deltaPct": 10.9,
+      "subSteps": "single 60fps frame, unresolved",
+      "chargeDisplay": "-",
+      "included": "conditional",
+      "reason": "both plateaus stable (79.0 for 0.37s pre, 89.9 for 0.6s post) and the delta implies pull 7 was +11.6 (67.4+11.6=79.0, coherent) - but the 79.0 baseline is first read 0.01s after the artifact span ends, so under a strict reading of R3 ('no reader-flagged window') it is excluded; reported both ways"
+    },
+    {
+      "pull": 9,
+      "firedAtSec": 19.05,
+      "ammoAfter": "003 (montage: 004->003 between t=19.0 and 19.1; still 003 at green)",
+      "creditAtSec": 19.38,
+      "before": 89.1,
+      "after": 100.0,
+      "deltaPct": 10.9,
+      "subSteps": "n/a",
+      "chargeDisplay": "-",
+      "included": false,
+      "reason": "R2(a) exclusion: bar at 89.1 at release, a full steady delta (~11.3) does not fit - the credit is clipped at 100 (green full state from 19.38)"
+    }
+  ],
+  "results": {
+    "nCleanStrict": 5,
+    "nCleanLenient": 6,
+    "nRequired": 8,
+    "medianStrict": 11.6,
+    "medianLenient": 11.25,
+    "cleanDeltasStrict": [10.9, 11.6, 11.6, 10.1, 11.6],
+    "distribution": "steady deltas occupy 14-16 columns (10.1-11.6), unimodal; consistent with one process plus +-1-column endpoint quantization",
+    "subStepDecomposition": "UNRESOLVED - every steady pull lands in a single 60fps frame (16.7 ms); the maiden-ice-rose anchor's 0.15-0.17s rider-vs-weapon separation does not appear on this unit. Shot-leg focus check therefore cannot execute (plan revision R5(a): unresolvable, not failed).",
+    "fireToCreditLatency": "~0.30s fire->credit on every pull where both are observable (17.15->~17.3, 18.05->18.37, 19.05->19.38; mag-1 cadence consistent with the same offset)"
+  },
+  "countingCrossCheck": {
+    "method": "shot counting per the calibration doc section 2 (owner-primary instrument, pixel-free): ammo counter read from full frames (montage fps=10 over t=15.0-20.2, spot frames t=9, 9.95, 12.95, 13); bar full = green state at t=19.38",
+    "count": "9 pulls fill the bar from empty (6 in magazine 1: fired ~8.82-13.73; reload 14.0-16.0; 3 in magazine 2: fired ~17.15/18.05/19.05); after 8 pulls the bar read 89.9 (not full)",
+    "arithmetic": {
+      "allNinePullsEqual": "P in [100/9, 100/8) = [11.11, 12.50) percent per pull",
+      "openerAsRendered": "with the opening pull's rendered 9.4 +-0.7: steady P in [~11.24, ~13.04)",
+      "against8.90": "9 x 8.90 = 80.1 - under the shipped per-pull total the bar cannot be full after 9 pulls",
+      "against10.39": "opener 9.4 + 8 x 10.39 = 92.5 - under the 10.39 per-pull total the bar is also not full after 9 pulls",
+      "against band": "opener 9.4 + 8 x 11.3 = 99.8~100 - the 2026-07-13 band's top edge is the lowest per-pull compatible with the 9-pull fill; its lower half (10.7) gives 95.0 and is not compatible"
+    },
+    "immunity": "this bound does not use the reader's large-step magnitudes (whose ~+1.0-1.3 percentage-point hot bias on the tb2 anchors is UNRESOLVED); it needs only the shot count, the empty start, and the green transition frame"
+  },
+  "decisionRuleMapping": {
+    "branch": "CANNOT-MEASURE",
+    "mechanical": "the pre-committed rule requires n >= 8 clean pulls after exclusions; n = 5 (strict R3 reading) or 6 (lenient pull-8 inclusion) - below the bar either way. The judge's carried risk flag anticipated exactly this on a short recording containing a chain collapse.",
+    "informational": "had n sufficed: median T = 11.6 (strict) / 11.25 (lenient). Under the amended +-1.45 tolerance both land only in the H1/H1b window [8.94,11.84). Under the packet's original +-0.35 windows both land in T >= 10.74 (H-band). The n-independent counting bound (floor ~11.1) sits above the original H1 window in every variant. No verdict is attached; the encoding question (H1 vs H1b) is additionally out of reach because sub-steps never resolve.",
+    "hBasisCheck": "does not fire - the prelude control passed and the shot-leg focus check is unresolvable (plan revision R5(a)), not failed; T < 8.55 clause not triggered"
+  },
+  "anomalies": [
+    "red 'CORE HIT' popups appear on this recording (e.g. 345079 at t~17) although the packet's context sheet says rocket launchers never core on range and skills never core - not load-bearing for the gauge read; recorded for whatever session owns popup attribution",
+    "the bar renders 'filling 100.0' (not green full) during the t=17.25-17.72 artifact flash while generation demonstrably continues afterwards - consistent with a tint/flash render, not a real full",
+    "after the Burst I cast the bar zeroes at t=21.73 and stays 0 to video end (22.5s); the A3 entry's 'window expiry, refill' tail is not inside this file's 22.5s span",
+    "the stage-II hand-off hexagon counts down from ~08.32s with no eligible teammate - the solo burst-chain collapse the A3 entry recorded"
+  ],
+  "series30fps": {
+    "fps": 30.0,
+    "at": 0.0,
+    "bar": {
+      "borderRow": 71,
+      "x0": 252,
+      "x1": 390,
+      "widthPx": 138
+    },
+    "calibration": {
+      "rawOverTrue": 1.064,
+      "anchor": "maiden-ice-rose docs/probes/tb2/tb2 3 maiden.MP4 (12.55%/pull, +9.1/+3.45 sub-steps, docs/data/burst-gauge.md)"
+    },
+    "reads": [
+      {
+        "t": 0.0,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.03,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.07,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.1,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.13,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.17,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.2,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.23,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.27,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.3,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.33,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.37,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.4,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.43,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.47,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.5,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.53,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.57,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.6,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.63,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.67,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.7,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.73,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.77,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.8,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.83,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.87,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.9,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.93,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 0.97,
+        "state": "filling",
+        "fillRaw": 58.7
+      },
+      {
+        "t": 1.0,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.03,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.07,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.1,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.13,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.17,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.2,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.23,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.27,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.3,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.33,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.37,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.4,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.43,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.47,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.5,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.53,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.57,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.6,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.63,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.67,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.7,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.73,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.77,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.8,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.83,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.87,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.9,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.93,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 1.97,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.0,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.03,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.07,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.1,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.13,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.17,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.2,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.23,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.27,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.3,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.33,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.37,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.4,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.43,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.47,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.5,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.53,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.57,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.6,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.63,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.67,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.7,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.73,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.77,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.8,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.83,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.87,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.9,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.93,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 2.97,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.0,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.03,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.07,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.1,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.13,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.17,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.2,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.23,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.27,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.3,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.33,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.37,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.4,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.43,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.47,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.5,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.53,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.57,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.6,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.63,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.67,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.7,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.73,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.77,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.8,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.83,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.87,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.9,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.93,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 3.97,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.0,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.03,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.07,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.1,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.13,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.17,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.2,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.23,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.27,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.3,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.33,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.37,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.4,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.43,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.47,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.5,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.53,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.57,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.6,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.63,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.67,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.7,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.73,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.77,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.8,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.83,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.87,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.9,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.93,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 4.97,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.0,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.03,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.07,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.1,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.13,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.17,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.2,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.23,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.27,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.3,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.33,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.37,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.4,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.43,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.47,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.5,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 5.53,
+        "state": "filling",
+        "fillRaw": 5.8
+      },
+      {
+        "t": 5.57,
+        "state": "filling",
+        "fillRaw": 4.3
+      },
+      {
+        "t": 5.6,
+        "state": "filling",
+        "fillRaw": 3.6
+      },
+      {
+        "t": 5.63,
+        "state": "filling",
+        "fillRaw": 2.9
+      },
+      {
+        "t": 5.67,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 5.7,
+        "state": "filling",
+        "fillRaw": 1.4
+      },
+      {
+        "t": 5.73,
+        "state": "filling",
+        "fillRaw": 1.4
+      },
+      {
+        "t": 5.77,
+        "state": "filling",
+        "fillRaw": 0.7
+      },
+      {
+        "t": 5.8,
+        "state": "filling",
+        "fillRaw": 0.7
+      },
+      {
+        "t": 5.83,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 5.87,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 5.9,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 5.93,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 5.97,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 6.0,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 6.03,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 6.07,
+        "state": "filling",
+        "fillRaw": 1.4
+      },
+      {
+        "t": 6.1,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 6.13,
+        "state": "filling",
+        "fillRaw": 3.6
+      },
+      {
+        "t": 6.17,
+        "state": "filling",
+        "fillRaw": 5.8
+      },
+      {
+        "t": 6.2,
+        "state": "filling",
+        "fillRaw": 8.0
+      },
+      {
+        "t": 6.23,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.27,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.3,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.33,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.37,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.4,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.43,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.47,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.5,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.53,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.57,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.6,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.63,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.67,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.7,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.73,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.77,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.8,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.83,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.87,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.9,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.93,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 6.97,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.0,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.03,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.07,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.1,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.13,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.17,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.2,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.23,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.27,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.3,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.33,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.37,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.4,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.43,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.47,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.5,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.53,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.57,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.6,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.63,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.67,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 7.7,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 7.73,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 7.77,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 7.8,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 7.83,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 7.87,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 7.9,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 7.93,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 7.97,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.0,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.03,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.07,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.1,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.13,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.17,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.2,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.23,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.27,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.3,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.33,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.37,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.4,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.43,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.47,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.5,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.53,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.57,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.6,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.63,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.67,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.7,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.73,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.77,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.8,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.83,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.87,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.9,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.93,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 8.97,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 9.0,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 9.03,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 9.07,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 9.1,
+        "state": "filling",
+        "fillRaw": 2.2
+      },
+      {
+        "t": 9.13,
+        "state": "filling",
+        "fillRaw": 10.9
+      },
+      {
+        "t": 9.17,
+        "state": "filling",
+        "fillRaw": 10.9
+      },
+      {
+        "t": 9.2,
+        "state": "filling",
+        "fillRaw": 10.9
+      },
+      {
+        "t": 9.23,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.27,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.3,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.33,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.37,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.4,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.43,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.47,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.5,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.53,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.57,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.6,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.63,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.67,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.7,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.73,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.77,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.8,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.83,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.87,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.9,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.93,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 9.97,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 10.0,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 10.03,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 10.07,
+        "state": "filling",
+        "fillRaw": 11.6
+      },
+      {
+        "t": 10.1,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.13,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.17,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.2,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.23,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.27,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.3,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.33,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.37,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.4,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.43,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.47,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.5,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.53,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.57,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.6,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.63,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.67,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.7,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.73,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.77,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.8,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.83,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.87,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.9,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.93,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 10.97,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 11.0,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 11.03,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 11.07,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 11.1,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.13,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.17,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.2,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.23,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.27,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.3,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.33,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.37,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.4,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.43,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.47,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.5,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.53,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.57,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.6,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.63,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.67,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.7,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.73,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.77,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.8,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.83,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.87,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.9,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.93,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 11.97,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 12.0,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 12.03,
+        "state": "filling",
+        "fillRaw": 34.1
+      },
+      {
+        "t": 12.07,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.1,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.13,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.17,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.2,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.23,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.27,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.3,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.33,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.37,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.4,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.43,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.47,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.5,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.53,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.57,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.6,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.63,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.67,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.7,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.73,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.77,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.8,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.83,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.87,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.9,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.93,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 12.97,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 13.0,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 13.03,
+        "state": "filling",
+        "fillRaw": 45.7
+      },
+      {
+        "t": 13.07,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.1,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.13,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.17,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.2,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.23,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.27,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.3,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.33,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.37,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.4,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.43,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.47,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.5,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.53,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.57,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.6,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.63,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.67,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.7,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.73,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.77,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.8,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 13.83,
+        "state": "filling",
+        "fillRaw": 55.1
+      },
+      {
+        "t": 13.87,
+        "state": "filling",
+        "fillRaw": 55.1
+      },
+      {
+        "t": 13.9,
+        "state": "filling",
+        "fillRaw": 55.1
+      },
+      {
+        "t": 13.93,
+        "state": "filling",
+        "fillRaw": 55.1
+      },
+      {
+        "t": 13.97,
+        "state": "filling",
+        "fillRaw": 55.1
+      },
+      {
+        "t": 14.0,
+        "state": "filling",
+        "fillRaw": 55.8
+      },
+      {
+        "t": 14.03,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.07,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.1,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.13,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.17,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.2,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.23,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.27,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.3,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.33,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.37,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.4,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.43,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.47,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.5,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.53,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.57,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.6,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.63,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.67,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.7,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.73,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.77,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.8,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.83,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.87,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.9,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.93,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 14.97,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.0,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.03,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.07,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.1,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.13,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.17,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.2,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.23,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.27,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.3,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.33,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.37,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.4,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.43,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.47,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.5,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.53,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.57,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.6,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.63,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.67,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.7,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.73,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.77,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.8,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.83,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.87,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.9,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.93,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 15.97,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 16.0,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.03,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.07,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.1,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.13,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.17,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.2,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.23,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.27,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.3,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.33,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.37,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.4,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.43,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.47,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.5,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.53,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.57,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.6,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.63,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.67,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 16.7,
+        "state": "filling",
+        "fillRaw": 65.2
+      },
+      {
+        "t": 16.73,
+        "state": "filling",
+        "fillRaw": 63.0
+      },
+      {
+        "t": 16.77,
+        "state": "filling",
+        "fillRaw": 63.0
+      },
+      {
+        "t": 16.8,
+        "state": "filling",
+        "fillRaw": 63.0
+      },
+      {
+        "t": 16.83,
+        "state": "filling",
+        "fillRaw": 63.8
+      },
+      {
+        "t": 16.87,
+        "state": "filling",
+        "fillRaw": 64.5
+      },
+      {
+        "t": 16.9,
+        "state": "filling",
+        "fillRaw": 64.5
+      },
+      {
+        "t": 16.93,
+        "state": "filling",
+        "fillRaw": 64.5
+      },
+      {
+        "t": 16.97,
+        "state": "filling",
+        "fillRaw": 64.5
+      },
+      {
+        "t": 17.0,
+        "state": "filling",
+        "fillRaw": 65.2
+      },
+      {
+        "t": 17.03,
+        "state": "filling",
+        "fillRaw": 65.2
+      },
+      {
+        "t": 17.07,
+        "state": "filling",
+        "fillRaw": 66.7
+      },
+      {
+        "t": 17.1,
+        "state": "filling",
+        "fillRaw": 67.4
+      },
+      {
+        "t": 17.13,
+        "state": "filling",
+        "fillRaw": 68.1
+      },
+      {
+        "t": 17.17,
+        "state": "filling",
+        "fillRaw": 68.8
+      },
+      {
+        "t": 17.2,
+        "state": "filling",
+        "fillRaw": 70.3
+      },
+      {
+        "t": 17.23,
+        "state": "filling",
+        "fillRaw": 71.0
+      },
+      {
+        "t": 17.27,
+        "state": "filling",
+        "fillRaw": 81.2
+      },
+      {
+        "t": 17.3,
+        "state": "filling",
+        "fillRaw": 95.7
+      },
+      {
+        "t": 17.33,
+        "state": "filling",
+        "fillRaw": 97.1
+      },
+      {
+        "t": 17.37,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 17.4,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 17.43,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 17.47,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 17.5,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 17.53,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 17.57,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 17.6,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 17.63,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 17.67,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 17.7,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 17.73,
+        "state": "filling",
+        "fillRaw": 98.6
+      },
+      {
+        "t": 17.77,
+        "state": "filling",
+        "fillRaw": 92.0
+      },
+      {
+        "t": 17.8,
+        "state": "filling",
+        "fillRaw": 81.9
+      },
+      {
+        "t": 17.83,
+        "state": "filling",
+        "fillRaw": 81.2
+      },
+      {
+        "t": 17.87,
+        "state": "filling",
+        "fillRaw": 79.7
+      },
+      {
+        "t": 17.9,
+        "state": "filling",
+        "fillRaw": 79.7
+      },
+      {
+        "t": 17.93,
+        "state": "filling",
+        "fillRaw": 79.7
+      },
+      {
+        "t": 17.97,
+        "state": "filling",
+        "fillRaw": 79.7
+      },
+      {
+        "t": 18.0,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 18.03,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 18.07,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 18.1,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 18.13,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 18.17,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 18.2,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 18.23,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 18.27,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 18.3,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 18.33,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 18.37,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.4,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.43,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.47,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.5,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.53,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.57,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.6,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.63,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.67,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.7,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.73,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.77,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.8,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.83,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.87,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.9,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.93,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 18.97,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 19.0,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 19.03,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 19.07,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 19.1,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 19.13,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 19.17,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 19.2,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 19.23,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 19.27,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 19.3,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 19.33,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 19.37,
+        "state": "filling",
+        "fillRaw": 35.5
+      },
+      {
+        "t": 19.4,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.43,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.47,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.5,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.53,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.57,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.6,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.63,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.67,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.7,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.73,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.77,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.8,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.83,
+        "state": "full",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.87,
+        "state": "filling",
+        "fillRaw": 97.1
+      },
+      {
+        "t": 19.9,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.93,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 19.97,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 20.0,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 20.03,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 20.07,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 20.1,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 20.13,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 20.17,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 20.2,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 20.23,
+        "state": "filling",
+        "fillRaw": 100.0
+      },
+      {
+        "t": 20.27,
+        "state": "filling",
+        "fillRaw": 93.5
+      },
+      {
+        "t": 20.3,
+        "state": "filling",
+        "fillRaw": 95.7
+      },
+      {
+        "t": 20.33,
+        "state": "filling",
+        "fillRaw": 94.9
+      },
+      {
+        "t": 20.37,
+        "state": "filling",
+        "fillRaw": 94.9
+      },
+      {
+        "t": 20.4,
+        "state": "filling",
+        "fillRaw": 94.9
+      },
+      {
+        "t": 20.43,
+        "state": "filling",
+        "fillRaw": 94.2
+      },
+      {
+        "t": 20.47,
+        "state": "filling",
+        "fillRaw": 91.3
+      },
+      {
+        "t": 20.5,
+        "state": "filling",
+        "fillRaw": 50.7
+      },
+      {
+        "t": 20.53,
+        "state": "filling",
+        "fillRaw": 41.3
+      },
+      {
+        "t": 20.57,
+        "state": "filling",
+        "fillRaw": 76.8
+      },
+      {
+        "t": 20.6,
+        "state": "filling",
+        "fillRaw": 89.9
+      },
+      {
+        "t": 20.63,
+        "state": "filling",
+        "fillRaw": 91.3
+      },
+      {
+        "t": 20.67,
+        "state": "filling",
+        "fillRaw": 91.3
+      },
+      {
+        "t": 20.7,
+        "state": "filling",
+        "fillRaw": 84.8
+      },
+      {
+        "t": 20.73,
+        "state": "filling",
+        "fillRaw": 32.6
+      },
+      {
+        "t": 20.77,
+        "state": "filling",
+        "fillRaw": 27.5
+      },
+      {
+        "t": 20.8,
+        "state": "filling",
+        "fillRaw": 22.5
+      },
+      {
+        "t": 20.83,
+        "state": "filling",
+        "fillRaw": 31.2
+      },
+      {
+        "t": 20.87,
+        "state": "filling",
+        "fillRaw": 29.0
+      },
+      {
+        "t": 20.9,
+        "state": "filling",
+        "fillRaw": 25.4
+      },
+      {
+        "t": 20.93,
+        "state": "filling",
+        "fillRaw": 33.3
+      },
+      {
+        "t": 20.97,
+        "state": "filling",
+        "fillRaw": 34.8
+      },
+      {
+        "t": 21.0,
+        "state": "filling",
+        "fillRaw": 29.0
+      },
+      {
+        "t": 21.03,
+        "state": "filling",
+        "fillRaw": 33.3
+      },
+      {
+        "t": 21.07,
+        "state": "filling",
+        "fillRaw": 84.1
+      },
+      {
+        "t": 21.1,
+        "state": "filling",
+        "fillRaw": 79.0
+      },
+      {
+        "t": 21.13,
+        "state": "filling",
+        "fillRaw": 84.1
+      },
+      {
+        "t": 21.17,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 21.2,
+        "state": "filling",
+        "fillRaw": 89.1
+      },
+      {
+        "t": 21.23,
+        "state": "filling",
+        "fillRaw": 97.8
+      },
+      {
+        "t": 21.27,
+        "state": "filling",
+        "fillRaw": 98.6
+      },
+      {
+        "t": 21.3,
+        "state": "filling",
+        "fillRaw": 98.6
+      },
+      {
+        "t": 21.33,
+        "state": "filling",
+        "fillRaw": 98.6
+      },
+      {
+        "t": 21.37,
+        "state": "filling",
+        "fillRaw": 98.6
+      },
+      {
+        "t": 21.4,
+        "state": "filling",
+        "fillRaw": 98.6
+      },
+      {
+        "t": 21.43,
+        "state": "filling",
+        "fillRaw": 98.6
+      },
+      {
+        "t": 21.47,
+        "state": "filling",
+        "fillRaw": 98.6
+      },
+      {
+        "t": 21.5,
+        "state": "filling",
+        "fillRaw": 97.8
+      },
+      {
+        "t": 21.53,
+        "state": "filling",
+        "fillRaw": 97.8
+      },
+      {
+        "t": 21.57,
+        "state": "filling",
+        "fillRaw": 97.8
+      },
+      {
+        "t": 21.6,
+        "state": "filling",
+        "fillRaw": 98.6
+      },
+      {
+        "t": 21.63,
+        "state": "filling",
+        "fillRaw": 98.6
+      },
+      {
+        "t": 21.67,
+        "state": "filling",
+        "fillRaw": 98.6
+      },
+      {
+        "t": 21.7,
+        "state": "filling",
+        "fillRaw": 53.6
+      },
+      {
+        "t": 21.73,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 21.77,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 21.8,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 21.83,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 21.87,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 21.9,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 21.93,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 21.97,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.0,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.03,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.07,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.1,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.13,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.17,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.2,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.23,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.27,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.3,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.33,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.37,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.4,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.43,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.47,
+        "state": "filling",
+        "fillRaw": 0.0
+      },
+      {
+        "t": 22.5,
+        "state": "filling",
+        "fillRaw": 0.0
+      }
+    ]
+  },
+  "series60fpsChangesOnly": [
+    {
+      "t": 0.0,
+      "state": "filling",
+      "fillRaw": 0.0
+    },
+    {
+      "t": 0.95,
+      "state": "filling",
+      "fillRaw": 1.4
+    },
+    {
+      "t": 0.97,
+      "state": "filling",
+      "fillRaw": 58.7
+    },
+    {
+      "t": 0.98,
+      "state": "filling",
+      "fillRaw": 93.5
+    },
+    {
+      "t": 1.0,
+      "state": "filling",
+      "fillRaw": 100.0
+    },
+    {
+      "t": 5.52,
+      "state": "filling",
+      "fillRaw": 8.0
+    },
+    {
+      "t": 5.53,
+      "state": "filling",
+      "fillRaw": 5.8
+    },
+    {
+      "t": 5.55,
+      "state": "filling",
+      "fillRaw": 5.1
+    },
+    {
+      "t": 5.57,
+      "state": "filling",
+      "fillRaw": 4.3
+    },
+    {
+      "t": 5.6,
+      "state": "filling",
+      "fillRaw": 3.6
+    },
+    {
+      "t": 5.62,
+      "state": "filling",
+      "fillRaw": 2.9
+    },
+    {
+      "t": 5.65,
+      "state": "filling",
+      "fillRaw": 2.2
+    },
+    {
+      "t": 5.7,
+      "state": "filling",
+      "fillRaw": 1.4
+    },
+    {
+      "t": 5.77,
+      "state": "filling",
+      "fillRaw": 0.7
+    },
+    {
+      "t": 5.83,
+      "state": "filling",
+      "fillRaw": 0.0
+    },
+    {
+      "t": 6.05,
+      "state": "filling",
+      "fillRaw": 0.7
+    },
+    {
+      "t": 6.07,
+      "state": "filling",
+      "fillRaw": 1.4
+    },
+    {
+      "t": 6.1,
+      "state": "filling",
+      "fillRaw": 2.2
+    },
+    {
+      "t": 6.12,
+      "state": "filling",
+      "fillRaw": 2.9
+    },
+    {
+      "t": 6.13,
+      "state": "filling",
+      "fillRaw": 3.6
+    },
+    {
+      "t": 6.15,
+      "state": "filling",
+      "fillRaw": 4.3
+    },
+    {
+      "t": 6.17,
+      "state": "filling",
+      "fillRaw": 5.8
+    },
+    {
+      "t": 6.18,
+      "state": "filling",
+      "fillRaw": 6.5
+    },
+    {
+      "t": 6.2,
+      "state": "filling",
+      "fillRaw": 8.0
+    },
+    {
+      "t": 6.22,
+      "state": "filling",
+      "fillRaw": 10.1
+    },
+    {
+      "t": 6.23,
+      "state": "filling",
+      "fillRaw": 100.0
+    },
+    {
+      "t": 7.68,
+      "state": "filling",
+      "fillRaw": 2.2
+    },
+    {
+      "t": 9.12,
+      "state": "filling",
+      "fillRaw": 10.9
+    },
+    {
+      "t": 9.22,
+      "state": "filling",
+      "fillRaw": 11.6
+    },
+    {
+      "t": 10.1,
+      "state": "filling",
+      "fillRaw": 22.5
+    },
+    {
+      "t": 11.08,
+      "state": "filling",
+      "fillRaw": 34.1
+    },
+    {
+      "t": 12.07,
+      "state": "filling",
+      "fillRaw": 45.7
+    },
+    {
+      "t": 13.05,
+      "state": "filling",
+      "fillRaw": 55.8
+    },
+    {
+      "t": 13.83,
+      "state": "filling",
+      "fillRaw": 55.1
+    },
+    {
+      "t": 14.0,
+      "state": "filling",
+      "fillRaw": 55.8
+    },
+    {
+      "t": 14.03,
+      "state": "filling",
+      "fillRaw": 67.4
+    },
+    {
+      "t": 16.0,
+      "state": "filling",
+      "fillRaw": 66.7
+    },
+    {
+      "t": 16.68,
+      "state": "filling",
+      "fillRaw": 65.2
+    },
+    {
+      "t": 16.72,
+      "state": "filling",
+      "fillRaw": 63.8
+    },
+    {
+      "t": 16.73,
+      "state": "filling",
+      "fillRaw": 63.0
+    },
+    {
+      "t": 16.82,
+      "state": "filling",
+      "fillRaw": 63.8
+    },
+    {
+      "t": 16.85,
+      "state": "filling",
+      "fillRaw": 64.5
+    },
+    {
+      "t": 16.98,
+      "state": "filling",
+      "fillRaw": 65.2
+    },
+    {
+      "t": 17.05,
+      "state": "filling",
+      "fillRaw": 65.9
+    },
+    {
+      "t": 17.07,
+      "state": "filling",
+      "fillRaw": 66.7
+    },
+    {
+      "t": 17.1,
+      "state": "filling",
+      "fillRaw": 67.4
+    },
+    {
+      "t": 17.13,
+      "state": "filling",
+      "fillRaw": 68.1
+    },
+    {
+      "t": 17.17,
+      "state": "filling",
+      "fillRaw": 68.8
+    },
+    {
+      "t": 17.18,
+      "state": "filling",
+      "fillRaw": 69.6
+    },
+    {
+      "t": 17.2,
+      "state": "filling",
+      "fillRaw": 70.3
+    },
+    {
+      "t": 17.22,
+      "state": "filling",
+      "fillRaw": 71.0
+    },
+    {
+      "t": 17.25,
+      "state": "filling",
+      "fillRaw": 81.2
+    },
+    {
+      "t": 17.28,
+      "state": "filling",
+      "fillRaw": 95.7
+    },
+    {
+      "t": 17.33,
+      "state": "filling",
+      "fillRaw": 97.1
+    },
+    {
+      "t": 17.35,
+      "state": "filling",
+      "fillRaw": 100.0
+    },
+    {
+      "t": 17.73,
+      "state": "filling",
+      "fillRaw": 98.6
+    },
+    {
+      "t": 17.75,
+      "state": "filling",
+      "fillRaw": 93.5
+    },
+    {
+      "t": 17.77,
+      "state": "filling",
+      "fillRaw": 92.0
+    },
+    {
+      "t": 17.78,
+      "state": "filling",
+      "fillRaw": 81.9
+    },
+    {
+      "t": 17.82,
+      "state": "filling",
+      "fillRaw": 81.2
+    },
+    {
+      "t": 17.85,
+      "state": "filling",
+      "fillRaw": 79.7
+    },
+    {
+      "t": 17.98,
+      "state": "filling",
+      "fillRaw": 79.0
+    },
+    {
+      "t": 18.37,
+      "state": "filling",
+      "fillRaw": 89.9
+    },
+    {
+      "t": 19.0,
+      "state": "filling",
+      "fillRaw": 89.1
+    },
+    {
+      "t": 19.37,
+      "state": "filling",
+      "fillRaw": 35.5
+    },
+    {
+      "t": 19.38,
+      "state": "full",
+      "fillRaw": 100.0
+    },
+    {
+      "t": 19.85,
+      "state": "filling",
+      "fillRaw": 2.9
+    },
+    {
+      "t": 19.87,
+      "state": "filling",
+      "fillRaw": 97.1
+    },
+    {
+      "t": 19.88,
+      "state": "filling",
+      "fillRaw": 100.0
+    },
+    {
+      "t": 20.27,
+      "state": "filling",
+      "fillRaw": 93.5
+    },
+    {
+      "t": 20.28,
+      "state": "filling",
+      "fillRaw": 95.7
+    },
+    {
+      "t": 20.33,
+      "state": "filling",
+      "fillRaw": 94.9
+    },
+    {
+      "t": 20.42,
+      "state": "filling",
+      "fillRaw": 94.2
+    },
+    {
+      "t": 20.45,
+      "state": "filling",
+      "fillRaw": 92.8
+    },
+    {
+      "t": 20.47,
+      "state": "filling",
+      "fillRaw": 91.3
+    },
+    {
+      "t": 20.48,
+      "state": "filling",
+      "fillRaw": 89.1
+    },
+    {
+      "t": 20.5,
+      "state": "filling",
+      "fillRaw": 50.7
+    },
+    {
+      "t": 20.52,
+      "state": "filling",
+      "fillRaw": 42.8
+    },
+    {
+      "t": 20.53,
+      "state": "filling",
+      "fillRaw": 41.3
+    },
+    {
+      "t": 20.55,
+      "state": "filling",
+      "fillRaw": 45.7
+    },
+    {
+      "t": 20.57,
+      "state": "filling",
+      "fillRaw": 76.8
+    },
+    {
+      "t": 20.58,
+      "state": "filling",
+      "fillRaw": 89.9
+    },
+    {
+      "t": 20.62,
+      "state": "filling",
+      "fillRaw": 92.0
+    },
+    {
+      "t": 20.63,
+      "state": "filling",
+      "fillRaw": 91.3
+    },
+    {
+      "t": 20.65,
+      "state": "filling",
+      "fillRaw": 92.8
+    },
+    {
+      "t": 20.67,
+      "state": "filling",
+      "fillRaw": 91.3
+    },
+    {
+      "t": 20.68,
+      "state": "filling",
+      "fillRaw": 89.9
+    },
+    {
+      "t": 20.7,
+      "state": "filling",
+      "fillRaw": 84.8
+    },
+    {
+      "t": 20.72,
+      "state": "filling",
+      "fillRaw": 29.0
+    },
+    {
+      "t": 20.73,
+      "state": "filling",
+      "fillRaw": 32.6
+    },
+    {
+      "t": 20.75,
+      "state": "filling",
+      "fillRaw": 23.2
+    },
+    {
+      "t": 20.77,
+      "state": "filling",
+      "fillRaw": 27.5
+    },
+    {
+      "t": 20.78,
+      "state": "filling",
+      "fillRaw": 26.1
+    },
+    {
+      "t": 20.8,
+      "state": "filling",
+      "fillRaw": 22.5
+    },
+    {
+      "t": 20.82,
+      "state": "filling",
+      "fillRaw": 23.9
+    },
+    {
+      "t": 20.83,
+      "state": "filling",
+      "fillRaw": 31.2
+    },
+    {
+      "t": 20.87,
+      "state": "filling",
+      "fillRaw": 29.0
+    },
+    {
+      "t": 20.9,
+      "state": "filling",
+      "fillRaw": 25.4
+    },
+    {
+      "t": 20.92,
+      "state": "filling",
+      "fillRaw": 29.7
+    },
+    {
+      "t": 20.93,
+      "state": "filling",
+      "fillRaw": 33.3
+    },
+    {
+      "t": 20.95,
+      "state": "filling",
+      "fillRaw": 34.1
+    },
+    {
+      "t": 20.97,
+      "state": "filling",
+      "fillRaw": 34.8
+    },
+    {
+      "t": 20.98,
+      "state": "filling",
+      "fillRaw": 32.6
+    },
+    {
+      "t": 21.0,
+      "state": "filling",
+      "fillRaw": 29.0
+    },
+    {
+      "t": 21.02,
+      "state": "filling",
+      "fillRaw": 31.9
+    },
+    {
+      "t": 21.03,
+      "state": "filling",
+      "fillRaw": 33.3
+    },
+    {
+      "t": 21.05,
+      "state": "filling",
+      "fillRaw": 46.4
+    },
+    {
+      "t": 21.07,
+      "state": "filling",
+      "fillRaw": 84.1
+    },
+    {
+      "t": 21.08,
+      "state": "filling",
+      "fillRaw": 89.1
+    },
+    {
+      "t": 21.1,
+      "state": "filling",
+      "fillRaw": 79.0
+    },
+    {
+      "t": 21.12,
+      "state": "filling",
+      "fillRaw": 87.0
+    },
+    {
+      "t": 21.13,
+      "state": "filling",
+      "fillRaw": 84.1
+    },
+    {
+      "t": 21.15,
+      "state": "filling",
+      "fillRaw": 88.4
+    },
+    {
+      "t": 21.17,
+      "state": "filling",
+      "fillRaw": 89.1
+    },
+    {
+      "t": 21.18,
+      "state": "filling",
+      "fillRaw": 91.3
+    },
+    {
+      "t": 21.2,
+      "state": "filling",
+      "fillRaw": 89.1
+    },
+    {
+      "t": 21.22,
+      "state": "filling",
+      "fillRaw": 97.8
+    },
+    {
+      "t": 21.27,
+      "state": "filling",
+      "fillRaw": 98.6
+    },
+    {
+      "t": 21.48,
+      "state": "filling",
+      "fillRaw": 97.8
+    },
+    {
+      "t": 21.58,
+      "state": "filling",
+      "fillRaw": 98.6
+    },
+    {
+      "t": 21.62,
+      "state": "filling",
+      "fillRaw": 99.3
+    },
+    {
+      "t": 21.63,
+      "state": "filling",
+      "fillRaw": 98.6
+    },
+    {
+      "t": 21.68,
+      "state": "filling",
+      "fillRaw": 100.0
+    },
+    {
+      "t": 21.7,
+      "state": "filling",
+      "fillRaw": 53.6
+    },
+    {
+      "t": 21.73,
+      "state": "filling",
+      "fillRaw": 0.0
+    }
+  ]
+}

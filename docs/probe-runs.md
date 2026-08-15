@@ -7537,3 +7537,53 @@ retroactively.
 ⛔ **Nothing enacted.** No engine constant, override, snapshot, DECISIONS/STATE change. Third
 arm's credit amounts were voided by the instrument's own self-checks (noir's shotgun spray gauge
 fraction is not on the event tap) — the liberalio confound is bounded at the closure level only.
+
+## 2026-08-15 — Anis: Star solo gauge re-read (battery 3 Part A3 footage, per-pull)
+
+Plan of record: `docs/handoffs/2026-08-15-anis-star-divisor-preop-packet.md` (approved with
+revisions R1–R5). Question: per-pull burst-gauge total and sub-step structure for `anis-star`
+(Anis: Star, rocket launcher/Electric/Burst I) in solo focused play, against the shipped
+8.90 percent per pull and the 10.39 percent alternatives. Replay bundle:
+`docs/probe-data/anis-star-solo-a3-gauge-reread.json`; recording index:
+`docs/probe-data/burst-tests-recording-index.md` (paths under `docs/probes/` are gitignored and
+cannot pass the pre-commit hook, so the index is tracked there instead of beside the media).
+
+**Instrument prelude (passed before the target read):** `scripts/probe/gauge-fill.py`
+re-run over the maiden-ice-rose anchor recording reproduced every one of the committed
+fixture's 450 reads exactly (`scripts/tests/fixtures/gauge-fill-maiden-ice-rose-30fps.json`),
+and the reader's 17 vitest assertions pass. Quantization bound restated before reading:
+plus/minus 1 column of the 138-pixel bar = 0.72 percentage points per reading; since 0.72
+exceeds 0.35, the plan's rule widened the decision tolerance to plus/minus 1.45 percentage
+points, stated before the target numbers were unblinded.
+
+**Recording identity (plan revision R1):** confirmed SOLO — one character model in every
+sampled frame, single-portrait entry cut-in, 6-round magazine counter, charge-percent HUD,
+and a solo Burst I cast (~video t=20.4s) whose stage-II hand-off timer counts down unclaimed —
+the burst-chain collapse the original Part A3 entry recorded. The `a2` filename prefix
+notwithstanding, the file is not part of the A1/A2 takina/crown team pair. No other solo
+Anis: Star recording exists under `docs/probes/`.
+
+**Measurement.** Nine pulls fill the bar from empty (ammo-counter counted: six in magazine 1
+fired ~8.8–13.7s, reload 14.0–16.0s, three in magazine 2 fired ~17.2/18.1/19.1s; bar green at
+19.38s with ammo 003 on screen). Per-pull deltas (bar percent): opening pull +9.4 (excluded —
+partial-charge opener suspect); clean pulls +10.9, +11.6, +11.6, +10.1, +11.6; pull 7 excluded
+(a screen-tint artifact span corrupts the reader over 16.0–17.97s); pull 8 +10.9 (conditionally
+clean — its baseline is first read just after the artifact span ends); pull 9 excluded (bar at
+89.1 percent at release, credit clipped at full). Sub-steps do NOT resolve: every steady pull
+lands in a single 60-frames-per-second frame, unlike the maiden-ice-rose anchor's 0.15–0.17s
+rider/weapon separation, so the planned shot-leg focus check could not execute (plan revision
+R5(a): unresolvable, not failed). Fire-to-credit latency ~0.30s wherever both ends are visible.
+
+**Outcome against the pre-committed rule: CANNOT-MEASURE.** The rule requires at least 8 clean
+pulls after exclusions; this recording yields 5 (strict) or 6 (counting pull 8). For the record,
+the medians those small samples give are 11.6 (strict) and 11.25 (lenient), and the
+pixel-independent shot-counting bound (9 pulls fill, 8 do not) puts the steady per-pull total at
+no less than about 11.1 percent under any reading of the opener — arithmetic that the shipped
+8.90 total (9 pulls = 80.1 percent, far from full) and the 10.39 alternatives (opener + 8 pulls
+= 92.5 percent, still not full) both sit below, while the 2026-07-13 band's top edge
+(11.3 percent) is the lowest per-pull compatible with it. These are logged observations at
+hypothesis strength, not a verdict: the sample is below the plan's own bar, the reader's
+large-step magnitude question remains open (the counting bound, however, does not use reader
+magnitudes), and this is the same footage as the original band summary, so it is not an
+independent confirmation of that band. Nothing enacted — no engine, data, override, snapshot,
+or decision change.
