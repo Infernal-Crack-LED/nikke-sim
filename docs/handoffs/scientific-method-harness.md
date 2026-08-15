@@ -748,3 +748,39 @@ verdict time, and the final label required interpreting an under-determined rule
 `SLUGS=` override on `scripts/experiment.ts` makes the footage-slot-order sim arm reproducible too.
 Both were `/tmp` scratch at verdict time, which is what capped Q1 at MEDIUM; per the 2026-07-29
 owner ruling an instrument cited as evidence must exist at a named path.
+
+## 2026-08-14 — refill-window fill-trace read → LOG (driver ACCEPT HIGH + blind post-op ACCEPT HIGH)
+
+**Outcome: LOG.** 2-of-2 ACCEPT, both HIGH — but the accepted claim is a rule-faithful
+CANNOT-MEASURE on the pre-committed statistic plus a set of boundary/closure measurements
+(probe-runs 2026-08-14 entry carries them). Nothing enacted; four strikes honored (the low-fill
+"nothing banked" read stays hypothesis-tier; the re-anchored ~1.7–2.0× in-window ratio is logged,
+not a verdict; "tracks the chance baseline" wording struck; the near-tautological whole-window
+ratio fenced against misreading).
+
+**Harness lessons:**
+
+1. **The basis clause outranking the verdict branches is the design working.** Both medians sat
+   above the CONFIRM threshold and the worker still refused the stamp because the pre-committed
+   dispersion ceiling failed. A rule without that clause would have shipped a wrong H-A
+   classification built on a structural artifact (blind spot × inverted fill shapes).
+2. **Pin the observable's endpoints in the packet.** The plan never fixed the REAL window's
+   endpoints; the worker had to choose (declared, and robust here), but under a less lopsided
+   outcome that free choice is exactly where a fit hides. R1's lesson generalizes: every
+   denominator and every anchor the statistic depends on belongs in the pre-op text.
+3. **"Same relative span cancels the bias" was a control that failed by design** — fraction
+   mapping cancels front-loading only if the two shapes are similar; they were inverted. A control
+   is itself a hypothesis; give it a check (here: the Pearson(R, visibleFraction) diagnostic that
+   exposed it).
+4. **An instrument that loudly disowns itself is worth more than one that always passes** — the
+   credit schedule voiding its own third-arm amounts (endpoint + DBG_GAUGE checks FAILED,
+   unreconstructed non-empty) is what kept a wrong liberalio-confound bound out of the record.
+5. **A premise gate that fires saves the run, not delays it**: 3 of 4 premises refuted as assumed
+   (no team-HUD calibration existed; the tempo fixtures carry drain-bar only; the sim exposed no
+   credit amounts) — the instrument phase those refutations forced is the only reason the
+   measurement was executable at all.
+
+Next pre-op named by the blind judge: the opening-window observable + a pre-committed rule on the
+bar-paint-anchored statistic (retroactive promotion prohibited); reader flag-taxonomy leak closed
+first. Branches pending owner PR: `instrument/gauge-fill-team`, `instrument/gauge-credit-schedule`,
+`measure/fill-trace`.

@@ -102,6 +102,29 @@ lives. Newest first within each section.
     delivery, under the fixture's 0.5 floor. Those files' own header says "Re-derive, don't
     re-pin… only re-pin once the NEW finding is understood"; re-writing a published audit
     conclusion is a separate gated pass, not a side effect of a kit fix. Owner action item.
+- **(2026-08-14) The real Full Burst duration is EXACTLY 10s unless an ability extends or
+  shortens it — owner ruling. The tempo-gap attribution resolves: the missing quantity is
+  GENERATION, at the full point-estimate size.**
+  - **The ruling (owner, 2026-08-14).** Asked to resolve the tempo-gap measurement's unresolved
+    split (real Full Burst duration was only bounded at ≥8.73s / ≥8.87s on the two filmed comps,
+    leaving "the real Full Burst is shorter than the modeled 10s" disfavoured but not excluded —
+    `docs/probe-runs.md` 2026-08-13), the owner ruled: **Full Burst is exactly 10s, modified only
+    by abilities** (e.g. `fullBurstExtend` carriers). The modeled 10.0s is confirmed faithful; the
+    planned FB-duration footage read is CLOSED as a dead end — do not measure it.
+  - **Consequence: the generation shortfall is CONFIRMED at its point estimates.** With the FB
+    term fixed at 10s and the chain ladder already footage-exonerated, the filmed-cycle conversion
+    in `docs/fb-count-matrix.md` stands un-hedged: the sim feeds the bar **61%** (iron sweep run
+    G) / **50%** (T5 wind-weak) of what the real fights require. The refill-window error is no
+    longer a range — 100% of the measured ~1.65s/cycle tempo gap sits in burst generation.
+  - **The sharpened contradiction this creates.** Iron sweep (run G) is five SR units whose
+    per-shot gauge values match the datamine against two solo bar anchors, whose focused (×2.5)
+    and unfocused (×1.0) charge multipliers are both measured (2026-07-13 A1/A2 battery), and
+    which carry zero burst-gauge kit lines (roster census 2026-08-14) — yet the real fight
+    demonstrably generates ~38.6 gauge/s where those same measured values produce 23.7. Some
+    settled premise breaks in TEAM context, or a source with no sim primitive exists. The ranked
+    remaining avenues + the discriminating next measurement (refill-window fill-trace read on the
+    existing recordings) live in
+    `docs/handoffs/2026-08-14-burst-generation-remaining-avenues.md`.
 
 - **(2026-08-14) A MISSED shotgun pellet generates NO burst gauge — SG gauge credits per
   LANDED pellet, confirmed. `SGGAUGE=trigger` survives as the refuted reading's A/B revert.**

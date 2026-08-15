@@ -1,0 +1,234 @@
+{
+  "_note": "Refill-window bounds for the misc B3s (run I order) recording \u2014 the OPTIONAL third arm of the 2026-08-14 fill-trace measurement (docs/handoffs/2026-08-14-fill-trace-preop-packet.md section C step 5). Same detector output as the tempo-cycle-*.json fixtures but WITHOUT the frame trace: this file feeds scripts/probe/fill-trace-compare.ts only, and must NOT be handed to scripts/tests/probe/cycle-table.test.ts (no frameT/frameFill). Regenerate with the command in source.",
+  "source": {
+    "video": "/Users/maxwellsutton/nikke-sim/docs/probes/u8/u8 i vid.mov",
+    "fps": 60,
+    "command": "npx tsx scripts/probe/scan.ts <video> --fps 60 --cycle-table"
+  },
+  "fullWindows": [
+    {
+      "start": 16.4667,
+      "startFill": 0.785,
+      "peakFill": 0.956,
+      "last": 25.1333,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 25.1333,
+      "durationSec": 8.67,
+      "endFill": 0.022
+    },
+    {
+      "start": 30.1833,
+      "startFill": 0.926,
+      "peakFill": 0.941,
+      "last": 38.8333,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 38.8333,
+      "durationSec": 8.65,
+      "endFill": 0.022
+    },
+    {
+      "start": 44.15,
+      "startFill": 0.926,
+      "peakFill": 0.956,
+      "last": 52.8167,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 52.8167,
+      "durationSec": 8.67,
+      "endFill": 0.022
+    },
+    {
+      "start": 58.3167,
+      "startFill": 0.919,
+      "peakFill": 0.956,
+      "last": 67.0833,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 67.0833,
+      "durationSec": 8.77,
+      "endFill": 0.022
+    },
+    {
+      "start": 71.8167,
+      "startFill": 0.926,
+      "peakFill": 0.956,
+      "last": 80.5667,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 80.5667,
+      "durationSec": 8.75,
+      "endFill": 0.022
+    },
+    {
+      "start": 87.8833,
+      "startFill": 0.926,
+      "peakFill": 0.97,
+      "last": 96.6167,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 96.6167,
+      "durationSec": 8.73,
+      "endFill": 0.022
+    },
+    {
+      "start": 101.7167,
+      "startFill": 0.926,
+      "peakFill": 0.956,
+      "last": 110.3667,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 110.3667,
+      "durationSec": 8.65,
+      "endFill": 0.022
+    },
+    {
+      "start": 115.5833,
+      "startFill": 0.911,
+      "peakFill": 0.941,
+      "last": 124.9667,
+      "lastFill": 0.03,
+      "partial": false,
+      "end": 124.9667,
+      "durationSec": 9.38,
+      "endFill": 0.03
+    },
+    {
+      "start": 129.7667,
+      "startFill": 0.941,
+      "peakFill": 0.941,
+      "last": 138.6833,
+      "lastFill": 0.03,
+      "partial": false,
+      "end": 138.6833,
+      "durationSec": 8.92,
+      "endFill": 0.03
+    },
+    {
+      "start": 143.6667,
+      "startFill": 0.941,
+      "peakFill": 0.941,
+      "last": 152,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 152,
+      "durationSec": 8.33,
+      "endFill": 0.022
+    },
+    {
+      "start": 157.4,
+      "startFill": 0.941,
+      "peakFill": 0.941,
+      "last": 165.7167,
+      "lastFill": 0.037,
+      "partial": false,
+      "end": 165.7167,
+      "durationSec": 8.32,
+      "endFill": 0.037
+    },
+    {
+      "start": 171.4167,
+      "startFill": 0.911,
+      "peakFill": 0.956,
+      "last": 180.7833,
+      "lastFill": 0.03,
+      "partial": false,
+      "end": 180.7833,
+      "durationSec": 9.37,
+      "endFill": 0.03
+    },
+    {
+      "start": 185.4167,
+      "startFill": 0.941,
+      "peakFill": 0.956,
+      "last": 194.15,
+      "lastFill": 0.03,
+      "partial": false,
+      "end": 194.15,
+      "durationSec": 8.73,
+      "endFill": 0.03
+    }
+  ],
+  "burstChains": [
+    {
+      "stage1": 15.3333,
+      "stage2": 15.6167,
+      "stage3": 16.1167
+    },
+    {
+      "stage1": 28.7833,
+      "stage2": 29.3333,
+      "stage3": 29.8333
+    },
+    {
+      "stage1": 42.75,
+      "stage2": 43.1833,
+      "stage3": 43.8
+    },
+    {
+      "stage1": 56.9333,
+      "stage2": 57.4667,
+      "stage3": 57.9667
+    },
+    {
+      "stage1": 65.45,
+      "stage2": null,
+      "stage3": null
+    },
+    {
+      "stage1": 70.4167,
+      "stage2": 70.9667,
+      "stage3": 71.3333
+    },
+    {
+      "stage1": 86.4833,
+      "stage2": 87.0333,
+      "stage3": 87.5333
+    },
+    {
+      "stage1": 100.3333,
+      "stage2": 100.8667,
+      "stage3": 101.3667
+    },
+    {
+      "stage1": 114.1833,
+      "stage2": 114.7333,
+      "stage3": 115.1
+    },
+    {
+      "stage1": 127.9667,
+      "stage2": 128.5,
+      "stage3": 129
+    },
+    {
+      "stage1": null,
+      "stage2": 138.1667,
+      "stage3": null
+    },
+    {
+      "stage1": 141.8333,
+      "stage2": 142.3833,
+      "stage3": 142.8833
+    },
+    {
+      "stage1": 155.6,
+      "stage2": 156.1333,
+      "stage3": 156.6333
+    },
+    {
+      "stage1": 170.0167,
+      "stage2": 170.5667,
+      "stage3": 171.0667
+    },
+    {
+      "stage1": 184.0167,
+      "stage2": 184.5667,
+      "stage3": 185.0667
+    }
+  ],
+  "expected": {
+    "fullBursts": 13,
+    "steadyStateMean": 14.156250000000002
+  }
+}

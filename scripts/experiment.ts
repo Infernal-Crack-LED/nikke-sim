@@ -7,6 +7,7 @@ import type {
   DataFile,
   LevelMultiplier,
   Element,
+  SimConfig,
   SimEvent,
 } from '../src/types.js';
 import { runSim, DEFAULT_MC_SEEDS } from '../src/engine/sim.js';
@@ -619,7 +620,13 @@ export function run(
   comp: Comp,
   patch: Patch = {},
   seed?: number,
-  onEvent?: (ev: SimEvent) => void
+  onEvent?: (ev: SimEvent) => void,
+  // Extra SimConfig fields applied ON TOP of the scope-lock basis. Exists for instruments that
+  // need to vary a config knob while holding EVERYTHING else identical to the lab run — the
+  // gauge-credit schedule's truncated-run validator sets `durationSec` to read the engine's own
+  // cumulative `gaugeGenerated` at a frame boundary (scripts/battery/fb-count-matrix.ts
+  // --credit-schedule). Undefined = byte-identical to the 4-argument call.
+  cfgPatch?: Partial<SimConfig>
 ) {
   const chars = comp.slugs.map((s) => data.characters[s]);
   const overrides: Record<string, OverrideFile | undefined> = {};
@@ -642,6 +649,9 @@ export function run(
   // --refill-starvation). Zero-cost when unset; the sim result is byte-identical either way.
   if (onEvent) {
     cfg.onEvent = onEvent;
+  }
+  if (cfgPatch) {
+    Object.assign(cfg, cfgPatch);
   }
   // BOSSPELLET=small|medium|large — SG pellet-landing boss-size profile (seeded runs only).
   const bp = process.env.BOSSPELLET as 'small' | 'medium' | 'large' | undefined;

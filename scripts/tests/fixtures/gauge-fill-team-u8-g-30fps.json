@@ -1,0 +1,3893 @@
+{
+  "mode": "team",
+  "fps": 30.0,
+  "at": 0.0,
+  "spans": [
+    [21.1, 26.2],
+    [34.7, 40.2],
+    [49.4, 54.4],
+    [121.3, 126.9]
+  ],
+  "bar": {
+    "mode": "team",
+    "rows": [26, 33],
+    "x0": 135,
+    "x1": 268,
+    "widthPx": 134,
+    "lock": {
+      "magentaVoteRows": [26, 33],
+      "magentaVotePeak": 337,
+      "magentaVoteFrames": 950,
+      "nearEmptyFrames": 64,
+      "trackFrames": 365,
+      "rightEdgeVotes": [268, 143],
+      "leftEdgeVotes": [135, 13]
+    },
+    "crop": {
+      "w": 280,
+      "h": 70,
+      "x": 2342,
+      "y": 465
+    },
+    "absolute": {
+      "rows": [491, 498],
+      "x0": 2477,
+      "x1": 2610
+    }
+  },
+  "reads": [
+    {
+      "t": 21.1,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 21.133,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.167,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.2,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.233,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.267,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.3,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.333,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.367,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.4,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 21.433,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 21.467,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.5,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.533,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.567,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.6,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.633,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.667,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.7,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.733,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 21.767,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 21.8,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 21.833,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.867,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.9,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.933,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 21.967,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.0,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.033,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.067,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 22.1,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 22.133,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.167,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.2,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.233,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.267,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.3,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.333,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.367,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.4,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 22.433,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 22.467,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 22.5,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.533,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.567,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.6,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.633,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.667,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.7,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.733,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 22.767,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 22.8,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 22.833,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.867,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.9,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.933,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 22.967,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 23.0,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 23.033,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 23.067,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 23.1,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 23.133,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 23.167,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 23.2,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 23.233,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 23.267,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 23.3,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 23.333,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 23.367,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 23.4,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 23.433,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 23.467,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 23.5,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 23.533,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 23.567,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 23.6,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 23.633,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 23.667,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 23.7,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 23.733,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 23.767,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 23.8,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 23.833,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 23.867,
+      "state": "filling",
+      "fillRaw": 14.2,
+      "flags": []
+    },
+    {
+      "t": 23.9,
+      "state": "filling",
+      "fillRaw": 13.4,
+      "flags": []
+    },
+    {
+      "t": 23.933,
+      "state": "filling",
+      "fillRaw": 14.9,
+      "flags": []
+    },
+    {
+      "t": 23.967,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": ["spike"]
+    },
+    {
+      "t": 24.0,
+      "state": "filling",
+      "fillRaw": 20.1,
+      "flags": []
+    },
+    {
+      "t": 24.033,
+      "state": "filling",
+      "fillRaw": 20.1,
+      "flags": []
+    },
+    {
+      "t": 24.067,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 24.1,
+      "state": "filling",
+      "fillRaw": 87.3,
+      "flags": ["inFlashSpan", "spike"]
+    },
+    {
+      "t": 24.133,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 24.167,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 24.2,
+      "state": "filling",
+      "fillRaw": 49.3,
+      "flags": ["inFlashSpan"]
+    },
+    {
+      "t": 24.233,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 24.267,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 24.3,
+      "state": "filling",
+      "fillRaw": 38.8,
+      "flags": ["levelDrop"]
+    },
+    {
+      "t": 24.333,
+      "state": "filling",
+      "fillRaw": 38.8,
+      "flags": []
+    },
+    {
+      "t": 24.367,
+      "state": "filling",
+      "fillRaw": 38.8,
+      "flags": []
+    },
+    {
+      "t": 24.4,
+      "state": "filling",
+      "fillRaw": 38.8,
+      "flags": []
+    },
+    {
+      "t": 24.433,
+      "state": "filling",
+      "fillRaw": 38.8,
+      "flags": []
+    },
+    {
+      "t": 24.467,
+      "state": "filling",
+      "fillRaw": 38.8,
+      "flags": []
+    },
+    {
+      "t": 24.5,
+      "state": "filling",
+      "fillRaw": 44.8,
+      "flags": []
+    },
+    {
+      "t": 24.533,
+      "state": "filling",
+      "fillRaw": 44.8,
+      "flags": []
+    },
+    {
+      "t": 24.567,
+      "state": "filling",
+      "fillRaw": 44.8,
+      "flags": []
+    },
+    {
+      "t": 24.6,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 24.633,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 24.667,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 24.7,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 24.733,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 24.767,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 24.8,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 24.833,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 24.867,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 24.9,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 24.933,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 24.967,
+      "state": "filling",
+      "fillRaw": 66.4,
+      "flags": []
+    },
+    {
+      "t": 25.0,
+      "state": "filling",
+      "fillRaw": 66.4,
+      "flags": []
+    },
+    {
+      "t": 25.033,
+      "state": "filling",
+      "fillRaw": 66.4,
+      "flags": []
+    },
+    {
+      "t": 25.067,
+      "state": "filling",
+      "fillRaw": 66.4,
+      "flags": []
+    },
+    {
+      "t": 25.1,
+      "state": "filling",
+      "fillRaw": 66.4,
+      "flags": []
+    },
+    {
+      "t": 25.133,
+      "state": "filling",
+      "fillRaw": 66.4,
+      "flags": []
+    },
+    {
+      "t": 25.167,
+      "state": "filling",
+      "fillRaw": 73.1,
+      "flags": []
+    },
+    {
+      "t": 25.2,
+      "state": "filling",
+      "fillRaw": 73.1,
+      "flags": []
+    },
+    {
+      "t": 25.233,
+      "state": "filling",
+      "fillRaw": 73.1,
+      "flags": []
+    },
+    {
+      "t": 25.267,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 25.3,
+      "state": "filling",
+      "fillRaw": 79.1,
+      "flags": ["inFlashSpan"]
+    },
+    {
+      "t": 25.333,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 25.367,
+      "state": "filling",
+      "fillRaw": 85.8,
+      "flags": []
+    },
+    {
+      "t": 25.4,
+      "state": "filling",
+      "fillRaw": 85.8,
+      "flags": []
+    },
+    {
+      "t": 25.433,
+      "state": "filling",
+      "fillRaw": 86.6,
+      "flags": []
+    },
+    {
+      "t": 25.467,
+      "state": "filling",
+      "fillRaw": 92.5,
+      "flags": []
+    },
+    {
+      "t": 25.5,
+      "state": "filling",
+      "fillRaw": 92.5,
+      "flags": []
+    },
+    {
+      "t": 25.533,
+      "state": "filling",
+      "fillRaw": 92.5,
+      "flags": []
+    },
+    {
+      "t": 25.567,
+      "state": "filling",
+      "fillRaw": 98.5,
+      "flags": ["spike"]
+    },
+    {
+      "t": 25.6,
+      "state": "filling",
+      "fillRaw": 40.3,
+      "flags": ["nonMonotonic"]
+    },
+    {
+      "t": 25.633,
+      "state": "full",
+      "fillRaw": 100.0,
+      "flags": ["greenFull"]
+    },
+    {
+      "t": 25.667,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 25.7,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 25.733,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 25.767,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 25.8,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 25.833,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 25.867,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 25.9,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 25.933,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 25.967,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 26.0,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 26.033,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 26.067,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 26.1,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["lowFill", "chainRender"]
+    },
+    {
+      "t": 26.133,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 26.167,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 26.2,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 34.7,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 34.733,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 34.767,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 34.8,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 34.833,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 34.867,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 34.9,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 34.933,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 34.967,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.0,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.033,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.067,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.1,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.133,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.167,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.2,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 35.233,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 35.267,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 35.3,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.333,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.367,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.4,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.433,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.467,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.5,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.533,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 35.567,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 35.6,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 35.633,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.667,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.7,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.733,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.767,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.8,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.833,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.867,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 35.9,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 35.933,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 35.967,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.0,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.033,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.067,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.1,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.133,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.167,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.2,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 36.233,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 36.267,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 36.3,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.333,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.367,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.4,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.433,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.467,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.5,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.533,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 36.567,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 36.6,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 36.633,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.667,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.7,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.733,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.767,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.8,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.833,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 36.867,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 36.9,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 36.933,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 36.967,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 37.0,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 37.033,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 37.067,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 37.1,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 37.133,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 37.167,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 37.2,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 37.233,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 37.267,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 37.3,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 37.333,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 37.367,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 37.4,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.433,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.467,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.5,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill", "spike"]
+    },
+    {
+      "t": 37.533,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.567,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.6,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.633,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.667,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.7,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.733,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.767,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.8,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.833,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.867,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.9,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.933,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 37.967,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 38.0,
+      "state": "filling",
+      "fillRaw": 6.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 38.033,
+      "state": "filling",
+      "fillRaw": 13.4,
+      "flags": []
+    },
+    {
+      "t": 38.067,
+      "state": "filling",
+      "fillRaw": 13.4,
+      "flags": []
+    },
+    {
+      "t": 38.1,
+      "state": "filling",
+      "fillRaw": 19.4,
+      "flags": []
+    },
+    {
+      "t": 38.133,
+      "state": "filling",
+      "fillRaw": 19.4,
+      "flags": []
+    },
+    {
+      "t": 38.167,
+      "state": "filling",
+      "fillRaw": 19.4,
+      "flags": []
+    },
+    {
+      "t": 38.2,
+      "state": "filling",
+      "fillRaw": 25.4,
+      "flags": []
+    },
+    {
+      "t": 38.233,
+      "state": "filling",
+      "fillRaw": 26.1,
+      "flags": []
+    },
+    {
+      "t": 38.267,
+      "state": "filling",
+      "fillRaw": 26.1,
+      "flags": []
+    },
+    {
+      "t": 38.3,
+      "state": "filling",
+      "fillRaw": 32.8,
+      "flags": []
+    },
+    {
+      "t": 38.333,
+      "state": "filling",
+      "fillRaw": 32.8,
+      "flags": []
+    },
+    {
+      "t": 38.367,
+      "state": "filling",
+      "fillRaw": 47.8,
+      "flags": []
+    },
+    {
+      "t": 38.4,
+      "state": "filling",
+      "fillRaw": 47.8,
+      "flags": []
+    },
+    {
+      "t": 38.433,
+      "state": "filling",
+      "fillRaw": 47.8,
+      "flags": []
+    },
+    {
+      "t": 38.467,
+      "state": "filling",
+      "fillRaw": 47.8,
+      "flags": []
+    },
+    {
+      "t": 38.5,
+      "state": "filling",
+      "fillRaw": 47.8,
+      "flags": []
+    },
+    {
+      "t": 38.533,
+      "state": "filling",
+      "fillRaw": 47.8,
+      "flags": []
+    },
+    {
+      "t": 38.567,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.6,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.633,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.667,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.7,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.733,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.767,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.8,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.833,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.867,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.9,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.933,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 38.967,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 39.0,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 39.033,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 39.067,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 39.1,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 39.133,
+      "state": "filling",
+      "fillRaw": 69.4,
+      "flags": []
+    },
+    {
+      "t": 39.167,
+      "state": "filling",
+      "fillRaw": 76.1,
+      "flags": []
+    },
+    {
+      "t": 39.2,
+      "state": "filling",
+      "fillRaw": 76.1,
+      "flags": []
+    },
+    {
+      "t": 39.233,
+      "state": "filling",
+      "fillRaw": 76.1,
+      "flags": []
+    },
+    {
+      "t": 39.267,
+      "state": "filling",
+      "fillRaw": 76.1,
+      "flags": []
+    },
+    {
+      "t": 39.3,
+      "state": "filling",
+      "fillRaw": 76.1,
+      "flags": []
+    },
+    {
+      "t": 39.333,
+      "state": "filling",
+      "fillRaw": 76.1,
+      "flags": []
+    },
+    {
+      "t": 39.367,
+      "state": "filling",
+      "fillRaw": 82.1,
+      "flags": []
+    },
+    {
+      "t": 39.4,
+      "state": "filling",
+      "fillRaw": 88.1,
+      "flags": []
+    },
+    {
+      "t": 39.433,
+      "state": "filling",
+      "fillRaw": 88.1,
+      "flags": []
+    },
+    {
+      "t": 39.467,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 39.5,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 39.533,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 39.567,
+      "state": "filling",
+      "fillRaw": 35.1,
+      "flags": ["nonMonotonic"]
+    },
+    {
+      "t": 39.6,
+      "state": "full",
+      "fillRaw": 100.0,
+      "flags": ["greenFull"]
+    },
+    {
+      "t": 39.633,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 39.667,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 39.7,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 39.733,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 39.767,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 39.8,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 39.833,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 39.867,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 39.9,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 39.933,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 39.967,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 40.0,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 40.033,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 40.067,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["lowFill", "chainRender"]
+    },
+    {
+      "t": 40.1,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 40.133,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 40.167,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 40.2,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 49.4,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.433,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.467,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.5,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 49.533,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 49.567,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 49.6,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.633,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.667,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.7,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.733,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.767,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.8,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.833,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 49.867,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 49.9,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.933,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 49.967,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.0,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.033,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "burstRender", "drainTail"]
+    },
+    {
+      "t": 50.067,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.1,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.133,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.167,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 50.2,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 50.233,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.267,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.3,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.333,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.367,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.4,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.433,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.467,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.5,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 50.533,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 50.567,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.6,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.633,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.667,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.7,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.733,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.767,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.8,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.833,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 50.867,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 50.9,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 50.933,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 50.967,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 51.0,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 51.033,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 51.067,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 51.1,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 51.133,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 51.167,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 51.2,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 51.233,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 51.267,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 51.3,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 51.333,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 51.367,
+      "state": "filling",
+      "fillRaw": 0.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.4,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 51.433,
+      "state": "filling",
+      "fillRaw": 7.5,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.467,
+      "state": "filling",
+      "fillRaw": 7.5,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.5,
+      "state": "filling",
+      "fillRaw": 14.9,
+      "flags": []
+    },
+    {
+      "t": 51.533,
+      "state": "filling",
+      "fillRaw": 14.2,
+      "flags": []
+    },
+    {
+      "t": 51.567,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill", "levelDrop"]
+    },
+    {
+      "t": 51.6,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.633,
+      "state": "filling",
+      "fillRaw": 7.5,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.667,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.7,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.733,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.767,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.8,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.833,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.867,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.9,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.933,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 51.967,
+      "state": "filling",
+      "fillRaw": 6.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 52.0,
+      "state": "filling",
+      "fillRaw": 13.4,
+      "flags": []
+    },
+    {
+      "t": 52.033,
+      "state": "filling",
+      "fillRaw": 13.4,
+      "flags": []
+    },
+    {
+      "t": 52.067,
+      "state": "filling",
+      "fillRaw": 18.7,
+      "flags": []
+    },
+    {
+      "t": 52.1,
+      "state": "filling",
+      "fillRaw": 18.7,
+      "flags": []
+    },
+    {
+      "t": 52.133,
+      "state": "filling",
+      "fillRaw": 18.7,
+      "flags": []
+    },
+    {
+      "t": 52.167,
+      "state": "filling",
+      "fillRaw": 18.7,
+      "flags": []
+    },
+    {
+      "t": 52.2,
+      "state": "filling",
+      "fillRaw": 18.7,
+      "flags": []
+    },
+    {
+      "t": 52.233,
+      "state": "filling",
+      "fillRaw": 19.4,
+      "flags": []
+    },
+    {
+      "t": 52.267,
+      "state": "filling",
+      "fillRaw": 19.4,
+      "flags": []
+    },
+    {
+      "t": 52.3,
+      "state": "filling",
+      "fillRaw": 20.1,
+      "flags": []
+    },
+    {
+      "t": 52.333,
+      "state": "filling",
+      "fillRaw": 25.4,
+      "flags": []
+    },
+    {
+      "t": 52.367,
+      "state": "filling",
+      "fillRaw": 25.4,
+      "flags": []
+    },
+    {
+      "t": 52.4,
+      "state": "filling",
+      "fillRaw": 26.1,
+      "flags": []
+    },
+    {
+      "t": 52.433,
+      "state": "filling",
+      "fillRaw": 26.1,
+      "flags": []
+    },
+    {
+      "t": 52.467,
+      "state": "filling",
+      "fillRaw": 33.6,
+      "flags": []
+    },
+    {
+      "t": 52.5,
+      "state": "filling",
+      "fillRaw": 33.6,
+      "flags": []
+    },
+    {
+      "t": 52.533,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 52.567,
+      "state": "filling",
+      "fillRaw": 54.5,
+      "flags": []
+    },
+    {
+      "t": 52.6,
+      "state": "filling",
+      "fillRaw": 99.3,
+      "flags": ["spike"]
+    },
+    {
+      "t": 52.633,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 52.667,
+      "state": "filling",
+      "fillRaw": 61.2,
+      "flags": []
+    },
+    {
+      "t": 52.7,
+      "state": "filling",
+      "fillRaw": 61.2,
+      "flags": []
+    },
+    {
+      "t": 52.733,
+      "state": "filling",
+      "fillRaw": 67.2,
+      "flags": []
+    },
+    {
+      "t": 52.767,
+      "state": "filling",
+      "fillRaw": 66.4,
+      "flags": []
+    },
+    {
+      "t": 52.8,
+      "state": "filling",
+      "fillRaw": 66.4,
+      "flags": []
+    },
+    {
+      "t": 52.833,
+      "state": "filling",
+      "fillRaw": 73.9,
+      "flags": []
+    },
+    {
+      "t": 52.867,
+      "state": "filling",
+      "fillRaw": 73.9,
+      "flags": []
+    },
+    {
+      "t": 52.9,
+      "state": "filling",
+      "fillRaw": 73.9,
+      "flags": []
+    },
+    {
+      "t": 52.933,
+      "state": "filling",
+      "fillRaw": 79.9,
+      "flags": []
+    },
+    {
+      "t": 52.967,
+      "state": "filling",
+      "fillRaw": 79.9,
+      "flags": []
+    },
+    {
+      "t": 53.0,
+      "state": "filling",
+      "fillRaw": 79.9,
+      "flags": []
+    },
+    {
+      "t": 53.033,
+      "state": "filling",
+      "fillRaw": 79.9,
+      "flags": []
+    },
+    {
+      "t": 53.067,
+      "state": "filling",
+      "fillRaw": 79.9,
+      "flags": []
+    },
+    {
+      "t": 53.1,
+      "state": "filling",
+      "fillRaw": 79.9,
+      "flags": []
+    },
+    {
+      "t": 53.133,
+      "state": "filling",
+      "fillRaw": 79.9,
+      "flags": []
+    },
+    {
+      "t": 53.167,
+      "state": "filling",
+      "fillRaw": 79.9,
+      "flags": []
+    },
+    {
+      "t": 53.2,
+      "state": "filling",
+      "fillRaw": 79.1,
+      "flags": []
+    },
+    {
+      "t": 53.233,
+      "state": "filling",
+      "fillRaw": 79.1,
+      "flags": []
+    },
+    {
+      "t": 53.267,
+      "state": "filling",
+      "fillRaw": 79.1,
+      "flags": []
+    },
+    {
+      "t": 53.3,
+      "state": "filling",
+      "fillRaw": 79.1,
+      "flags": []
+    },
+    {
+      "t": 53.333,
+      "state": "filling",
+      "fillRaw": 79.1,
+      "flags": []
+    },
+    {
+      "t": 53.367,
+      "state": "filling",
+      "fillRaw": 85.1,
+      "flags": []
+    },
+    {
+      "t": 53.4,
+      "state": "filling",
+      "fillRaw": 85.1,
+      "flags": []
+    },
+    {
+      "t": 53.433,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 53.467,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 53.5,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 53.533,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 53.567,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 53.6,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 53.633,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 53.667,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 53.7,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 53.733,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 53.767,
+      "state": "filling",
+      "fillRaw": 95.5,
+      "flags": []
+    },
+    {
+      "t": 53.8,
+      "state": "filling",
+      "fillRaw": 34.3,
+      "flags": ["nonMonotonic"]
+    },
+    {
+      "t": 53.833,
+      "state": "full",
+      "fillRaw": 100.0,
+      "flags": ["greenFull"]
+    },
+    {
+      "t": 53.867,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 53.9,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 53.933,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 53.967,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 54.0,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 54.033,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 54.067,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 54.1,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 54.133,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 54.167,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 54.2,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 54.233,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 54.267,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 54.3,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["chainRender"]
+    },
+    {
+      "t": 54.333,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 54.367,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 54.4,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 121.3,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.333,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 121.367,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 121.4,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 121.433,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.467,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.5,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.533,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.567,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.6,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.633,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.667,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 121.7,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 121.733,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 121.767,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.8,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.833,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.867,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.9,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.933,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 121.967,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 122.0,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 122.033,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 122.067,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.1,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.133,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.167,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.2,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.233,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.267,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.3,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.333,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 122.367,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 122.4,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 122.433,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.467,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.5,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.533,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.567,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.6,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.633,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.667,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 122.7,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 122.733,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 122.767,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.8,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.833,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.867,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.9,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.933,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 122.967,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.0,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 123.033,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 123.067,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 123.1,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.133,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.167,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.2,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.233,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.267,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.3,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.333,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 123.367,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 123.4,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 123.433,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.467,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.5,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.533,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.567,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.6,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.633,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender"]
+    },
+    {
+      "t": 123.667,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 123.7,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 123.733,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 123.767,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 123.8,
+      "state": "burstRender",
+      "fillRaw": null,
+      "flags": ["burstRender", "drainTail"]
+    },
+    {
+      "t": 123.833,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 123.867,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 123.9,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 123.933,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 123.967,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 124.0,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 124.033,
+      "state": "filling",
+      "fillRaw": 0.0,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 124.067,
+      "state": "filling",
+      "fillRaw": 3.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 124.1,
+      "state": "filling",
+      "fillRaw": 3.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 124.133,
+      "state": "filling",
+      "fillRaw": 3.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 124.167,
+      "state": "filling",
+      "fillRaw": 6.7,
+      "flags": ["lowFill"]
+    },
+    {
+      "t": 124.2,
+      "state": "filling",
+      "fillRaw": 15.7,
+      "flags": ["spike"]
+    },
+    {
+      "t": 124.233,
+      "state": "filling",
+      "fillRaw": 10.4,
+      "flags": []
+    },
+    {
+      "t": 124.267,
+      "state": "filling",
+      "fillRaw": 10.4,
+      "flags": []
+    },
+    {
+      "t": 124.3,
+      "state": "filling",
+      "fillRaw": 10.4,
+      "flags": []
+    },
+    {
+      "t": 124.333,
+      "state": "filling",
+      "fillRaw": 17.2,
+      "flags": []
+    },
+    {
+      "t": 124.367,
+      "state": "filling",
+      "fillRaw": 17.2,
+      "flags": []
+    },
+    {
+      "t": 124.4,
+      "state": "filling",
+      "fillRaw": 17.2,
+      "flags": []
+    },
+    {
+      "t": 124.433,
+      "state": "filling",
+      "fillRaw": 17.2,
+      "flags": []
+    },
+    {
+      "t": 124.467,
+      "state": "filling",
+      "fillRaw": 17.2,
+      "flags": []
+    },
+    {
+      "t": 124.5,
+      "state": "filling",
+      "fillRaw": 23.1,
+      "flags": []
+    },
+    {
+      "t": 124.533,
+      "state": "filling",
+      "fillRaw": 35.8,
+      "flags": []
+    },
+    {
+      "t": 124.567,
+      "state": "filling",
+      "fillRaw": 35.8,
+      "flags": []
+    },
+    {
+      "t": 124.6,
+      "state": "filling",
+      "fillRaw": 35.8,
+      "flags": []
+    },
+    {
+      "t": 124.633,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 124.667,
+      "state": "filling",
+      "fillRaw": 41.8,
+      "flags": ["inFlashSpan"]
+    },
+    {
+      "t": 124.7,
+      "state": "filling",
+      "fillRaw": 42.5,
+      "flags": ["inFlashSpan"]
+    },
+    {
+      "t": 124.733,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 124.767,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 124.8,
+      "state": "filling",
+      "fillRaw": 47.8,
+      "flags": ["inFlashSpan"]
+    },
+    {
+      "t": 124.833,
+      "state": "filling",
+      "fillRaw": 54.5,
+      "flags": ["inFlashSpan"]
+    },
+    {
+      "t": 124.867,
+      "state": "filling",
+      "fillRaw": 54.5,
+      "flags": ["inFlashSpan"]
+    },
+    {
+      "t": 124.9,
+      "state": "filling",
+      "fillRaw": 54.5,
+      "flags": ["inFlashSpan"]
+    },
+    {
+      "t": 124.933,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 124.967,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 125.0,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 125.033,
+      "state": "filling",
+      "fillRaw": 63.4,
+      "flags": ["spike"]
+    },
+    {
+      "t": 125.067,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.1,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.133,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.167,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.2,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.233,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.267,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.3,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.333,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.367,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.4,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.433,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.467,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.5,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.533,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.567,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.6,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.633,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.667,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.7,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.733,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.767,
+      "state": "filling",
+      "fillRaw": 60.4,
+      "flags": []
+    },
+    {
+      "t": 125.8,
+      "state": "filling",
+      "fillRaw": 66.4,
+      "flags": []
+    },
+    {
+      "t": 125.833,
+      "state": "filling",
+      "fillRaw": 66.4,
+      "flags": []
+    },
+    {
+      "t": 125.867,
+      "state": "filling",
+      "fillRaw": 73.1,
+      "flags": []
+    },
+    {
+      "t": 125.9,
+      "state": "filling",
+      "fillRaw": 79.1,
+      "flags": []
+    },
+    {
+      "t": 125.933,
+      "state": "filling",
+      "fillRaw": 79.1,
+      "flags": []
+    },
+    {
+      "t": 125.967,
+      "state": "filling",
+      "fillRaw": 79.1,
+      "flags": []
+    },
+    {
+      "t": 126.0,
+      "state": "filling",
+      "fillRaw": 85.1,
+      "flags": []
+    },
+    {
+      "t": 126.033,
+      "state": "filling",
+      "fillRaw": 85.8,
+      "flags": []
+    },
+    {
+      "t": 126.067,
+      "state": "filling",
+      "fillRaw": 85.8,
+      "flags": []
+    },
+    {
+      "t": 126.1,
+      "state": "filling",
+      "fillRaw": 92.5,
+      "flags": []
+    },
+    {
+      "t": 126.133,
+      "state": "filling",
+      "fillRaw": 92.5,
+      "flags": []
+    },
+    {
+      "t": 126.167,
+      "state": "filling",
+      "fillRaw": 92.5,
+      "flags": []
+    },
+    {
+      "t": 126.2,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 126.233,
+      "state": "filling",
+      "fillRaw": 98.5,
+      "flags": ["inFlashSpan", "spike"]
+    },
+    {
+      "t": 126.267,
+      "state": "flash",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash"]
+    },
+    {
+      "t": 126.3,
+      "state": "filling",
+      "fillRaw": 37.3,
+      "flags": ["nonMonotonic"]
+    },
+    {
+      "t": 126.333,
+      "state": "full",
+      "fillRaw": 100.0,
+      "flags": ["greenFull"]
+    },
+    {
+      "t": 126.367,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 126.4,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 126.433,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 126.467,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 126.5,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 126.533,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 126.567,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 126.6,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 126.633,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 126.667,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 126.7,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "chainRender"]
+    },
+    {
+      "t": 126.733,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 126.767,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["greenFull", "chainRender"]
+    },
+    {
+      "t": 126.8,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["lowFill", "chainRender"]
+    },
+    {
+      "t": 126.833,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 126.867,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    },
+    {
+      "t": 126.9,
+      "state": "chain",
+      "fillRaw": null,
+      "flags": ["noDarkTrack", "flash", "chainRender"]
+    }
+  ],
+  "_fixture": {
+    "video": "docs/probes/u8/u8 g vid.mov",
+    "comp": "iron sweep run G",
+    "mode": "team",
+    "why": "TEAM-HUD gauge-fill trace over 4 refill windows, pinned so scripts/tests/gauge-fill-team.test.ts can check the team lock + the artifact resolution WITHOUT decoding video (docs/probes/ is gitignored). Its labels are scored against docs/probe-data/tempo-cycle-u8-g-iron-sweep.json, whose burst-chain stage timestamps come from scan-frames.py's independently validated hexagon detector \u2014 NOT against data/gauge-per-shot.json, sim output, or any per-shot table (that would be circular: the per-shot values are exactly what a measurement built on this reader would test).",
+    "window": "spans 21.1-26.2, 34.7-40.2, 49.4-54.4, 121.3-126.9 \u2014 the refill gap between a Full Burst and the following burst chain, for 4 of the recording's 12 chains",
+    "generatedBy": [
+      "ffmpeg -i \"docs/probes/u8/u8 g vid.mov\" -vf \"fps=5,crop=280:70:2342:465\"  <lock>/f_%05d.png",
+      "ffmpeg -i \"docs/probes/u8/u8 g vid.mov\" -vf \"fps=30,crop=280:70:2342:465\" <fine>/f_%05d.png",
+      "scripts/probe/gauge-fill.py --team --frames <fine> --fps 30 --lock-frames <lock> --crop 280:70:2342:465 --spans 21.1-26.2,34.7-40.2,49.4-54.4,121.3-126.9"
+    ],
+    "note": "The first frame of each span has no preceding context, so its state can differ from a whole-video run; every other frame reproduces the whole-video run exactly."
+  }
+}

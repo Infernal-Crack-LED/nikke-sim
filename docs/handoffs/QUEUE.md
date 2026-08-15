@@ -127,69 +127,19 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    - **Encode-consistency candidates**: `anis` and `mica` both keep an `attacked`-N line unmodeled
      on "nothing feeds the trigger" grounds. Same call, so decide them together, not one at a time.
 
-2. **Tempo gap: MEASURED (2026-08-13, LOG). One question left — is the real Full Burst 10s?** The
-   `/scientific-method` pass is done and the measurement is in `docs/probe-runs.md` (2026-08-13): the
-   real burst cycle runs **1.662s / 1.649s per cycle faster** than the sim on two recordings, the cast
-   ladder is EXONERATED (real 1.383–1.400s vs the engine's 82f = 1.3667s), and **100% of the gap sits
-   in the FB-start → next-stage-1 span**. What is NOT settled is the split of that span: the
-   Full-Burst-duration lower bound (≥8.87s) leaves only 0.40–0.53s unexplained by "the real Full Burst
-   is shorter than the modeled 10s", below the pre-committed 0.6s margin — so the refill error is a
-   RANGE ([0.52, 1.66] s/cycle), not a value, and nothing was enacted.
-   - ⛔ **The framing changed 2026-08-13 (owner ruling): do NOT chase the cycle-time difference.**
-     Burst gauge is generated per HIT; there is no per-second gain and no timer that opens a chain, so
-     a "~1.65s/cycle" figure is a symptom in units the game does not have and there is no time
-     constant to change. Converted into the quantity that can be wrong, the sim feeds the bar **61%
-     (iron sweep) / 50% (T5)** of what the filmed fights require. **The open thread is whether burst
-     GENERATION is computed correctly** — four scoped investigations, one per session, in
-     [2026-08-13-burst-generation-investigation-plan.md](2026-08-13-burst-generation-investigation-plan.md):
-     ~~(1) refill-window starvation from post-Full-Burst reload state~~ **CLOSED 2026-08-14 —
-     NOT the cause** (first 1s after FB end delivers 114.7%/140.7% of steady state on the two
-     filmed comps — the window is FRONT-LOADED; instrument + fixture committed, plan doc carries
-     the record), ~~(2) missing non-bullet sources~~ **CLOSED 2026-08-14 — census clean for
-     comp-moving sources** (emission map fully ruled; non-emitting kinds contribute zero on all
-     nine comps; non-damage applications land nothing fresh in refill windows; the one live lever
-     is the `skillGauge` divisor for hitsPerShot > 1, where `anis-star`'s battery-3-A3 fixture
-     EXCLUDES the shipped halved reading — sized at ~12% of T5's cycle gap, footage-gated under
-     the U28 residual; plan doc carries the record), ~~(3) the focused charge multiplier's
-     per-unit column~~ **CLOSED 2026-08-14 — cannot explain the shortfall** (every seated
-     focused charge unit resolves to a MEASURED column via `characters.json` `chargeMultiplier`
-     — maxwell/anis-star 250, scarlet-black-shadow's enacted 1.5×; the only unmeasured column,
-     vesti-tactical-upgrade's pinned 200, seats no comp; even a maximally wrong column covers
-     ≤22% of the filmed shortfalls; instrument + fixture committed, plan doc carries the
-     record), ~~(4) multi-hit crediting (per landed hit vs per trigger)~~ **CLOSED 2026-08-14 —
-     EXCLUDED as the shortfall cause** (the primary sources never distinguished landed pellets
-     from trigger pulls — that IS the finding, and it is an owner question before a measurement;
-     the ceiling arm `SGGAUGE=trigger` lifts SG-carrier generation +27–48% / team +7–17% and
-     moves ZERO Full-Burst counts anywhere, every SG comp stays exactly one short, the filmed
-     comps seat no SG carrier at all; arm + instrument + fixture on branch `audit/item4-multihit`,
-     plan doc carries the record; the owner question was filed as open-questions U40 and ANSWERED
-     the same day — **no, a missed pellet does NOT generate**: per-landed crediting confirmed,
-     DECISIONS 2026-08-14, U40 moved to answered-questions). **All four items closed and NONE
-     explains the shortfall — the plan's
-     stop condition has been met: the remainder is not in any of the four generation candidates
-     and goes back to the owner rather than into a fifth speculative item.** Live residue: the
-     U28 `skillGauge` divisor residual (~12% of T5's cycle gap, footage-gated), and the separate
-     real-Full-Burst-duration measurement below.
-   - **A SEPARATE small measurement still open:** read the real Full Burst duration off a visual that
-     does NOT share the drain bar's under-render — the FB screen border / cut-in vignette, or a
-     buff-icon timer — on either recording already on disk. **One clean "real FB ≈ 10s" converts this
-     to H1 CONFIRMED on the already-measured gap** and unblocks a proposal; "≈8.9s" hands most of the
-     gap to Full-Burst duration instead. Instrument to extend: `scripts/probe/cycle-table.ts` +
-     `scan.ts --cycle-table` (committed, fixture-pinned).
-   - Generality is bounded: both recordings are `liberalio` comps and it appears in zero passing
-     comps, so it is perfectly confounded. Repeat on the `liberalio`-free shortfall comp
-     `misc B3s (run I order)` (sim 12 vs measured 13) before claiming an engine-general error.
-   - **The off-count set is NINE comps, not the four disabled ones, and five seat no `liberalio`** —
-     per-team rosters, focus, per-unit gauge rates, bar-fill times and where the 180s buzzer lands
-     are in [docs/fb-count-matrix.md](../fb-count-matrix.md) (regenerate:
-     `npx tsx scripts/battery/fb-count-matrix.ts`). Chain stall is 0.00s on all nine, so none of
-     these are burst-availability failures — every one is refill speed.
-   - ⚑ Side finding worth one pass: real stage1→stage2 reads 33f/32f vs the modeled 30f
-     `STAGE_CAST_GAP_FRAMES`. Runs against the gap, so it cannot have inflated the finding.
-   - Success criterion unchanged: the 4 disabled comps' measured FB counts, re-enabled. Enactment is a
-     SEPARATE gated pass — measurement ≠ enactment. Handoff:
-     [2026-08-10-gauge-economy-findings.md](2026-08-10-gauge-economy-findings.md).
-
+2. **Burst-generation thread — pickup packet: [2026-08-14-burst-gen-next-session.md](2026-08-14-burst-gen-next-session.md)**
+   (on `main`; read it INSTEAD of re-deriving the thread — verified-facts block, artifact map,
+   traps). State in one line: Full Burst owner-ruled EXACTLY 10s (footage-confirmed 10.13–10.22s);
+   the cycle gap decomposes 93.5–97% into refill-window duration on all three filmed comps; the
+   four-item generation plan is fully CLOSED; the fill-trace classification measurement returned
+   **CANNOT-MEASURE** (2-of-2 ACCEPT HIGH, LOG — `docs/probe-runs.md` 2026-08-14); the suggestive
+   ~1.7–2.0× in-window rate ratio is LOGGED, not a verdict. Remaining steps (detail + method in
+   the pickup packet): (1) instrument preludes — opening-window observable, reader flag-taxonomy
+   leak, SG gauge-fraction event tap (owner-gated engine touch); (2) NEW `/scientific-method`
+   pre-op on the bar-paint-anchored statistic to classify H-A/H-B/H-C; (3) the `anis-star`
+   `skillGauge`-divisor pipeline (existing battery-3 fixture first); (4) recording asks (solo
+   MG/SMG gauge-bar read; T1 wind-weak has no video); (5) residue ledger
+   (`snow-white-heavy-arms` U11c, `ein` U8, stage1→2 33f observation).
 3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
    Recipe (unchanged, but the qualifying set is now exact): popup-read a qualifying all-enemies
    burst nuke cast INSIDE vs OUTSIDE a `trina` Spread Roots window and compare against
