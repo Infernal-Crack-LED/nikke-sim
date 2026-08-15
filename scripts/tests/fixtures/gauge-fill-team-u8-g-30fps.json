@@ -598,7 +598,7 @@
       "t": 24.2,
       "state": "filling",
       "fillRaw": 49.3,
-      "flags": ["inFlashSpan"]
+      "flags": ["inFlashSpan", "offCurve"]
     },
     {
       "t": 24.233,
@@ -850,7 +850,7 @@
       "t": 25.6,
       "state": "filling",
       "fillRaw": 40.3,
-      "flags": ["nonMonotonic"]
+      "flags": ["nonMonotonic", "offCurve"]
     },
     {
       "t": 25.633,
@@ -1840,7 +1840,7 @@
       "t": 39.567,
       "state": "filling",
       "fillRaw": 35.1,
-      "flags": ["nonMonotonic"]
+      "flags": ["nonMonotonic", "offCurve"]
     },
     {
       "t": 39.6,
@@ -2338,13 +2338,13 @@
       "t": 51.5,
       "state": "filling",
       "fillRaw": 14.9,
-      "flags": []
+      "flags": ["offCurve"]
     },
     {
       "t": 51.533,
       "state": "filling",
       "fillRaw": 14.2,
-      "flags": []
+      "flags": ["offCurve"]
     },
     {
       "t": 51.567,
@@ -2752,7 +2752,7 @@
       "t": 53.8,
       "state": "filling",
       "fillRaw": 34.3,
-      "flags": ["nonMonotonic"]
+      "flags": ["nonMonotonic", "offCurve"]
     },
     {
       "t": 53.833,
@@ -3766,7 +3766,7 @@
       "t": 126.3,
       "state": "filling",
       "fillRaw": 37.3,
-      "flags": ["nonMonotonic"]
+      "flags": ["nonMonotonic", "offCurve"]
     },
     {
       "t": 126.333,
