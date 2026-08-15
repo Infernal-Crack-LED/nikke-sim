@@ -159,7 +159,11 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
 
     it('pins the deterministic unlocked/locked impact split per comp (drift guard)', () => {
       const pinned: Record<string, [number, number]> = {
-        'iron sweep (run G)': [24, 111],
+        // iron sweep RE-PINNED 2026-08-14 (was [24, 111]): the `liberalio` Charge Speed immunity
+        // re-phases this comp's Full Bursts, moving impacts across the unlocked/locked boundary.
+        // Re-derived from the instrument's own `--gauge-sources --json`; cause: DECISIONS
+        // 2026-08-14. Every other comp's split is unchanged — none seats a Charge Speed source.
+        'iron sweep (run G)': [26, 107],
         'T5 wind-weak': [73, 732],
         'T1 wind-weak': [90, 781],
         'N3 scarlet/liberalio iron': [35, 284],
@@ -244,9 +248,14 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
     });
 
     it('pins the filmed comps\u2019 measured shortfall the estimates are held against', () => {
+      // iron sweep RE-PINNED 2026-08-14 (was 14.94 / 38.67): the `liberalio` Charge Speed
+      // immunity costs her two charges per fight, so the comp generates less gauge and its
+      // measured shortfall WIDENS. Re-derived by running the instrument
+      // (`npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources --json`), not hand-edited.
+      // Cause: DECISIONS 2026-08-14. T5 is untouched — no Charge Speed source seated there.
       const iron = byName('iron sweep (run G)');
-      expect(iron.shortfallRateGaugePerSec).toBeCloseTo(14.94, 1);
-      expect(iron.shortfallPerCycleGauge).toBeCloseTo(38.67, 1);
+      expect(iron.shortfallRateGaugePerSec).toBeCloseTo(16.38, 1);
+      expect(iron.shortfallPerCycleGauge).toBeCloseTo(40.76, 1);
       const t5 = byName('T5 wind-weak');
       expect(t5.shortfallRateGaugePerSec).toBeCloseTo(26.03, 1);
       expect(t5.shortfallPerCycleGauge).toBeCloseTo(49.67, 1);

@@ -20,7 +20,7 @@
 //      ■ all enemies: 925% of final ATK as additional damage                                [L9]
 //
 // Dispositions:
-//   L1..L5, L8, L9  FAITHFUL — pinned GREEN vs shipped, RED vs the nearest-wrong counterfactual.
+//   L1..L5, L7..L9  FAITHFUL — pinned GREEN vs shipped, RED vs the nearest-wrong counterfactual.
 //   L3  MEASURED reading: "Activates 5 times" = 5 hits per full charge = 5×40.5% = 202.5% per
 //       pull (user-confirmed; validated vs a real scope-lock run — the single-hit 40.5% read
 //       left her 0.70 cold). Its Q1 calibration is also pinned: the proc is RANGE-exempt
@@ -30,19 +30,18 @@
 //       full charge maintains Raging Current — modeled as a permanent passive.
 //   L6  UNMODELED-inert: Gentle Current can never fire in a solo raid (no non-stage-target
 //       Rapture exists), so there is nothing to assert — documented, not dropped.
-//   L7  UNMODELED-defensive: the charge-speed immunity is inert to her own damage. Its ONE
-//       sim-visible consequence — her own S1 Charge Speed grant must not self-target — IS
-//       pinned by L4 (excludeSelf). The residual gap (an EXTERNAL charge-speed buff from a
-//       teammate would wrongly reach her; sim.ts sums all sources) is a documented caveat,
-//       not a kit line left silently unmodeled.
+//   L7  RECEIVING-side rule, enforced at buff application: `charFixes.statImmunities`
+//       ['chargeSpeedPct'] strips that stat out of any incoming buff for HER ONLY, from any
+//       source and in either direction. The strip is PER STAT and PER TARGET — a stat bundled
+//       in the same effects array still lands on her, and the same cast still reaches every
+//       other ally. Her own S1 grant is unchanged (excludeSelf, pinned by L4).
 //
 // S2c reconciliation (driver vs claude-fable-5 S2b): CONVERGED on all nine lines. The reviewer
 // independently re-derived every disposition, including the 5-hits-per-landing rider read, the
 // lowest-FINAL-ATK Burst-3 selector, the burstCast-vs-fullBurstEnter split, and the FB-exempt
-// nuke. Two reviewer nuances reconciled: (i) their L7 GAP framing asks for a behavioral shot-count
-// invariance test under an INJECTED external chargeSpeedPct — that assertion is RED vs shipped
-// (the gap is real but DORMANT: no charge-speed source exists in the control comp, and the schema
-// has no immunity primitive), so it is carried as a ⚑ caveat, not a failing test; (ii) their L5
+// nuke. Two reviewer nuances reconciled: (i) their L7 framing asks for a behavioral shot-count
+// invariance test under an INJECTED external chargeSpeedPct — that is exactly the L7 group below,
+// and it is GREEN vs shipped and RED against the no-immunity counterfactual; (ii) their L5
 // trigger-identity preference (landing-gated, not passive-from-t0) was ADOPTED — the S5 blind
 // test (claude-opus-5) asserted it RED-vs-passive, so the override's Raging Current trigger moved
 // passive → shotFired (the passive shortcut over-credited exactly her first charge, ~0.2% of her
@@ -163,11 +162,51 @@ const libAllCf = withPatchedOverride('liberalio', (ov) => {
   l9.effects.find((e: any) => e.kind === 'flatDamage').atkPct = 882.95;
 });
 
+// ---- L7 fixtures: an EXTERNAL Charge Speed source injected into the comp ----------------------
+// The control comp has no charge-speed carrier, so the immunity is only observable against an
+// injected one. `liter` (slot 0, SMG — no charge weapon of her own) carries a synthetic passive
+// that BUNDLES chargeSpeedPct with atkPct in ONE effects array, exactly the shape `maxwell`
+// (SR/Iron) ships in the real board comp. Element targeting isolates a single receiver: Wind is
+// liberalio alone, Water is `helm` (SR/Water) alone (liter/crown are Iron), so each run changes
+// exactly one unit and cannot be confounded by a team-wide rotation shift.
+const extSource = (target: any) =>
+  withPatchedOverride('liter', (ov) => {
+    ov.skill1.push({
+      slot: 'skill1',
+      trigger: { kind: 'passive' },
+      target,
+      effects: [
+        { kind: 'buff', stat: 'chargeSpeedPct', value: 50 },
+        { kind: 'buff', stat: 'atkPct', value: 10 },
+      ],
+    });
+  });
+const TO_LIB = { kind: 'alliesOfElement', element: 'Wind' };
+const TO_HELM = { kind: 'alliesOfElement', element: 'Water' };
+
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
 const cf = run({ liberalio: libAllCf });
 /** requiresCore discrimination: identical basis but the boss core is never exposed. */
 const noCore = run({}, { coreHitRate: 0 });
+/** L7: the bundled external buff aimed at liberalio ALONE. */
+const extLib = run({ liter: extSource(TO_LIB) });
+/** L7 counterfactual: the same buff with her immunity stripped out of the override. */
+const extLibNoImm = run({
+  liter: extSource(TO_LIB),
+  liberalio: withPatchedOverride('liberalio', (ov) => {
+    if (!ov.charFixes?.statImmunities?.includes('chargeSpeedPct')) {
+      throw new Error(
+        'liberalio charFixes.statImmunities lacks chargeSpeedPct — fixture is stale'
+      );
+    }
+    delete ov.charFixes.statImmunities;
+  }),
+});
+/** L7: the same buff aimed at helm ALONE — a non-immune charge (SR) ally. */
+const extHelm = run({ liter: extSource(TO_HELM) });
+/** L7: the same buff cast at the WHOLE team in one go (per-target strip). */
+const extAll = run({ liter: extSource({ kind: 'allies' }) });
 
 // ---- readers ----------------------------------------------------------------------------------
 const dmg = (evs: SimEvent[]) =>
@@ -325,6 +364,70 @@ describe('liberalio — kit spec', () => {
       ];
       expect(vals).toContain(220.5);
       expect(vals).not.toContain(231);
+    });
+  });
+
+  describe('L7 — S2 immunity to Increase/Decrease Charge Speed effects (continuous)', () => {
+    const shotsOf = (evs: SimEvent[], slug: string) =>
+      evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === slug).length;
+    const csTargets = (evs: SimEvent[]) =>
+      new Set(
+        buffs(evs)
+          .filter((b) => b.stat === 'chargeSpeedPct' && b.value === 50)
+          .map((b) => b.targetIdx)
+      );
+
+    it('an EXTERNAL Charge Speed ▲50% aimed at her leaves her fire cycle untouched', () => {
+      // sole receiver ⇒ nothing else in the comp moves, so equality is exact, not approximate
+      expect(shotsOf(extLib.events, 'liberalio')).toBe(
+        shotsOf(base.events, 'liberalio')
+      );
+      expect(
+        libShots(extLib.events)
+          .map((s) => s.frame)
+          .join(',')
+      ).toBe(
+        libShots(base.events)
+          .map((s) => s.frame)
+          .join(',')
+      );
+      expect(csTargets(extLib.events).has(LIB)).toBe(false);
+    });
+
+    it('the stat is stripped PER STAT: the atkPct bundled in the same buff still lands on her', () => {
+      const bundled = buffs(extLib.events).filter(
+        (b) => b.stat === 'atkPct' && b.value === 10
+      );
+      expect(bundled.length).toBeGreaterThan(0);
+      expect([...new Set(bundled.map((b) => b.targetIdx))]).toEqual([LIB]);
+    });
+
+    it('DISCRIMINATING: without the immunity the SAME buff speeds her up', () => {
+      expect(csTargets(extLibNoImm.events).has(LIB)).toBe(true);
+      expect(shotsOf(extLibNoImm.events, 'liberalio')).toBeGreaterThan(
+        shotsOf(base.events, 'liberalio')
+      );
+    });
+
+    it('the same buff DOES speed up a non-immune charge ally (helm, SR/Water)', () => {
+      expect(csTargets(extHelm.events).has(HELM)).toBe(true);
+      expect(shotsOf(extHelm.events, 'helm')).toBeGreaterThan(
+        shotsOf(base.events, 'helm')
+      );
+    });
+
+    it('is PER TARGET: one team-wide cast reaches every ally but her', () => {
+      const targets = csTargets(extAll.events);
+      expect(targets.has(LIB)).toBe(false);
+      expect(targets.has(HELM)).toBe(true);
+      expect(targets.size).toBe(3); // liter, crown, helm
+    });
+
+    it('her OWN S1 Charge Speed grant to an ally is unaffected (excludeSelf intact)', () => {
+      const own = libBuffs(base.events, 'chargeSpeedPct');
+      expect(own.length).toBeGreaterThan(0);
+      expect([...new Set(own.map((b) => b.targetIdx))]).toEqual([HELM]);
+      expect([...new Set(own.map((b) => b.value))]).toEqual([12.74]);
     });
   });
 

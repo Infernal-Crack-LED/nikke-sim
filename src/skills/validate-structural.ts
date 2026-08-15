@@ -58,6 +58,25 @@ export const STATS = new Set([
   'hitRatePct',
   'defPct',
 ]);
+
+// charFixes.statImmunities is matched against the stat key that actually LANDS on the unit —
+// applyEffect rewrites a few AUTHORED stat names into a different applied key before the buff is
+// placed, so naming the authored side would produce an immunity that can never match (a silent
+// permanent no-op, with the override note claiming the unit is protected). These five are
+// rejected in favour of their post-mapping target.
+export const IMMUNITY_ALIAS = new Map<string, string>([
+  ['casterMaxHpPct', 'maxHpFlat'],
+  ['targetMaxHpPct', 'maxHpFlat'],
+  ['highestAllyMaxHpPct', 'maxHpFlat'],
+  ['highestAllyAtkPct', 'casterAtkPct'],
+  ['atkOfCasterMaxHpPct', 'casterAtkPct'],
+]);
+/** Stat keys an override may legally list in `charFixes.statImmunities` (post-mapping only). */
+export const IMMUNIZABLE_STATS = new Set([
+  ...[...STATS].filter((s) => !IMMUNITY_ALIAS.has(s)),
+  'maxHpFlat',
+]);
+
 export const TRIGGERS = new Set([
   'passive',
   'battleStart',
@@ -634,6 +653,34 @@ export function structuralCheck(
 ): StructuralResult {
   const errors: string[] = [];
   const warnings: string[] = [];
+
+  // charFixes.statImmunities — RECEIVING-side stat immunities ("Gains immunity to
+  // Increase/Decrease <X> effects"). The whole enforcement is a string match in the engine, so an
+  // unrecognised or authored-side key is a permanent SILENT no-op: the unit goes on receiving the
+  // stat while its note and DECISIONS claim it cannot. Unrecognised input is LOUD here instead.
+  const imm = override.charFixes?.statImmunities;
+  if (imm !== undefined) {
+    if (!Array.isArray(imm)) {
+      errors.push('charFixes.statImmunities: must be an array of stat keys');
+    } else {
+      imm.forEach((s: unknown, i: number) => {
+        const p = `charFixes.statImmunities[${i}]`;
+        if (typeof s !== 'string') {
+          errors.push(`${p}: must be a string stat key`);
+          return;
+        }
+        const post = IMMUNITY_ALIAS.get(s);
+        if (post !== undefined) {
+          errors.push(
+            `${p}: "${s}" is an authored-side alias the engine rewrites to "${post}" before the ` +
+              `buff lands — an immunity must name the applied key ("${post}") or it can never match`
+          );
+        } else if (!IMMUNIZABLE_STATS.has(s)) {
+          errors.push(`${p}: unknown stat "${s}"`);
+        }
+      });
+    }
+  }
 
   for (const slot of SLOTS) {
     const blocks = override[slot];

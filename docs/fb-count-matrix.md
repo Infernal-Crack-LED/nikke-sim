@@ -79,7 +79,7 @@ during Full Burst and the burst chain, so a wall-clock rate would understate eve
 
 | comp                          | boss     | sim vs measured | roster in slot order (weapon · burst · gauge/60f)                                                                                                               | focus                  | team rate | fill from 0 (proj / obs) | FB length |
 | ----------------------------- | -------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | --------- | ------------------------ | --------- |
-| **iron sweep (run G)**        | Electric | **11 vs 13–14** | `d-killer-wife` SR·I·3.46 · `milk-blooming-bunny` SR·III·3.58 · **`maxwell` SR·III·8.37** · `takina` SR·II·4.62 · `liberalio` SR·III·5.54                       | `maxwell`              | 25.57     | 3.91s / 4.22s            | 10.0s     |
+| **iron sweep (run G)**        | Electric | **11 vs 13–14** | `d-killer-wife` SR·I·3.18 · `milk-blooming-bunny` SR·III·3.52 · **`maxwell` SR·III·7.95** · `takina` SR·II·4.55 · `liberalio` SR·III·5.91                       | `maxwell`              | 25.11     | 3.98s / 4.20s            | 10.0s     |
 | **T5 wind-weak**              | Iron     | **12 vs 13**    | `nayuta` SMG·II·4.03 · `cinderella-crystal-wave` MG·III·5.50 · **`anis-star` RL·I·8.19** · `liberalio` SR·III·5.72 · `velvet` SR·II·3.38                        | `anis-star`            | 26.81     | 3.73s / 3.79s            | 10.0s     |
 | **T1 wind-weak**              | Iron     | **11 vs 13**    | `mast-romantic-maid` MG·II·3.43 · `scarlet-black-shadow` RL·III·4.80 · **`anis-star` RL·I·7.51** · `liberalio` SR·III·6.35 · `crown` MG·II·3.30                 | `anis-star`            | 25.40     | 3.94s / 4.18s            | 10.0s     |
 | **N3 scarlet/liberalio iron** | Iron     | **9 vs 10**     | `rouge` SR·I·3.20 · `trina` RL·II·3.40 · **`scarlet-black-shadow` RL·III·5.58** · `liberalio` SR·III·5.59 · `soda-twinkling-bunny` SG·III·7.05                  | `scarlet-black-shadow` | 24.82     | 4.03s / 4.32s            | **15.0s** |
@@ -103,7 +103,7 @@ feed).
 
 | comp                      | state at 180s     | detail                                                                         |
 | ------------------------- | ----------------- | ------------------------------------------------------------------------------ |
-| iron sweep (run G)        | **gauge filling** | refilling the final 2.90s (last Full Burst ended 177.1s); the bar never filled |
+| iron sweep (run G)        | **gauge filling** | refilling the final 3.60s (last Full Burst ended 176.4s); the bar never filled |
 | T1 wind-weak              | **gauge filling** | refilling the final 2.90s (last Full Burst ended 177.1s); the bar never filled |
 | misc B3s (run I order)    | **gauge filling** | refilling the final 0.90s (last Full Burst ended 179.1s); the bar never filled |
 | T5 wind-weak              | mid-Full-Burst    | opened 179.2s — only 0.80s of it inside the fight                              |
@@ -130,7 +130,7 @@ mechanical floor (Full Burst + 0.5s pre-B1 + chain span), required rate = one ba
 
 | comp               | filmed cycle | floor  | real refill | fight needs  | sim feeds    | **sim generates**   |
 | ------------------ | ------------ | ------ | ----------- | ------------ | ------------ | ------------------- |
-| iron sweep (run G) | 14.39s       | 11.80s | 2.59s       | 38.6 gauge/s | 23.7 gauge/s | **61%** of required |
+| iron sweep (run G) | 14.39s       | 11.90s | 2.49s       | 40.2 gauge/s | 23.8 gauge/s | **59%** of required |
 | T5 wind-weak       | 13.81s       | 11.90s | 1.91s       | 52.4 gauge/s | 26.4 gauge/s | **50%** of required |
 
 **Only these two comps can be converted** — the other seven have no filmed cycle, so no generation
@@ -138,8 +138,16 @@ requirement can be derived for them. Nothing here extrapolates onto them.
 
 **The percentages are no longer hedged.** The 10s Full Burst both figures assume is an owner ruling
 (2026-08-14, DECISIONS): **Full Burst is exactly 10s unless an ability extends or shortens it**, so
-the old ≥8.87s footage bound no longer softens the conversion — the sim generates **61% / 50%** of
+the old ≥8.87s footage bound no longer softens the conversion — the sim generates **59% / 50%** of
 what the two filmed fights require, and the whole gap is burst generation.
+
+> **Iron-sweep row re-derived 2026-08-14** (`liberalio` Charge Speed immunity, DECISIONS
+> 2026-08-14): it costs her two charges per fight and re-phases that comp, so its whole block above
+> moved — per-unit gauge/60f, team rate 25.57 → 25.11, the buzzer state, and the shortfall row
+> (floor 11.80s → 11.90s, needs 38.6 → 40.2 gauge/s, **61% → 59%** of required). Every other comp,
+> `T5 wind-weak` included, is byte-identical: no other comp seats a Charge Speed source. All values
+> transcribed from a fresh `npx tsx scripts/battery/fb-count-matrix.ts`, and the pre-fix run of the
+> same command reproduced this doc's previous numbers exactly, so the immunity is the whole cause.
 
 ⇒ **The open investigation is whether burst generation is computed correctly** — per-shot values,
 shots actually landed, and any source not being counted — not cycle timing.
@@ -185,8 +193,11 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
   next-stage-1 span is indivisible to the instrument, so "gauge generates too slowly", "the chain
   opens late", and "the real Full Burst is shorter than 10s" are still not separated. **One in-window
   candidate has since been EXCLUDED (2026-08-14):** post-Full-Burst reload-state starvation is not the
-  cause — the first 1s after FB end delivers 114.7% (iron sweep) / 140.7% (T5) of the steady-state
-  rate, i.e. the refill window is FRONT-LOADED, not ramping. Instrument:
+  cause — the first 1s after FB end delivers 86.0% (iron sweep) / 140.7% (T5) of the steady-state
+  rate, both clearing the pre-committed ≥80% rule, i.e. the refill window is FLAT-to-FRONT-LOADED,
+  never ramping up from a starved boundary (iron sweep's figures were re-derived 2026-08-14 after
+  the `liberalio` Charge Speed immunity re-phased that comp — 114.7% pre-fix; the verdict is
+  unchanged, the front-loaded shape now holds on T5 only). Instrument:
   `npx tsx scripts/battery/fb-count-matrix.ts --refill-starvation`, pinned by
   `scripts/tests/battery/refill-starvation.test.ts`; the record lives in
   [handoffs/2026-08-13-burst-generation-investigation-plan.md](handoffs/2026-08-13-burst-generation-investigation-plan.md)
@@ -203,7 +214,8 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
   **A third candidate has since been EXCLUDED (2026-08-14):** a wrong per-unit focus-multiplier
   column — all four focused charge units (`maxwell`, `anis-star` ×2, `scarlet-black-shadow`)
   resolve to MEASURED columns via `characters.json` `chargeMultiplier`, and even the most
-  extreme wrong column (350) covers ≤22.4% (iron sweep) / ≤12.6% (T5) of the measured
+  extreme wrong column (350) covers ≤19.4% (iron sweep, re-derived 2026-08-14 — was ≤22.4% before
+  the `liberalio` Charge Speed immunity widened that comp's shortfall) / ≤12.6% (T5) of the measured
   shortfall. Instrument: `npx tsx scripts/battery/fb-count-matrix.ts --focus-columns`, pinned
   by `scripts/tests/battery/focus-columns.test.ts`; the record lives in the same handoff, item 3.
   **A fourth candidate has since been EXCLUDED (2026-08-14):** multi-hit gauge crediting — the
@@ -224,7 +236,7 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
   to test it.
 - The generation shortfall is computable for the **two filmed comps only**. The other seven have no
   measured cycle, so nothing about their required generation is derived here.
-- The shortfall percentages assume a 10s real Full Burst, which is only bounded at ≥8.87s. The
-  direction and rough size survive that uncertainty; the exact figure does not.
+- The shortfall percentages assume a 10s real Full Burst — an owner ruling (2026-08-14, DECISIONS:
+  exactly 10s unless an ability extends or shortens it), so the figures are no longer hedged on it.
 
 Live thread and next measurement: [handoffs/QUEUE.md](handoffs/QUEUE.md) item 2.

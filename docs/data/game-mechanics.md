@@ -124,7 +124,8 @@ of >100% takes precedence).
 
 - **Charge Speed is SUBTRACTIVE on charge time**: `effective = base × (1 − ΣCS%)`, floored
   at 1 frame, hard-capped at +100% (DATAMINED; StatChargeTime is a negative % on time).
-  It is NOT `base / (1+CS)`.
+  It is NOT `base / (1+CS)`. A unit whose kit grants immunity to Increase/Decrease Charge
+  Speed effects contributes nothing to that sum from external sources — see §11.
 - **SR bolt cycle**: +22 frames after each shot (MEASURED: helm recording, 1.37s cycle =
   60f charge + 22f). Weapon-swap states and `charFixes.noBoltRecovery` units are exempt.
   Reload starts immediately after the final shot.
@@ -372,6 +373,18 @@ Fire→Wind→Iron→Electric→Water→Fire. No hidden bonus beyond the base 1.
   88.7%. (Namu confirms her kit actually targets disjoint groups — burst casters vs
   non-casters — so no unit legitimately receives both lines; the dedupe matches real kit
   structure.)
+- **A unit can be IMMUNE to a stat on the receiving side.** Kit lines shaped "Gains immunity to
+  Increase/Decrease `<stat>` effects" (`liberalio` skill 2, Charge Speed) are enforced where the
+  buff is APPLIED, not where the stat is read: the immune stat is stripped out of the incoming
+  buff for that unit only. The strip is per stat and per target — a different stat bundled in the
+  same buff block still lands on her (`maxwell`'s skill 1 grants Charge Speed and ATK in one cast:
+  the ATK applies, the Charge Speed does not), and every other target of that same cast is
+  unaffected. Direction-blind (an increase and a decrease are both stripped) and source-blind
+  among kits. **The immunity blocks IN-BATTLE BUFF EFFECTS ONLY — cube and Overload gear stats
+  still apply to the holder (owner ruling 2026-08-14)**, which is why enforcing it at buff
+  application is the faithful model rather than an approximation: gear stats are resolved into the
+  unit at construction and never pass through that path. Encoded as the per-unit
+  `charFixes.statImmunities` list (2026-08-14).
 - Buff windows come in TWO kinds and they are not interchangeable. Most are **timed** (a
   seconds duration). Kit lines reading "**for N round(s)**" are **round-scoped**: they end
   after the holder fires N bullets, so the window stretches across a reload and shrinks if the

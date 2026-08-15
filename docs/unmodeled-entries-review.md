@@ -11,8 +11,8 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 200 | 44.3% |
-| Other / see caveats | 93 | 20.6% |
+| Defensive / HP / shield / aggro | 200 | 44.4% |
+| Other / see caveats | 92 | 20.4% |
 | Missing engine primitive / trigger | 91 | 20.2% |
 | Out-of-domain / parser unsupported | 30 | 6.7% |
 | Partless boss | 10 | 2.2% |
@@ -20,7 +20,7 @@
 | Self-status / stack gate | 8 | 1.8% |
 | RNG / probabilistic | 6 | 1.3% |
 | Measurement-gated / unverified cadence | 4 | 0.9% |
-| **Total** | **451** | 100.0% |
+| **Total** | **450** | 100.0% |
 
 ## Entries by reason
 
@@ -732,7 +732,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (93)
+### Other / see caveats (92)
 
 **A2** (a2)
 
@@ -829,8 +829,6 @@ Attract: Taunts all enemies for 5 sec.
 
 - **skill2:** Activates when landing a Full Charge attack against a Rapture that is not the stage target. Affects self. Gentle Current: Fixes charge time at 1 sec continuously. Removes Raging Current.
   - *Why:* skill2: Gentle Current (charge time fixed at 1 sec vs non-stage-target Raptures) is not modeled — the solo-raid boss is always the stage target, so Raging Current is permanently active and Gentle Current can never fire.
-- **skill2:** Activates at battle start. Affects self. Immunity to Increase/Decrease Charge Speed effects, continuous.
-  - *Why:* skill2: her charge-speed immunity is only enforced against her OWN Skill 1 buff (excludeSelf); an EXTERNAL Charge Speed buff from a teammate (e.g. Maxwell, Alice) would wrongly speed her up in the sim.
 
 **Maiden: Ice Rose** (maiden-ice-rose)
 

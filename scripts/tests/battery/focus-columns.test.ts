@@ -126,11 +126,18 @@ describe('focus-column audit (investigation-plan item 3)', () => {
     // Ceiling = the focused unit's WHOLE rate scaled from its resolved column to the largest
     // live column (350); an over-estimate because skill-gen does not scale with the focus
     // multiplier. Even so it cannot reach the measured shortfall on either filmed comp.
+    // iron sweep RE-PINNED 2026-08-14 (was 8.368 / 3.347 / 14.943 / 22.4): the `liberalio`
+    // Charge Speed immunity removes two of her charges per fight, which lowers the focused
+    // unit's own generation rate AND widens the comp's measured shortfall — so the ceiling
+    // covers even LESS of it than before (22.4% → 19.4%), strengthening the finding rather
+    // than threatening it. Re-derived by running the instrument
+    // (`npx tsx scripts/battery/fb-count-matrix.ts --focus-columns --json`), not hand-edited.
+    // Cause: DECISIONS 2026-08-14. T5 below is untouched — no Charge Speed source seated there.
     const iron = byName('iron sweep (run G)');
-    expect(iron.focusPer60).toBeCloseTo(8.368, 3);
-    expect(iron.maxAltUpsideGaugePerSec).toBeCloseTo(3.347, 3);
-    expect(iron.shortfallRateGaugePerSec).toBeCloseTo(14.943, 2);
-    expect(iron.maxAltUpsideCoverPct).toBeCloseTo(22.4, 0);
+    expect(iron.focusPer60).toBeCloseTo(7.954, 3);
+    expect(iron.maxAltUpsideGaugePerSec).toBeCloseTo(3.182, 3);
+    expect(iron.shortfallRateGaugePerSec).toBeCloseTo(16.383, 2);
+    expect(iron.maxAltUpsideCoverPct).toBeCloseTo(19.4, 0);
 
     const t5 = byName('T5 wind-weak');
     expect(t5.focusPer60).toBeCloseTo(8.186, 3);

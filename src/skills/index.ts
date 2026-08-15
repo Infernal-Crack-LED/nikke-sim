@@ -55,6 +55,16 @@ export interface OverrideFile {
     pullsPerSec?: number;
     magDumpRof?: boolean;
     focusChargeMult?: number; // owner-override camera-focus charge-gauge multiplier
+    // RECEIVING-side stat immunities — kit lines of the shape "Immunity to
+    // Increase/Decrease <X> effects" (liberalio S2: Charge Speed). A kit-sourced `buff`
+    // effect carrying that stat is STRIPPED for this unit only, in either direction, while
+    // the rest of the same buff block still lands on her and every other target of the same
+    // cast is unaffected. Entries are APPLIED stat keys (post applyEffect's authored→applied
+    // rewrite: write `maxHpFlat`, not `casterMaxHpPct`) — `validate-structural.ts` rejects an
+    // alias or a typo, because the enforcement is a bare string match and an unmatched entry
+    // would be a silent permanent no-op. SCOPE (owner ruling 2026-08-14): in-battle buff
+    // effects only — cube/Overload gear stats bypass applyEffect and are MEANT to still apply.
+    statImmunities?: string[];
   };
   // Pellet-consolidation mode (dorothy-S: "after landing N pellets, for K rounds → pellet count fixed at 1
   // + high core + Pierce + attack-dmg"). Range-gated to near (where the boss affords the trigger). MEASURED

@@ -70,6 +70,48 @@ describe('structuralCheck — baseline', () => {
     expect(r.errors.join('\n')).toMatch(/unknown stat "luckPct"/);
   });
 
+  // charFixes.statImmunities is enforced by a bare string match in the engine, so anything the
+  // validator lets through unrecognised becomes a permanent SILENT no-op — the unit keeps
+  // receiving the stat while its note claims immunity. These pin that it is LOUD.
+  it('accepts a valid charFixes.statImmunities entry', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({ charFixes: { statImmunities: ['chargeSpeedPct'] } }),
+      CTX
+    );
+    expect(r.errors).toEqual([]);
+  });
+
+  it('rejects an unknown stat key in charFixes.statImmunities', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({ charFixes: { statImmunities: ['chargeSpeedPCT'] } }),
+      CTX
+    );
+    expect(r.errors.join('\n')).toMatch(/unknown stat "chargeSpeedPCT"/);
+  });
+
+  it('rejects an AUTHORED-side alias, naming the applied key it must use instead', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({ charFixes: { statImmunities: ['casterMaxHpPct'] } }),
+      CTX
+    );
+    expect(r.errors.join('\n')).toMatch(/authored-side alias/);
+    expect(r.errors.join('\n')).toMatch(/"maxHpFlat"/);
+  });
+
+  it('rejects a non-array statImmunities', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({ charFixes: { statImmunities: 'chargeSpeedPct' } }),
+      CTX
+    );
+    expect(r.errors.join('\n')).toMatch(
+      /statImmunities: must be an array of stat keys/
+    );
+  });
+
   it('rejects the inert noFb flag', () => {
     const r = structuralCheck(
       'liter',
