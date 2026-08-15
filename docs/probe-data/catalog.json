@@ -112,10 +112,10 @@
       "treasure": true,
       "bossPartless": true,
       "durationSec": 104,
-      "focusReason": "solo field (no B1/B2) so Full Burst never happens \u2014 isolates her normals + 547.62% rider"
+      "focusReason": "solo field (no B1/B2) so Full Burst never happens — isolates her normals + 547.62% rider"
     },
     "parsedSlug": "maiden-solo",
-    "description": "Maiden solo, neutral target \u2014 clean rider-crit + RL core-rate read (no FB). Confirms rider crits (437296/655945 = x1.5)."
+    "description": "Maiden solo, neutral target — clean rider-crit + RL core-rate read (no FB). Confirms rider crits (437296/655945 = x1.5)."
   },
   {
     "video": "docs/probes/def test/def.mov",
@@ -199,5 +199,41 @@
     },
     "parsedSlug": "anis-star-solo-a3-gauge-reread",
     "description": "Anis: Star SOLO (identity confirmed from footage 2026-08-15: one unit, 6-round magazine, charge HUD, solo Burst I cast with unclaimed stage-II hand-off). Battery-3 Part A3 recording; despite the a2 filename prefix it is NOT part of the A1/A2 takina/crown team pair. 2026-08-15 per-pull gauge re-read: 9 pulls fill the bar (ammo-counter counted); 5-6 clean per-pull deltas of 10.1-11.6 percent; sub-steps do not resolve at 60fps. See docs/probe-data/burst-tests-recording-index.md and docs/probe-runs.md."
+  },
+  {
+    "video": "docs/probes/solo/nayuta-solo.mov",
+    "focus": "nayuta",
+    "comp": ["nayuta"],
+    "boss": null,
+    "params": {
+      "basis": "owner solo clip (gauge read; element-independent)",
+      "durationSec": 40.5,
+      "focusReason": "avenue-3 family bar-validation: first non-charge (SMG) per-shot gauge row checked against the bar"
+    },
+    "description": "Nayuta SOLO SMG. 2026-08-15 fill read (gauge-fill.py --bar 489:501:2474:2612): cadence 19.95/s off the ammo counter (3 runs r2=1.00); whole-clip closure 0.220 raw %/shot ~= datamined target 20 after the reader's anchor bias — SMG row bar-validated. See docs/probe-runs.md 2026-08-15 solo-reads entry."
+  },
+  {
+    "video": "docs/probes/solo/ccw-solo.mov",
+    "focus": "cinderella-crystal-wave",
+    "comp": ["cinderella-crystal-wave"],
+    "boss": null,
+    "params": {
+      "basis": "owner solo clip (gauge read; element-independent)",
+      "durationSec": 26.8,
+      "focusReason": "avenue-3 family bar-validation: first MG per-shot gauge row checked against the bar"
+    },
+    "description": "Cinderella: Crystal Wave SOLO MG. 2026-08-15 fill read: three +13.8 single-frame snaps = her per-200-ammo +12% fillGauge proc (real, as modeled); snap spacing = 60.1 rounds/s terminal (engine's 1-frame MG constant confirmed); ramp 0.109 raw %/shot ~= class-modal target 10 after bias — MG modal bar-validated. See docs/probe-runs.md 2026-08-15."
+  },
+  {
+    "video": "docs/probes/solo/swha-solo.mov",
+    "focus": "snow-white-heavy-arms",
+    "comp": ["snow-white-heavy-arms"],
+    "boss": null,
+    "params": {
+      "basis": "owner solo clip (gauge read; element-independent)",
+      "durationSec": 11.8,
+      "focusReason": "U11c: does the Seven Dwarves volley generate gauge per hit or per proc"
+    },
+    "description": "Snow White: Heavy Arms SOLO charge-SR. 2026-08-15 fill read: bar 0->full in 3.2s on ~3 pulls; volley sub-steps +5.8-7.2 raw at exact 0.20s spacing = PER-HIT gauge credit (~560 each); per-effect model refuted by closure (75.6 max < 100). Sim under-credits 4x560 = 22.4% of bar per pull. See docs/probe-runs.md 2026-08-15."
   }
 ]

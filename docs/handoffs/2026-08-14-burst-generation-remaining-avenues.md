@@ -6,7 +6,7 @@
 > candidate class. Owner rulings landed the same day: **a missed SG pellet generates NO gauge**
 > (U40) and **Full Burst is EXACTLY 10s unless an ability extends or shortens it** (both in
 > DECISIONS 2026-08-14). Predecessor:
-> [2026-08-13-burst-generation-investigation-plan.md](2026-08-13-burst-generation-investigation-plan.md).
+> [closed/2026-08-13-burst-generation-investigation-plan.md](closed/2026-08-13-burst-generation-investigation-plan.md).
 
 ## Where the thread stands
 
@@ -55,11 +55,13 @@ Hypothesis classes the next measurement must discriminate:
    fixture's own decomposition lands ~3% under its band floor, so the pipeline may still want the
    solo re-read. The encoding choice (divisor 1 vs per-impact procs) propagates to `modernia` —
    engine semantics, not a one-unit tweak.
-3. **Bar-validate one non-charge weapon family (recording ask — needs new footage).** Both solo
-   gauge anchors are charge weapons; no MG/SMG/AR/SG per-shot row has ever been checked against a
-   bar. T5 seats two unvalidated families (`cinderella-crystal-wave` MG, `nayuta` SMG). One solo
-   gauge-bar recording of an MG or SMG unit validates a whole family — and if H-A is real, a
-   TEAM-seated bar read of the same unit sizes the team scaling directly.
+3. ~~**Bar-validate one non-charge weapon family (recording ask — needs new footage).**~~ **DONE
+   2026-08-15** — owner delivered `docs/probes/solo/ccw-solo.mov` + `nayuta-solo.mov`; BOTH rows
+   bar-validated (`nayuta` SMG datamined 20: 0.220 raw %/shot ≈ 0.207 bias-adjusted;
+   `cinderella-crystal-wave` MG class-modal 10: 0.109 raw ≈ 0.103; cadence side-results: SMG
+   19.95/s off the ammo counter, MG terminal 60.1/s off her fillGauge proc snaps). Full record:
+   `docs/probe-runs.md` 2026-08-15 solo-reads entry. AR and SG families remain never-bar-checked;
+   the team-seated read (H-A sizing) was not part of the delivered footage.
 4. **`liberalio` charge-speed-effect immunity — CHECKED 2026-08-14: LIVE defect in iron sweep
    (run G), inert in his other three seated comps.** His skill2 is kit-literal ("Immunity to
    Increase/Decrease Charge Speed effects, continuous"); the override already documents that only
@@ -73,9 +75,14 @@ Hypothesis classes the next measurement must discriminate:
    sim generation slightly, so it cannot be part of the missing ~39%. Enactment (a receiving-side
    immunity primitive, engine + schema) is kit-literal → encode + `/code-review` lane, on a
    worktree, **awaiting owner approval** (proposed in QUEUE).
-5. **`snow-white-heavy-arms` U11c burst-fire quirk** — ~24 generating hits per 3s, documented
-   unmodeled (`docs/data/burst-gauge.md` §2), seated in off-count N5. Not a filmed-comp mover but
-   a known missing generation source on the off-count list; keep it on the residue ledger.
+5. **`snow-white-heavy-arms` U11c burst-fire quirk** — **MEASURED 2026-08-15**
+   (`docs/probes/solo/swha-solo.mov`, same probe-runs entry): the volley generates gauge **per
+   HIT** (~560 each; bar 0→full in 3.2s on ~3 pulls — per-effect credit caps at 75.6, refuted by
+   closure), not per proc. The engine credits once per flatDamage EFFECT (`sim.ts:2751`), an
+   under-credit of **22.4% of bar per pull**. No longer a "~24 hits/3s" annotation — now a
+   quantified enactment candidate (owner-gated engine touch: per-sub-hit gauge on multi-hit
+   riders, a roster-wide candidate class the census was blind to). Stated team bound: naive
+   enactment moves N5 11 → ~13 vs **12 measured**.
 6. **stage1→stage2 real 33f/32f vs modeled 30f** (`STAGE_CAST_GAP_FRAMES`) — runs AGAINST the gap
    so it never inflated the finding; worth one measurement before anyone touches the constant.
 

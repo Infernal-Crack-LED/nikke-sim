@@ -7400,7 +7400,7 @@ effect gets built in.
 ## Burst-cycle TEMPO GAP — the real cycle is ~1.65s/cycle faster than the sim (2026-08-13)
 
 `/scientific-method` run, **decision LOG** (2-of-2 ACCEPT, both MEDIUM). Packet + deliverable:
-`docs/handoffs/2026-08-13-tempo-gap-preop-packet.md`, `…-tempo-gap-deliverable.md`.
+`docs/handoffs/closed/2026-08-13-tempo-gap-preop-packet.md`, `…-tempo-gap-deliverable.md`.
 Instrument: `scripts/probe/scan.ts --fps 60 --cycle-table` (+ `scripts/probe/cycle-table.ts`),
 pinned by `scripts/tests/probe/cycle-table.test.ts` against the committed frame-trace fixtures
 `docs/probe-data/tempo-cycle-{u8-g-iron-sweep,probe-u7-t5-wind-weak}.json`.
@@ -7476,9 +7476,9 @@ observation converts this into H1 CONFIRMED on the already-measured gap.
 
 Full `/scientific-method` run: premise gate (4 verifiers) → instrument phase → Fable pre-op
 APPROVED-WITH-REVISIONS (R1–R3 executed) → work → driver ACCEPT (HIGH) → blind Fable post-op
-ACCEPT (HIGH) → **LOG**. Packet: `docs/handoffs/2026-08-14-fill-trace-preop-packet.md`.
+ACCEPT (HIGH) → **LOG**. Packet: `docs/handoffs/closed/2026-08-14-fill-trace-preop-packet.md`.
 Deliverable + replay bundles + comparison tool: branch **`measure/fill-trace`** (`f8cd76b9`;
-deliverable `docs/handoffs/2026-08-14-fill-trace-deliverable.md`, bundles
+deliverable `docs/handoffs/closed/2026-08-14-fill-trace-deliverable.md`, bundles
 `docs/probe-data/fill-trace-*.json`, tool `scripts/probe/fill-trace-compare.ts` + vitest).
 Instruments: team-HUD gauge-fill reader (branch `instrument/gauge-fill-team` `b93ab217`) and the
 engine-exact credit schedule (`instrument/gauge-credit-schedule` `df9efdf1`), both fixture-pinned.
@@ -7598,6 +7598,7 @@ calibration-reference recording (two sub-column noise events plus a 2-second tin
 in 22.5 seconds), so that recording's historical sub-0.15-percent reproduction error must not
 be assumed for this one. Nothing
 enacted — no engine, data, override, snapshot, or decision change.
+
 ## Opening-window observable — no material gauge is banked while the drained Full-Burst bar holds the widget slot; the generating window opens at the charging bar's first paint (2026-08-14, logged observation)
 
 Step 1a of `docs/handoffs/2026-08-14-burst-gen-next-session.md` (instrument-prelude lane —
@@ -7769,3 +7770,74 @@ class branch fired, so the packet's per-class next-measurement map does not trig
 either arm would need a statistic that survives its own closure check — e.g. a symmetric-threshold
 or per-unit-cadence variant, on its own pre-committed pass — before it can discriminate anything.
 `bash scripts/verify.sh` green.
+
+## 2026-08-15 — Solo gauge-bar reads ×3 (owner footage): SMG + MG per-shot rows bar-validated — the first non-charge families — and `snow-white-heavy-arms`' Seven Dwarves volley measured generating gauge PER HIT (U11c settled in kind)
+
+Recordings (owner-provided 2026-08-15, short solo clips, 2622×1206 post-rotation, 60fps):
+`docs/probes/solo/ccw-solo.mov` (26.8s, `cinderella-crystal-wave` MG),
+`docs/probes/solo/nayuta-solo.mov` (40.5s, `nayuta` SMG),
+`docs/probes/solo/swha-solo.mov` (11.8s, `snow-white-heavy-arms` charge-SR).
+This answers the avenue-3 recording ask of
+`docs/handoffs/2026-08-14-burst-generation-remaining-avenues.md` and the U11c residue line.
+
+**Instrument note (mis-lock + fix).** `scripts/probe/gauge-fill.py`'s whole-frame solo
+self-calibration mis-locked on ALL THREE clips — the bright-sky boss background offers longer dark
+runs than the bar (ccw locked 197px at y466/x1633, nayuta a 193px corner run at row 0, swha 110px
+at y714; all garbage series). The solo bar is a fixed HUD element at rows 489–501, x 2474–2612
+(138px), verified by direct frame inspection on all three videos. Added a solo-mode
+`--bar y0:y1:x0:x1` escape hatch to gauge-fill.py (mirrors team mode's; the self-calibration path
+is untouched and its committed maiden fixture still reproduces) and re-read all three with
+`--bar 489:501:2474:2612`. Quantization restated: 1 column = 0.72pp; the reader's documented hot
+bias on the SR anchor is ~×1.064 (RAW_OVER_TRUE — anchor-derived, NOT applied to output; all
+numbers below are RAW unless said otherwise). Reader JSON + extracted frames:
+`scratchpad/probe-solo-2026-08-15/<unit>/` (scratch, not tracked).
+
+**Shared observation — the intro no-hit window.** On all three clips the ammo counter starts
+running ~3–4.5s BEFORE the first gauge appears (nayuta firing from t=6.5, first fill t=9.57; ccw
+and swha first fill t≈7.83): the boss-intro unhittable span, behaving exactly as the per-HIT
+credit rule (U40: a missed shot generates nothing) says it should.
+
+**`nayuta` — SMG row VALIDATED (datamined targetPerTrigger 20 = 0.2%/shot).** Cadence off the ammo
+counter: three runs, r²=1.00, **19.95/s** — the frame-quantized SMG 20.0, again. Clean firing
+spans fit 4.4–4.9%/s; whole-clip closure: 97.1% of bar over ~441 fired rounds = **0.220 %/shot
+raw** = 0.207 after the anchor bias ≈ the datamined 0.20. Reload pauses in the trace line up with
+the ammo-reader's reload events (t=14.3/22.2/30). Two bright-flash artifacts masked (t=16.0–16.6,
+20.0–20.7). A filtered-out 4th firing run at 8.18/s (t=30–32.8) carries a normal per-shot slope —
+a cadence slowdown, not a gauge anomaly.
+
+**`cinderella-crystal-wave` — MG class-modal row VALIDATED (target 10 = 0.1%/shot; her row IS the
+class modal, so this validates the modal itself).** Her "Preparation for Change" per-200-ammo +12%
+`fillGauge` proc shows as three single-frame **+13.8 snaps** (t=9.17, 17.17, 20.50; 12×1.064=12.8,
++1 column) — the proc is real and lands as modeled (it was already encoded via `teamAmmo`). The
+snaps double as an independent round counter: 200 rounds in 3.33s between snaps 2 and 3 =
+**60.1 rounds/s at terminal cadence — the engine's 1-frame MG constant, independently confirmed**.
+Excluding the snaps, the terminal-regime ramp is 6.55%/s at 60 rounds/s = **0.109 %/shot raw** =
+0.103 after bias ≈ the class-modal 0.10. (read-ammo abstained on the MG — 0.4% read rate; the
+cadence here comes from the proc snaps, not the counter.)
+
+**`snow-white-heavy-arms` — U11c settled in kind: the volley generates PER HIT, and the sim
+credits PER EFFECT.** The bar goes 0→FULL in **3.2s of generation** (t=7.83→11.03) on ~3 pulls at
+her clamped 1.2s cadence. Step structure: clusters of **+5.8–7.2 raw steps at an exact 0.20s
+spacing** (five in the cleanest cluster, t=10.17–10.97) — the 5-hit sequential Seven Dwarves
+volley unrolling, each hit credited ~her 560 target value (5.6×1.064=5.96); one **+15.2** step
+(t=9.43) is the focused weapon shot (14.0×1.064=14.9). Arithmetic closure decides it: per-effect
+credit (the sim's model: 2 `skillGauge` events per pull) caps 3 pulls at 75.6 true / ~80 raw —
+**refuted** by the observed full bar; per-hit credit (weapon 14 + AoE 5.6 + 5×5.6 = 47.6/pull)
+gives 142.8 and fills mid-third-volley ✓. Engine today: `skillGauge` fires once per flatDamage
+EFFECT (`src/engine/sim.ts:2751`; once per flighted hit at :4066), so her 5-hit sequential volley
+earns one event, not five — an under-credit of 4×560 = 2,240 energy = **22.4% of the bar per
+pull**. Side results: the focused charge ×2.5 weapon step (14%) re-confirms on a third unit, and
+her class-modal-SR 560 row is bar-validated by the same steps.
+
+**The tension that travels with this finding (whole-picture).** Naive enactment (per-sub-hit
+`skillGauge` on multi-hit riders) moves N5 snowwhite-HA fire from 11 to ~13 predicted full bursts
+against **12 measured** — the solo read is direct, but the team count bounds it within ±1. The gap
+between "solo per-hit full-value" and the team count is exactly the classification thread's open
+question, and multi-hit riders roster-wide are a candidate class the 2026-08-14 gauge-source
+census was structurally blind to (it enumerated effect KINDS; credit MULTIPLICITY within
+flatDamage is invisible to it). **FINDINGS ONLY — nothing enacted.** Enactment is an engine touch
+and owner-gated.
+
+Evidence tier: calibrated CV reader with an explicit, frame-verified bar lock; every conclusion
+above rests on arithmetic closure (step grid, proc-snap round counting, whole-clip totals), not on
+eyeballing frames. Reader output is raw; the ×1.064 anchor bias is stated, not applied.

@@ -130,8 +130,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 2. **Burst-generation thread — steps 1a/1b/2/3 of the 2026-08-14 pickup packet LANDED 2026-08-15**
    (packet CLOSED → `closed/`; records: `scientific-method-harness.md` 2026-08-15 entries ×2, the
    preop packets `2026-08-15-anis-star-divisor-preop-packet.md` +
-   `2026-08-15-classification-preop-packet.md`, PRs #120/#121, branch
-   `measure/habc-classification`). State in one line: the in-window generation elevation is
+   `2026-08-15-classification-preop-packet.md`, PRs #120/#121/#122 — **all merged 2026-08-15**). State in one line: the in-window generation elevation is
    measured FRESH at a **1.6–1.9× band** on both filmed arms (LOG, 2-of-2); classification of
    WHERE it lives is INCONCLUSIVE on both arms by the pre-committed rules (iron sweep's H-C
    reading survives only as a candidate — struck by the blind gate on the closure clause + noise
@@ -140,10 +139,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    sub-steps permanently unresolvable at 60fps on that footage; the opening-window observable
    shows ~0 banked during the drain hold (hypothesis-tier — promotion needs NEW footage or an
    owner ruling); the team reader's flag-taxonomy leak is CLOSED (`offCurve`). Open items:
-   - **Owner: merge PR #120** (step-1 instruments) **and PR #121** (divisor measurement); then the
-     classification branch `measure/habc-classification` lands as the third PR (push is
-     owner-gated). `docs/STATE.md` reader-table rows for the new instruments
-     (`offCurve`/`--reflag`/`--diag`/`opening`/`classify`) go WITH those merges, not before.
+   - ~~Owner: merge PR #120/#121 + the classification branch~~ **DONE 2026-08-15** — all three
+     merged (#120 step-1 instruments, #121 divisor measurement, #122 `measure/habc-classification`).
+     **What remains of this bullet: the `docs/STATE.md` reader-table rows for the new instruments
+     (`offCurve`/`--reflag`/`--diag`/`opening`/`classify`)** — they were gated on the merges and
+     STATE.md still has none of them. Now unblocked, no longer owner-gated.
    - **Owner-gated engine touch (packet step 1c):** SG landed-pellet gauge fraction onto the
      event tap — unblocks the misc B3s sim arm and later N2/N3/N5/`soda-twinkling-bunny` credit
      analyses.
@@ -158,11 +158,20 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record (her bar zeroes at
      21.73s — a longer file contains a second clean window free; targets n≥8 + a second
      count-to-fill); `modernia` Destroy-Mode bar read (U28's named probe — independent unit AND
-     the separate `extraHitDamagePct` site); one solo MG or SMG gauge-bar read
-     (`cinderella-crystal-wave` MG / `nayuta` SMG — no non-charge per-shot row is bar-validated);
-     T1 wind-weak video (screenshot only).
-   - **Residue ledger (findings-only, unchanged):** `snow-white-heavy-arms` U11c burst-fire
-     generation quirk (~24 hits/3s, seats N5); `ein` U8 0.7× team residual (N2); stage1→2 real
+     the separate `extraHitDamagePct` site); ~~one solo MG or SMG gauge-bar read~~ **DELIVERED +
+     READ 2026-08-15** (`docs/probes/solo/ccw-solo.mov` + `nayuta-solo.mov` — BOTH families
+     bar-validated, probe-runs 2026-08-15 solo-reads entry); T1 wind-weak video (screenshot only).
+   - **Residue ledger (findings-only):** `snow-white-heavy-arms` U11c **MEASURED 2026-08-15**
+     (`docs/probes/solo/swha-solo.mov`): the Seven Dwarves volley generates gauge **per HIT**
+     (~560 each; bar 0→full in 3.2s on ~3 pulls — per-effect credit caps at 75.6, refuted). The
+     engine fires `skillGauge` once per flatDamage EFFECT (`applyEffect()`'s `flatDamage` case in
+     `src/engine/sim.ts`), so her 5-hit sequential volley earns 1 event, not 5 — under-credit
+     **22.4% of bar per pull**. **Enactment candidate
+     (owner-gated engine touch):** per-sub-hit gauge on multi-hit riders — a roster-wide candidate
+     class the 2026-08-14 census was blind to (it enumerated effect KINDS, not credit
+     multiplicity). Naive enactment moves N5 11 → ~13 vs **12 measured**, so the team bound and
+     the solo read differ by one count — that gap is the classification thread's open question,
+     not a reason to discard the solo read. `ein` U8 0.7× team residual (N2); stage1→2 real
      33f/32f vs modeled 30f (runs AGAINST the gap).
    - Liberalio patch-note draft awaiting owner approval (prior session's approval was
      chat-ephemeral, never recorded — not published).
