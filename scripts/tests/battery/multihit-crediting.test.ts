@@ -60,7 +60,10 @@ import {
 } from '../../battery/fb-count-matrix.js';
 
 const data = JSON.parse(
-  readFileSync(new URL('../../../data/characters.json', import.meta.url), 'utf8')
+  readFileSync(
+    new URL('../../../data/characters.json', import.meta.url),
+    'utf8'
+  )
 ).characters as Record<string, { weapon?: string }>;
 
 describe('multihit-crediting audit (investigation-plan item 4)', () => {
@@ -69,7 +72,9 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
   const byName = (name: string): MultihitCreditingReport => {
     const r = reports.find((x) => x.comp === name);
     if (!r) {
-      throw new Error(`multihit-crediting audit produced no report for ${name}`);
+      throw new Error(
+        `multihit-crediting audit produced no report for ${name}`
+      );
     }
     return r;
   };
@@ -92,7 +97,10 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
       ].sort()
     );
     expect(
-      reports.filter((r) => r.status === 'anchor').map((r) => r.comp).sort()
+      reports
+        .filter((r) => r.status === 'anchor')
+        .map((r) => r.comp)
+        .sort()
     ).toEqual([
       'N9 redhood/elegg electric (boss Electric)',
       'PH water B3s (boss Fire)',
@@ -156,7 +164,7 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
         // +10% is the floor of the measured TOTAL lift after the 2026-08-15 per-sub-hit gauge
         // enactment re-based several comps (dorothy-serendipity's PH anchor now reads 1.12×).
         // An arm feeding less than this is not full per-trigger crediting.
-        expect(c.trigTotal / c.baseTotal).toBeGreaterThan(1.10);
+        expect(c.trigTotal / c.baseTotal).toBeGreaterThan(1.1);
       }
     }
     // pinned carrier rates (gauge per 60f of refilling), both arms
@@ -179,8 +187,14 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
     expect(arcana.basePer60).toBeCloseTo(2.89, 1);
     expect(arcana.trigPer60).toBeCloseTo(3.85, 1);
     // team-rate lift (pinned at 1 decimal)
-    expect(byName('soda-tb control (neutral)').baseTeamRate).toBeCloseTo(31.57, 1);
-    expect(byName('soda-tb control (neutral)').trigTeamRate).toBeCloseTo(34.40, 1);
+    expect(byName('soda-tb control (neutral)').baseTeamRate).toBeCloseTo(
+      31.57,
+      1
+    );
+    expect(byName('soda-tb control (neutral)').trigTeamRate).toBeCloseTo(
+      34.4,
+      1
+    );
     expect(byName('misc B3s (run I order)').baseTeamRate).toBeCloseTo(34.53, 1);
     expect(byName('misc B3s (run I order)').trigTeamRate).toBeCloseTo(37.28, 1);
   });
@@ -190,7 +204,9 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
       // N5 is the one comp whose baseline moved with the 2026-08-15 per-sub-hit gauge enactment
       // (swha volley); the per-trigger arm pulls it back from 13 to 12. Skip it in the strict
       // byte-identity check and assert its new values explicitly below.
-      if (r.comp === 'N5 snowwhite-HA fire') continue;
+      if (r.comp === 'N5 snowwhite-HA fire') {
+        continue;
+      }
       expect(r.trigFb).toBe(r.baseFb);
     }
     // each SG-seated off-count comp remains exactly one below its measured count

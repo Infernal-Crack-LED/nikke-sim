@@ -103,7 +103,12 @@
 // Slot order: liter 0 / crown 1 / swha 2.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, totals, unitOf, withPatchedOverride } from '../lib/harness.js';
+import {
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const SWHA = 'snow-white-heavy-arms';
@@ -356,7 +361,10 @@ const takenSelf = run({ [SWHA]: cfTakenSelf });
 const no41 = run({ [SWHA]: cfNo41 });
 const volley105 = run({ [SWHA]: cfVolley105 });
 const noBurstGaugeBase = runResult({}, { disableBursts: true });
-const noBurstGaugeOne = runResult({ [SWHA]: cfGaugeHits1 }, { disableBursts: true });
+const noBurstGaugeOne = runResult(
+  { [SWHA]: cfGaugeHits1 },
+  { disableBursts: true }
+);
 const noSwap = run({ [SWHA]: cfNoSwap });
 const ungated = run({ [SWHA]: cfUngated });
 const atk46Allies = run({ [SWHA]: cfAtk46Allies });

@@ -344,7 +344,7 @@ function blockOrderWarnings(override: any, warnings: string[]) {
     }
   >();
   const site = (family: 'status' | 'resource', name: string) => {
-    const key = `${family}${name}`;
+    const key = `${family}\x00${name}`;
     let s = sites.get(key);
     if (!s) {
       s = { family, name, prod: [], cons: [] };
