@@ -161,18 +161,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      the separate `extraHitDamagePct` site); ~~one solo MG or SMG gauge-bar read~~ **DELIVERED +
      READ 2026-08-15** (`docs/probes/solo/ccw-solo.mov` + `nayuta-solo.mov` — BOTH families
      bar-validated, probe-runs 2026-08-15 solo-reads entry); T1 wind-weak video (screenshot only).
-   - **Residue ledger (findings-only):** `snow-white-heavy-arms` U11c **MEASURED 2026-08-15**
-     (`docs/probes/solo/swha-solo.mov`): the Seven Dwarves volley generates gauge **per HIT**
-     (~560 each; bar 0→full in 3.2s on ~3 pulls — per-effect credit caps at 75.6, refuted). The
-     engine fires `skillGauge` once per flatDamage EFFECT (`applyEffect()`'s `flatDamage` case in
-     `src/engine/sim.ts`), so her 5-hit sequential volley earns 1 event, not 5 — under-credit
-     **22.4% of bar per pull**. **Enactment candidate
-     (owner-gated engine touch):** per-sub-hit gauge on multi-hit riders — a roster-wide candidate
-     class the 2026-08-14 census was blind to (it enumerated effect KINDS, not credit
-     multiplicity). Naive enactment moves N5 11 → ~13 vs **12 measured**, so the team bound and
-     the solo read differ by one count — that gap is the classification thread's open question,
-     not a reason to discard the solo read. `ein` U8 0.7× team residual (N2); stage1→2 real
-     33f/32f vs modeled 30f (runs AGAINST the gap).
+   - **Residue ledger (findings-only):** ~~`snow-white-heavy-arms` U11c~~ **MEASURED 2026-08-15,
+     PROMOTED TO ITEM 8** (volley generates per HIT; per-sub-hit gauge enactment planned there).
+     `ein` U8 0.7× team residual (N2); stage1→2 real 33f/32f vs modeled 30f (runs AGAINST the gap).
    - Liberalio patch-note draft awaiting owner approval (prior session's approval was
      chat-ephemeral, never recorded — not published).
 3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
@@ -251,3 +242,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    bridges before the `model` injection. Surfaced as a FOLLOW-UP by the round-4 code review of the
    U28 branch (`scratchpad/gates/2026-08-13-u28-gauge/result-r4.json`); filed rather than made
    because it was outside that diff's intent and the bridges are shared by every gate skill.
+
+8. **ENACTMENT, planned and owner-gated: per-sub-hit burst-gauge credit on multi-hit (sequential)
+   `flatDamage` riders.** Measured 2026-08-15 (`swha-solo.mov`): the real game credits each
+   sequential sub-hit; the engine fires `skillGauge` once per effect. Plan of record:
+   [2026-08-15-per-subhit-gauge-enactment.md](2026-08-15-per-subhit-gauge-enactment.md) — carries
+   the measured premise, the schema wrinkle (sub-hit count is represented nowhere; author a
+   `gaugeHits` field, gauge-only, do NOT expand damage instances), the census (3 gauge-relevant
+   carriers: `snow-white-heavy-arms`, `eve`, `little-mermaid`; ZERO seated in the three filmed
+   shortfall comps — not a candidate for the 1.6–1.9× elevation), the N5 11→~13-vs-12 tension and
+   its cap-waste resolution, and the verification plan (N5 FB-count assert is the primary gate).
+   Worktree `nikke-sim-wt-per-subhit-gauge` (branch `engine/per-subhit-gauge`) is cut from the
+   main-tree HEAD that contains the measurement commits, so the enactment PR carries them.
