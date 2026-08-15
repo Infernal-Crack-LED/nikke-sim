@@ -77,8 +77,12 @@ findable modeling error, not a timing subtlety. It is robust to the Full-Burst-d
 > audit buckets hit EVENTS directly. Committed instrument:
 > `npx tsx scripts/battery/fb-count-matrix.ts --refill-starvation` (`auditRefillStarvation` in
 > `scripts/battery/fb-count-matrix.ts`), pinned by `scripts/tests/battery/refill-starvation.test.ts`.
-> Team-wide ≥0.9s silences inside 2 windows per comp are the boss unhittable transitions, not
-> reload starvation. Nothing enacted; nothing to enact.
+> Team-wide ≥0.9s silences appear inside 2 windows per comp; they are not reload starvation
+> (reloadBoundFirsts = 0 throughout). Attribution corrected 2026-08-14 after review: T5's overlap
+> the boss-unhittable transitions, but iron sweep's flagged window opens at 15.7s — no transition
+> (33/70/106/144/176s) is near it; that one is a natural hit gap of the all-SR team (the
+> instrument prints the timestamps; its output was always right, this sentence was the bug).
+> Nothing enacted; nothing to enact.
 >
 > **Out-of-scope observation (P3 verifier, filed not fixed — `src/engine/**` is protected):** the
 > FSM comment at `sim.ts:3743-3745` still claims the fight-start deploy delay is "Default 0 → this
@@ -419,6 +423,13 @@ result and it goes back to the owner rather than into a fifth speculative item.
 > **real Full Burst duration** measurement (QUEUE item 2). Item 4's owner question (**U40** —
 > does a missed pellet generate?) was ANSWERED 2026-08-14: no — per-landed crediting confirmed,
 > nothing left to enact.
+>
+> **POST-CLOSE UPDATE 2026-08-14 — the owner resolved the frame's residual uncertainty: Full
+> Burst is EXACTLY 10s unless an ability extends or shortens it** (DECISIONS 2026-08-14). The
+> FB-duration read is a dead end (do not measure); the 39–50% shortfalls stand at their point
+> estimates and are all GENERATION. The thread continues in
+> [2026-08-14-burst-generation-remaining-avenues.md](2026-08-14-burst-generation-remaining-avenues.md)
+> (ranked avenues + the fill-trace discriminating measurement).
 
 **Every item is findings-only.** None of them changes an engine constant, an override, or a snapshot
 in the session that discovers it. Enactment is a separate gated pass with fresh context — the

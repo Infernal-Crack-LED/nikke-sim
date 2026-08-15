@@ -212,19 +212,22 @@ Spawn `premise-verifier` agents per `/scientific-method` step 0. At minimum:
   constant change along with it in the same motion.
 - **Do not invent a calibration constant to make a number come out right.** A factor that fixes
   the large step while breaking the currently-exact small step is a fudge, not a calibration.
-- **The documented crop (`400:160:2350:430`) mis-locks on TEAM-HUD recordings (2026-07-29,
-  `docs/probes/burst tests/alice focused.MP4`).** The team HUD's charging bar is ~185px wide at a
-  different offset than the solo anchors' 138px bar; run against the documented crop the reader
-  self-calibrated to a 128px sub-region and produced stuck ~44-57% reads that did not track the
-  gauge at all (one such read was reported as "the bar is ~40% full after the first shot" — owner
-  correction: the true first-shot fill is ~10% at most; the 40% was the mis-lock, not the gauge).
-  A tight crop on the actual bar (`200:60:2405:475`, self-cal 177px) produced a coherent curve:
-  widget in at t≈9.93 with 23.5% TOTAL team gauge (SMG/MG trickle + Alice's opener, NOT one
-  shot — teammate ramp between snaps measures ≈11.7%/s), one clean Alice snap +15.8-16.9% at
-  t≈13.17 (scope HUD read CHARGE 329% just before — an early release vs the 350% cap), green/full
-  at t≈14.90 (stage hexagon visually confirmed 15.2). §2 counting stays the primary instrument;
-  on any non-solo recording, CHECK the reported bar width against the true bar before trusting
-  any fill percentage, and treat "first plateau" as team-sum, never as one unit's shot.
+- **The SOLO lock mis-locks on TEAM-HUD recordings — use `gauge-fill.py --team` there.** Run
+  against the documented solo crop (`400:160:2350:430`) on `docs/probes/burst tests/alice
+focused.MP4` the reader self-calibrated to a 128px sub-region and produced stuck ~44-57% reads
+  that did not track the gauge at all (one such read was reported as "the bar is ~40% full after
+  the first shot" — owner correction: the true first-shot fill is ~10% at most; the 40% was the
+  mis-lock, not the gauge). Team mode (2026-08-14) replaces the "longest dark run" heuristic with
+  an explicit magenta-vote lock on the burst widget, and REFUSES rather than reporting a
+  sub-region. Measured team geometry, identical on all three team recordings checked
+  (`docs/probes/u8/u8 g vid.mov`, `docs/probes/probe u7/13 fb count wind weak vid.MP4` and
+  `docs/probes/burst tests/alice focused.MP4`): **the charging bar is 134-136px at x 2476-2611,
+  rows 491-498** — the
+  "~177-185px" figure quoted in the 2026-07-29 pass was itself a mis-lock. Use
+  `crop=280:70:2342:465` and `--team`; validation status and error bars are in the script's
+  TEAM MODE docstring, pinned by `scripts/tests/gauge-fill-team.test.ts`. §2 counting stays the
+  primary instrument, and a team trace is always the TEAM SUM — treat "first plateau" as
+  team-sum, never as one unit's shot.
 
 ---
 
