@@ -59,7 +59,14 @@ export const CLASS_STAMP_SHARE = 0.6;
 /** H-C threshold: off-schedule surplus at/above this share of surplus gauge. */
 export const HC_SHARE = 0.3;
 
-/** Reader flags that make a `filling` read untrustworthy. Union of the reader's own taxonomy. */
+/**
+ * Reader flags that make a `filling` read untrustworthy. Union of the reader's own taxonomy.
+ * `offCurve` (added 2026-08-14) closes the leak this tool's own monotonicity census exposed:
+ * multi-frame spurious-high excursions escaped `spike` and poisoned the `levelDrop` re-anchor,
+ * leaving 11 of 36 refill windows with clean-set monotonicity violations (worst 91%). The
+ * committed replay bundles predate the flag — their traces carry no `offCurve` read, so their
+ * pinned results reproduce unchanged; traces emitted by the current reader do carry it.
+ */
 export const DIRTY_FLAGS = [
   'lowFill',
   'flash',
@@ -67,6 +74,7 @@ export const DIRTY_FLAGS = [
   'spike',
   'nonMonotonic',
   'levelDrop',
+  'offCurve',
   'noDarkTrack',
   'burstRender',
   'drainTail',
@@ -929,6 +937,357 @@ export function analyzeComp(
   };
 }
 
+// ---------------------------------------------------------------------------
+// OPENING-WINDOW OBSERVABLE (step 1a of docs/handoffs/2026-08-14-burst-gen-next-session.md)
+//
+// QUESTION it makes measurable: does ANY gauge bank during the ~1.45-1.52s the drained Full-Burst
+// bar holds the widget slot after FB-end, before the charging bar paints? Two rival accounts:
+//   * BANK-FROM-FB-END  — generation starts at FB-end; whatever accumulated during the hold is
+//     already in the bar when it first paints. Prediction: fill at paint ~= holdSec x in-window
+//     rate (given per prediction below at sim credit sizes AND at the real visible-span rate).
+//   * BANK-FROM-BAR-PAINT — nothing banks until the charging bar exists. Prediction: fill at
+//     paint ~= 0, and the early visible trace extrapolates back to ~0 at the paint instant.
+//
+// OBSERVABLES, all per window (none of them is the pre-committed R statistic, and none stamps a
+// verdict — this emits measurements for a later /scientific-method pass):
+//   * paintFill        — fillRaw at the charging bar's first paint (low-fill band: owner-ruled
+//                        unreliable in absolute terms, so it is reported, not relied on alone).
+//   * maxLowBeforeClean— the largest low-band read between paint and the first clean read.
+//   * tToExceedLow     — seconds from paint until the trace first clears the low-fill band (8%).
+//   * interceptAtPaint — the early clean trace (first OPENING_EARLY_FIT_SEC of the clean span)
+//                        extrapolated back to the paint instant. This is the primary banked-gauge
+//                        estimate: it never uses a low-band read. interceptWholeRate is the same
+//                        arithmetic with the whole-span rate, as a sensitivity check.
+//   * predBankFbEndSim — sim credits over the SAME fraction of the sim window as [fbEnd, barPaint]
+//                        (fraction mapping, as everywhere in this tool); NaN when the schedule's
+//                        amounts are untrusted or the window is unpaired.
+//   * predBankFbEndReal— realRate x holdSec: what the hold would bank at the visible-span rate.
+//   * diag (optional)  — from a `gauge-fill.py --team --diag` run: raw pre-classification pixel
+//                        reads inside the hold span, split into glow (red/magenta blink phases,
+//                        fill arithmetic is garbage there), fade (within OPENING_FADE_FRAMES of a
+//                        glow frame — decaying glow still lights columns), and quiet frames. The
+//                        quiet-frame fill level is the direct "is anything painted under the
+//                        drain render?" observable.
+// ---------------------------------------------------------------------------
+/** Early-fit span for the back-extrapolation (local slope; the real trace back-loads). */
+export const OPENING_EARLY_FIT_SEC = 0.75;
+/** Mirror of the reader's TEAM_LOW_FILL_PCT — the owner-ruled-unreliable low-fill band. */
+export const OPENING_LOW_FILL_PCT = 8;
+/** A hold frame with red or magenta fraction at/above this is a glow (blink-on) frame. */
+export const OPENING_GLOW_FRAC = 0.05;
+/** Frames this close after a glow frame still carry decaying glow — binned as fade, not quiet. */
+export const OPENING_FADE_FRAMES = 2;
+
+export interface DiagRead {
+  t: number;
+  fill: number;
+  mag: number;
+  red: number;
+  green: number;
+}
+
+export interface OpeningWindow {
+  id: number;
+  status: string;
+  fbEnd: number;
+  barPaint: number | null;
+  /** [fbEnd, barPaint] — the reader-blind hold while the drained FB bar owns the widget slot */
+  holdSec: number;
+  paintFill: number | null;
+  maxLowBeforeClean: number;
+  tToExceedLow: number;
+  firstClean: number;
+  tFirstClean: number;
+  paintToFirstCleanSec: number;
+  earlyRate: number;
+  interceptAtPaint: number;
+  interceptWholeRate: number;
+  predBankFbEndSim: number;
+  predBankFbEndReal: number;
+  diag: {
+    holdFrames: number;
+    glowFrames: number;
+    fadeFrames: number;
+    quietFrames: number;
+    quietFillMedian: number;
+    quietFillMax: number;
+    /**
+     * Despiked max: for each quiet frame, min(own fill, max of the two adjacent frames' fill) —
+     * an isolated one-frame flash (the widget swap paints a single bright frame) cannot carry it.
+     * A genuinely painted fill level persists across frames and passes through unchanged.
+     */
+    quietFillSustainedMax: number;
+    fadeFillMax: number;
+    /** the last quiet frame before the paint instant */
+    lastQuietFill: number;
+  } | null;
+}
+
+export interface OpeningResult {
+  comp: string;
+  video: string;
+  amountsTrusted: boolean;
+  windows: OpeningWindow[];
+  /** aggregates over windows with a usable intercept (>= 2 early clean reads) */
+  medianPaintFill: number;
+  medianInterceptAtPaint: number;
+  interceptIqr: { p25: number; p75: number; iqr: number };
+  medianPredBankFbEndSim: number;
+  medianPredBankFbEndReal: number;
+  medianHoldSec: number;
+  quietFillMaxAcrossWindows: number;
+  quietFillSustainedMaxAcrossWindows: number;
+}
+
+/** Minimal slice of a replay bundle that the opening observable needs. */
+export interface BundleLike {
+  simSchedule: SimSchedule;
+  trace: FillTrace;
+  result: CompResult;
+}
+
+export function openingAnalysis(
+  bundle: BundleLike,
+  diagHold: { window: number; reads: DiagRead[] }[] | null
+): OpeningResult {
+  const { simSchedule: sched, trace, result } = bundle;
+  const simRefills = sched.windows
+    .filter((w) => w.kind === 'refill')
+    .sort((a, b) => a.index - b.index);
+  const out: OpeningWindow[] = [];
+
+  for (const w of result.windows) {
+    if (w.barPaint === null) {
+      continue; // no charging-bar paint was ever observed: no opening to characterize
+    }
+    const barPaint = w.barPaint;
+    const holdSec = round(barPaint - w.fbEnd, 4);
+    const inWin = trace.reads.filter((r) => r.t >= w.fbEnd && r.t <= w.stage1);
+    const paintRead = inWin.find((r) => r.t === barPaint);
+    const paintFill = paintRead?.fillRaw ?? null;
+
+    const clean = inWin.filter(
+      (r) =>
+        isClean(r) &&
+        w.fullInstant !== null &&
+        r.t >= barPaint &&
+        r.t <= w.fullInstant
+    );
+    const lowSpan = inWin.filter(
+      (r) =>
+        r.state === 'filling' &&
+        r.fillRaw !== null &&
+        r.t >= barPaint &&
+        (clean.length === 0 || r.t < clean[0].t)
+    );
+    const maxLowBeforeClean = lowSpan.length
+      ? Math.max(...lowSpan.map((r) => r.fillRaw!))
+      : NaN;
+    const exceed = inWin.find(
+      (r) =>
+        r.state === 'filling' &&
+        r.fillRaw !== null &&
+        r.t >= barPaint &&
+        r.fillRaw >= OPENING_LOW_FILL_PCT
+    );
+    const tToExceedLow = exceed ? round(exceed.t - barPaint, 4) : NaN;
+
+    let earlyRate = NaN;
+    let interceptAtPaint = NaN;
+    let interceptWholeRate = NaN;
+    let firstClean = NaN;
+    let tFirstClean = NaN;
+    if (clean.length >= 2) {
+      const c0 = clean[0];
+      firstClean = c0.fillRaw!;
+      tFirstClean = c0.t;
+      const early = clean.filter((r) => r.t - c0.t <= OPENING_EARLY_FIT_SEC);
+      const cN = early.length >= 2 ? early[early.length - 1] : clean[1];
+      earlyRate = round((cN.fillRaw! - c0.fillRaw!) / (cN.t - c0.t), 3);
+      interceptAtPaint = round(
+        c0.fillRaw! - earlyRate * (c0.t - w.barPaint),
+        2
+      );
+      if (Number.isFinite(w.realRate)) {
+        interceptWholeRate = round(
+          c0.fillRaw! - w.realRate * (c0.t - w.barPaint),
+          2
+        );
+      }
+    }
+
+    // predictions under bank-from-FB-end
+    const simWin = simRefills[w.id - 1];
+    let predBankFbEndSim = NaN;
+    if (
+      result.amountsTrusted &&
+      simWin &&
+      !simWin.truncated &&
+      Number.isFinite(w.wholeWindowSec)
+    ) {
+      const fPaint = holdSec / w.wholeWindowSec;
+      const simWhole = simWin.endSec - simWin.startSec;
+      const m = simTeamSumByFrame(
+        sched.credits,
+        simWin.startSec - 1e-9,
+        simWin.startSec + fPaint * simWhole
+      );
+      predBankFbEndSim = round(
+        [...m.values()].reduce((a, b) => a + b, 0),
+        2
+      );
+    }
+    const predBankFbEndReal = Number.isFinite(w.realRate)
+      ? round(w.realRate * holdSec, 2)
+      : NaN;
+
+    // diag: raw pixel reads inside the hold span
+    let diag: OpeningWindow['diag'] = null;
+    const dh = diagHold?.find((d) => d.window === w.id);
+    if (dh) {
+      const reads = dh.reads;
+      const glow = reads.map(
+        (r) => r.red >= OPENING_GLOW_FRAC || r.mag >= OPENING_GLOW_FRAC
+      );
+      const fade = reads.map((_, i) => {
+        if (glow[i]) {
+          return false;
+        }
+        for (let k = 1; k <= OPENING_FADE_FRAMES; k += 1) {
+          if (glow[i - k] || glow[i + k]) {
+            return true;
+          }
+        }
+        return false;
+      });
+      const quiet = reads.filter((_, i) => !glow[i] && !fade[i]);
+      const fadeReads = reads.filter((_, i) => fade[i]);
+      const quietFills = quiet.map((r) => r.fill);
+      const sustained = reads
+        .map((r, i) => {
+          if (glow[i] || fade[i]) {
+            return null;
+          }
+          const nb = Math.max(reads[i - 1]?.fill ?? 0, reads[i + 1]?.fill ?? 0);
+          return Math.min(r.fill, nb);
+        })
+        .filter((x): x is number => x !== null);
+      diag = {
+        holdFrames: reads.length,
+        glowFrames: glow.filter(Boolean).length,
+        fadeFrames: fadeReads.length,
+        quietFrames: quiet.length,
+        quietFillMedian: quietFills.length ? round(median(quietFills), 2) : NaN,
+        quietFillMax: quietFills.length ? Math.max(...quietFills) : NaN,
+        quietFillSustainedMax: sustained.length ? Math.max(...sustained) : NaN,
+        fadeFillMax: fadeReads.length
+          ? Math.max(...fadeReads.map((r) => r.fill))
+          : NaN,
+        lastQuietFill: quiet.length ? quiet[quiet.length - 1].fill : NaN,
+      };
+    }
+
+    out.push({
+      id: w.id,
+      status: w.status,
+      fbEnd: w.fbEnd,
+      barPaint: w.barPaint,
+      holdSec,
+      paintFill,
+      maxLowBeforeClean,
+      tToExceedLow,
+      firstClean,
+      tFirstClean,
+      paintToFirstCleanSec: Number.isFinite(tFirstClean)
+        ? round(tFirstClean - w.barPaint, 4)
+        : NaN,
+      earlyRate,
+      interceptAtPaint,
+      interceptWholeRate,
+      predBankFbEndSim,
+      predBankFbEndReal,
+      diag,
+    });
+  }
+
+  // Aggregates exclude `dropped` windows: the pre-committed R1 coverage rule already declares
+  // their visible span unusable (reported, not used), and a sparse clean span makes the
+  // back-extrapolation meaningless (a 2.3s gap to the first clean read on one such window).
+  const usable = out.filter((w) => w.status !== 'dropped');
+  const withIntercept = usable.filter((w) =>
+    Number.isFinite(w.interceptAtPaint)
+  );
+  const intercepts = withIntercept.map((w) => w.interceptAtPaint);
+  const r = iqr(intercepts);
+  const quietMaxes = out
+    .map((w) => w.diag?.quietFillMax)
+    .filter((x): x is number => x !== undefined && Number.isFinite(x));
+  return {
+    comp: result.comp,
+    video: result.video,
+    amountsTrusted: result.amountsTrusted,
+    windows: out,
+    medianPaintFill: round(
+      median(
+        usable.map((w) => w.paintFill).filter((x): x is number => x !== null)
+      ),
+      2
+    ),
+    medianInterceptAtPaint: round(median(intercepts), 2),
+    interceptIqr: {
+      p25: round(r.p25, 2),
+      p75: round(r.p75, 2),
+      iqr: round(r.iqr, 2),
+    },
+    medianPredBankFbEndSim: round(
+      median(
+        withIntercept
+          .map((w) => w.predBankFbEndSim)
+          .filter((x) => Number.isFinite(x))
+      ),
+      2
+    ),
+    medianPredBankFbEndReal: round(
+      median(
+        withIntercept
+          .map((w) => w.predBankFbEndReal)
+          .filter((x) => Number.isFinite(x))
+      ),
+      2
+    ),
+    medianHoldSec: round(median(out.map((w) => w.holdSec)), 3),
+    quietFillMaxAcrossWindows: quietMaxes.length
+      ? Math.max(...quietMaxes)
+      : NaN,
+    quietFillSustainedMaxAcrossWindows: (() => {
+      const xs = out
+        .map((w) => w.diag?.quietFillSustainedMax)
+        .filter((x): x is number => x !== undefined && Number.isFinite(x));
+      return xs.length ? Math.max(...xs) : NaN;
+    })(),
+  };
+}
+
+/** Extract hold-span diag reads (fbEnd -> barPaint) from a `--diag` reader trace. */
+export function extractDiagHold(
+  diagTrace: {
+    reads: (FillRead & { diag?: Omit<DiagRead, 't'> })[];
+  },
+  result: CompResult
+): { window: number; reads: DiagRead[] }[] {
+  const out: { window: number; reads: DiagRead[] }[] = [];
+  for (const w of result.windows) {
+    if (w.barPaint === null) {
+      continue;
+    }
+    const reads = diagTrace.reads
+      .filter((r) => r.diag && r.t >= w.fbEnd && r.t < w.barPaint!)
+      .map((r) => ({ t: r.t, ...r.diag! }));
+    out.push({ window: w.id, reads });
+  }
+  return out;
+}
+
 /** The section-C decision rule, applied mechanically. */
 export function decisionRule(
   perComp: { comp: string; medianR: number; iqr: number; readable: number }[]
@@ -967,6 +1326,912 @@ export function decisionRule(
     branch: 'MIXED',
     detail: 'median R sits between the thresholds, or the comps disagree',
   };
+}
+
+// ---------------------------------------------------------------------------
+// H-A / H-B / H-C CLASSIFICATION (step 2 of docs/handoffs/2026-08-14-burst-gen-next-session.md,
+// pre-op packet docs/handoffs/2026-08-15-classification-preop-packet.md §C/§D — every constant
+// below is pinned there; C3/C4 may WIDEN bands / RAISE eMin, never the reverse).
+//
+// The real window is [barPaint, fullInstant) (packet premise Pc). All real reads must come from a
+// `--reflag`-upgraded trace (premise Pa) and the sim schedule must be REGENERATED from the current
+// engine (premise Pb) — this code cannot enforce either, so the artifact records both commands.
+// ---------------------------------------------------------------------------
+/** Event/credit bin width (packet §C: "event-bins at 1/30s"). */
+export const CLS_BIN_SEC = 1 / 30;
+/** §C R1: E_min = 1.5 fill-% (TEAM_NOISE_PCT, gauge-fill.py). C4 may raise it, never lower. */
+export const CLS_E_MIN = 1.5;
+/** B4 two-sided saturation cut (R5): real fill > 90 / sim window-cumulative gauge > 90. */
+export const CLS_SAT_PCT = 90;
+/** B1: usable windows per comp arm. */
+export const CLS_MIN_USABLE_WINDOWS = 4;
+/** B1: per-window clean-bin coverage of [barPaint, fullInstant). */
+export const CLS_MIN_CLEAN_BIN_COVERAGE = 0.6;
+/** B3: per-window rho dispersion, IQR/median. */
+export const CLS_MAX_RHO_DISPERSION = 0.6;
+/** §C closure: |O_eff x S - rho| / rho above this does not close -> INCONCLUSIVE. */
+export const CLS_MAX_CLOSURE_RESIDUAL = 0.25;
+/** §D branch 1: real event-rate > this x C_ceiling -> H-C mass present. */
+export const CLS_CEILING_FACTOR = 1.15;
+/** §C: a real increment is DIRECT when its clean endpoints are <= this many trace-frames apart. */
+export const CLS_MAX_EVENT_GAP_FRAMES = 2;
+/** C3: widen bands only when a sim-component shift exceeds this. */
+export const CLS_C3_SHIFT_LIMIT = 0.1;
+
+/** §D class bands (half-open where the packet says so). */
+export interface ClsBands {
+  /** branch 2 NO-IN-WINDOW-EXCESS: O and S both in [lo, hi) */
+  noExcess: [number, number];
+  /** branch 3 H-A: O in [lo, hi) */
+  haO: [number, number];
+  /** branch 3 H-A: S >= this */
+  haSMin: number;
+  /** branch 4 H-B: O >= this */
+  hbOMin: number;
+  /** branch 4 H-B: S in [lo, hi) */
+  hbS: [number, number];
+}
+export const CLS_BASE_BANDS: ClsBands = {
+  noExcess: [0.85, 1.15],
+  haO: [0.75, 1.25],
+  haSMin: 1.35,
+  hbOMin: 1.4,
+  hbS: [0.7, 1.3],
+};
+
+/**
+ * C3's pre-stated widening rule (fixed BEFORE the real side is unblinded): if a sim component
+ * (credit-bin fraction for O, median per-credit-bin amount for S) shifts more than
+ * CLS_C3_SHIFT_LIMIT under the alignment perturbations, every affected boundary moves in the
+ * direction that makes its branch HARDER to fire — two-sided bands shrink to
+ * [lo*(1+s), hi*(1-s)), one-sided minimums rise to min*(1+s). A band that inverts under this can
+ * no longer fire and is reported as such. Widening is monotone: it can only ever suppress a
+ * classification, never manufacture one.
+ */
+export function widenBands(
+  base: ClsBands,
+  oShift: number,
+  sShift: number
+): ClsBands {
+  const so = oShift > CLS_C3_SHIFT_LIMIT ? oShift : 0;
+  const ss = sShift > CLS_C3_SHIFT_LIMIT ? sShift : 0;
+  const shrink = (b: [number, number], s: number): [number, number] => [
+    round(b[0] * (1 + s), 4),
+    round(b[1] * (1 - s), 4),
+  ];
+  return {
+    noExcess: shrink(base.noExcess, Math.max(so, ss)),
+    haO: shrink(base.haO, so),
+    haSMin: round(base.haSMin * (1 + ss), 4),
+    hbOMin: round(base.hbOMin * (1 + so), 4),
+    hbS: shrink(base.hbS, ss),
+  };
+}
+
+// ---- sim side --------------------------------------------------------------
+export interface SimComponents {
+  comp: string;
+  binSec: number;
+  jitterFrames: number;
+  phaseSec: number;
+  /** non-truncated refill windows only (the classification pool; first-fill is not a cycle) */
+  windowsUsed: number[];
+  totalBins: number;
+  saturatedBins: number;
+  usableBins: number;
+  creditBins: number;
+  /** creditBins / usableBins — the sim component of O */
+  creditBinFraction: number;
+  /** per-credit-bin summed amounts (non-saturated bins), quantiles — median is the S component */
+  binAmountQuantiles: Record<string, number>;
+  /** all credits in the pooled windows (saturation does NOT cut rate mass, only event stats) */
+  totalGauge: number;
+  totalDurationSec: number;
+  ratePerSec: number;
+}
+
+/**
+ * Bin the sim schedule's credits at `binSec` over its own non-truncated refill windows.
+ * `jitterFrames` shifts every credit by that many 60fps frames; `phaseSec` shifts the bin grid
+ * (the other legal 60->30 rebinning phase is phaseSec = 1/60). Both exist for control C3.
+ */
+export function simComponents(
+  sched: SimSchedule,
+  opts: { binSec?: number; jitterFrames?: number; phaseSec?: number } = {}
+): SimComponents {
+  const binSec = opts.binSec ?? CLS_BIN_SEC;
+  const jitter = opts.jitterFrames ?? 0;
+  const phase = opts.phaseSec ?? 0;
+  const refills = sched.windows.filter(
+    (w) => w.kind === 'refill' && !w.truncated
+  );
+  let totalBins = 0;
+  let satBins = 0;
+  let creditBins = 0;
+  let totalGauge = 0;
+  let totalDur = 0;
+  const amounts: number[] = [];
+  for (const w of refills) {
+    const dur = w.endSec - w.startSec;
+    totalDur += dur;
+    const nBins = Math.ceil(dur / binSec - 1e-9);
+    totalBins += nBins;
+    const inWin = sched.credits
+      .filter((c) => c.window === w.index)
+      .map((c) => ({ ...c, sec: c.sec + jitter / 60 }))
+      .sort((a, b) => a.sec - b.sec);
+    // bin index clamped into the window so jitter cannot push mass off the pool
+    const binOf = (sec: number): number =>
+      Math.min(
+        nBins - 1,
+        Math.max(0, Math.floor((sec - w.startSec - phase) / binSec))
+      );
+    const byBin = new Map<number, number>();
+    let cum = 0;
+    const satFrom = new Map<number, boolean>();
+    for (const c of inWin) {
+      const b = binOf(c.sec);
+      byBin.set(b, (byBin.get(b) ?? 0) + c.amount);
+      cum += c.amount;
+      if (cum > CLS_SAT_PCT) {
+        satFrom.set(b, true);
+      }
+      totalGauge += c.amount;
+    }
+    for (const [b, amt] of byBin) {
+      if (satFrom.get(b)) {
+        satBins += 1;
+      } else {
+        creditBins += 1;
+        amounts.push(amt);
+      }
+    }
+  }
+  amounts.sort((a, b) => a - b);
+  const usableBins = totalBins - satBins;
+  return {
+    comp: sched.comp,
+    binSec: round(binSec, 6),
+    jitterFrames: jitter,
+    phaseSec: round(phase, 6),
+    windowsUsed: refills.map((w) => w.index),
+    totalBins,
+    saturatedBins: satBins,
+    usableBins,
+    creditBins,
+    creditBinFraction: round(creditBins / Math.max(1, usableBins), 4),
+    binAmountQuantiles: {
+      n: amounts.length,
+      min: round(amounts[0] ?? NaN, 3),
+      p25: round(quantile(amounts, 0.25), 3),
+      p50: round(quantile(amounts, 0.5), 3),
+      p75: round(quantile(amounts, 0.75), 3),
+      max: round(amounts[amounts.length - 1] ?? NaN, 3),
+      mean: round(
+        amounts.reduce((a, b) => a + b, 0) / Math.max(1, amounts.length),
+        3
+      ),
+    },
+    totalGauge: round(totalGauge, 3),
+    totalDurationSec: round(totalDur, 4),
+    ratePerSec: round(totalGauge / totalDur, 4),
+  };
+}
+
+export interface CeilingUnit {
+  slug: string;
+  creditInstants: number;
+  minGapFrames: number | null;
+  maxRatePerSec: number;
+}
+export interface Ceiling {
+  perUnit: CeilingUnit[];
+  sumRatePerSec: number;
+  /** min(sum, 1/binSec): event-bins/s cannot exceed the bin rate */
+  ceilingBinsPerSec: number;
+  binRateCap: number;
+}
+
+/**
+ * C_ceiling (§C): the maximum event-bins/s the MODELED comp can produce. Per unit, the fastest
+ * sustained credit cadence the engine actually produced anywhere in the schedule (minimum gap
+ * between that unit's distinct credit frames — same-frame shot+skill riders collapse into one
+ * instant, as they collapse into one bin) is taken as its 100%-uptime rate; the team ceiling is
+ * the sum, capped at the bin rate (1/binSec), since simultaneous credits can only SHARE bins.
+ * Generous by construction: reload/charge downtime is ignored, so exceeding 1.15x this needs
+ * credit instants the model cannot place at any cadence it owns.
+ */
+export function simCeiling(
+  sched: SimSchedule,
+  binSec: number = CLS_BIN_SEC
+): Ceiling {
+  const bySlug = new Map<string, Set<number>>();
+  for (const c of sched.credits) {
+    if (!bySlug.has(c.slug)) {
+      bySlug.set(c.slug, new Set());
+    }
+    bySlug.get(c.slug)!.add(c.frame);
+  }
+  const perUnit: CeilingUnit[] = [];
+  let sum = 0;
+  for (const [slug, framesSet] of [...bySlug.entries()].sort((a, b) =>
+    a[0].localeCompare(b[0])
+  )) {
+    const frames = [...framesSet].sort((a, b) => a - b);
+    let minGap: number | null = null;
+    for (let i = 1; i < frames.length; i += 1) {
+      const g = frames[i] - frames[i - 1];
+      if (minGap === null || g < minGap) {
+        minGap = g;
+      }
+    }
+    const rate = minGap === null ? 0 : 60 / minGap;
+    perUnit.push({
+      slug,
+      creditInstants: frames.length,
+      minGapFrames: minGap,
+      maxRatePerSec: round(rate, 4),
+    });
+    sum += rate;
+  }
+  const cap = 1 / binSec;
+  return {
+    perUnit,
+    sumRatePerSec: round(sum, 4),
+    ceilingBinsPerSec: round(Math.min(sum, cap), 4),
+    binRateCap: round(cap, 4),
+  };
+}
+
+// ---- C4: the noise floor on known-quiet spans ------------------------------
+export interface QuietNoiseResult {
+  perSource: {
+    name: string;
+    quietReads: number;
+    pairs: number;
+    quietBins: number;
+    falseEventBins: number;
+    falseEventBinRate: number;
+    p95PositiveDelta: number;
+    maxDelta: number;
+  }[];
+  pooled: {
+    quietReads: number;
+    pairs: number;
+    quietBins: number;
+    falseEventBins: number;
+    falseEventBinRate: number;
+    p95PositiveDelta: number;
+  };
+  eMinIn: number;
+  /** raised to the pooled p95 of positive quiet-span deltas when the rate is >= 5% — never lowered */
+  eMinOut: number;
+  raised: boolean;
+}
+
+/**
+ * C4: measure the false-event rate at eMin on the drain-hold QUIET reads (step-1a diag fixtures:
+ * glow/fade frames already excluded by openingAnalysis' own taxonomy — the same classification is
+ * re-derived here from the raw diagHold reads so the check replays from the committed artifacts).
+ * A false event is a 1/30s bin containing a positive delta > eMin between consecutive quiet reads
+ * <= CLS_MAX_EVENT_GAP_FRAMES apart — the exact event definition, run where the bar holds level.
+ */
+export function quietNoiseCheck(
+  sources: {
+    name: string;
+    diagHold: { window: number; reads: DiagRead[] }[];
+  }[],
+  eMin: number = CLS_E_MIN
+): QuietNoiseResult {
+  const perSource: QuietNoiseResult['perSource'] = [];
+  let allReads = 0;
+  let allPairs = 0;
+  let allBins = 0;
+  let allFalse = 0;
+  const allPosDeltas: number[] = [];
+  for (const src of sources) {
+    let quietReads = 0;
+    let pairs = 0;
+    const binSet = new Set<string>();
+    const falseBins = new Set<string>();
+    const posDeltas: number[] = [];
+    let maxDelta = -Infinity;
+    for (const hold of src.diagHold) {
+      const reads = hold.reads;
+      const glow = reads.map(
+        (r) => r.red >= OPENING_GLOW_FRAC || r.mag >= OPENING_GLOW_FRAC
+      );
+      const fade = reads.map((_, i) => {
+        if (glow[i]) {
+          return false;
+        }
+        for (let k = 1; k <= OPENING_FADE_FRAMES; k += 1) {
+          if (glow[i - k] || glow[i + k]) {
+            return true;
+          }
+        }
+        return false;
+      });
+      const quiet = reads.filter((_, i) => !glow[i] && !fade[i]);
+      quietReads += quiet.length;
+      for (const r of quiet) {
+        binSet.add(`${hold.window}:${Math.floor(r.t / CLS_BIN_SEC)}`);
+      }
+      for (let k = 1; k < quiet.length; k += 1) {
+        const a = quiet[k - 1];
+        const b = quiet[k];
+        if (Math.round((b.t - a.t) * 60) > CLS_MAX_EVENT_GAP_FRAMES) {
+          continue;
+        }
+        pairs += 1;
+        const delta = b.fill - a.fill;
+        if (delta > 0) {
+          posDeltas.push(delta);
+        }
+        maxDelta = Math.max(maxDelta, delta);
+        if (delta > eMin) {
+          falseBins.add(`${hold.window}:${Math.floor(b.t / CLS_BIN_SEC)}`);
+        }
+      }
+    }
+    posDeltas.sort((a, b) => a - b);
+    perSource.push({
+      name: src.name,
+      quietReads,
+      pairs,
+      quietBins: binSet.size,
+      falseEventBins: falseBins.size,
+      falseEventBinRate: round(falseBins.size / Math.max(1, binSet.size), 4),
+      p95PositiveDelta: round(quantile(posDeltas, 0.95), 3),
+      maxDelta: round(maxDelta, 3),
+    });
+    allReads += quietReads;
+    allPairs += pairs;
+    allBins += binSet.size;
+    allFalse += falseBins.size;
+    allPosDeltas.push(...posDeltas);
+  }
+  allPosDeltas.sort((a, b) => a - b);
+  const pooledRate = allFalse / Math.max(1, allBins);
+  const p95 = round(quantile(allPosDeltas, 0.95), 3);
+  const raised = pooledRate >= 0.05;
+  return {
+    perSource,
+    pooled: {
+      quietReads: allReads,
+      pairs: allPairs,
+      quietBins: allBins,
+      falseEventBins: allFalse,
+      falseEventBinRate: round(pooledRate, 4),
+      p95PositiveDelta: p95,
+    },
+    eMinIn: eMin,
+    eMinOut: raised ? Math.max(eMin, p95) : eMin,
+    raised,
+  };
+}
+
+// ---- real side -------------------------------------------------------------
+export interface ClsWindow {
+  id: number;
+  usable: boolean;
+  reason?: string;
+  barPaint: number | null;
+  fullInstant: number | null;
+  durationSec: number;
+  totalBins: number;
+  cleanBins: number;
+  cleanBinCoverage: number;
+  saturatedBins: number;
+  usableCleanBins: number;
+  eventBins: number;
+  /** per-event-bin summed deltas (size statistic feed) */
+  eventBinDeltas: number[];
+  eventMass: number;
+  bankedAtPaintMass: number;
+  bankedAtPaintSec: number | null;
+  bridgedCount: number;
+  bridgedMass: number;
+  /** direct increments <= eMin plus any negative noise deltas (telescope remainder) */
+  residualMass: number;
+  /** telescoped total = last clean read's fill = banked + events + bridged + residual */
+  sumRealDelta: number;
+  lastCleanT: number;
+  lastCleanFill: number;
+  // paired sim window
+  simWindow: number | null;
+  simDurationSec: number;
+  simGauge: number;
+  rho: number;
+}
+
+export interface ClsPooled {
+  usableWindows: number;
+  sumRealDelta: number;
+  sumRealDurationSec: number;
+  realRatePerSec: number;
+  sumSimGauge: number;
+  sumSimDurationSec: number;
+  simRatePerSec: number;
+  rho: number;
+  rhoPerWindow: number[];
+  rhoMedian: number;
+  rhoIqr: { p25: number; p75: number; iqr: number };
+  rhoDispersion: number;
+  eventBins: number;
+  usableCleanBins: number;
+  realEventBinFraction: number;
+  realEventBinsPerSec: number;
+  medianEventBinDelta: number;
+  eventBinDeltaQuantiles: Record<string, number>;
+  bankedMassTotal: number;
+  bridgedMassTotal: number;
+  residualMassTotal: number;
+  O: number;
+  S: number;
+  /** closure: O_eff = O_time x massCorrReal / massCorrSim (each factor reported) */
+  oTime: number;
+  massCorrReal: number;
+  massCorrSim: number;
+  oEff: number;
+  closureResidual: number;
+}
+
+export interface ClsBasis {
+  b1UsableWindows: number;
+  b1Pass: boolean;
+  b2ScheduleChecksPass: boolean;
+  b2Warnings: string[];
+  b3RhoDispersion: number;
+  b3Pass: boolean;
+  b4RealSaturatedBins: number;
+  b4SimSaturatedBins: number;
+  pass: boolean;
+  detail: string;
+}
+
+export interface ClsBranch {
+  branch:
+    | 'H-C'
+    | 'NO-IN-WINDOW-EXCESS'
+    | 'H-A'
+    | 'H-B'
+    | 'MIXED/INCONCLUSIVE'
+    | 'CANNOT-MEASURE';
+  detail: string;
+  realEventBinsPerSec: number;
+  ceilingBinsPerSec: number;
+  ceilingThreshold: number;
+  hcShareOfRate: number | null;
+  /** §D R4: when branch 1 fires, any same-arm H-A/H-B band hit is DEMOTED to descriptive */
+  demotedCandidate: string | null;
+  /**
+   * When the event rate exceeds the ceiling but the closure clause voids the branches, the
+   * over-ceiling reading is retained here as OBSERVED, NOT ESTABLISHED (2026-08-15 blind
+   * post-op ruling: §C's "residual > 0.25 → INCONCLUSIVE regardless of branch hits" gates
+   * branch 1 too).
+   */
+  observedCeilingExcess: string | null;
+}
+
+export interface ClsArm {
+  comp: string;
+  eMin: number;
+  bands: ClsBands;
+  windows: ClsWindow[];
+  pooled: ClsPooled | null;
+  basis: ClsBasis | null;
+  branch: ClsBranch | null;
+  sim: SimComponents | null;
+  ceiling: Ceiling | null;
+}
+
+/**
+ * The §C statistic over one comp arm. `sched === null` produces real-side descriptives ONLY
+ * (the misc B3s fence: its sim arm is voided by construction — packet §B).
+ */
+export function classifyArm(
+  fx: TempoFixture,
+  trace: FillTrace,
+  sched: SimSchedule | null,
+  opts: {
+    eMin?: number;
+    bands?: ClsBands;
+    simComp?: SimComponents;
+    ceiling?: Ceiling;
+  } = {}
+): ClsArm {
+  const eMin = opts.eMin ?? CLS_E_MIN;
+  const bands = opts.bands ?? CLS_BASE_BANDS;
+  const simRefills = sched
+    ? sched.windows
+        .filter((w) => w.kind === 'refill')
+        .sort((a, b) => a.index - b.index)
+    : [];
+  const rows: ClsWindow[] = [];
+  for (const rw of refillWindows(fx)) {
+    const inWin = trace.reads.filter(
+      (r) => r.t >= rw.fbEnd && r.t <= rw.stage1
+    );
+    const full = inWin.find((r) => r.state === 'full');
+    const firstFilling = inWin.find((r) => r.state === 'filling');
+    const row: ClsWindow = {
+      id: rw.id,
+      usable: false,
+      barPaint: firstFilling ? firstFilling.t : null,
+      fullInstant: full ? full.t : null,
+      durationSec: NaN,
+      totalBins: 0,
+      cleanBins: 0,
+      cleanBinCoverage: NaN,
+      saturatedBins: 0,
+      usableCleanBins: 0,
+      eventBins: 0,
+      eventBinDeltas: [],
+      eventMass: 0,
+      bankedAtPaintMass: NaN,
+      bankedAtPaintSec: null,
+      bridgedCount: 0,
+      bridgedMass: 0,
+      residualMass: 0,
+      sumRealDelta: NaN,
+      lastCleanT: NaN,
+      lastCleanFill: NaN,
+      simWindow: null,
+      simDurationSec: NaN,
+      simGauge: NaN,
+      rho: NaN,
+    };
+    if (!full || !firstFilling) {
+      row.reason = !full
+        ? 'no green-full instant inside the window'
+        : 'no charging-bar paint';
+      rows.push(row);
+      continue;
+    }
+    const barPaint = firstFilling.t;
+    const dur = full.t - barPaint;
+    row.durationSec = round(dur, 4);
+    const nBins = Math.ceil(dur / CLS_BIN_SEC - 1e-9);
+    row.totalBins = nBins;
+    const binOf = (t: number): number =>
+      Math.min(
+        nBins - 1,
+        Math.max(0, Math.floor((t - barPaint) / CLS_BIN_SEC))
+      );
+    // window reads: [barPaint, fullInstant)
+    const winReads = inWin.filter((r) => r.t >= barPaint && r.t < full.t);
+    const clean = winReads.filter(isClean);
+    if (clean.length < 2) {
+      row.reason = 'fewer than 2 clean reads in [barPaint, fullInstant)';
+      rows.push(row);
+      continue;
+    }
+    const cleanBinSet = new Set<number>();
+    const satBinSet = new Set<number>();
+    for (const r of clean) {
+      const b = binOf(r.t);
+      cleanBinSet.add(b);
+      if (r.fillRaw! > CLS_SAT_PCT) {
+        satBinSet.add(b);
+      }
+    }
+    row.cleanBins = cleanBinSet.size;
+    row.cleanBinCoverage = round(cleanBinSet.size / nBins, 4);
+    row.saturatedBins = satBinSet.size;
+    row.usableCleanBins = cleanBinSet.size - satBinSet.size;
+    // banked-at-paint (pre-op R3): the first clean read is a delta-from-0 at window open
+    row.bankedAtPaintMass = round(clean[0].fillRaw!, 2);
+    row.bankedAtPaintSec = round(clean[0].t - barPaint, 4);
+    // increments
+    const eventByBin = new Map<number, number>();
+    for (let k = 1; k < clean.length; k += 1) {
+      const a = clean[k - 1];
+      const b = clean[k];
+      const delta = b.fillRaw! - a.fillRaw!;
+      const gapFrames = Math.round((b.t - a.t) * trace.fps);
+      if (gapFrames > CLS_MAX_EVENT_GAP_FRAMES) {
+        row.bridgedCount += 1;
+        row.bridgedMass = round(row.bridgedMass + delta, 2);
+        continue;
+      }
+      const bin = binOf(b.t);
+      if (delta > eMin && !satBinSet.has(bin)) {
+        eventByBin.set(bin, (eventByBin.get(bin) ?? 0) + delta);
+      } else {
+        row.residualMass = round(row.residualMass + delta, 2);
+      }
+    }
+    row.eventBins = eventByBin.size;
+    row.eventBinDeltas = [...eventByBin.values()].map((d) => round(d, 2));
+    row.eventMass = round(
+      row.eventBinDeltas.reduce((a, b) => a + b, 0),
+      2
+    );
+    const last = clean[clean.length - 1];
+    row.lastCleanT = last.t;
+    row.lastCleanFill = last.fillRaw!;
+    // telescope: banked + all increments = last clean fill (noise cancels internally)
+    row.sumRealDelta = round(last.fillRaw!, 2);
+    // pair the sim window by ordinal
+    const simWin = sched ? simRefills[rw.id - 1] : undefined;
+    if (sched) {
+      if (!simWin || simWin.truncated) {
+        row.reason = simWin
+          ? 'paired sim window truncated by the buzzer'
+          : 'no sim refill window with this ordinal';
+        rows.push(row);
+        continue;
+      }
+      row.simWindow = simWin.index;
+      row.simDurationSec = round(simWin.endSec - simWin.startSec, 4);
+      row.simGauge = round(simWin.gauge, 3);
+      row.rho = round(
+        row.sumRealDelta /
+          row.durationSec /
+          (simWin.gauge / row.simDurationSec),
+        4
+      );
+    }
+    if (row.cleanBinCoverage < CLS_MIN_CLEAN_BIN_COVERAGE) {
+      row.reason = `clean-bin coverage ${(row.cleanBinCoverage * 100).toFixed(0)}% < ${CLS_MIN_CLEAN_BIN_COVERAGE * 100}% (B1)`;
+      rows.push(row);
+      continue;
+    }
+    row.usable = true;
+    rows.push(row);
+  }
+
+  const usable = rows.filter((w) => w.usable);
+  let pooled: ClsPooled | null = null;
+  let basis: ClsBasis | null = null;
+  let branch: ClsBranch | null = null;
+  if (sched && opts.simComp && opts.ceiling) {
+    const sumRealDelta = usable.reduce((a, w) => a + w.sumRealDelta, 0);
+    const sumRealDur = usable.reduce((a, w) => a + w.durationSec, 0);
+    const sumSimGauge = usable.reduce((a, w) => a + w.simGauge, 0);
+    const sumSimDur = usable.reduce((a, w) => a + w.simDurationSec, 0);
+    const realRate = sumRealDelta / sumRealDur;
+    const simRate = sumSimGauge / sumSimDur;
+    const rho = realRate / simRate;
+    const rhos = usable.map((w) => w.rho);
+    const rIq = iqr(rhos);
+    const rhoMed = median(rhos);
+    const eventBins = usable.reduce((a, w) => a + w.eventBins, 0);
+    const usableCleanBins = usable.reduce((a, w) => a + w.usableCleanBins, 0);
+    const allDeltas = usable
+      .flatMap((w) => w.eventBinDeltas)
+      .sort((a, b) => a - b);
+    const eventMass = usable.reduce((a, w) => a + w.eventMass, 0);
+    const realEventBinFraction = eventBins / Math.max(1, usableCleanBins);
+    const realEventBinsPerSec =
+      eventBins / Math.max(1e-9, usableCleanBins * CLS_BIN_SEC);
+    const O = realEventBinFraction / opts.simComp.creditBinFraction;
+    const S = quantile(allDeltas, 0.5) / opts.simComp.binAmountQuantiles.p50;
+    // closure (§C): O_eff x S vs rho, every factor visible.
+    //   oTime      = (event-bins/s of measured real window time) / (credit-bins/s of sim window time)
+    //   massCorrReal = total real mass / event-bin mass (banked + bridged + sub-eMin correction)
+    //   massCorrSim  = total sim mass / credit-bin mass (saturated-bin credit correction)
+    const oTime =
+      eventBins /
+      sumRealDur /
+      (opts.simComp.creditBins / opts.simComp.totalDurationSec);
+    const massCorrReal = sumRealDelta / Math.max(1e-9, eventMass);
+    const simBinMass =
+      opts.simComp.binAmountQuantiles.mean * opts.simComp.creditBins;
+    const massCorrSim = opts.simComp.totalGauge / Math.max(1e-9, simBinMass);
+    const oEff = (oTime * massCorrReal) / massCorrSim;
+    const closureResidual = Math.abs(oEff * S - rho) / rho;
+    pooled = {
+      usableWindows: usable.length,
+      sumRealDelta: round(sumRealDelta, 2),
+      sumRealDurationSec: round(sumRealDur, 3),
+      realRatePerSec: round(realRate, 4),
+      sumSimGauge: round(sumSimGauge, 2),
+      sumSimDurationSec: round(sumSimDur, 3),
+      simRatePerSec: round(simRate, 4),
+      rho: round(rho, 4),
+      rhoPerWindow: rhos.map((r) => round(r, 4)),
+      rhoMedian: round(rhoMed, 4),
+      rhoIqr: {
+        p25: round(rIq.p25, 4),
+        p75: round(rIq.p75, 4),
+        iqr: round(rIq.iqr, 4),
+      },
+      rhoDispersion: round(rIq.iqr / rhoMed, 4),
+      eventBins,
+      usableCleanBins,
+      realEventBinFraction: round(realEventBinFraction, 4),
+      realEventBinsPerSec: round(realEventBinsPerSec, 4),
+      medianEventBinDelta: round(quantile(allDeltas, 0.5), 3),
+      eventBinDeltaQuantiles: {
+        n: allDeltas.length,
+        min: round(allDeltas[0] ?? NaN, 2),
+        p25: round(quantile(allDeltas, 0.25), 2),
+        p50: round(quantile(allDeltas, 0.5), 2),
+        p75: round(quantile(allDeltas, 0.75), 2),
+        p90: round(quantile(allDeltas, 0.9), 2),
+        max: round(allDeltas[allDeltas.length - 1] ?? NaN, 2),
+        mean: round(
+          allDeltas.reduce((a, b) => a + b, 0) / Math.max(1, allDeltas.length),
+          2
+        ),
+      },
+      bankedMassTotal: round(
+        usable.reduce((a, w) => a + w.bankedAtPaintMass, 0),
+        2
+      ),
+      bridgedMassTotal: round(
+        usable.reduce((a, w) => a + w.bridgedMass, 0),
+        2
+      ),
+      residualMassTotal: round(
+        usable.reduce((a, w) => a + w.residualMass, 0),
+        2
+      ),
+      O: round(O, 4),
+      S: round(S, 4),
+      oTime: round(oTime, 4),
+      massCorrReal: round(massCorrReal, 4),
+      massCorrSim: round(massCorrSim, 4),
+      oEff: round(oEff, 4),
+      closureResidual: round(closureResidual, 4),
+    };
+    // ---- basis clauses (any failure -> arm CANNOT-MEASURE) ----
+    const b2Warnings: string[] = [];
+    if (!sched.checks.endpointOk) {
+      b2Warnings.push('endpoint check FAILED');
+    }
+    if (!sched.checks.dbgGauge.ok) {
+      b2Warnings.push('DBG_GAUGE check FAILED');
+    }
+    if (!sched.checks.truncatedOk) {
+      b2Warnings.push('truncated-run check FAILED');
+    }
+    for (const u of sched.unreconstructed) {
+      b2Warnings.push(`unreconstructed: ${u}`);
+    }
+    const b1 = usable.length >= CLS_MIN_USABLE_WINDOWS;
+    const b2 = b2Warnings.length === 0;
+    const b3 = pooled.rhoDispersion <= CLS_MAX_RHO_DISPERSION;
+    const failures: string[] = [];
+    if (!b1) {
+      failures.push(
+        `B1: ${usable.length} usable windows < ${CLS_MIN_USABLE_WINDOWS}`
+      );
+    }
+    if (!b2) {
+      failures.push(`B2: ${b2Warnings.join('; ')}`);
+    }
+    if (!b3) {
+      failures.push(
+        `B3: rho dispersion IQR/median ${pooled.rhoDispersion} > ${CLS_MAX_RHO_DISPERSION}`
+      );
+    }
+    basis = {
+      b1UsableWindows: usable.length,
+      b1Pass: b1,
+      b2ScheduleChecksPass: b2,
+      b2Warnings,
+      b3RhoDispersion: pooled.rhoDispersion,
+      b3Pass: b3,
+      b4RealSaturatedBins: usable.reduce((a, w) => a + w.saturatedBins, 0),
+      b4SimSaturatedBins: opts.simComp.saturatedBins,
+      pass: b1 && b2 && b3,
+      detail: failures.length ? failures.join(' | ') : 'B1-B4 all satisfied',
+    };
+    branch = applyDecisionRule(pooled, basis, opts.ceiling, bands);
+  }
+  return {
+    comp: sched?.comp ?? fx.source.video,
+    eMin,
+    bands,
+    windows: rows,
+    pooled,
+    basis,
+    branch,
+    sim: opts.simComp ?? null,
+    ceiling: opts.ceiling ?? null,
+  };
+}
+
+/** §D applied mechanically, priority order, intervals half-open. */
+export function applyDecisionRule(
+  pooled: ClsPooled,
+  basis: ClsBasis,
+  ceiling: Ceiling,
+  bands: ClsBands
+): ClsBranch {
+  const thr = round(CLS_CEILING_FACTOR * ceiling.ceilingBinsPerSec, 4);
+  const out: ClsBranch = {
+    branch: 'MIXED/INCONCLUSIVE',
+    detail: '',
+    realEventBinsPerSec: pooled.realEventBinsPerSec,
+    ceilingBinsPerSec: ceiling.ceilingBinsPerSec,
+    ceilingThreshold: thr,
+    hcShareOfRate: null,
+    demotedCandidate: null,
+    observedCeilingExcess: null,
+  };
+  if (!basis.pass) {
+    out.branch = 'CANNOT-MEASURE';
+    out.detail = basis.detail;
+    return out;
+  }
+  const inb = (x: number, b: [number, number]): boolean =>
+    x >= b[0] && x < b[1];
+  const { O, S, closureResidual } = pooled;
+  // the same-arm band reading branch 1 would demote (computed first so demotion can name it)
+  let candidate: string | null = null;
+  if (inb(O, bands.haO) && S >= bands.haSMin) {
+    candidate = `H-A band hit (O ${O} in [${bands.haO}), S ${S} >= ${bands.haSMin})`;
+  } else if (O >= bands.hbOMin && inb(S, bands.hbS)) {
+    candidate = `H-B band hit (O ${O} >= ${bands.hbOMin}, S ${S} in [${bands.hbS}))`;
+  }
+  const ceilingExceeded = pooled.realEventBinsPerSec > thr;
+  if (ceilingExceeded) {
+    // the observed quantity is recorded whether or not the branch is allowed to fire
+    out.hcShareOfRate = round(
+      (pooled.realEventBinsPerSec - ceiling.ceilingBinsPerSec) /
+        pooled.realEventBinsPerSec,
+      4
+    );
+  }
+  // §C closure clause FIRST: "residual > 0.25 -> the decomposition does not close ->
+  // INCONCLUSIVE regardless of branch hits". Per the 2026-08-15 blind post-op ruling this gates
+  // branch 1 too (carrying the failed clause onto only the demoted remainder was a post-hoc
+  // reinterpretation); an over-ceiling event rate under a failed closure is retained as an
+  // OBSERVED H-C candidate, not an established branch.
+  if (closureResidual > CLS_MAX_CLOSURE_RESIDUAL) {
+    out.branch = 'MIXED/INCONCLUSIVE';
+    if (ceilingExceeded) {
+      out.observedCeilingExcess =
+        `H-C-candidate event-rate excess, observed, not established: real event rate ` +
+        `${pooled.realEventBinsPerSec}/s > ${CLS_CEILING_FACTOR} x ceiling ` +
+        `${ceiling.ceilingBinsPerSec}/s (share of rate ${out.hcShareOfRate})`;
+    }
+    out.demotedCandidate = candidate;
+    out.detail =
+      `closure residual ${closureResidual} > ${CLS_MAX_CLOSURE_RESIDUAL}: the O x S ` +
+      `decomposition does not close (O ${O}, S ${S}, rho ${pooled.rho}) — INCONCLUSIVE ` +
+      `regardless of branch hits (section C)` +
+      (out.observedCeilingExcess ? `; ${out.observedCeilingExcess}` : '') +
+      (candidate ? `; band reading (descriptive only): ${candidate}` : '');
+    return out;
+  }
+  // branch 1: H-C ceiling test (reads the event rate, not the O/S decomposition)
+  if (ceilingExceeded) {
+    out.branch = 'H-C';
+    out.demotedCandidate = candidate;
+    out.detail =
+      `real event rate ${pooled.realEventBinsPerSec}/s > ${CLS_CEILING_FACTOR} x ceiling ` +
+      `${ceiling.ceilingBinsPerSec}/s; H-C share of rate ${out.hcShareOfRate}` +
+      (candidate
+        ? `; demoted same-arm candidate remainder (descriptive only): ${candidate}`
+        : '');
+    return out;
+  }
+  // branch 2: NO-IN-WINDOW-EXCESS (pre-op R2; closure <= limit is guaranteed past the gate)
+  if (inb(O, bands.noExcess) && inb(S, bands.noExcess)) {
+    out.branch = 'NO-IN-WINDOW-EXCESS';
+    out.detail = `O ${O} and S ${S} in [${bands.noExcess}), closure residual ${closureResidual} <= ${CLS_MAX_CLOSURE_RESIDUAL}`;
+    return out;
+  }
+  // branch 3: H-A
+  if (inb(O, bands.haO) && S >= bands.haSMin) {
+    out.branch = 'H-A';
+    out.detail = `per-event-bin credit excess at modeled cadence: O ${O} in [${bands.haO}), S ${S} >= ${bands.haSMin}`;
+    return out;
+  }
+  // branch 4: H-B
+  if (O >= bands.hbOMin && inb(S, bands.hbS)) {
+    out.branch = 'H-B';
+    out.detail = `surplus event bins at modeled sizes: O ${O} >= ${bands.hbOMin}, S ${S} in [${bands.hbS})`;
+    return out;
+  }
+  out.branch = 'MIXED/INCONCLUSIVE';
+  out.detail = `both factors mid-band: (O, S, rho) = (${O}, ${S}, ${pooled.rho})`;
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -1134,8 +2399,243 @@ function tables(bundlePaths: string[]): string {
   return out.join('\n');
 }
 
+function openingCli(): void {
+  const bundlePath = process.argv[3];
+  if (!bundlePath || bundlePath.startsWith('--')) {
+    throw new Error(
+      'usage: fill-trace-compare.ts opening <bundle json> [--diag <gauge-fill --diag trace>] [--artifact <out json>]'
+    );
+  }
+  const bundle = JSON.parse(readFileSync(bundlePath, 'utf8')) as BundleLike;
+  const diagPath = arg('diag');
+  let diagHold: { window: number; reads: DiagRead[] }[] | null = null;
+  if (diagPath) {
+    const diagTrace = JSON.parse(readFileSync(diagPath, 'utf8')) as {
+      reads: (FillRead & { diag?: Omit<DiagRead, 't'> })[];
+    };
+    diagHold = extractDiagHold(diagTrace, bundle.result);
+  }
+  const res = openingAnalysis(bundle, diagHold);
+
+  const artifact = arg('artifact');
+  if (artifact) {
+    writeFileSync(
+      artifact,
+      `${JSON.stringify(
+        {
+          _note:
+            'Opening-window observable (step 1a, docs/handoffs/2026-08-14-burst-gen-next-session.md): ' +
+            'does any gauge bank while the drained Full-Burst bar holds the widget slot, before the ' +
+            'charging bar paints? Self-contained: `diagHold` carries the raw hold-span pixel reads ' +
+            'from a gauge-fill.py --team --diag run, so the analysis replays without the gitignored ' +
+            'video. Replayed by scripts/tests/probe/fill-trace-opening.test.ts. MEASUREMENT ONLY — ' +
+            'no verdict; the hypothesis classification belongs to a /scientific-method pass.',
+          bundle: bundlePath,
+          commands: {
+            diag:
+              'scripts/probe/gauge-fill.py --team --frames fine --fps 60 --lock-frames lock ' +
+              '--crop 280:70:2342:465 --diag --spans "$(npx tsx scripts/probe/fill-trace-compare.ts ' +
+              'spans --fixture <fixture>)"',
+            opening:
+              'npx tsx scripts/probe/fill-trace-compare.ts opening <bundle> --diag <diag trace> ' +
+              '--artifact <this file>',
+          },
+          diagHold,
+          result: res,
+        },
+        null,
+        1
+      )}\n`
+    );
+    process.stdout.write(`wrote ${artifact}\n`);
+  }
+
+  const n = (x: number | null): string =>
+    x === null || !Number.isFinite(x as number) ? '—' : String(x);
+  process.stdout.write(
+    `\n===== OPENING-WINDOW OBSERVABLE — ${res.comp} =====\n` +
+      `video ${res.video}\n` +
+      `amounts trusted: ${res.amountsTrusted ? 'yes' : 'NO (predBankFbEndSim void)'}\n\n` +
+      `win  hold(s)  paintFill  maxLow  t>8%   firstClean@t        earlyRate  intercept@paint (whole-rate)  predSim  predReal | quiet n/med/max/last  fadeMax\n` +
+      res.windows
+        .map((w) => {
+          const d = w.diag;
+          return (
+            `${String(w.id).padStart(3)}  ${String(w.holdSec).padStart(6)}  ${String(n(w.paintFill)).padStart(8)}  ` +
+            `${String(n(w.maxLowBeforeClean)).padStart(6)}  ${String(n(w.tToExceedLow)).padStart(5)}  ` +
+            `${String(n(w.firstClean)).padStart(6)}@${String(n(w.paintToFirstCleanSec)).padEnd(7)}  ` +
+            `${String(n(w.earlyRate)).padStart(8)}  ${String(n(w.interceptAtPaint)).padStart(10)} (${n(w.interceptWholeRate)})  ` +
+            `${String(n(w.predBankFbEndSim)).padStart(7)}  ${String(n(w.predBankFbEndReal)).padStart(8)}` +
+            (d
+              ? ` | ${d.quietFrames}/${n(d.quietFillMedian)}/${n(d.quietFillMax)}(${n(d.quietFillSustainedMax)})/${n(d.lastQuietFill)}  ${n(d.fadeFillMax)}`
+              : ' | —') +
+            `  ${w.status}`
+          );
+        })
+        .join('\n') +
+      `\n\nmedians: hold ${n(res.medianHoldSec)}s · paintFill ${n(res.medianPaintFill)} · ` +
+      `intercept@paint ${n(res.medianInterceptAtPaint)} (IQR ${n(res.interceptIqr.iqr)} ` +
+      `[${n(res.interceptIqr.p25)}, ${n(res.interceptIqr.p75)}])\n` +
+      `predictions if banking ran from FB-end: sim-credit sizes ${n(res.medianPredBankFbEndSim)} · ` +
+      `at the visible-span real rate ${n(res.medianPredBankFbEndReal)}\n` +
+      `prediction if banking starts at bar-paint: 0\n` +
+      `quiet-frame fill max across hold spans: ${n(res.quietFillMaxAcrossWindows)} ` +
+      `(sustained, despiked: ${n(res.quietFillSustainedMaxAcrossWindows)})\n`
+  );
+}
+
+function classifyCli(): void {
+  const schedPath = arg('schedule');
+  const compName = arg('comp');
+  const eMin = Number(arg('e-min') ?? CLS_E_MIN);
+
+  // ---- stage C4: classify --noise-check <opening artifact>[,<...>] ---------
+  const noise = arg('noise-check');
+  if (noise) {
+    const sources = noise.split(',').map((p) => {
+      const doc = JSON.parse(readFileSync(p, 'utf8')) as {
+        result: { comp: string };
+        diagHold: { window: number; reads: DiagRead[] }[];
+      };
+      return { name: doc.result.comp, diagHold: doc.diagHold };
+    });
+    const res = quietNoiseCheck(sources, eMin);
+    process.stdout.write(`${JSON.stringify(res, null, 1)}\n`);
+    return;
+  }
+
+  // ---- real-only descriptives (the misc B3s fence: sim arm voided by construction) ----
+  if (process.argv.includes('--real-only')) {
+    const fxPath = arg('fixture');
+    const trPath = arg('trace');
+    if (!fxPath || !trPath) {
+      throw new Error('classify --real-only needs --fixture and --trace');
+    }
+    const fx0 = JSON.parse(readFileSync(fxPath, 'utf8')) as TempoFixture;
+    const doc = JSON.parse(readFileSync(trPath, 'utf8')) as
+      FillTrace | { trace: FillTrace };
+    const tr = 'reads' in doc ? doc : doc.trace;
+    const res = classifyArm(fx0, tr, null, { eMin });
+    const outPath = arg('artifact');
+    if (outPath) {
+      writeFileSync(outPath, `${JSON.stringify(res, null, 1)}\n`);
+      process.stdout.write(`wrote ${outPath}\n`);
+    }
+    process.stdout.write(`${JSON.stringify(res, null, 1)}\n`);
+    return;
+  }
+
+  if (!schedPath || !compName) {
+    throw new Error(
+      'classify needs --schedule <credit-schedule json> --comp "<name>" ' +
+        '(or --noise-check <opening artifacts>; add --fixture/--trace for the real side, ' +
+        '--sim-only to freeze the sim side first)'
+    );
+  }
+  const scheds = JSON.parse(readFileSync(schedPath, 'utf8')) as SimSchedule[];
+  const sched = scheds.find((s) => s.comp === compName);
+  if (!sched) {
+    throw new Error(
+      `no comp "${compName}" in ${schedPath} — have: ${scheds.map((s) => s.comp).join(', ')}`
+    );
+  }
+
+  // ---- stage C3 + freeze: classify --sim-only ------------------------------
+  const base = simComponents(sched);
+  const ceiling = simCeiling(sched);
+  if (process.argv.includes('--sim-only')) {
+    const variants = {
+      base,
+      jitterPlus1: simComponents(sched, { jitterFrames: 1 }),
+      jitterMinus1: simComponents(sched, { jitterFrames: -1 }),
+      phaseHalfBin: simComponents(sched, { phaseSec: 1 / 60 }),
+      scale60fps: simComponents(sched, { binSec: 1 / 60 }),
+    };
+    const shift = (v: SimComponents, field: 'frac' | 'p50'): number =>
+      field === 'frac'
+        ? Math.abs(v.creditBinFraction - base.creditBinFraction) /
+          base.creditBinFraction
+        : Math.abs(v.binAmountQuantiles.p50 - base.binAmountQuantiles.p50) /
+          base.binAmountQuantiles.p50;
+    // C3 perturbations AT THE PINNED SCALE (jitter both ways + the other rebinning phase).
+    // The 1/60s run is reported as a scale comparison only: O and S are same-scale ratios, so a
+    // scale change moves both sides together and is not an alignment artifact.
+    const aligned = [
+      variants.jitterPlus1,
+      variants.jitterMinus1,
+      variants.phaseHalfBin,
+    ];
+    const oShift = Math.max(...aligned.map((v) => shift(v, 'frac')));
+    const sShift = Math.max(...aligned.map((v) => shift(v, 'p50')));
+    const bands = widenBands(CLS_BASE_BANDS, oShift, sShift);
+    process.stdout.write(
+      `${JSON.stringify(
+        {
+          comp: sched.comp,
+          scheduleChecks: {
+            endpointOk: sched.checks.endpointOk,
+            dbgGaugeOk: sched.checks.dbgGauge.ok,
+            truncatedOk: sched.checks.truncatedOk,
+            unreconstructed: sched.unreconstructed,
+          },
+          components: variants,
+          c3: {
+            oComponentMaxAlignedShift: round(oShift, 4),
+            sComponentMaxAlignedShift: round(sShift, 4),
+            shiftLimit: CLS_C3_SHIFT_LIMIT,
+            widened: oShift > CLS_C3_SHIFT_LIMIT || sShift > CLS_C3_SHIFT_LIMIT,
+            finalBands: bands,
+          },
+          ceiling,
+        },
+        null,
+        1
+      )}\n`
+    );
+    return;
+  }
+
+  // ---- full arm: classify --fixture --trace [--o-shift --s-shift] ----------
+  const fixture = arg('fixture');
+  const tracePath = arg('trace');
+  if (!fixture || !tracePath) {
+    throw new Error(
+      'classify needs --fixture <windows json> --trace <reflagged trace/bundle>'
+    );
+  }
+  const fx = JSON.parse(readFileSync(fixture, 'utf8')) as TempoFixture;
+  const traceDoc = JSON.parse(readFileSync(tracePath, 'utf8')) as
+    FillTrace | { trace: FillTrace };
+  const trace = 'reads' in traceDoc ? traceDoc : traceDoc.trace;
+  const bands = widenBands(
+    CLS_BASE_BANDS,
+    Number(arg('o-shift') ?? 0),
+    Number(arg('s-shift') ?? 0)
+  );
+  const res = classifyArm(fx, trace, sched, {
+    eMin,
+    bands,
+    simComp: base,
+    ceiling,
+  });
+  const artifact = arg('artifact');
+  if (artifact) {
+    writeFileSync(artifact, `${JSON.stringify(res, null, 1)}\n`);
+    process.stdout.write(`wrote ${artifact}\n`);
+  }
+  process.stdout.write(`${JSON.stringify(res, null, 1)}\n`);
+}
+
 function main(): void {
   const mode = process.argv[2];
+  if (mode === 'classify') {
+    classifyCli();
+    return;
+  }
+  if (mode === 'opening') {
+    openingCli();
+    return;
+  }
   if (mode === 'tables') {
     process.stdout.write(
       `${tables(process.argv.slice(3).filter((a) => !a.startsWith('--')))}\n`

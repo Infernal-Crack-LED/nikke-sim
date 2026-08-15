@@ -186,5 +186,18 @@
     },
     "parsedSlug": "marciana-sg-band",
     "description": "Bare-weapon SG-landing probe. marciana focused (slot 3), boss Iron. n=2: 0.850 COLD. Gap localized to the SG pellet-landing term (ATK/cadence/crit/core all ruled out)."
+  },
+  {
+    "video": "docs/probes/burst tests/a2 anis star.MP4",
+    "focus": "anis-star",
+    "comp": ["anis-star"],
+    "boss": null,
+    "params": {
+      "basis": "scope-lock (battery 3: 'any boss element' per the Part A spec; element not re-verified from footage)",
+      "durationSec": 22.5,
+      "focusReason": "test battery 3 Part A3 solo gauge read; solo = per-pull deltas attributable to her alone"
+    },
+    "parsedSlug": "anis-star-solo-a3-gauge-reread",
+    "description": "Anis: Star SOLO (identity confirmed from footage 2026-08-15: one unit, 6-round magazine, charge HUD, solo Burst I cast with unclaimed stage-II hand-off). Battery-3 Part A3 recording; despite the a2 filename prefix it is NOT part of the A1/A2 takina/crown team pair. 2026-08-15 per-pull gauge re-read: 9 pulls fill the bar (ammo-counter counted); 5-6 clean per-pull deltas of 10.1-11.6 percent; sub-steps do not resolve at 60fps. See docs/probe-data/burst-tests-recording-index.md and docs/probe-runs.md."
   }
 ]
