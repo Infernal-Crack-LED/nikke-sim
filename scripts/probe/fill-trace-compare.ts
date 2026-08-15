@@ -1805,6 +1805,13 @@ export interface ClsBranch {
   hcShareOfRate: number | null;
   /** §D R4: when branch 1 fires, any same-arm H-A/H-B band hit is DEMOTED to descriptive */
   demotedCandidate: string | null;
+  /**
+   * When the event rate exceeds the ceiling but the closure clause voids the branches, the
+   * over-ceiling reading is retained here as OBSERVED, NOT ESTABLISHED (2026-08-15 blind
+   * post-op ruling: §C's "residual > 0.25 → INCONCLUSIVE regardless of branch hits" gates
+   * branch 1 too).
+   */
+  observedCeilingExcess: string | null;
 }
 
 export interface ClsArm {
@@ -2144,6 +2151,7 @@ export function applyDecisionRule(
     ceilingThreshold: thr,
     hcShareOfRate: null,
     demotedCandidate: null,
+    observedCeilingExcess: null,
   };
   if (!basis.pass) {
     out.branch = 'CANNOT-MEASURE';
@@ -2160,14 +2168,40 @@ export function applyDecisionRule(
   } else if (O >= bands.hbOMin && inb(S, bands.hbS)) {
     candidate = `H-B band hit (O ${O} >= ${bands.hbOMin}, S ${S} in [${bands.hbS}))`;
   }
-  // branch 1: H-C ceiling test (does not read the O/S decomposition)
-  if (pooled.realEventBinsPerSec > thr) {
-    out.branch = 'H-C';
+  const ceilingExceeded = pooled.realEventBinsPerSec > thr;
+  if (ceilingExceeded) {
+    // the observed quantity is recorded whether or not the branch is allowed to fire
     out.hcShareOfRate = round(
       (pooled.realEventBinsPerSec - ceiling.ceilingBinsPerSec) /
         pooled.realEventBinsPerSec,
       4
     );
+  }
+  // §C closure clause FIRST: "residual > 0.25 -> the decomposition does not close ->
+  // INCONCLUSIVE regardless of branch hits". Per the 2026-08-15 blind post-op ruling this gates
+  // branch 1 too (carrying the failed clause onto only the demoted remainder was a post-hoc
+  // reinterpretation); an over-ceiling event rate under a failed closure is retained as an
+  // OBSERVED H-C candidate, not an established branch.
+  if (closureResidual > CLS_MAX_CLOSURE_RESIDUAL) {
+    out.branch = 'MIXED/INCONCLUSIVE';
+    if (ceilingExceeded) {
+      out.observedCeilingExcess =
+        `H-C-candidate event-rate excess, observed, not established: real event rate ` +
+        `${pooled.realEventBinsPerSec}/s > ${CLS_CEILING_FACTOR} x ceiling ` +
+        `${ceiling.ceilingBinsPerSec}/s (share of rate ${out.hcShareOfRate})`;
+    }
+    out.demotedCandidate = candidate;
+    out.detail =
+      `closure residual ${closureResidual} > ${CLS_MAX_CLOSURE_RESIDUAL}: the O x S ` +
+      `decomposition does not close (O ${O}, S ${S}, rho ${pooled.rho}) — INCONCLUSIVE ` +
+      `regardless of branch hits (section C)` +
+      (out.observedCeilingExcess ? `; ${out.observedCeilingExcess}` : '') +
+      (candidate ? `; band reading (descriptive only): ${candidate}` : '');
+    return out;
+  }
+  // branch 1: H-C ceiling test (reads the event rate, not the O/S decomposition)
+  if (ceilingExceeded) {
+    out.branch = 'H-C';
     out.demotedCandidate = candidate;
     out.detail =
       `real event rate ${pooled.realEventBinsPerSec}/s > ${CLS_CEILING_FACTOR} x ceiling ` +
@@ -2177,20 +2211,10 @@ export function applyDecisionRule(
         : '');
     return out;
   }
-  // branch 2: NO-IN-WINDOW-EXCESS (pre-op R2)
-  if (
-    inb(O, bands.noExcess) &&
-    inb(S, bands.noExcess) &&
-    closureResidual <= CLS_MAX_CLOSURE_RESIDUAL
-  ) {
+  // branch 2: NO-IN-WINDOW-EXCESS (pre-op R2; closure <= limit is guaranteed past the gate)
+  if (inb(O, bands.noExcess) && inb(S, bands.noExcess)) {
     out.branch = 'NO-IN-WINDOW-EXCESS';
     out.detail = `O ${O} and S ${S} in [${bands.noExcess}), closure residual ${closureResidual} <= ${CLS_MAX_CLOSURE_RESIDUAL}`;
-    return out;
-  }
-  // §C: a decomposition that does not close is INCONCLUSIVE regardless of branches 3-4
-  if (closureResidual > CLS_MAX_CLOSURE_RESIDUAL) {
-    out.branch = 'MIXED/INCONCLUSIVE';
-    out.detail = `closure residual ${closureResidual} > ${CLS_MAX_CLOSURE_RESIDUAL}: the O x S decomposition does not close (O ${O}, S ${S}, rho ${pooled.rho})`;
     return out;
   }
   // branch 3: H-A

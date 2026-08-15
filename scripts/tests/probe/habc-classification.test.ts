@@ -174,8 +174,15 @@ describe('the classification replays from committed inputs', () => {
     }
   });
 
-  it('the pre-committed section-D branches: H-C on iron sweep, MIXED/INCONCLUSIVE on T5', () => {
-    expect(artifact.arms['iron sweep (run G)'].branch?.branch).toBe('H-C');
+  it('the corrected section-D branches: MIXED/INCONCLUSIVE on both arms (2026-08-15 blind post-op ruling)', () => {
+    // The original branch-1 "H-C mass present" stamp on iron sweep (run G) was STRUCK by the
+    // blind post-op judge: section C's closure clause ("residual > 0.25 -> INCONCLUSIVE
+    // regardless of branch hits") gates branch 1 too, and iron's residual is 0.2579. The
+    // over-ceiling reading is retained as observed, not established.
+    const iron = artifact.arms['iron sweep (run G)'].branch;
+    expect(iron?.branch).toBe('MIXED/INCONCLUSIVE');
+    expect(iron?.observedCeilingExcess).toContain('observed, not established');
+    expect(iron?.hcShareOfRate).toBe(0.2379);
     expect(artifact.arms['T5 wind-weak'].branch?.branch).toBe(
       'MIXED/INCONCLUSIVE'
     );

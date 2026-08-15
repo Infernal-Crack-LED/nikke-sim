@@ -1,6 +1,12 @@
 {
-  "_note": "H-A/H-B/H-C classification of the burst-generation gap on the bar-paint-anchored statistic (step 2 of docs/handoffs/2026-08-14-burst-gen-next-session.md; pre-op packet docs/handoffs/2026-08-15-classification-preop-packet.md \u2014 every constant, band, basis clause and branch is pinned there). MEASUREMENT ONLY, no verdict verbs: the branch fields report which pre-committed rule fired, mechanically. Self-contained: traces replay from the committed fill-trace bundles plus `reflag.newOffCurveReadIndices` (the pure-additive output of `gauge-fill.py --reflag`, recorded so the replay needs no python); the regenerated post-#119 sim schedules are embedded (their own three CreditScheduleChecks pinned inside). Replayed by scripts/tests/probe/habc-classification.test.ts.",
+  "_note": "H-A/H-B/H-C classification of the burst-generation gap on the bar-paint-anchored statistic (step 2 of docs/handoffs/2026-08-14-burst-gen-next-session.md; pre-op packet docs/handoffs/2026-08-15-classification-preop-packet.md \u2014 every constant, band, basis clause and branch is pinned there). MEASUREMENT ONLY, no verdict verbs: the branch fields report which pre-committed rule fired, mechanically, as corrected by the 2026-08-15 blind post-op ruling (see judgeCorrections). Self-contained: traces replay from the committed fill-trace bundles plus `reflag.newOffCurveReadIndices` (the pure-additive output of `gauge-fill.py --reflag`, recorded so the replay needs no python); the regenerated post-#119 sim schedules are embedded (their own three CreditScheduleChecks pinned inside). Replayed by scripts/tests/probe/habc-classification.test.ts.",
   "packet": "docs/handoffs/2026-08-15-classification-preop-packet.md",
+  "judgeCorrections": {
+    "verdict": "run verdict LOG (driver ACCEPT MEDIUM + blind post-op ACCEPT MEDIUM)",
+    "struck": "The iron sweep (run G) branch-1 'H-C mass present' stamp is STRUCK by the blind post-op judge (2026-08-15), binding: section C's closure clause reads 'residual > 0.25 -> INCONCLUSIVE regardless of branch hits', and iron's residual is 0.2579; carrying the failed clause onto only the demoted H-B remainder was a post-hoc reinterpretation. The arm's branch is corrected to branch 5 MIXED/INCONCLUSIVE by the letter of the pre-committed clause; the original reading is retained in `observedCeilingExcess` as 'H-C-candidate event-rate excess, observed, not established'. applyDecisionRule now encodes the corrected ordering.",
+    "noisePowerOnCeilingTest": "Judge's arithmetic, annotating the ceiling test: at iron's credit fraction (~429 quiet bins of ~509 usable), the C4 quiet false-event rate reproduces the branch-1 margin \u2014 at the per-source 6.93% the true event rate is ~2.8 bins/s (below the raw ceiling 3.59); even at the gate-passing pooled 4.22% it is ~3.6 bins/s (below the 4.13 threshold). The x1.15 factor lacked power against a <=5% noise gate at this credit fraction. Coherence: the closure failing in the direction O_eff x S (2.04) > rho (1.62) is the signature of event-count inflation relative to mass \u2014 the two flags are one story.",
+    "rhoSystematicsBand": "rho's elevation is a 1.6-1.9x BAND, not a constant: banked-at-paint mass is 14% of iron's Sigma real Delta (134.2/946.1) riding the 0.13-0.22s bar-paint lateness, and the one-sided exclusion of negative-Delta reads truncates noise asymmetrically (unquantified)."
+  },
   "commands": {
     "schedule": "npx tsx scripts/battery/fb-count-matrix.ts --credit-schedule --json --comp=\"<comp>\"",
     "reflag": "scripts/probe/.venv/bin/python scripts/probe/gauge-fill.py --reflag <committed bundle> --out <reflagged>",
@@ -22861,13 +22867,14 @@
         "detail": "B1-B4 all satisfied"
       },
       "branch": {
-        "branch": "H-C",
-        "detail": "real event rate 4.7151/s > 1.15 x ceiling 3.5935/s; H-C share of rate 0.2379; demoted same-arm candidate remainder (descriptive only): H-B band hit (O 1.8276 >= 1.4, S 1.0714 in [0.7,1.3))",
+        "branch": "MIXED/INCONCLUSIVE",
+        "detail": "closure residual 0.2579 > 0.25: the O x S decomposition does not close (O 1.8276, S 1.0714, rho 1.6202) \u2014 INCONCLUSIVE regardless of branch hits (section C); H-C-candidate event-rate excess, observed, not established: real event rate 4.7151/s > 1.15 x ceiling 3.5935/s (share of rate 0.2379); band reading (descriptive only): H-B band hit (O 1.8276 >= 1.4, S 1.0714 in [0.7,1.3))",
         "realEventBinsPerSec": 4.7151,
         "ceilingBinsPerSec": 3.5935,
         "ceilingThreshold": 4.1325,
         "hcShareOfRate": 0.2379,
-        "demotedCandidate": "H-B band hit (O 1.8276 >= 1.4, S 1.0714 in [0.7,1.3))"
+        "demotedCandidate": "H-B band hit (O 1.8276 >= 1.4, S 1.0714 in [0.7,1.3))",
+        "observedCeilingExcess": "H-C-candidate event-rate excess, observed, not established: real event rate 4.7151/s > 1.15 x ceiling 3.5935/s (share of rate 0.2379)"
       },
       "sim": {
         "comp": "iron sweep (run G)",
@@ -23330,12 +23337,13 @@
       },
       "branch": {
         "branch": "MIXED/INCONCLUSIVE",
-        "detail": "closure residual 3.4926 > 0.25: the O x S decomposition does not close (O 0.1511, S 34.9057, rho 1.7629)",
+        "detail": "closure residual 3.4926 > 0.25: the O x S decomposition does not close (O 0.1511, S 34.9057, rho 1.7629) \u2014 INCONCLUSIVE regardless of branch hits (section C)",
         "realEventBinsPerSec": 3.4752,
         "ceilingBinsPerSec": 30,
         "ceilingThreshold": 34.5,
         "hcShareOfRate": null,
-        "demotedCandidate": null
+        "demotedCandidate": null,
+        "observedCeilingExcess": null
       },
       "sim": {
         "comp": "T5 wind-weak",
@@ -23748,15 +23756,14 @@
   },
   "crossComp": {
     "rule": "a CLASS-level claim requires the same section-D branch on BOTH arms",
-    "iron sweep (run G)": "H-C (branch 1)",
+    "iron sweep (run G)": "MIXED/INCONCLUSIVE (closure clause; branch-1 H-C stamp STRUCK by the blind post-op judge, retained as observed-not-established)",
     "T5 wind-weak": "MIXED/INCONCLUSIVE (closure residual 3.4926 > 0.25)",
-    "outcome": "branches disagree -> per-comp findings only; no class-level claim from this run"
+    "outcome": "both arms MIXED/INCONCLUSIVE \u2014 no class branch fired on either arm, so no class-level claim from this run"
   },
   "riskFlags": {
-    "barPaintLateness": "bar-paint trails true FB end by 0.13-0.22s (probe-runs 2026-08-14). Residual duration asymmetry: median usable real window is 2.342s (iron) / 1.817s (T5), so the unmeasured head is 5.6-9.4% (iron) / 7.2-12.1% (T5) of the window; step 1a measured ~0 banked mass there, so the real in-window rate (and rho) may overstate a true-FB-end-anchored rate by up to that duration share.",
+    "barPaintLateness": "bar-paint trails true FB end by 0.13-0.22s (probe-runs 2026-08-14). Residual duration asymmetry: median usable real window is 2.342s (iron) / 1.817s (T5), so the unmeasured head is 5.6-9.4% (iron) / 7.2-12.1% (T5) of the window; step 1a measured ~0 banked mass there, so the real in-window rate (and rho) may overstate a true-FB-end-anchored rate by up to that duration share. See also judgeCorrections.rhoSystematicsBand: treat rho as a 1.6-1.9x band.",
     "t5CeilingVacuous": "T5's C_ceiling saturates the 30 bins/s cap (cinderella-crystal-wave min credit gap 1 frame, nayuta 3 frames), so section-D branch 1 cannot fire on that arm by construction.",
-    "ironClosure": "iron sweep closure residual 0.2579 is marginally above the 0.25 limit; branch 1 (H-C) fired first and does not read the O x S decomposition, but the demoted H-B candidate remainder should be weighed with that residual in view.",
-    "c4PerSource": "C4 pooled rate 0.0422 < 0.05 keeps E_min at 1.5, but the iron-sweep recording alone reads 0.0693 with a heavy positive tail (p95 54.1) \u2014 isolated bright hold frames the glow/fade taxonomy leaves as quiet.",
+    "c4PerSource": "C4 pooled rate 0.0422 < 0.05 keeps E_min at 1.5, but the iron-sweep recording alone reads 0.0693 with a heavy positive tail (p95 54.1) \u2014 isolated bright hold frames the glow/fade taxonomy leaves as quiet. judgeCorrections.noisePowerOnCeilingTest quantifies what this does to the ceiling test's power.",
     "n2": "any class conclusion from this run is n=2 comps and carries that weight (packet)."
   },
   "diagnostics": {
