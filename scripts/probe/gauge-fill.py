@@ -844,7 +844,11 @@ def main():
                                           'must span at least one Full Burst (the lock keys on the '
                                           'magenta drain bar). Defaults to --frames.')
     ap.add_argument('--bar', help='[team] skip the lock and use an explicit "y0:y1:x0:x1" '
-                                  '(inclusive, in crop coordinates).')
+                                  '(inclusive, in crop coordinates). [solo] same 4-field form '
+                                  'skips self-calibration: y1 is taken as the bar\'s dark border '
+                                  'row, x0:x1 as its extent (x1-exclusive, as find_bar returns). '
+                                  'Use when whole-frame self-calibration mis-locks (a bright-sky '
+                                  'boss offers longer dark runs than the bar).')
     ap.add_argument('--crop', help='[team] the ffmpeg crop the frames came from, "w:h:x:y", so the '
                                    'reported lock can also be given in absolute frame coordinates.')
     ap.add_argument('--spans', help='[team] comma-separated "start-end" second ranges to emit, e.g. '
@@ -870,7 +874,10 @@ def main():
         sys.exit(f'no frames in {args.frames}')
 
     geom = None
-    if args.calib_frame is not None:
+    if args.bar:
+        _by0, _by1, _bx0, _bx1 = (int(v) for v in args.bar.split(':'))
+        geom = (_by1, _bx0, _bx1)  # solo read_fill wants (borderRow, x0, x1-exclusive)
+    elif args.calib_frame is not None:
         img = np.array(Image.open(files[args.calib_frame]).convert('RGB')).astype(int)
         geom = find_bar(img)
         if geom is None:
