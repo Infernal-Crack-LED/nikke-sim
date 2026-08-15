@@ -556,6 +556,9 @@ interface UnitState {
   noBoltRecovery: boolean;
   pullsPerSec?: number;
   focusChargeMult?: number; // charFixes override: replaces the per-unit fullChargeBonus/100 focus multiplier
+  // RECEIVING-side stat immunities (charFixes.statImmunities) — see applyEffect's strip.
+  // Undefined for every unit without the kit line, so the check is one truthiness test.
+  statImmunities?: ReadonlySet<string>;
   // Whole-magazine dump (cinderella: opt-in charFixes.magDumpRof). One charge PRIMES the mag, then
   // the whole magazine autofires at the datamined rate_of_fire WITHOUT recharging; the reload-to-max
   // clears `primed` so the next mag re-charges once. Inert unless the flag is set (regression-proven).
@@ -896,6 +899,9 @@ export function runSim(
       noBoltRecovery: prepared?.[idx]?.noBoltRecovery ?? false,
       pullsPerSec: prepared?.[idx]?.pullsPerSec,
       focusChargeMult: prepared?.[idx]?.focusChargeMult,
+      statImmunities: prepared?.[idx]?.statImmunities?.length
+        ? new Set(prepared[idx]!.statImmunities)
+        : undefined,
       magDumpRof: prepared?.[idx]?.magDumpRof ?? false,
       magDumpRofFrames: (() => {
         const rof = (
@@ -2600,6 +2606,42 @@ export function runSim(
             const appliedValue =
               e.stat === 'targetMaxHpPct' ? (e.value / 100) * t.maxHp : value;
             const buffKey = `${ownerIdx}:${block.slot}:${statKey}:${e.value}`;
+            // PER-UNIT STAT IMMUNITY (charFixes.statImmunities) — the RECEIVING side of kit
+            // lines shaped "Immunity to Increase/Decrease <X> effects, continuous"
+            // (liberalio S2, Charge Speed). Enforced HERE, at buff application, per target:
+            // the immune stat is stripped from what lands on THIS unit while every other
+            // effect in the same block still applies to her (`maxwell` S1 bundles
+            // chargeSpeedPct with atkPct in one cast — the ATK lands, the charge speed does
+            // not), and the other targets of the same cast are untouched. Direction-blind by
+            // design — an increase and a decrease are both stripped, as the kit line reads —
+            // so a caster-side `excludeSelf` is no longer the only guard.
+            //
+            // SCOPE, deliberately narrow (2026-08-14): this covers KIT-SOURCED `buff` effects
+            // routed through applyEffect, which is every skill/burst grant in the game model.
+            // It does NOT cover (a) cube / Overload stats — `prepareUnit` turns those into
+            // `extraStats` that are pushed straight onto `state.buffs` at unit construction,
+            // never passing here, and `adjutant`/`quantum` cubes plus the `chargespd` OL line
+            // do carry chargeSpeedPct; nor (b) the non-`buff` effect kinds that also resolve
+            // per target (unlimitedAmmo / gainPierce / convertExcess / addStack). Whether a
+            // kit immunity is meant to suppress the holder's OWN GEAR is a game-behaviour
+            // question nobody has ruled on, so the model does not assume it. Inert on the
+            // graded basis either way (scope lock is no-cube / OL0); live in the web app,
+            // where a user can equip both. Open item: QUEUE.md.
+            // The check is against `statKey`, the APPLIED key (post the authored→applied
+            // rewrite above) — the same key `stat()` reads back. `validate-structural.ts`
+            // rejects an authored-side alias so an immunity cannot silently never match.
+            // Target SELECTION is unchanged: an immune unit still occupies a selector slot
+            // (which is required — she must be selected to receive maxwell's bundled ATK);
+            // only the stat is dropped.
+            if (t.statImmunities?.has(statKey)) {
+              if (ENV.DBG_BUFFS) {
+                console.log(
+                  `[immune ${t.char.slug}] t=${(frame / FPS).toFixed(2)} stripped ${statKey}=${appliedValue} ` +
+                    `from ${owner.char.slug}:${block.slot} (key ${buffKey})`
+                );
+              }
+              continue;
+            }
             // SELF-STATUS GATE (noRetriggerWhileActive): "while NOT in [this buff's] status" —
             // skip this application entirely (no refresh, no stack) if the SAME key is already
             // active on the target. Without this, a trigger that both grants a buff and is itself

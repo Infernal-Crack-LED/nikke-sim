@@ -54,6 +54,7 @@ export interface PreparedUnit {
   pullsPerSec?: number; // charFixes: datamined per-unit rate_of_fire deviating from the weapon-class rate
   magDumpRof?: boolean; // charFixes: whole-mag dump (one charge primes, then autofire the mag at rate_of_fire)
   focusChargeMult?: number; // charFixes: owner-override camera-focus charge-gauge multiplier
+  statImmunities?: string[]; // charFixes: stat keys this unit is immune to receiving (kit "Immunity to Increase/Decrease X effects")
   loadout: string[]; // human-readable, for the report
 }
 
@@ -311,6 +312,7 @@ export function prepareUnit(
     pullsPerSec: deps.overrides[char.slug]?.charFixes?.pullsPerSec,
     magDumpRof: deps.overrides[char.slug]?.charFixes?.magDumpRof,
     focusChargeMult: deps.overrides[char.slug]?.charFixes?.focusChargeMult,
+    statImmunities: deps.overrides[char.slug]?.charFixes?.statImmunities,
     loadout,
   };
 }

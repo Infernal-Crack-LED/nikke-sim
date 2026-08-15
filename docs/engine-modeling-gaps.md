@@ -114,6 +114,7 @@
 | `stackedNuke` | 1 | maiden-ice-rose |
 | `stageCast` | 1 | rupee-winter-shopper |
 | `stageEnter` | 12 | cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, … |
+| `statImmunities` | 1 | liberalio |
 | `storedHit` | 1 | rapi-red-hood |
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 9 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, velvet, … |

@@ -9,12 +9,106 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-14, latest) A MISSED shotgun pellet generates NO burst gauge — SG gauge credits per
+- **(2026-08-14, latest) `liberalio`'s kit-literal Charge Speed IMMUNITY is now enforced on the
+  RECEIVING side, via a new per-unit `charFixes.statImmunities` primitive.**
+  - **The kit line, verbatim** (`data/characters.json` → `characters.liberalio.skills.skill2`):
+    "Activates at the start of battle. Affects self. Gains immunity to Increase Charge Speed
+    effects… Gains immunity to Decrease Charge Speed effects. This effect is continuous and cannot
+    be removed." The modeling question was never open — this is an encoding of a literal kit line
+    (owner-approved 2026-08-14), so it took the "we know the answer ⇒ encode + code-review" path,
+    not `/scientific-method`.
+  - **The defect it fixes.** The engine summed every active `chargeSpeedPct` buff unconditionally
+    when computing charge frames (`src/engine/sim.ts`, the charge branch of the weapon tick). Only
+    her OWN skill-1 grant was kept off her, by `excludeSelf` on the target selector — an external
+    source still reached her. Live case, comp "PG iron sweep" (`d-killer-wife` · `takina` ·
+    `milk-blooming-bunny` · `maxwell` · `liberalio`): `maxwell`'s skill 1 grants
+    `chargeSpeedPct 4.48` BUNDLED with `atkPct 43.1` in one 10s Full-Burst-entry cast to the top-2
+    static-ATK allies, and it was speeding `liberalio` up.
+  - **The enforcement design: strip at BUFF APPLICATION, per stat and per target.** An override may
+    now declare `charFixes.statImmunities: string[]`; `liberalio.json` carries
+    `["chargeSpeedPct"]`. In `applyEffect`'s per-target loop the immune stat is dropped for that
+    target before `applyBuff` runs, so the buff never enters her list at all (visible under
+    `DBG_BUFFS`, which also logs an `[immune …] stripped …` line). Chosen over a read-time filter
+    in `stat()` because the kit line is a property of the RECEIVER, not of the charge formula, and
+    because it keeps the rest of the cast intact: the bundled `atkPct 43.1` still lands on her, and
+    the same cast still reaches every other target. Direction-blind, as the line reads: an increase
+    and a decrease are both stripped. Target SELECTION is unchanged — she still occupies a selector
+    slot, which is exactly what lets `maxwell`'s bundled ATK reach her. The match is against the
+    APPLIED stat key (post `applyEffect`'s authored→applied rewrite), and
+    `src/skills/validate-structural.ts` now rejects a typo or an authored-side alias as an ERROR,
+    because the whole enforcement is a bare string match and an unmatched entry would be a silent
+    permanent no-op with the note claiming protection (pinned by four cases in
+    `scripts/tests/validate-structural.test.ts`). Plumbing: `src/skills/index.ts` (schema) →
+    `src/prepare.ts` (`PreparedUnit.statImmunities`) → `src/engine/sim.ts`
+    (`UnitState.statImmunities`, a Set built once per run).
+  - **SCOPE, deliberately narrow — the primitive covers KIT `buff` effects only.** Cube and
+    Overload stats never pass through `applyEffect`: `prepareUnit` turns them into `extraStats`
+    that are pushed straight onto the unit's buff list at construction. The `adjutant` and
+    `quantum` cubes and the `chargespd` Overload line all carry `chargeSpeedPct`, so a web-app user
+    who equips one still speeds her up. That is left ALONE on purpose — whether a kit immunity is
+    meant to suppress the holder's own GEAR is a game-behaviour question nobody has ruled on, and
+    assuming it would be a modeling decision beyond the kit line. Inert on the graded basis in
+    both readings (scope lock is no-cube / OL0, so no lab run, regression pin or fixture exercises
+    it); live only in the web app. Filed as an owner question, QUEUE item 8. The non-`buff` effect
+    kinds that also resolve per target (`unlimitedAmmo`, `gainPierce`, `convertExcess`, `addStack`)
+    are likewise uncovered — inert by mechanism today, since `chargeSpeedPct` reaches none of them.
+    Surfaced by the cross-family `/code-review` of this diff, which is the gate this path uses in
+    place of `/scientific-method`.
+  - **Same-pass prose correction (no code effect).** Her override's Q8 sentence read "her
+    chargeFrames already reflect the full validated cycle (kit-fixed 1.2s / DB 90f)" — 90f is
+    **1.5s**, and the 1.2s belonged to `snow-white-heavy-arms` (`charge_time` 120cs → 72f). The
+    number the engine uses was always right; only the parenthetical was wrong, and it is now
+    stated from the datamine (`characters.liberalio.role.weapon.shot_detail.charge_time` = 150cs
+    → 90f = 1.5s, no `charFixes` override). Recorded here because it silently corrects a
+    previously-published figure. Related owner question answered in the same pass: her charge time
+    does NOT vary by stage-boss vs non-boss in the direction one might assume — the stage-target
+    branch (Raging Current) modifies Attack Damage only, and the sole kit line touching charge TIME
+    is Gentle Current's 1s fix on the NON-stage-target branch, which can never fire in a solo raid.
+    So the live 90f IS the stage-boss value; nothing to change.
+  - **Spec test.** `scripts/tests/units/liberalio.test.ts` group L7 (6 new cases, 26 total GREEN):
+    an injected external `chargeSpeedPct 50` aimed at her alone leaves her shot frames
+    BYTE-IDENTICAL while the `atkPct` bundled in the same effects array still lands; the same buff
+    DOES speed up `helm` (SR/Water, non-immune); one team-wide cast reaches all three other allies
+    and not her; her own skill-1 grant to `helm` is unchanged. DISCRIMINATING case: the identical
+    run with `statImmunities` deleted from her override shows the buff reaching her and her shot
+    count RISING — the encoding is load-bearing, not decorative.
+  - **Measured A/B (deterministic EV, `SEEDS=1 ONLY="iron sweep" npx tsx scripts/experiment.ts`,
+    branch vs its merge base).** `liberalio` on PG iron sweep: 94 → 92 pulls, 519M → 487M total,
+    sim/real ratio **1.07 → 1.01**; comp Full Bursts **11, UNCHANGED** (first FB 5.7s in both).
+    Every OTHER comp in the lab is byte-identical, including her three other seated comps (T1
+    wind-weak, T5 wind-weak probe, N3 scarlet/liberalio iron). **The enabling teammate is
+    `maxwell`, and PG iron sweep is the only comp of the four that seats her** — an override-wide
+    check of the other three rosters (`mast-romantic-maid`, `scarlet-black-shadow`, `anis-star`,
+    `crown`, `nayuta`, `cinderella-crystal-wave`, `velvet`, `rouge`, `trina`,
+    `soda-twinkling-bunny`) finds no `chargeSpeedPct` grant reaching her; `anis-star`'s
+    charge line is a self-scoped `chargeTimeClamp`, a different primitive this immunity does NOT
+    cover. So the one-comp footprint is inertness BY MECHANISM elsewhere, not an untested claim. `npx tsx scripts/regression.ts` is green with NO snapshot
+    regeneration: all four `liberalio` comps are currently disabled in the harness, so the pinned
+    snapshot never saw this.
+  - **It moves iron sweep AGAINST the known gauge shortfall — faithful over fit.** Two fewer
+    `liberalio` charges per fight is less burst gauge, and the burst chain re-phases (mid-fight
+    Full Bursts move by up to ~0.9s; count preserved). The comp's measured generation shortfall
+    widens from 14.94 to 16.38 gauge/s (`npx tsx scripts/battery/fb-count-matrix.ts
+--refill-starvation`). That is accepted: the generation thread is a separate, open
+    investigation and a kit-literal line is not traded away to flatter a ratio.
+  - **⚠ Three battery drift-guard fixtures trip on this and are DELIBERATELY LEFT RED, not
+    re-pinned** — `scripts/tests/battery/refill-starvation.test.ts` (4),
+    `scripts/tests/battery/gauge-source-census.test.ts` (2),
+    `scripts/tests/battery/focus-columns.test.ts` (1). All seven failures are `iron sweep (run G)`
+    quantities; every `T5 wind-weak` pin still holds. The audit's headline verdict survives
+    (first-1s delivery 114.7% → 86.0%, still NOT-STARVED above the pre-committed 0.8 threshold),
+    but its descriptive shape claim on that comp does not: the window is no longer front-loaded
+    (`teamRate[0]` 3.27 < `teamRate[3]` 3.64) and `milk-blooming-bunny` reads 38% first-1s
+    delivery, under the fixture's 0.5 floor. Those files' own header says "Re-derive, don't
+    re-pin… only re-pin once the NEW finding is understood"; re-writing a published audit
+    conclusion is a separate gated pass, not a side effect of a kit fix. Owner action item.
+
+- **(2026-08-14) A MISSED shotgun pellet generates NO burst gauge — SG gauge credits per
   LANDED pellet, confirmed. `SGGAUGE=trigger` survives as the refuted reading's A/B revert.**
   - **The ruling (owner, 2026-08-14).** Asked whether a missed SG pellet generates burst gauge
     (per-landed-pellet vs per-trigger crediting — investigation-plan item 4, open-questions U40),
     the owner answered: **no, it doesn't.** The engine's live model — `shotGauge(u, frame,
-    sgGaugeFrac)` in `firePull`, gauge scaled by the base-capped landed-pellet fraction — is
+sgGaugeFrac)` in `firePull`, gauge scaled by the base-capped landed-pellet fraction — is
     therefore the FAITHFUL one. Nothing changes in default behavior; this is a confirmation, not
     a fix.
   - **Why it was open.** The primary sources never distinguished the two: the datamine column is
