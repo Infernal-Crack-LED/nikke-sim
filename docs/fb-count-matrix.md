@@ -200,7 +200,7 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
   unchanged, the front-loaded shape now holds on T5 only). Instrument:
   `npx tsx scripts/battery/fb-count-matrix.ts --refill-starvation`, pinned by
   `scripts/tests/battery/refill-starvation.test.ts`; the record lives in
-  [handoffs/2026-08-13-burst-generation-investigation-plan.md](handoffs/2026-08-13-burst-generation-investigation-plan.md)
+  [handoffs/closed/2026-08-13-burst-generation-investigation-plan.md](handoffs/closed/2026-08-13-burst-generation-investigation-plan.md)
   item 1. **A second candidate has since been EXCLUDED as a primary cause (2026-08-14):**
   missing/mis-scoped non-bullet gauge sources — the field-form census of every impact kind vs the
   emission map is clean (every site measured or owner-ruled), the non-emitting kinds

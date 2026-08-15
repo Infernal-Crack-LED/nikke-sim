@@ -718,7 +718,7 @@ validated model)` banner (19 overrides) and `[materialized … NOT hand-verified
      10=10, `nayuta` 5=5, `neon-blue-ocean` 11=11, `neon-vision-eye` 13=13), and it remains unmeasured
      in the refill-bound charge-B3 comps where gauge deltas actually bind. The batched gauge cluster
      partially cancels (double-emit is gauge-DOWN, this is gauge-UP, tempo comp-dependent), so the
-     compensating-errors rule requires one timeline → `2026-08-10-gauge-economy-findings.md`,
+     compensating-errors rule requires one timeline → `handoffs/closed/2026-08-10-gauge-economy-findings.md`,
      `QUEUE.md` ENGINE-WORK ORDER item 4. Recorded in all four carriers' notes. Note `modernia`'s S1 is
      a `flatDamage` _because_ of this asymmetry — closing it retires that workaround.
   5. **AN INERTNESS / A-B CLAIM MUST NAME ITS ROSTER — convention, not lint.** Such a result is a
