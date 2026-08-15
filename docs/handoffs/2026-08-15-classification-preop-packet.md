@@ -73,10 +73,15 @@ All real-side reads: `--reflag`-upgraded traces, CLEAN reads only (zero flags). 
 the native trace cadence, window-relative.
 
 - **Event-bin (real):** Δfill between consecutive clean reads ≤ 2 trace-frames apart, Δ >
-  **E_min = 1.0 fill-%** (⚠ restate from the calibration doc + `TEAM_NOISE_PCT` BEFORE any
-  real-side number is computed; if the documented noise bound exceeds 1.0, E_min = that bound —
-  fixed before unblinding). Δ spanning an excluded read is a **bridged increment**: counted in
-  rate closure, EXCLUDED from occupancy/size statistics, mass reported per window.
+  **E_min = 1.5 fill-%** (pinned per pre-op R1; provenance: `TEAM_NOISE_PCT` = 1.5,
+  `scripts/probe/gauge-fill.py:273` — the instrument's own per-read noise band. C4's empirical
+  escalation may RAISE it, never lower it). Δ spanning an excluded read is a **bridged
+  increment**: counted in rate closure, EXCLUDED from occupancy/size statistics, mass reported
+  per window.
+- **Banked-at-paint mass (pre-op R3):** the first clean read at `barPaint` is counted as a
+  Δ-from-0 at window open in Σ real Δ (arm symmetry with the sim, which counts every credit from
+  its window start), but is EXCLUDED from occupancy/size statistics exactly like a bridged
+  increment; its mass is reported per window.
 - **Per comp arm (pooled over usable windows, plus per-window tables):**
   - **ρ** = (Σ real Δ over windows / Σ real window durations) ÷ (Σ sim credits in sim windows /
     Σ sim window durations). Numerators and denominators each reported separately.
@@ -100,20 +105,39 @@ CANNOT-MEASURE):**
 - B2: sim arm passes all `CreditScheduleChecks` (endpoint residual 0; DBG_GAUGE reconciled; no
   LOUD unreconstructed path relevant to the comp).
 - B3: per-window ρ dispersion: IQR/median ≤ 0.6.
-- B4: saturation: bins with fill > 90% excluded from event statistics (reported).
+- B4: saturation, TWO-SIDED (pre-op R5): real bins with fill > 90% AND sim credit bins with sim
+  gauge state > 90 are both excluded from event statistics (reported) — the engine clamps the bar
+  at 100 while `gaugeGenerated` is uncapped, so near-full behaviour differs by construction.
 
 **Then, per comp arm:**
 
 1. If real event-rate > 1.15 × C_ceiling → **H-C mass present**; its share of ρ quantified as
-   (real rate − ceiling-capped rate)/real rate; the REMAINDER still classified below.
-2. If O ∈ [0.75, 1.25) AND S ≥ 1.35 → **H-A**.
-3. If O ≥ 1.4 AND S ∈ [0.7, 1.3) → **H-B**.
-4. Both factors mid-band, or closure residual > 0.25 → **MIXED/INCONCLUSIVE** — report the
+   (real rate − ceiling-capped rate)/real rate. Per pre-op R4: a branch-1 hit DEMOTES any
+   same-arm H-A/H-B reading below to "H-C-present + candidate remainder (descriptive only)" — no
+   remainder re-attribution formula is invented post hoc.
+2. If O ∈ [0.85, 1.15) AND S ∈ [0.85, 1.15) AND closure residual ≤ 0.25 →
+   **NO-IN-WINDOW-EXCESS** (pre-op R2): a positive finding that H-A, H-B and H-C are ALL absent
+   inside [barPaint, fullInstant) and the deficit lives outside the measured window — reported
+   distinctly from MIXED/INCONCLUSIVE.
+3. If O ∈ [0.75, 1.25) AND S ≥ 1.35 → **H-A** (worded observationally: "per-event-bin credit
+   excess at modeled cadence" — a synchronous unmodeled source is observationally identical).
+4. If O ≥ 1.4 AND S ∈ [0.7, 1.3) → **H-B**.
+5. Both factors mid-band, or closure residual > 0.25 → **MIXED/INCONCLUSIVE** — report the
    (O, S, ρ) triple and distributions; no class verdict.
 
 **Cross-comp rule:** a CLASS-level claim requires the same branch on BOTH arms (iron sweep AND
 T5 wind-weak). Disagreement → per-comp findings only, logged. **No retroactive promotion:** the
 prior ~1.7–2.0× logged ratio is not evidence in this run; fresh ρ only.
+
+**Pre-op verdict: APPROVED-WITH-REVISIONS (2026-08-15), R1–R5 all executed above** (R1 E_min
+pinned at 1.5; R2 the NO-IN-WINDOW-EXCESS branch; R3 banked-at-paint mass treatment; R4 branch-1
+demotion rule; R5 two-sided saturation cut). Carried risk flags: bar-paint trails true FB end by
+0.13–0.22s (~6–8% of a window) — state the residual duration asymmetry in the deliverable; B3's
+dispersion gate is coarse but one-directional (can void, not rescue); any post-hoc band
+adjustment beyond C3's pre-stated jitter-widening voids the branch it touches; a class verdict
+from this run is n=2 comps and carries that weight into any later enactment pass; if further
+engine PRs land mid-run, regenerate the sim schedule again (the endpoint reconciliation is the
+tripwire).
 
 ## E. Controls (each with its own check — harness lesson 3)
 
