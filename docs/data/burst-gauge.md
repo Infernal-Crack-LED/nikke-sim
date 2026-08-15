@@ -93,15 +93,13 @@ proc generation + her +6% team fill aura (the synergy aggregate folds these into
 per-shot number, which is why that column was retired). Independent cross-check: nikke-synergy's
 arena calculator lists per-shot values matching our BASE column for snipers/rifles/MGs
 (jill 1.1 = 110, takina 2.8 = 280, moran 0.25 = 25, crown 0.05 = 5), and its
-`special_burst_gauge` annotations catalogue per-unit skill-generation quirks — three of the
-four are now MODELED (gauge-source census 2026-08-14, investigation-plan item 2): Ein's orb adds
-560 every ~2.8s — ein.json encodes it as a zero-damage permanent DoT whose ticks drive
-`skillGauge`; Helm's kit adds a fixed 1,431 — her `flatPerTrigger` row; Liberalio's per-shot-
-sequence bonus — §7's ×6. Snow White: Heavy Arms' volley generation was MEASURED 2026-08-15
-(solo bar read, `docs/probe-runs.md`): the Seven Dwarves volley credits gauge **per HIT** (~560
-each), while the engine fires `skillGauge` once per flatDamage EFFECT — a 22.4%-of-bar per-pull
-under-credit, filed as an owner-gated enactment candidate (U11c settled in kind; the "~24
-generating hits per 3s" synergy annotation retired). Ein's open 0.7x team-fight residual (open-questions U8) is
+`special_burst_gauge` annotations catalogue per-unit skill-generation quirks — all four
+are now MODELED (gauge-source census 2026-08-14, investigation-plan item 2, plus the
+2026-08-15 per-sub-hit enactment): Ein's orb adds 560 every ~2.8s — ein.json encodes it as
+a zero-damage permanent DoT whose ticks drive `skillGauge`; Helm's kit adds a fixed 1,431 —
+her `flatPerTrigger` row; Liberalio's per-shot-sequence bonus — §7's ×6; and Snow White:
+Heavy Arms' Seven Dwarves volley credits gauge **per HIT** (~560 each) via `flatDamage.gaugeHits`
+(damage stays one aggregated instance). Ein's open 0.7x team-fight residual (open-questions U8) is
 therefore no longer attributable to the orb by default. The blablalink/synergy-API `burstGaugePerShot` column was **dropped as a
 gauge source** — its semantics vary per unit (helm's 5.6 is her TARGET value, takina's
 2.8 is her BASE, trina's 14.4 is her target ×2, a2's 15.6 matches nothing datamined).
@@ -198,7 +196,9 @@ both `fullChargeBonus` 250, the modal value across the roster.
 
 - **Skill-damage hits**: every skill/additional-damage impact generates the caster's
   flat target per-shot value (NO focus/charge bonus — maiden's rider measured exactly
-  364 while her weapon shots measured 910). Engine: `skillGauge()` on flatDamage procs.
+  364 while her weapon shots measured 910). Engine: `skillGauge()` on flatDamage procs;
+  a sequential multi-hit `flatDamage` carries `gaugeHits` to credit skillGauge once per
+  sub-hit while keeping the damage instance aggregated.
 - **DoT ticks** generate per tick (wiki3 measured Haran's S1 DoT at 290/tick ≈ her SR
   base). Engine: `skillGauge()` on dot ticks.
 - Non-damage skill applications were measured by note.com/_trick_ to generate the same
@@ -248,6 +248,6 @@ The mismatches decode into exact kit mechanics rather than noise:
 - **Battery openers quantified** (rl3 minus weapon shots): Trina ≈ +28.8, Anis: Star
   ≈ +47, Laplace/A2 ≈ +26-29 of one-time battle-start-style fill — arena-decisive,
   once-per-fight in raids (unmodeled, small). Snow White: Heavy Arms' volley: **per-hit gauge
-  credit MEASURED 2026-08-15** (solo bar read — see §2's special_burst_gauge paragraph and
-  `docs/probe-runs.md`; the old "~24 generating hits per 3s, ambiguous trigger count" annotation
-  is retired). Modernia's ×2 and Mihara: Bonding Chain's +1.4/3s are kit hit-count quirks.
+  credit ENACTED 2026-08-15** via `flatDamage.gaugeHits` (solo bar read — see §2's
+  special_burst_gauge paragraph and `docs/probe-runs.md`; the old "~24 generating hits per 3s,
+  ambiguous trigger count" annotation is retired). Modernia's ×2 and Mihara: Bonding Chain's +1.4/3s are kit hit-count quirks.

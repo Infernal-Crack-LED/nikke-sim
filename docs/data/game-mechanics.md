@@ -173,7 +173,9 @@ at full charge; unfocused charge units generate flat ×1.0 — both sides MEASUR
 recordings plus a paired two-unit experiment with only the focus changed). Focus defaults
 to the middle slot (owner convention; recordings with a different focus perturb the fight
 they record). Skill
-hits and DoT ticks generate the caster's flat target value (no charge bonus).
+hits and DoT ticks generate the caster's flat target value (no charge bonus); a sequential
+multi-hit skill rider credits once per sub-hit via `flatDamage.gaugeHits` while keeping its
+damage aggregated.
 **Gauge is generated in exactly ONE window per cycle: after a Full Burst ENDS and before the
 next burst chain STARTS** (owner ruling, re-confirmed 2026-08-13 — settled, do not re-measure).
 Opening the chain CONSUMES the gauge, and during the chain (stages 1-3) or Full Burst NOTHING

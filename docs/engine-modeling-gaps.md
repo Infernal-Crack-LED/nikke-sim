@@ -68,6 +68,7 @@
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
 | `gainPierce` | 15 | ade-agent-bunny, asuka, d-killer-wife, dorothy, grave, harran, makima, mari, … |
+| `gaugeHits` | 3 | eve, little-mermaid, snow-white-heavy-arms |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 7 | alice, laplace, laplace-ultimate-hero, maxwell, maxwell-ordinary-mechanic, red-hood, zwei |
 | `hasTrueNormals` | 0 | _none_ |
