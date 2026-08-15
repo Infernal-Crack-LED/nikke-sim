@@ -153,10 +153,10 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
     for (const r of reports) {
       for (const c of r.carriers) {
         expect(c.trigTotal).toBeGreaterThan(c.baseTotal);
-        // +21% is the floor of the measured TOTAL lift (rotation collateral shifts some spray
-        // into/out of the locked windows; the refill-rate lift floors at +27%, pinned per
-        // carrier below). An arm feeding less than this is not full per-trigger crediting.
-        expect(c.trigTotal / c.baseTotal).toBeGreaterThan(1.15);
+        // +10% is the floor of the measured TOTAL lift after the 2026-08-15 per-sub-hit gauge
+        // enactment re-based several comps (dorothy-serendipity's PH anchor now reads 1.12×).
+        // An arm feeding less than this is not full per-trigger crediting.
+        expect(c.trigTotal / c.baseTotal).toBeGreaterThan(1.10);
       }
     }
     // pinned carrier rates (gauge per 60f of refilling), both arms
@@ -166,23 +166,31 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
     expect(noir.trigPer60).toBeCloseTo(16.92, 1);
     const sodaTb = byName('soda-tb control (neutral)').carriers[0];
     expect(sodaTb.slug).toBe('soda-twinkling-bunny');
-    expect(sodaTb.basePer60).toBeCloseTo(7.65, 1);
+    // RE-PINNED 2026-08-15: per-sub-hit gauge credit on little-mermaid's Bubble Barrage
+    // re-based this comp's refill windows.
+    expect(sodaTb.basePer60).toBeCloseTo(7.97, 1);
     expect(sodaTb.trigPer60).toBeCloseTo(10.63, 1);
     const naga = byName('N2 modernia wind').carriers[0];
     expect(naga.basePer60).toBeCloseTo(3.07, 1);
     expect(naga.trigPer60).toBeCloseTo(4.54, 1);
     const arcana = byName('N5 snowwhite-HA fire').carriers[0];
-    expect(arcana.basePer60).toBeCloseTo(2.31, 1);
-    expect(arcana.trigPer60).toBeCloseTo(3.41, 1);
+    expect(arcana.slug).toBe('arcana-fortune-mate');
+    // RE-PINNED 2026-08-15: swha's per-sub-hit gauge credit re-based N5's rotation shape.
+    expect(arcana.basePer60).toBeCloseTo(2.89, 1);
+    expect(arcana.trigPer60).toBeCloseTo(3.85, 1);
     // team-rate lift (pinned at 1 decimal)
-    expect(byName('soda-tb control (neutral)').baseTeamRate).toBeCloseTo(29.32, 1);
-    expect(byName('soda-tb control (neutral)').trigTeamRate).toBeCloseTo(34.28, 1);
+    expect(byName('soda-tb control (neutral)').baseTeamRate).toBeCloseTo(31.57, 1);
+    expect(byName('soda-tb control (neutral)').trigTeamRate).toBeCloseTo(34.40, 1);
     expect(byName('misc B3s (run I order)').baseTeamRate).toBeCloseTo(34.53, 1);
     expect(byName('misc B3s (run I order)').trigTeamRate).toBeCloseTo(37.28, 1);
   });
 
   it('THE EXCLUSION: zero Full-Burst movement anywhere — every SG comp stays one short', () => {
     for (const r of reports) {
+      // N5 is the one comp whose baseline moved with the 2026-08-15 per-sub-hit gauge enactment
+      // (swha volley); the per-trigger arm pulls it back from 13 to 12. Skip it in the strict
+      // byte-identity check and assert its new values explicitly below.
+      if (r.comp === 'N5 snowwhite-HA fire') continue;
       expect(r.trigFb).toBe(r.baseFb);
     }
     // each SG-seated off-count comp remains exactly one below its measured count
@@ -194,7 +202,10 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
     expect(byName('soda-tb control (neutral)').measured).toBe(10);
     expect(byName('N2 modernia wind').trigFb).toBe(9);
     expect(byName('N2 modernia wind').measured).toBe(10);
-    expect(byName('N5 snowwhite-HA fire').trigFb).toBe(11);
+    // N5 RE-PINNED 2026-08-15: per-sub-hit gauge credit moved base 11→13; the per-trigger arm
+    // reads 12. The SG arm still does not close the measured 12 count from below.
+    expect(byName('N5 snowwhite-HA fire').baseFb).toBe(13);
+    expect(byName('N5 snowwhite-HA fire').trigFb).toBe(12);
     expect(byName('N5 snowwhite-HA fire').measured).toBe(12);
   });
 
@@ -206,8 +217,8 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
     expect(n9.baseFb).toBe(12);
     expect(n9.trigFb).toBe(12);
     expect(ph.carriers[0].slug).toBe('dorothy-serendipity');
-    expect(ph.carriers[0].basePer60).toBeCloseTo(4.93, 1);
-    expect(ph.carriers[0].trigPer60).toBeCloseTo(6.24, 1);
+    expect(ph.carriers[0].basePer60).toBeCloseTo(4.88, 1);
+    expect(ph.carriers[0].trigPer60).toBeCloseTo(5.68, 1);
     expect(n9.carriers[0].basePer60).toBeCloseTo(3.95, 1);
     expect(n9.carriers[0].trigPer60).toBeCloseTo(5.26, 1);
     // consolidation absorbs the swing at team level on PH (the comp barely moves)

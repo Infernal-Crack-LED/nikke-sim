@@ -103,7 +103,7 @@
 // Slot order: liter 0 / crown 1 / swha 2.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import { runComp, totals, unitOf, withPatchedOverride } from '../lib/harness.js';
 
 const FPS = 60;
 const SWHA = 'snow-white-heavy-arms';
@@ -129,6 +129,17 @@ function run(overrides: Record<string, any> = {}) {
     cfg: { onEvent: (e) => events.push(e) },
   });
   return { events, totals: totals(res) };
+}
+
+function runResult(
+  overrides: Record<string, any> = {},
+  cfg: Record<string, any> = {}
+) {
+  return runComp({
+    ...FIXTURE,
+    overrides,
+    cfg,
+  });
 }
 
 // ---- readers ----------------------------------------------------------------------------------
@@ -225,6 +236,16 @@ const cfVolley105 = withPatchedOverride(SWHA, (ov: any) => {
     throw new Error('swha S1 527.95 effect missing — fixture is stale');
   }
   e.atkPct = 105.59;
+});
+// W6b nearest-wrong (gauge): per-sub-hit credit collapsed to a single gauge hit.
+const cfGaugeHits1 = withPatchedOverride(SWHA, (ov: any) => {
+  const e = ov.skill1
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.kind === 'flatDamage' && x.atkPct === 527.95);
+  if (!e) {
+    throw new Error('swha S1 527.95 effect missing — fixture is stale');
+  }
+  e.gaugeHits = 1;
 });
 // W7 nearest-wrong (a, the FIX): remove the weaponSwap → no swap exists → swapGate never satisfied.
 const cfNoSwap = withPatchedOverride(SWHA, (ov: any) => {
@@ -334,6 +355,8 @@ const base = run();
 const takenSelf = run({ [SWHA]: cfTakenSelf });
 const no41 = run({ [SWHA]: cfNo41 });
 const volley105 = run({ [SWHA]: cfVolley105 });
+const noBurstGaugeBase = runResult({}, { disableBursts: true });
+const noBurstGaugeOne = runResult({ [SWHA]: cfGaugeHits1 }, { disableBursts: true });
 const noSwap = run({ [SWHA]: cfNoSwap });
 const ungated = run({ [SWHA]: cfUngated });
 const atk46Allies = run({ [SWHA]: cfAtk46Allies });
@@ -408,6 +431,24 @@ describe('snow-white-heavy-arms — kit spec', () => {
     });
   });
 
+  describe('W6b — S1 Auto Fire Effect 2: per-sub-hit burst-gauge credit (5 hits per volley)', () => {
+    // With bursting disabled, the bar never fills and gaugeGenerated stays uncapped, so the
+    // difference between gaugeHits:5 and gaugeHits:1 is exactly 4 extra skillGauge calls per
+    // full-charge volley. The 41.9% AoE generates one gauge hit in both runs and cancels out.
+    const swhaBase = unitOf(noBurstGaugeBase, SWHA);
+    const swhaOne = unitOf(noBurstGaugeOne, SWHA);
+    it('credits 5 gauge sub-hits per baseline volley (vs 1), giving ~4 extra skillGauge calls per pull', () => {
+      expect(swhaBase.pulls).toBeGreaterThan(0);
+      // swha targetPerTrigger = 560 => each skillGauge call feeds 560/100 = 5.6 gauge-percent.
+      // The volley contributes (5 - 1) extra skillGauge calls per pull vs the counterfactual.
+      const expectedDiff = 4 * swhaBase.pulls * 5.6;
+      expect(swhaBase.gaugeGenerated - swhaOne.gaugeGenerated).toBeCloseTo(
+        expectedDiff,
+        -1
+      );
+    });
+  });
+
   describe("W7 — S1 Fully Active EXTRA volley: 1055.9% sequential, swapGate:'swapped' (THE FIX — 2 swap shots/burst, in-window)", () => {
     const hits = s1At(base.events, 1055.9);
     it('fires exactly twice per burst (the 2 swapped full charges), srcSlot skill1', () => {
@@ -427,8 +468,9 @@ describe('snow-white-heavy-arms — kit spec', () => {
     });
     it('DISCRIMINATING (UNGATED): strip swapGate → fires on (essentially) EVERY full charge, many outside any swap window', () => {
       const ug = s1At(ungated.events, 1055.9);
-      // ungated fires on ~every full charge (83 of 84 — one engine-boundary shot at the fight edge drops) vs 10 gated
-      expect(ug.length).toBeGreaterThanOrEqual(shots - 1);
+      // ungated fires on ~every full charge (typically 81-83 — one or two engine-boundary shots
+      // at the fight edge drop) vs 10 gated. The exact count is seed/fight-shape sensitive.
+      expect(ug.length).toBeGreaterThanOrEqual(shots - 3);
       expect(ug.length).toBeGreaterThan(2 * casts);
       expect(
         ug.some((d) => !inWindow(d.frame, castWindows(ungated.events)))

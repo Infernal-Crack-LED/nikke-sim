@@ -283,6 +283,12 @@ export type EffectDef =
       // Beautiful-mirror: 28.9%×12 stacks ramping over ~36s, so an early burst mirrors fewer
       // stacks). Snapshotted at cast/landing. Omit = full (back-compatible). ⚑ per-unit estimate.
       rampSec?: number;
+      // Number of physical hits this effect represents for burst-gauge purposes only.
+      // Sequential volleys and similar multi-hit flatDamage effects generate gauge per sub-hit
+      // in-game, but the engine keeps one aggregated damage instance (so damage totals stay
+      // tuned). gaugeHits = N fires skillGauge N times. Omit or 1 = unchanged behavior.
+      // Author from the kit prose; see snow-white-heavy-arms / eve / little-mermaid.
+      gaugeHits?: number;
       // Kit-description scope tag for the Burst-Skill-Damage amplifier family (jackal/trina):
       // 'allEnemies' when the kit's damage line sits under an "Affects all enemies" clause,
       // 'singleEnemy' under "Affects 1 enemy unit(s)". A tagged burst-slot hit reads the matching

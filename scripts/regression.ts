@@ -215,10 +215,10 @@ const COMPS: Comp[] = [
 
   // 714 noon probe (2026-07-14) — six of nine teams measured full-burst-exact via the
   // yellow-splash scan (see docs/probe-runs.md). Focus = middle slot (default), unconfirmed
-  // against the recorded camera but the count holds. The three unpinned teams from that
-  // batch are DELIBERATELY omitted: N2 (real >=10 vs sim 8, big under-count), N4 (real 10 vs
-  // sim 11), N5 (real 12 vs sim 11) — all belong to the open burst-cycle timing increment,
-  // like T4/T7.
+  // against the recorded camera but the count holds. Two teams from that batch remain
+  // DELIBERATELY omitted: N2 (real >=10 vs sim 8, big under-count), N4 (real 10 vs sim 11).
+  // N5 was pinned 2026-08-15 by the per-sub-hit gauge enactment (snow-white-heavy-arms volley
+  // generates 5× gauge), which moved sim 11 → 12 measured.
   {
     name: 'N1 rapi/quency wind',
     slugs: [
@@ -253,6 +253,19 @@ const COMPS: Comp[] = [
     focus: 'scarlet-black-shadow',
     realFullBursts: 10, // video: 10/10
     disabled: true, // sim reads 9 FBs; open burst-generation shortfall, see QUEUE.md
+  },
+  {
+    name: 'N5 snowwhite-HA fire',
+    slugs: [
+      'anis-star',
+      'arcana-fortune-mate',
+      'privaty',
+      'snow-white-heavy-arms',
+      'diesel-winter-sweets',
+    ],
+    boss: 'Fire',
+    focus: 'privaty',
+    realFullBursts: 12, // video: 12/12 splash-counted (2026-07-14); per-sub-hit gauge enactment 2026-08-15 moved sim 11 → 12
   },
   {
     name: 'N6 mihara/maiden wind',

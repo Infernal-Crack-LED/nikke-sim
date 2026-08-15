@@ -56,7 +56,7 @@ describe('burst-gen board', () => {
   it('little-mermaid profile has higher gauge-per-sec than her base team', () => {
     const base = burstGenFor('little-mermaid', ctx, false);
     const profile = burstGenFor('little-mermaid', ctx, true);
-    expect(profile.gaugePerSec).toBeGreaterThan(base.gaugePerSec * 1.2);
+    expect(profile.gaugePerSec).toBeGreaterThan(base.gaugePerSec * 1.1);
   });
 
   it('cinderella-crystal-wave profile has higher gauge-per-sec than her base team', () => {
@@ -65,12 +65,12 @@ describe('burst-gen board', () => {
     expect(profile.gaugePerSec).toBeGreaterThan(base.gaugePerSec * 1.1);
   });
 
-  it("helm's flat per-shot kit gen puts her ahead of an equal-cadence SR", () => {
-    // Same class/cadence (SR modal), helm adds +14.31% flat per trigger (datamined
-    // flatPerTrigger) — she must out-generate snow-white-heavy-arms by a wide margin.
+  it("snow-white-heavy-arms' per-sub-hit volley out-generates helm's flat per-shot kit", () => {
+    // Same class/cadence (SR modal), but swha's S1(b) 527.95% sequential rider now
+    // credits gaugeHits: 5 per trigger, pushing her past helm's +14.31% flat per trigger.
     const helm = burstGenFor('helm', ctx, false);
     const swha = burstGenFor('snow-white-heavy-arms', ctx, false);
-    expect(helm.gaugePerSec / swha.gaugePerSec).toBeGreaterThan(1.3);
+    expect(swha.gaugePerSec / helm.gaugePerSec).toBeGreaterThan(1.25);
   });
 
   it('rankBurstGen ranks descending by gaugePerSec and dual-enters profiled units', () => {

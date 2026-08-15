@@ -344,7 +344,7 @@ function blockOrderWarnings(override: any, warnings: string[]) {
     }
   >();
   const site = (family: 'status' | 'resource', name: string) => {
-    const key = `${family} ${name}`;
+    const key = `${family}${name}`;
     let s = sites.get(key);
     if (!s) {
       s = { family, name, prod: [], cons: [] };
@@ -545,6 +545,14 @@ function checkEffect(e: any, path: string, errors: string[], trigger?: string) {
     }
     if (e.flavor && !FLAVORS.has(e.flavor)) {
       errors.push(`${path}: unknown flavor "${e.flavor}"`);
+    }
+    if (
+      e.gaugeHits !== undefined &&
+      (!Number.isInteger(e.gaugeHits) || e.gaugeHits < 1)
+    ) {
+      errors.push(
+        `${path}: gaugeHits must be a positive integer (sub-hit count for burst gauge)`
+      );
     }
   }
   if (e.kind === 'hitRepeat') {

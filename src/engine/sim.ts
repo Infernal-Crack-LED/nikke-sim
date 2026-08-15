@@ -1003,6 +1003,9 @@ export function runSim(
     trueFlavor: boolean;
     burstDesc?: 'singleEnemy' | 'allEnemies';
     projFlavor?: 'attachment' | 'explosion';
+    // Number of physical sub-hits this aggregated damage instance represents for burst-gauge
+    // credit only. The damage instance stays single; skillGauge fires this many times at landing.
+    gaugeHits?: number;
     // delayed full-charge cannon shot (snow-white): route through the charge bucket, keep its
     // pierce tag, and (unlike ordinary riders) receive the +30% range bonus. Omitted → the
     // existing rider defaults (charge:false / noRange:true / no pierce) — every current delaySec
@@ -2732,6 +2735,11 @@ export function runSim(
                   ? ('explosion' as const)
                   : undefined,
           };
+          // Number of physical sub-hits this effect represents for burst-gauge credit.
+          // Sequential volleys (snow-white-heavy-arms, eve, little-mermaid) generate gauge
+          // per sub-hit in-game, but the engine keeps one aggregated damage instance to preserve
+          // tuned totals. gaugeHits = N fires skillGauge N times; omit = 1.
+          const gaugeHits = e.gaugeHits ?? 1;
           // flighted damage (delaySec): lands later, snapshots buffs/FB at LANDING — the
           // cast-instant no-FB rule below does NOT apply (FB by actual landing time)
           if (e.delaySec != null) {
@@ -2741,6 +2749,7 @@ export function runSim(
               atkPct: fdAtkPct,
               resolveFrame: frame + Math.round(e.delaySec * FPS),
               ...flavorOpts,
+              gaugeHits,
               charge: e.charge === true,
               chargeMultPct: e.chargeMultPct,
               pierce: e.pierce === true,
@@ -2748,7 +2757,9 @@ export function runSim(
             });
             break;
           }
-          skillGauge(owner, frame); // skill-damage hits generate weapon-base gauge
+          for (let g = 0; g < gaugeHits; g++) {
+            skillGauge(owner, frame); // skill-damage hits generate weapon-base gauge
+          }
           // U10 ANSWERED (Test Battery 2 Test 1, 2026-07-13): burst-skill damage does NOT
           // get the +50% full-burst major. Cinderella's nuke popup (run-B order, cindy
           // focus) read non-crit 4,066,936 / crit 6,100,403 (×1.5) — 98.7% of the no-FB
@@ -4063,7 +4074,10 @@ export function runSim(
     for (let i = pendingHits.length - 1; i >= 0; i--) {
       const p = pendingHits[i];
       if (frame >= p.resolveFrame) {
-        skillGauge(units[p.ownerIdx], frame); // gauge at landing (locked in-FB as usual)
+        const landingGaugeHits = p.gaugeHits ?? 1;
+        for (let g = 0; g < landingGaugeHits; g++) {
+          skillGauge(units[p.ownerIdx], frame); // gauge at landing (locked in-FB as usual)
+        }
         dealDamage(units[p.ownerIdx], p.atkPct, frame, {
           crit: p.crit,
           core: p.core,

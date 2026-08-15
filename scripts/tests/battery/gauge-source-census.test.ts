@@ -171,7 +171,9 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
         'N1 rapi/quency wind': [49, 269],
         'soda-tb control (neutral)': [17, 345],
         'N2 modernia wind': [1370, 7597],
-        'N5 snowwhite-HA fire': [96, 778],
+        // N5 RE-PINNED 2026-08-15: per-sub-hit gauge credit on snow-white-heavy-arms's volley
+        // adds unlocked skill impacts (they land outside the chain/FB lock) and re-phases bursts.
+        'N5 snowwhite-HA fire': [74, 911],
       };
       for (const [comp, [unlocked, locked]] of Object.entries(pinned)) {
         expect(byName(comp).unlockedImpacts).toBe(unlocked);
@@ -204,7 +206,9 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
         ['T5 wind-weak', 'anis-star', 42, 58.8, 117.6],
         ['T1 wind-weak', 'anis-star', 41, 57.4, 114.8],
         ['misc B3s (run I order)', 'anis-star', 30, 42.0, 84.0],
-        ['N5 snowwhite-HA fire', 'anis-star', 38, 53.2, 106.4],
+        // N5 RE-PINNED 2026-08-15: swha's per-sub-hit gauge credit re-phases the comp's Full
+        // Bursts, moving anis-star's unlocked skill impacts across the window boundary.
+        ['N5 snowwhite-HA fire', 'anis-star', 15, 21.0, 42.0],
         ['N2 modernia wind', 'modernia', 1330, 66.5, 133.0],
       ];
       for (const [comp, slug, n, shipped, ifOne] of rows) {
