@@ -59,7 +59,14 @@ export const CLASS_STAMP_SHARE = 0.6;
 /** H-C threshold: off-schedule surplus at/above this share of surplus gauge. */
 export const HC_SHARE = 0.3;
 
-/** Reader flags that make a `filling` read untrustworthy. Union of the reader's own taxonomy. */
+/**
+ * Reader flags that make a `filling` read untrustworthy. Union of the reader's own taxonomy.
+ * `offCurve` (added 2026-08-14) closes the leak this tool's own monotonicity census exposed:
+ * multi-frame spurious-high excursions escaped `spike` and poisoned the `levelDrop` re-anchor,
+ * leaving 11 of 36 refill windows with clean-set monotonicity violations (worst 91%). The
+ * committed replay bundles predate the flag — their traces carry no `offCurve` read, so their
+ * pinned results reproduce unchanged; traces emitted by the current reader do carry it.
+ */
 export const DIRTY_FLAGS = [
   'lowFill',
   'flash',
@@ -67,6 +74,7 @@ export const DIRTY_FLAGS = [
   'spike',
   'nonMonotonic',
   'levelDrop',
+  'offCurve',
   'noDarkTrack',
   'burstRender',
   'drainTail',

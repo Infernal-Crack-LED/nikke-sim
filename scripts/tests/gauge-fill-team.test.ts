@@ -82,6 +82,7 @@ const UNTRUSTED = new Set([
   'nonMonotonic',
   'spike',
   'levelDrop',
+  'offCurve',
 ]);
 function cleanReads(run: Read[]) {
   return run.filter(
@@ -216,5 +217,30 @@ describe('gauge-fill.py --team: artifact flags', () => {
     for (const r of chain) {
       expect(r.flags).toContain('chainRender');
     }
+  });
+
+  it('offCurve condemns the multi-frame phantom high that spike/levelDrop leak', () => {
+    // The regression this guards (found by the 2026-08-14 fill-trace measurement, deliverable §6):
+    // a gain-pulse excursion reading spuriously HIGH for >= 2 consecutive frames is not an
+    // isolated `spike`, and `levelDrop` then re-anchors the baseline BELOW it — so the phantom
+    // read stayed clean and every honest read after it broke the clean set's monotonicity.
+    // On this fixture the concrete instance is the 14.9/14.2 pair at t=51.5/51.533 sitting on a
+    // sustained ~6.7 low-fill plateau (window 49.4-54.4).
+    const phantom = trace.reads.filter(
+      (r) => r.t >= 51.49 && r.t <= 51.54 && r.state === 'filling'
+    );
+    expect(phantom.length).toBe(2);
+    for (const r of phantom) {
+      expect(r.flags).toContain('offCurve');
+      expect(r.flags).not.toContain('spike'); // exactly the reads the old taxonomy left clean
+    }
+    // The flag is a scalpel, not a blanket: 7 reads carry it on the whole fixture, and only the
+    // two phantom-high reads above were previously clean.
+    const flagged = trace.reads.filter((r) => r.flags.includes('offCurve'));
+    expect(flagged.length).toBe(7);
+    const previouslyClean = flagged.filter(
+      (r) => !r.flags.some((f) => f !== 'offCurve' && UNTRUSTED.has(f))
+    );
+    expect(previouslyClean.map((r) => r.t)).toEqual([51.5, 51.533]);
   });
 });
