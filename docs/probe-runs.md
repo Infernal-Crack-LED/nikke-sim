@@ -7537,3 +7537,88 @@ retroactively.
 ⛔ **Nothing enacted.** No engine constant, override, snapshot, DECISIONS/STATE change. Third
 arm's credit amounts were voided by the instrument's own self-checks (noir's shotgun spray gauge
 fraction is not on the event tap) — the liberalio confound is bounded at the closure level only.
+
+## Opening-window observable — no material gauge is banked while the drained Full-Burst bar holds the widget slot; the generating window opens at the charging bar's first paint (2026-08-14, logged observation)
+
+Step 1a of `docs/handoffs/2026-08-14-burst-gen-next-session.md` (instrument-prelude lane —
+tooling + fixtures gate, no scientific-method pipeline; the classification verdict this feeds
+belongs to step 2's pre-op). **This entry is a measurement log at hypothesis tier: n = 3
+recordings / 33 usable windows, single-session, no verdict is stamped and nothing is enacted.**
+
+**Question made measurable.** Does ANY gauge bank during the ~1.45–1.52s (mean) between the
+Full-Burst drain bar emptying (`fullWindows[].end`, the detector instant) and the charging bar's
+first paint — the team fill reader's known blind spot? Equivalently: does the real generating
+window open at the DETECTOR's drain-empty instant, or at bar-paint?
+
+**Instruments (committed, extensions of existing scripts):**
+
+- `scripts/probe/gauge-fill.py --team --diag` — records raw pre-classification pixel
+  measurements per frame (`diag = {fill, mag, red, green}`: the dark-track fill arithmetic
+  applied unconditionally plus the colour-mask fractions), surviving artifact resolution, so the
+  drained-bar hold span can be characterized even though the resolver nulls those frames' fill
+  by design. Default output (without the flag) is unchanged — the three `--diag` runs reproduced
+  the committed replay-bundle traces read-for-read (4590 / 4185 / 4401 reads, zero mismatches).
+- `scripts/probe/fill-trace-compare.ts opening <bundle> [--diag <trace>] [--artifact <out>]` —
+  per-window observables computed from the committed replay bundles (no video needed except for
+  the diag half): first-paint fill, the low-band ramp, the early clean trace back-extrapolated
+  to the paint instant (a banked-gauge estimate that never uses an owner-ruled-unreliable
+  low-fill read), and the two rival predictions — what banking-from-drain-empty would have
+  deposited by the paint instant at engine-exact sim credit sizes and at the visible-span real
+  rate, versus 0 for banking-from-bar-paint.
+- Committed artifacts (self-contained, replayed by
+  `scripts/tests/probe/fill-trace-opening.test.ts`, 10 assertions green):
+  `docs/probe-data/fill-trace-opening-u8-g-iron-sweep.json`,
+  `docs/probe-data/fill-trace-opening-probe-u7-t5-wind-weak.json`,
+  `docs/probe-data/fill-trace-opening-u8-i-misc-b3s.json` — each carries the raw hold-span diag
+  reads plus the result, and names its regeneration commands. Frames reused from the 2026-08-14
+  fill-trace extraction (same ffmpeg command recorded in the bundles).
+
+**Result, per recording (medians over non-dropped windows; "intercept" = banked-gauge estimate
+at the paint instant, % of bar):**
+
+| comp                   | hold (s) | fill at first paint | intercept at paint [IQR] | predicted if banking from drain-empty, sim credit sizes | …at the visible-span real rate |
+| :--------------------- | -------: | ------------------: | -----------------------: | ------------------------------------------------------: | -----------------------------: |
+| iron sweep (run G)     |    1.625 |                   0 |       6.77 [−5.2, 11.24] |                                                    42.0 |                          66.02 |
+| T5 wind-weak           |    1.550 |                   0 |      8.09 [−4.05, 19.02] |                                                   50.46 |                          78.64 |
+| misc B3s (run I order) |    1.583 |                   0 |       5.32 [−3.28, 9.07] |                           — (amounts voided, third arm) |                          81.21 |
+
+Sub-widget paint detection (the diag half): the hold span alternates the drain bar's red-glow
+blink (glow on ~0.15s / off ~0.13s; fill arithmetic is garbage during glow) with quiet frames
+whose track reads **0.0 filled columns — median 0 on every one of the 36 windows**. Despiked
+sustained maxima across all hold spans: 18.7 / 15.7 / 3.7 per recording — the largest is a
+6-frame ~18–20% render at the very end of one short-hold window, versus the 42–81% that
+drain-empty banking predicts. There is no readable fill indication under the drain render: the
+blind spot is a rendering fact of the game's widget, not a flag-taxonomy choice.
+
+**What the data favors (hypothesis tier).** Banked gauge at the paint instant clusters near zero
+(medians 2–8% of the bar, inside reader noise + paint-ramp uncertainty; bounded ≲10–20% on the
+worst windows) where banking-from-drain-empty predicts 42–50% at engine credit sizes and 66–81%
+at real rates, on all three recordings including the `liberalio`-free arm. The data therefore
+favors the generating window opening at the charging bar's first paint. **Whole-picture check —
+this is exactly what the two standing owner rulings jointly predict:** Full Burst is exactly 10s,
+and nothing generates during Full Burst; the measured `fullWindows[].start` → bar-paint span is
+10.13–10.22s (this measurement set, n=12 per recording), so the bar-paint instant IS the true
+Full-Burst end, and the drained-bar hold is still inside the 10s Full Burst (the drain bar's
+known under-render empties it early). The 2026-08-14 struck claim ("nothing was banked during
+Full Burst", struck because it rested on absolute low-fill reads) is here re-established by a
+statistic that uses no low-band read — but promotion beyond a logged observation is step 2's
+call, on a pre-committed rule.
+
+**Caveats, logged with the measurement:**
+
+- The bar paints at 0 fill on 29/36 windows. The 7 nonzero paint levels (0.7–23.9%) sit on the
+  short-hold windows the fill-trace deliverable already ties to the `tailStitched` detector
+  defect, or on windows where the reader's 0.2s drain-tail bridge visibly ate the true first
+  paint frames (T5 wind-weak windows 3/9 show sustained 11.9–22.4% quiet reads immediately
+  pre-"paint" — the charging bar painting before the resolver's paint instant, at levels still
+  4–5× below the drain-empty-banking predictions).
+- misc B3s (run I order) window 3's intercept (48.3, early rate negative) is the known
+  flag-taxonomy-leak window (104 clean-set monotonicity violations) — the artifact class that
+  step 1b must close; the medians are robust to it.
+- A slow paint-in animation that under-renders for ~0.3s cannot be excluded below the ~10–20%
+  level; the 42–81% predictions are excluded. Per-unit attribution remains impossible (team-sum
+  trace).
+
+⛔ **Nothing enacted.** No engine constant, override, snapshot, DECISIONS/STATE/QUEUE change. New
+tooling committed with fixtures: the `--diag` flag, the `opening` subcommand, the three opening
+artifacts, and `scripts/tests/probe/fill-trace-opening.test.ts`; `bash scripts/verify.sh` green.

@@ -124,6 +124,19 @@ LOCK METHOD (explicit, reported, and refuses rather than guessing)
 STATES (`state`) — only `filling` and `full` carry gauge; every other state has fillRaw = null:
   filling | full | chain | burstRender | fullburst | flash | unknown
 
+DIAG MODE (--diag, team only) — the opening-window observable (2026-08-14, step 1a of
+docs/handoffs/2026-08-14-burst-gen-next-session.md). The artifact resolver nulls fillRaw on every
+non-charging render BY DESIGN; --diag additionally records, for EVERY frame, what the widget's
+pixels contain before any classification: `diag = {fill, mag, red, green}` where `fill` is the raw
+dark-track arithmetic (100 * litColumns / width) applied unconditionally and mag/red/green are the
+colour-mask fractions over the locked band. Purpose: during the ~1.5s after a Full Burst when the
+drained drain-bar still owns the widget slot (the reader's known blind spot), diag.fill answers
+whether ANY fill-like paint exists under/behind the drain render — i.e. whether the blind spot is a
+rendering fact of the game (nothing to read) or a flag-taxonomy choice (something readable was
+discarded). diag.fill on a drain/blink/chain frame is NOT gauge and must never be fed to a rate —
+it is raw pixel arithmetic, published only so a measurement can characterize the opening. Default
+output (no --diag) is byte-identical to before the flag existed.
+
 ARTIFACT FLAGS (per frame, in `flags`) — these are the reasons a team read is NOT trustworthy:
   * `lowFill`   — fill < TEAM_LOW_FILL_PCT. Owner-ruled UI artifact (the bar's first paint and the
                   "BURST" label both paint low-fill pixels), NOT gauge. Absolute low-fill levels
@@ -427,28 +440,39 @@ def gate_team_width(band, extent, who):
               f'any fill percentage.', file=sys.stderr)
 
 
-def read_team_fill(img, band, extent):
-    """Return (state, fillPct|None, flags) for one frame of a TEAM recording."""
+def read_team_fill(img, band, extent, diag=False):
+    """Return (state, fillPct|None, flags, diag|None) for one frame of a TEAM recording.
+
+    The 4th element is None unless diag=True, in which case it carries the RAW per-frame pixel
+    measurements taken BEFORE any state classification (see DIAG MODE in the module docstring).
+    """
     (y0, y1), (x0, x1) = band, extent
     seg = img[y0:y1 + 1, x0:x1 + 1]
     if seg.size == 0:
-        return 'unknown', None, []
-    if magenta_mask(seg).mean() >= TEAM_MAG_FRAC:
-        return 'fullburst', None, ['fullBurstDrain']
-    if green_mask(seg).mean() >= GREEN_FRAC:
-        return 'full', 100.0, ['greenFull']
-    if red_mask(seg).mean() >= TEAM_RED_FRAC:
-        return 'burstRender', None, ['burstRender']
+        return 'unknown', None, [], None
+    mag = magenta_mask(seg).mean()
+    grn = green_mask(seg).mean()
+    red = red_mask(seg).mean()
     cols = seg.mean(axis=2).mean(axis=0)
     width = x1 - x0 + 1
     dark = int((cols < DARK_MAX).sum())
     fill = round(100.0 * (width - dark) / width, 1)
+    d = None
+    if diag:
+        d = {'fill': fill, 'mag': round(float(mag), 3),
+             'red': round(float(red), 3), 'green': round(float(grn), 3)}
+    if mag >= TEAM_MAG_FRAC:
+        return 'fullburst', None, ['fullBurstDrain'], d
+    if grn >= GREEN_FRAC:
+        return 'full', 100.0, ['greenFull'], d
+    if red >= TEAM_RED_FRAC:
+        return 'burstRender', None, ['burstRender'], d
     flags = []
     if dark == 0:
         flags.append('noDarkTrack')
     if fill < TEAM_LOW_FILL_PCT:
         flags.append('lowFill')
-    return 'filling', fill, flags
+    return 'filling', fill, flags, d
 
 
 def resolve_team_artifacts(reads):
@@ -754,8 +778,13 @@ def team_main(args):
         if spans is not None and not any(a <= t <= b for a, b in spans):
             continue
         img = np.array(Image.open(f).convert('RGB')).astype(int)
-        state, fill, flags = read_team_fill(img, band, extent)
-        reads.append({'t': t, 'state': state, 'fillRaw': fill, 'flags': flags})
+        state, fill, flags, d = read_team_fill(img, band, extent, diag=args.diag)
+        read = {'t': t, 'state': state, 'fillRaw': fill, 'flags': flags}
+        if d is not None:
+            read['diag'] = d
+        reads.append(read)
+    # NOTE: the resolver mutates state/fillRaw/flags only — a read's `diag` (raw pre-classification
+    # pixel measurements) survives artifact resolution untouched, which is the whole point of it.
     resolve_team_artifacts(reads)
 
     crop = None
@@ -820,6 +849,11 @@ def main():
                                    'reported lock can also be given in absolute frame coordinates.')
     ap.add_argument('--spans', help='[team] comma-separated "start-end" second ranges to emit, e.g. '
                                     '"22.0-26.2,35.6-39.8". Frames outside are read-skipped.')
+    ap.add_argument('--diag', action='store_true',
+                    help='[team] record raw pre-classification pixel measurements per frame '
+                         '(diag = {fill, mag, red, green}) alongside the resolved read — the '
+                         'opening-window observable. diag.fill on a non-charging render is NOT '
+                         'gauge; see DIAG MODE in the module docstring.')
     ap.add_argument('--out')
     args = ap.parse_args()
 
