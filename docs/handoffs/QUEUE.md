@@ -199,17 +199,28 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
        comps have recordings** — incl. TWO of the `liberalio`-free `misc B3s (run I order)`
        (`docs/probes/u8/u8 i vid.mov`, `docs/probes/tb2/tb2 4 vid.MP4`), so the tempo-gap
        generality gap is closable with existing footage.
-     - **Instrument phase (in flight 2026-08-14, worktree agents; tooling = cheap lane,
-       `verify.sh` + fixtures are the gate):** (a) a TEAM-HUD mode for
-       `scripts/probe/gauge-fill.py` — explicit team-bar lock (~177–185 px, geometry notes in
-       `docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md` §team) + a committed
-       validation fixture scored against sim-INDEPENDENT labels (full-state instants vs the
-       validated chain ladder; window-sum normalization; NEVER against the per-shot table —
-       that is the quantity under test); (b) a committed sim-side per-frame gauge-credit
-       schedule driver (event tap + per-unit constants, endpoint-checked against
-       `gaugeGenerated`, spot-validated by truncated-run `durationSec` diffs after asserting
-       prefix determinism; no engine edit). The pre-op plan goes to the Fable judge only after
-       both instruments carry green fixtures.
+     - **RUN COMPLETE 2026-08-14 → LOG (2-of-2 ACCEPT, both HIGH).** Full record:
+       `docs/probe-runs.md` 2026-08-14 entry + `docs/handoffs/scientific-method-harness.md`.
+       Verdict on the pre-committed statistic: **CANNOT-MEASURE** (dispersion ceiling blown by
+       the window-opening blind spot × inverted fill shapes — sim front-loads, real back-loads;
+       no H-A/H-B/H-C stamp). What LANDED as measurements: the cycle gap decomposes 93.5–97%
+       into refill-window duration on all three arms incl. the `liberalio`-free one; a footage
+       10.13–10.22s Full-Burst span read (consistent with the owner's exactly-10s ruling); the
+       real gauge-full→FB ladder is 1.75–1.77s vs modeled 1.8667s with the missing ~0.47s
+       relocated between stage 3 and FB (logged, NOT refit grounds for `PRE_B1_GAP_FRAMES`).
+     - **Branches pending owner PR:** `instrument/gauge-fill-team` (`b93ab217`),
+       `instrument/gauge-credit-schedule` (`df9efdf1`), `measure/fill-trace` (`f8cd76b9` —
+       deliverable, replay bundles, comparison tool + vitests). All verify-green.
+     - **Named next steps (from the blind post-op judge; a NEW pre-op is required — the
+       bar-paint-anchored statistic cannot be promoted retroactively):** (a) an opening-window
+       observable — does ANY gauge bank during the ~1.5s widget-hold after the drain bar
+       empties? (settles whether the real window opens at FB-end or at bar-paint, and converts
+       the struck low-fill read into a measurement); (b) close the reader's flag-taxonomy leak
+       (12 of 36 windows carry unexplained clean-set monotonicity violations, worst 91%);
+       (c) tap the SG per-landed-pellet gauge fraction onto the event stream so the third arm's
+       credit amounts validate; then (d) a new pre-op with a pre-committed rule on the
+       `[barPaint, green-full]`-anchored statistic to classify the suggestive ~1.7–2.0×
+       in-window ratio (H-A per-hit scaling vs H-B extra hits vs H-C unmodeled source).
    - Generality is bounded: both recordings are `liberalio` comps and it appears in zero passing
      comps, so it is perfectly confounded. Repeat on the `liberalio`-free shortfall comp
      `misc B3s (run I order)` (sim 12 vs measured 13) before claiming an engine-general error.

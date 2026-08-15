@@ -7471,3 +7471,69 @@ Owner-scoped to measurement + LOG. The named next step that would resolve the at
 real-Full-Burst-duration read via a visual that does NOT share the drain bar's under-render (the
 Full Burst screen border/cut-in vignette, or a buff-icon timer) — one clean "real FB ≈ 10s"
 observation converts this into H1 CONFIRMED on the already-measured gap.
+
+## Refill-window FILL-TRACE read — CANNOT-MEASURE on the pre-committed statistic; the cycle-gap decomposition, a footage 10s Full Burst read, and the ladder anatomy all land as measurements (2026-08-14)
+
+Full `/scientific-method` run: premise gate (4 verifiers) → instrument phase → Fable pre-op
+APPROVED-WITH-REVISIONS (R1–R3 executed) → work → driver ACCEPT (HIGH) → blind Fable post-op
+ACCEPT (HIGH) → **LOG**. Packet: `docs/handoffs/2026-08-14-fill-trace-preop-packet.md`.
+Deliverable + replay bundles + comparison tool: branch **`measure/fill-trace`** (`f8cd76b9`;
+deliverable `docs/handoffs/2026-08-14-fill-trace-deliverable.md`, bundles
+`docs/probe-data/fill-trace-*.json`, tool `scripts/probe/fill-trace-compare.ts` + vitest).
+Instruments: team-HUD gauge-fill reader (branch `instrument/gauge-fill-team` `b93ab217`) and the
+engine-exact credit schedule (`instrument/gauge-credit-schedule` `df9efdf1`), both fixture-pinned.
+
+**What was asked.** Compare the real gauge-bar fill trace inside every refill window (iron sweep
+run G; T5 wind-weak; third arm misc B3s run I) against the sim's engine-exact credit schedule, to
+classify the generation shortfall (bigger per-hit credits / more hits / unmodeled source / window
+accounting).
+
+**Headline verdict: CANNOT-MEASURE on the pre-committed fraction-mapped rate statistic.** Both
+comps cleared the readable-window floor (10/12, 11/12) but blew the dispersion ceiling (R IQR
+1.419 / 1.402 vs ≤0.5), so per the pre-committed basis clause no classification was stamped — even
+though both medians (2.285 / 2.075) sat above the CONFIRM threshold. The binding limit is the
+reader's window-opening blind spot (the drained Full-Burst bar holds the widget slot 0.77–1.70s
+before the charging bar paints) interacting with genuinely inverted fill shapes: the sim schedule
+front-loads its credits, the real visible trace back-loads.
+
+**What stands as MEASURED (both judges ACCEPT, HIGH):**
+
+1. **Cycle-gap decomposition, all three recordings** (from widget state transitions and detector
+   instants only — no fill percentages): per-cycle gap 1.950s / 1.550s / 1.283s decomposes
+   **93.5–97% into the refill-window-duration difference** and 5.2–9.1% into the
+   gauge-full→Full-Burst ladder, residual ≤0.06s (100.0–104.6% closed). The gap is not in
+   Full-Burst length and not in the cast ladder — including on the liberalio-free third arm.
+2. **A footage read of the Full Burst span:** drain-window start → charging-bar first paint =
+   10.186 / 10.132 / 10.219s (n=12 each, sd 0.18–0.23), measured with no sim input — consistent
+   with the owner-pinned exactly-10s Full Burst. The charging bar's first paint follows the last
+   burst-render frame by exactly one frame (sd 0.0005s, n=36).
+3. **Ladder anatomy:** real gauge-full → next Full-Burst start totals 1.750–1.766s vs the modeled
+   1.8667s. The green-full instant precedes the stage-1 hexagon by only 0.033–0.050s (n=36) — but
+   the ~0.47s the modeled 30-frame pre-stage-1 gap would predict there REAPPEARS between stage 3
+   and Full Burst, so the total ladder is short by only ~0.10–0.12s. Logged read against the
+   frame-measured `PRE_B1_GAP_FRAMES = 30f`; NOT grounds to refit it (both render/detector
+   latencies uncharacterized).
+4. **Reconciliation with the 2026-08-13 tempo-gap figures** (post-op reservation R-2): the fresh
+   per-cycle gaps (1.950 / 1.550s) differ from the earlier 1.662 / 1.649s by +0.29 / −0.10s —
+   inside the earlier measurement's own per-comp standard deviation (0.42–1.19s at n=8). The new
+   figures anchor cycle boundaries on the charging-bar paint (one-frame-precise, n=12 per
+   recording) instead of the drain-window detector whose two registered defects the earlier pass
+   had to guard-correct; treat the new figures as the better-anchored ones.
+
+**Struck by the blind judge (do not cite as fact):** "nothing was banked during Full Burst" — an
+absolute low-fill read, owner-ruled unreliable; hypothesis-tier only. The re-anchored
+in-window rate ratio (~1.7–2.0× the sim schedule) is a logged, suggestive, non-verdict measurement.
+The surplus-event census separated nothing at these credit densities.
+
+**The mechanistic picture this leaves (post-op reservation R-5, the named next target):** the
+drain bar empties well before Full Burst actually ends (its known under-render), the true refill
+window is ~2.3s, and real in-window generation plausibly runs ~1.7–2× the sim's ~24–26 gauge/s —
+but classifying WHERE that factor comes from needs (a) an opening-window observable (does any
+gauge bank during the 1.45–1.52s widget-hold after the drain bar empties?), (b) the reader's
+flag-taxonomy leak closed (12 of 36 windows carry unexplained monotonicity violations), and
+(c) a NEW pre-op with a rule on the bar-paint-anchored statistic — it cannot be promoted
+retroactively.
+
+⛔ **Nothing enacted.** No engine constant, override, snapshot, DECISIONS/STATE change. Third
+arm's credit amounts were voided by the instrument's own self-checks (noir's shotgun spray gauge
+fraction is not on the event tap) — the liberalio confound is bounded at the closure level only.
