@@ -784,3 +784,43 @@ Next pre-op named by the blind judge: the opening-window observable + a pre-comm
 bar-paint-anchored statistic (retroactive promotion prohibited); reader flag-taxonomy leak closed
 first. Branches pending owner PR: `instrument/gauge-fill-team`, `instrument/gauge-credit-schedule`,
 `measure/fill-trace`.
+
+## 2026-08-15 — anis-star skillGauge divisor solo re-read → LOG (driver ACCEPT HIGH + blind post-op ACCEPT HIGH)
+
+**Outcome: LOG.** 2-of-2 ACCEPT, both HIGH — the accepted claim is a rule-faithful CANNOT-MEASURE
+(n=5–6 clean pulls after the pre-registered exclusions vs the pre-committed n ≥ 8, on the 22.53s
+A3 solo recording) plus LOG-tier observations: steady per-pull deltas 10.1–11.6 (unimodal,
+median 11.6 strict / 11.25 lenient); sub-step decomposition unresolvable at 60fps (both credit
+legs land in one frame — the H1-vs-H1b encoding discriminator is unreachable from this footage,
+permanently); and the pixel-free ammo-counter bound (9 pulls fill, 8 do not) arithmetically
+excluding BOTH the shipped 8.90%/pull and the un-halved 10.39%/pull totals. U28's magnitude half
+stays open; the 2026-07-13 band is neither confirmed nor contradicted (same-footage caveat).
+Strikes honored: (1) the "T falls only in the H1/H1b window" informational sentence — the ±1.45
+amended tolerance exceeds the hypotheses' own 1.49pp separation, so the amended window is
+non-discriminating by construction; if the informational data leans anywhere it leans H-band;
+(2) the counting-floor glosses — corrected on the work branch (with the 2.2 baseline the 9-fill
+condition gives steady P ≳ 10.96–11.14; mid-band ~11.0–11.1 is also compatible, not only the
+band's top edge). Artifacts: `docs/probe-data/anis-star-solo-a3-gauge-reread.json`,
+`docs/probe-data/burst-tests-recording-index.md`, catalog entry, probe-runs append (branch
+`worktree-agent-a00839a48c9afe76a`, commit `d7f77966`; pending PR).
+
+**Harness lessons:**
+
+1. **Tolerance-widening needs a discrimination guard.** The packet's pre-committed "2× the actual
+   quantization bound" escalation widened the totals windows past the hypotheses' own separation
+   (±1.45 vs 1.49pp) — a silent discrimination kill. Future packets: "if 2× the restated bound ≥
+   the predicted separation, the totals branch is INCONCLUSIVE regardless of n."
+2. **Context-sheet lines are load-bearing — verify each against the SSOT before it ships to a
+   judge.** The packet glossed "RL never cores on range", conflating range-exemption (true — RL
+   never receives the +30% range bonus) with core eligibility (false — `AUTO_CORE_RATE` indexes
+   RL at 0.95). The work agent's "anomalous" red CORE HIT popups were manufactured by the packet's
+   wrong line, not by the game; no open question filed.
+3. **The R1 identity gate earned its keep.** The `a2` filename series belongs to the A1/A2 team
+   pair; only the in-footage formation check (one character model in every sampled frame, 6-round
+   magazine, the solo Burst-1 hand-off hexagon) established the A3 solo identity the whole read
+   rests on.
+4. **Judge-named follow-ups (owner recording asks, carried to the step-4 list):** a ≥60s solo
+   `anis-star` scope-lock recording (her bar zeroes at 21.73s after the solo Burst-1 — a longer
+   file contains a second clean generating window for free; targets n ≥ 8 plus a second
+   count-to-fill); the `modernia` Destroy-Mode bar read (U28's named probe — independent unit AND
+   the separate `extraHitDamagePct` call site, breaking same-footage dependence entirely).
