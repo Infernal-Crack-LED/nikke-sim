@@ -7622,3 +7622,70 @@ call, on a pre-committed rule.
 ⛔ **Nothing enacted.** No engine constant, override, snapshot, DECISIONS/STATE/QUEUE change. New
 tooling committed with fixtures: the `--diag` flag, the `opening` subcommand, the three opening
 artifacts, and `scripts/tests/probe/fill-trace-opening.test.ts`; `bash scripts/verify.sh` green.
+
+## H-A/H-B/H-C classification on the bar-paint-anchored statistic — branch H-C fires on iron sweep (run G), T5 wind-weak does not close; no cross-comp class (2026-08-15)
+
+Step 2 of `docs/handoffs/2026-08-14-burst-gen-next-session.md`, run under `/scientific-method` on
+the pre-op packet `docs/handoffs/2026-08-15-classification-preop-packet.md` (every constant, band,
+basis clause and branch pinned there; pre-op APPROVED-WITH-REVISIONS R1–R5, all executed).
+Self-contained replay artifact: `docs/probe-data/fill-trace-habc-classification.json`, replayed by
+`scripts/tests/probe/habc-classification.test.ts` (8 assertions green). New committed tooling: the
+`classify` subcommand of `scripts/probe/fill-trace-compare.ts` (sim-component freeze + C3
+perturbations + C4 noise floor + the section-C statistic + the section-D rule, applied
+mechanically).
+
+**Execution order (sim side frozen before the real side was unblinded):** C1 team-fixture vitest
+12/12 and C5 opening-fixture vitest 10/10 green → sim credit schedules REGENERATED from the
+current engine (post-#119; worktree engine byte-identical to `main` at run time) via
+`fb-count-matrix.ts --credit-schedule`, all three `CreditScheduleChecks` passing per arm with zero
+`unreconstructed` paths (C2) → sim components + C_ceiling computed and C3 run (aligned
+perturbations: credit jitter ±1 frame, +1/60s bin-grid phase; max component shifts 0.93%/0%
+iron, 2.23%/0% T5 — under the 10% limit, so the section-D bands stayed at baseline, stated
+then) → C4 on the step-1a drain-hold quiet reads (pooled false-event-bin rate 4.22% < 5% ⇒
+E_min stays 1.5, stated then; per-source iron reads 6.93% with a heavy tail, logged) → only then
+`gauge-fill.py --reflag` upgraded the three committed traces (51/84/33 reads newly `offCurve`,
+pure-additive, post-reflag clean-set monotonicity violations 0 on every window) and the real side
+was read.
+
+**Result, per arm (pooled over usable windows; ρ = real rate ÷ sim rate, O = occupancy ratio,
+S = size ratio, both against the frozen sim components):**
+
+| arm                | usable windows | ρ (pooled) | ρ dispersion (IQR/med) |     O |      S | closure residual | real event-bins/s |                                        C_ceiling ×1.15 | section-D branch                                                                                                              |
+| :----------------- | -------------: | ---------: | ---------------------: | ----: | -----: | ---------------: | ----------------: | -----------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------- |
+| iron sweep (run G) |             10 |      1.620 |                  0.304 | 1.828 |  1.071 |            0.258 |             4.715 |                                                  4.133 | branch 1: H-C mass present (share of rate 0.238); same-arm H-B band hit demoted to candidate remainder, descriptive only (R4) |
+| T5 wind-weak       |              9 |      1.763 |                  0.417 | 0.151 | 34.906 |            3.493 |             3.475 | 34.5 (vacuous: ceiling caps at the 30 bins/s bin rate) | branch 5: MIXED/INCONCLUSIVE — the O×S decomposition does not close                                                           |
+
+Basis clauses B1–B4 pass on both arms (iron 10 usable windows, T5 9 after two B1
+coverage drops; saturation cut two-sided per R5, counts in the artifact). Banked-at-paint mass
+(R3): 134.2% (iron) / 134.3% (T5) across usable windows, counted in Σ real Δ, excluded from
+occupancy/size. Bridged mass 132.9% / 113.8%. **Cross-comp rule: the branches disagree ⇒
+per-comp findings only — no class-level claim from this run.** The prior ~1.7–2.0× logged ratio
+was not used; the fresh ρ values are 1.62/1.76.
+
+**Why T5 does not close (diagnostic, fenced in the artifact — NOT part of the pre-committed
+statistic):** the literal section-C definition thresholds only the real side at E_min; T5's sim
+credit stream is dominated by sub-E_min credits (`nayuta` SMG at 3-frame cadence,
+`cinderella-crystal-wave` swap shots at 1-frame minimum gap ⇒ sim credit-bin fraction 0.766 at
+median 0.21%/bin, far below the reader's 1.5% resolution floor). Under a symmetric-threshold
+variant (bin amount > 1.5), T5's sim fraction is 0.063 at median 9.22%/bin, giving
+O_diag ≈ 1.84, S_diag ≈ 0.80 — the same H-B-shaped signature as iron sweep's demoted candidate.
+Logged as a diagnostic only; a symmetric-threshold statistic would need its own pre-committed
+pass.
+
+**Carried risk flags, stated with the measurement:** bar-paint trails true FB end by 0.13–0.22s ⇒
+the unmeasured window head is 5.6–9.4% (iron, median usable window 2.342s) / 7.2–12.1% (T5,
+1.817s) of the window; step 1a measured ~0 banked mass there, so ρ may overstate a
+true-FB-end-anchored rate by up to that duration share. Iron's closure residual 0.258 is
+marginally over the 0.25 limit — branch 1 does not read the decomposition, but the demoted H-B
+remainder carries that residual. T5's ceiling test is vacuous by construction. Any class reading
+here is n=2 comps.
+
+**misc B3s (run I order) — real-side descriptives only (sim arm voided by construction, step 1c
+not landed):** 11/12 windows pass the coverage clause; pooled 93 event-bins over 506 usable clean
+bins (5.51 event-bins/s), median event-bin Δ 3.8% (n=101), banked-at-paint and per-window tables
+in the artifact. No comparison, no branch.
+
+⛔ **Nothing enacted.** No engine constant, override, snapshot, DECISIONS/STATE/QUEUE change. The
+discriminating next measurement per the packet's own map: H-C → source hunting at the
+unattributable instants on iron sweep (run G); the T5 arm needs a symmetric-threshold or
+per-unit-cadence statistic before it can discriminate anything. `bash scripts/verify.sh` green.
