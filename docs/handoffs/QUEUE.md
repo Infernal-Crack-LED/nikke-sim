@@ -266,33 +266,3 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    bridges before the `model` injection. Surfaced as a FOLLOW-UP by the round-4 code review of the
    U28 branch (`scratchpad/gates/2026-08-13-u28-gauge/result-r4.json`); filed rather than made
    because it was outside that diff's intent and the bridges are shared by every gate skill.
-
-8. **Three battery drift-guard fixtures are RED on `fix/liberalio-charge-speed-immunity` and were
-   deliberately NOT re-pinned — re-read the finding, then re-pin.** The `liberalio` Charge Speed
-   immunity (DECISIONS 2026-08-14) removes two of her charges per fight on `iron sweep (run G)`,
-   which re-phases that comp's Full Bursts (count preserved at 11) and moves the post-FB boundary
-   quantities the 2026-08-13 burst-generation investigation pinned. 7 failing cases, ALL
-   `iron sweep (run G)` — `scripts/tests/battery/refill-starvation.test.ts` (4),
-   `gauge-source-census.test.ts` (2), `focus-columns.test.ts` (1); every `T5 wind-weak` pin still
-   holds. The audit's VERDICT survives (team first-1s delivery 114.7% → 86.0%, still NOT-STARVED
-   above the pre-committed 0.8 threshold); its descriptive shape claim on that comp does not —
-   the window is no longer front-loaded (`teamRate[0]` 3.27 < `teamRate[3]` 3.64) and
-   `milk-blooming-bunny` reads 38% first-1s delivery, under the fixture's 0.5 per-unit floor.
-   Also moved: `shortfallRateGaugePerSec` 14.94 → 16.38, `focusPer60` 8.368 → 7.954,
-   `unlockedImpacts` 24 → 26. Re-run `npx tsx scripts/battery/fb-count-matrix.ts
---refill-starvation`, decide whether the shape claim is restated or scoped to T5, THEN re-pin —
-   those files' own header says "Re-derive, don't re-pin… only re-pin once the NEW finding is
-   understood", and rewriting a published audit conclusion is not a side effect of a kit fix.
-   `bash scripts/verify.sh` on that branch is green everywhere else (regression: all checks
-   passed, no snapshot movement — all four `liberalio` comps are disabled in the harness).
-   **Second item on the same branch, OWNER QUESTION, no code needed to decide it: does a kit
-   "immunity to Increase/Decrease X" suppress the holder's OWN GEAR?** `charFixes.statImmunities`
-   deliberately covers kit `buff` effects only. Cube and Overload stats bypass buff application
-   entirely (`prepareUnit` → `extraStats` → pushed onto the buff list at unit construction), and
-   the `adjutant` (+2.12% @L15) and `quantum` (+4.66% @L15) cubes plus the `chargespd` Overload
-   line (1.98–6.09%/line, ≤4 lines) all carry `chargeSpeedPct` — so a web-app user who equips one
-   still speeds `liberalio` up. Inert on the graded basis in BOTH readings (scope lock is no-cube /
-   OL0), so no lab run or regression pin discriminates; live only in the web app. If the answer is
-   "yes, gear too", the fix is three lines: skip pushing an `extra` whose `stat` is in
-   `state.statImmunities` in the unit-construction loop (`src/engine/sim.ts`), where the Set is
-   already in scope. If "no", the current model is already right and the caveat stands as written.

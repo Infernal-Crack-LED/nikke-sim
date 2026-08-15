@@ -2616,17 +2616,16 @@ export function runSim(
             // design — an increase and a decrease are both stripped, as the kit line reads —
             // so a caster-side `excludeSelf` is no longer the only guard.
             //
-            // SCOPE, deliberately narrow (2026-08-14): this covers KIT-SOURCED `buff` effects
-            // routed through applyEffect, which is every skill/burst grant in the game model.
-            // It does NOT cover (a) cube / Overload stats — `prepareUnit` turns those into
-            // `extraStats` that are pushed straight onto `state.buffs` at unit construction,
-            // never passing here, and `adjutant`/`quantum` cubes plus the `chargespd` OL line
-            // do carry chargeSpeedPct; nor (b) the non-`buff` effect kinds that also resolve
-            // per target (unlimitedAmmo / gainPierce / convertExcess / addStack). Whether a
-            // kit immunity is meant to suppress the holder's OWN GEAR is a game-behaviour
-            // question nobody has ruled on, so the model does not assume it. Inert on the
-            // graded basis either way (scope lock is no-cube / OL0); live in the web app,
-            // where a user can equip both. Open item: QUEUE.md.
+            // SCOPE (owner ruling 2026-08-14): a kit immunity of this shape blocks IN-BATTLE
+            // BUFF EFFECTS ONLY — cube and Overload gear stats STILL APPLY to the holder. So
+            // this apply-time enforcement point is exactly right, not an approximation: cube /
+            // OL stats are turned into `extraStats` by `prepareUnit` and pushed straight onto
+            // `state.buffs` at unit construction, never passing through here, which is the
+            // ruled-correct behaviour (`adjutant`/`quantum` cubes and the `chargespd` OL line
+            // all carry chargeSpeedPct and are meant to reach her). Not covered either: the
+            // non-`buff` effect kinds that also resolve per target (unlimitedAmmo /
+            // gainPierce / convertExcess / addStack) — inert by mechanism today, since
+            // chargeSpeedPct reaches none of them. See DECISIONS 2026-08-14.
             // The check is against `statKey`, the APPLIED key (post the authored→applied
             // rewrite above) — the same key `stat()` reads back. `validate-structural.ts`
             // rejects an authored-side alias so an immunity cannot silently never match.

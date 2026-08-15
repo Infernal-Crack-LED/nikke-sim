@@ -380,10 +380,11 @@ Fire→Wind→Iron→Electric→Water→Fire. No hidden bonus beyond the base 1.
   same buff block still lands on her (`maxwell`'s skill 1 grants Charge Speed and ATK in one cast:
   the ATK applies, the Charge Speed does not), and every other target of that same cast is
   unaffected. Direction-blind (an increase and a decrease are both stripped) and source-blind
-  among KITS — but it covers kit buffs only: cube and Overload Charge Speed stats never pass
-  through buff application, so they still reach her (inert on the scope-lock basis, which has no
-  cube and OL0; live in the web app, and whether a kit immunity is meant to suppress the holder's
-  own gear is UNRULED). Encoded as the per-unit `charFixes.statImmunities` list (2026-08-14).
+  among kits. **The immunity blocks IN-BATTLE BUFF EFFECTS ONLY — cube and Overload gear stats
+  still apply to the holder (owner ruling 2026-08-14)**, which is why enforcing it at buff
+  application is the faithful model rather than an approximation: gear stats are resolved into the
+  unit at construction and never pass through that path. Encoded as the per-unit
+  `charFixes.statImmunities` list (2026-08-14).
 - Buff windows come in TWO kinds and they are not interchangeable. Most are **timed** (a
   seconds duration). Kit lines reading "**for N round(s)**" are **round-scoped**: they end
   after the holder fires N bullets, so the window stretches across a reload and shrinks if the

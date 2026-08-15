@@ -281,8 +281,9 @@ Per trigger pull, at the weapon's cadence, 60 fps frame-quantized:
 - **Charge weapons (SR/RL)**: charge for `chargeFrames × (1 − Σ Charge Speed %)` (SUBTRACTIVE,
   floor 1 frame, cap +100%). The sum only ever contains buffs the unit was actually allowed to
   receive: a unit listing a stat in `charFixes.statImmunities` (`liberalio`, Charge Speed) never
-  has that stat placed on it by a KIT buff in the first place — cube/Overload Charge Speed is out
-  of that primitive's scope and still counts. See [game-mechanics.md](game-mechanics.md) §11. Then — for release-fired units — a 22-frame release latency
+  has that stat placed on it by an in-battle buff in the first place — cube/Overload Charge Speed
+  still counts, per the owner ruling that the immunity covers buff effects, not gear. See
+  [game-mechanics.md](game-mechanics.md) §11. Then — for release-fired units — a 22-frame release latency
   (MEASURED). Autofire units skip the latency (`charFixes.noBoltRecovery`, sparse list).
   Details: [charge-weapons.md](charge-weapons.md). **Whole-magazine dump (cinderella,
   `charFixes.magDumpRof`)**: one charge feeds the whole magazine — after the first charge she

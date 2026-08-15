@@ -41,19 +41,19 @@ lives. Newest first within each section.
     `scripts/tests/validate-structural.test.ts`). Plumbing: `src/skills/index.ts` (schema) →
     `src/prepare.ts` (`PreparedUnit.statImmunities`) → `src/engine/sim.ts`
     (`UnitState.statImmunities`, a Set built once per run).
-  - **SCOPE, deliberately narrow — the primitive covers KIT `buff` effects only.** Cube and
-    Overload stats never pass through `applyEffect`: `prepareUnit` turns them into `extraStats`
-    that are pushed straight onto the unit's buff list at construction. The `adjutant` and
-    `quantum` cubes and the `chargespd` Overload line all carry `chargeSpeedPct`, so a web-app user
-    who equips one still speeds her up. That is left ALONE on purpose — whether a kit immunity is
-    meant to suppress the holder's own GEAR is a game-behaviour question nobody has ruled on, and
-    assuming it would be a modeling decision beyond the kit line. Inert on the graded basis in
-    both readings (scope lock is no-cube / OL0, so no lab run, regression pin or fixture exercises
-    it); live only in the web app. Filed as an owner question, QUEUE item 8. The non-`buff` effect
-    kinds that also resolve per target (`unlimitedAmmo`, `gainPierce`, `convertExcess`, `addStack`)
-    are likewise uncovered — inert by mechanism today, since `chargeSpeedPct` reaches none of them.
-    Surfaced by the cross-family `/code-review` of this diff, which is the gate this path uses in
-    place of `/scientific-method`.
+  - **SCOPE — IMMUNITY BLOCKS IN-BATTLE BUFFS ONLY; CUBE AND OVERLOAD GEAR STATS STILL APPLY
+    (owner ruling, game behaviour, 2026-08-14).** The cross-family `/code-review` of this diff
+    surfaced that cube and Overload stats never pass through `applyEffect` — `prepareUnit` turns
+    them into `extraStats` that are pushed straight onto the unit's buff list at construction — so
+    the `adjutant` and `quantum` cubes and the `chargespd` Overload line, all of which carry
+    `chargeSpeedPct`, would still reach her. **The owner ruled that this is correct game behaviour:
+    a kit immunity of this shape suppresses in-battle buff EFFECTS, not the holder's own gear.**
+    The shipped apply-time enforcement point is therefore the FAITHFUL one, not an approximation of
+    a broader rule, and no code change follows. Inert on the graded basis regardless (scope lock is
+    no-cube / OL0); the ruling's live surface is the web app, where a user can equip both. The
+    non-`buff` effect kinds that also resolve per target (`unlimitedAmmo`, `gainPierce`,
+    `convertExcess`, `addStack`) remain uncovered — inert by mechanism today, since
+    `chargeSpeedPct` reaches none of them.
   - **Same-pass prose correction (no code effect).** Her override's Q8 sentence read "her
     chargeFrames already reflect the full validated cycle (kit-fixed 1.2s / DB 90f)" — 90f is
     **1.5s**, and the 1.2s belonged to `snow-white-heavy-arms` (`charge_time` 120cs → 72f). The

@@ -23,12 +23,17 @@ into the quantity that can actually be wrong, on the two comps whose cycles were
 
 | comp               | real refill | fight needs  | sim feeds    | sim generates       |
 | ------------------ | ----------- | ------------ | ------------ | ------------------- |
-| iron sweep (run G) | 2.59s       | 38.6 gauge/s | 23.7 gauge/s | **61%** of required |
+| iron sweep (run G) | 2.49s       | 40.2 gauge/s | 23.8 gauge/s | **59%** of required |
 | T5 wind-weak       | 1.91s       | 52.4 gauge/s | 26.4 gauge/s | **50%** of required |
 
 ("sim feeds" = 100 ÷ the sim's own OBSERVED refill from its rotation log — not the matrix's
-per-team "team rate" column (25.57/26.81), which is `gaugeGenerated ÷ gaugeBuildTimeSec`. Both are
+per-team "team rate" column (25.11/26.81), which is `gaugeGenerated ÷ gaugeBuildTimeSec`. Both are
 sim figures; they are different quantities.)
+
+_iron sweep's row re-derived 2026-08-14 (was 2.59s / 38.6 / 23.7 / **61%**, team rate 25.57) after
+the `liberalio` Charge Speed immunity — DECISIONS 2026-08-14 — cost her two charges per fight. The
+shortfall WIDENED; the thread's conclusion is unaffected. T5 is untouched: no Charge Speed source is
+seated there. See the item-1/2/3 annotations below._
 
 **The sim feeds the bar roughly half to two-thirds of what the fight requires.** That is a large,
 findable modeling error, not a timing subtlety. It is robust to the Full-Burst-duration uncertainty
@@ -79,6 +84,38 @@ findable modeling error, not a timing subtlety. It is robust to the Full-Burst-d
 > `scripts/battery/fb-count-matrix.ts`), pinned by `scripts/tests/battery/refill-starvation.test.ts`.
 > Team-wide ≥0.9s silences inside 2 windows per comp are the boss unhittable transitions, not
 > reload starvation. Nothing enacted; nothing to enact.
+>
+> **ANNOTATION 2026-08-14 — the iron-sweep figures above were measured against the PRE-fix engine;
+> the verdict survives, the shape claim does not.** Every iron-sweep number in this block predates
+> the `liberalio` Charge Speed immunity (DECISIONS 2026-08-14), which strips `maxwell`'s bundled
+> `chargeSpeedPct 4.48` from her, lengthens her charge cycle by 4 frames a shot, costs her two
+> charges over the fight, and re-phases all four of that comp's SR/charge units against the FB
+> boundary. Post-fix, re-derived by re-running the committed instrument:
+>
+> | iron sweep (run G)                              | pre-fix                                | post-fix                            |
+> | ----------------------------------------------- | -------------------------------------- | ----------------------------------- |
+> | team first-1s delivery                          | 114.7%                                 | **86.0%**                           |
+> | per-bucket team hits `[0-0.5, 0.5-1, 1-2, 2s+]` | `[24, 20, 40, 78]`                     | **`[18, 17, 42, 86]`**              |
+> | per-bucket team rate (hits/s)                   | `4.364 / 3.636 / 3.636 / 3.416`        | **`3.273 / 3.091 / 3.818 / 3.644`** |
+> | first-0.5s vs tail rate                         | 4.364 vs 3.416 = 1.278× (front-loaded) | **3.273 vs 3.644 = 0.898× (flat)**  |
+> | lowest per-unit first-1s                        | `liberalio` 68%                        | **`milk-blooming-bunny` 37.7%**     |
+>
+> **The RESOLVED verdict is UNCHANGED: 86.0% still clears the pre-committed ≥80% threshold, so
+> reload state stays exonerated and item 1 stays closed** — the margin is thinner, not breached.
+> What no longer holds on this comp is the descriptive **"FRONT-LOADED"** characterization: iron
+> sweep now reads FLAT (opening bucket 0.898× the tail). That is still not the starvation
+> signature — a starved window ramps UP from a near-empty first bucket, and `reloadBoundFirsts`
+> remains **0 for every unit on both comps**, including `milk-blooming-bunny`'s 37.7%, which is
+> charge PHASE exactly as `liberalio`'s 68% was. **T5 wind-weak is completely unaffected** (140.7%,
+> `[327, 320, 592, 703]`, still front-loaded) — no Charge Speed source is seated there, which is
+> why only this one comp moved. Pins re-derived by running
+> `npx tsx scripts/battery/fb-count-matrix.ts --refill-starvation --json` and updated in
+> `scripts/tests/battery/refill-starvation.test.ts` (never hand-edited).
+>
+> _Attribution check:_ the "pre-fix" column is not quoted from this doc, it was re-MEASURED by
+> re-running the same instrument with `charFixes.statImmunities` disabled, and it reproduced the
+> original pins exactly (first-1s 1.1469 vs the pinned 1.147, team hits `[24, 20, 40, 78]`). The
+> immunity is therefore the whole cause of the movement — nothing else drifted underneath it.
 >
 > **Out-of-scope observation (P3 verifier, filed not fixed — `src/engine/**` is protected):** the
 > FSM comment at `sim.ts:3743-3745` still claims the fight-start deploy delay is "Default 0 → this
@@ -186,6 +223,25 @@ generation shortfall is not licence to retune them.
 > closes ~12% of one comp's cycle gap and is measurement-gated anyway. The remainder of the
 > thread's stop condition is unchanged. Nothing enacted; nothing here changes an engine
 > constant, an override, or a snapshot.
+>
+> **ANNOTATION 2026-08-14 — iron-sweep figures re-derived after the `liberalio` Charge Speed
+> immunity (DECISIONS 2026-08-14); the conclusion is unchanged and slightly STRENGTHENED.** The
+> immunity costs her two charges per fight, so that comp generates less gauge and its measured
+> shortfall WIDENS. Re-run of `npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources --json`:
+>
+> | iron sweep (run G)              | pre-fix       | post-fix          |
+> | ------------------------------- | ------------- | ----------------- |
+> | unlocked / locked skill impacts | 24 / 111      | **26 / 107**      |
+> | measured shortfall rate         | 14.94 gauge/s | **16.38 gauge/s** |
+> | measured shortfall per cycle    | 38.67 gauge   | **40.76 gauge**   |
+>
+> Item 2's finding is a ZERO-contribution result, so a LARGER shortfall only makes "the non-bullet
+> sources supply none of it" more true, not less. The point-5 sentence above ("the class's lower
+> bound is exactly zero of the 38.7 / 49.7 gauge-per-cycle shortfalls") should now read **40.8 /
+> 49.7** — the fresh-application count on iron sweep is still 0, so the bound is still exactly
+> zero. T5's 26.03 / 49.67 are unchanged (no Charge Speed source seated there). All other comps'
+> unlocked/locked splits are unchanged. Pins updated in
+> `scripts/tests/battery/gauge-source-census.test.ts`.
 
 **QUESTION.** Skill hits, DoT ticks and riders all feed the bar via `skillGauge` (sim.ts:1522, one
 target-base hit per impact). Is every source that generates in-game actually emitting, and is
@@ -251,6 +307,26 @@ same session** (measurement ≠ enactment). If the census is clean, say so and c
 > fallback resolves her to the measured 250 family, DECISIONS 2026-07-29 step-7) — and the
 > four no-gauge-row 350 carriers (belorta/n102/yan/yuni), who seat no comp and ride the same
 > datamined column + owner-confirmed rule as alice. Nothing enacted; nothing to enact.
+>
+> **ANNOTATION 2026-08-14 — iron-sweep sizing re-derived after the `liberalio` Charge Speed
+> immunity (DECISIONS 2026-08-14); the item stays CLOSED and the ceiling gets TIGHTER.** The
+> immunity re-phases that comp, which lowers the focused unit's own generation rate and widens
+> the comp's measured shortfall — both movements push the ceiling DOWN. Re-run of
+> `npx tsx scripts/battery/fb-count-matrix.ts --focus-columns --json`:
+>
+> | iron sweep (run G)                 | pre-fix       | post-fix          |
+> | ---------------------------------- | ------------- | ----------------- |
+> | focused unit's rate (`focusPer60`) | 8.368         | **7.954**         |
+> | max alt-column upside              | 3.347 gauge/s | **3.182 gauge/s** |
+> | measured shortfall rate            | 14.94 gauge/s | **16.38 gauge/s** |
+> | ceiling cover                      | ≤22.4%        | **≤19.4%**        |
+>
+> So the sentence above should read **≤19.4% of iron sweep's measured shortfall (3.18 vs
+> 16.38 gauge/s)**; T5's ≤12.6% (3.27 vs 26.03) is unchanged, as is every resolved column, the
+> census, and the verdict — a wrong column explains even less of the gap than when the item
+> closed. Note the focused unit on this comp is `maxwell`, whose column did not change; her
+> rate moved only because the comp's Full Bursts re-phased around her. Pins updated in
+> `scripts/tests/battery/focus-columns.test.ts`.
 
 ⚠ **Re-scoped.** The obvious version of this item — "unfocused charge units are missing the
 full-charge bonus" — is **already refuted by measurement** (see the settled list above). Do not run
@@ -409,9 +485,10 @@ than measured, and "does a missed pellet generate burst gauge" is likely one of 
 result and it goes back to the owner rather than into a fifth speculative item.
 
 > **STATUS 2026-08-14 — ALL FOUR ITEMS CLOSED; THE STOP CONDITION HAS BEEN MET.** Item 1 (refill
-> starvation — front-loaded, not starved), item 2 (non-bullet sources — census clean for comp
+> starvation — NOT starved: front-loaded on T5, flat on iron sweep, both clearing the ≥80% rule),
+> item 2 (non-bullet sources — census clean for comp
 > movers; the one live lever is the footage-gated `skillGauge` divisor at ~12% of T5's cycle gap),
-> item 3 (focus columns — all seated resolves measured, ceiling ≤22%), and item 4 (multi-hit
+> item 3 (focus columns — all seated resolves measured, ceiling ≤19.4%), and item 4 (multi-hit
 > crediting — the per-trigger CEILING arm buys zero Full Bursts anywhere) together account for
 > well under the measured 39–50% shortfall. Per the stop condition, the remainder is not in any of
 > the four generation candidates, and the thread goes back to the owner rather than into a fifth

@@ -62,8 +62,8 @@ export interface OverrideFile {
     // cast is unaffected. Entries are APPLIED stat keys (post applyEffect's authored→applied
     // rewrite: write `maxHpFlat`, not `casterMaxHpPct`) — `validate-structural.ts` rejects an
     // alias or a typo, because the enforcement is a bare string match and an unmatched entry
-    // would be a silent permanent no-op. SCOPE: kit `buff` effects only; cube/Overload stats
-    // bypass applyEffect entirely and are NOT covered (see the engine comment).
+    // would be a silent permanent no-op. SCOPE (owner ruling 2026-08-14): in-battle buff
+    // effects only — cube/Overload gear stats bypass applyEffect and are MEANT to still apply.
     statImmunities?: string[];
   };
   // Pellet-consolidation mode (dorothy-S: "after landing N pellets, for K rounds → pellet count fixed at 1
