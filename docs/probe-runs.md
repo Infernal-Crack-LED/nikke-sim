@@ -7538,6 +7538,66 @@ retroactively.
 arm's credit amounts were voided by the instrument's own self-checks (noir's shotgun spray gauge
 fraction is not on the event tap) — the liberalio confound is bounded at the closure level only.
 
+## 2026-08-15 — Anis: Star solo gauge re-read (battery 3 Part A3 footage, per-pull)
+
+Plan of record: `docs/handoffs/2026-08-15-anis-star-divisor-preop-packet.md` (approved with
+revisions R1–R5). Question: per-pull burst-gauge total and sub-step structure for `anis-star`
+(Anis: Star, rocket launcher/Electric/Burst I) in solo focused play, against the shipped
+8.90 percent per pull and the 10.39 percent alternatives. Replay bundle:
+`docs/probe-data/anis-star-solo-a3-gauge-reread.json`; recording index:
+`docs/probe-data/burst-tests-recording-index.md` (paths under `docs/probes/` are gitignored and
+cannot pass the pre-commit hook, so the index is tracked there instead of beside the media).
+
+**Instrument prelude (passed before the target read):** `scripts/probe/gauge-fill.py`
+re-run over the maiden-ice-rose anchor recording reproduced every one of the committed
+fixture's 450 reads exactly (`scripts/tests/fixtures/gauge-fill-maiden-ice-rose-30fps.json`),
+and the reader's 17 vitest assertions pass. Quantization bound restated before reading:
+plus/minus 1 column of the 138-pixel bar = 0.72 percentage points per reading; since 0.72
+exceeds 0.35, the plan's rule widened the decision tolerance to plus/minus 1.45 percentage
+points, stated before the target numbers were unblinded.
+
+**Recording identity (plan revision R1):** confirmed SOLO — one character model in every
+sampled frame, single-portrait entry cut-in, 6-round magazine counter, charge-percent HUD,
+and a solo Burst I cast (~video t=20.4s) whose stage-II hand-off timer counts down unclaimed —
+the burst-chain collapse the original Part A3 entry recorded. The `a2` filename prefix
+notwithstanding, the file is not part of the A1/A2 takina/crown team pair. No other solo
+Anis: Star recording exists under `docs/probes/`.
+
+**Measurement.** Nine pulls fill the bar from empty (ammo-counter counted: six in magazine 1
+fired ~8.8–13.7s, reload 14.0–16.0s, three in magazine 2 fired ~17.2/18.1/19.1s; bar green at
+19.38s with ammo 003 on screen). Per-pull deltas (bar percent): opening pull +9.4 (excluded —
+partial-charge opener suspect); clean pulls +10.9, +11.6, +11.6, +10.1, +11.6; pull 7 excluded
+(a screen-tint artifact span corrupts the reader over 16.0–17.97s); pull 8 +10.9 (conditionally
+clean — its baseline is first read just after the artifact span ends); pull 9 excluded (bar at
+89.1 percent at release, credit clipped at full). Sub-steps do NOT resolve: every steady pull
+lands in a single 60-frames-per-second frame, unlike the maiden-ice-rose anchor's 0.15–0.17s
+rider/weapon separation, so the planned shot-leg focus check could not execute (plan revision
+R5(a): unresolvable, not failed). Fire-to-credit latency ~0.30s wherever both ends are visible.
+
+**Outcome against the pre-committed rule: CANNOT-MEASURE.** The rule requires at least 8 clean
+pulls after exclusions; this recording yields 5 (strict) or 6 (counting pull 8). For the record,
+the medians those small samples give are 11.6 (strict) and 11.25 (lenient), and the
+pixel-independent shot-counting bound (9 pulls fill, 8 do not; the bar starts at its rendered
+2.2-percent baseline, so the nine pulls need only ~97.8 points) puts the steady per-pull total
+at no less than about 10.96–11.14 percent depending on the opener read — arithmetic that the
+shipped 8.90 total (baseline + opener + 8 pulls = 82.8 percent, far from full) and the 10.39
+alternatives (baseline + opener + 8 pulls = 94.7 percent, still not full) both sit below, while
+the 2026-07-13 band is compatible from about its midpoint (~11.0–11.1 percent) upward.
+[Post-op corrections, 2026-08-15: this entry's first wording omitted the 2.2 baseline from the
+counting arithmetic — the floor read "about 11.1 under any reading of the opener" and called the
+band's 11.3 top edge "the lowest per-pull compatible", both overstated; and the blind post-op
+judge STRUCK the deliverable's side-note mapping the medians into the widened plus/minus 1.45
+tolerance windows — that half-width matches the hypotheses' own 1.49-point separation, so those
+windows cannot discriminate; under the packet's original windows the medians and the counting
+floor sit in the "at or above 10.74" region.] These are logged observations at hypothesis
+strength, not a verdict: the sample is below the plan's own bar, the reader's large-step
+magnitude question remains open (the counting bound, however, does not use reader magnitudes),
+and this is the same footage as the original band summary, so it is not an independent
+confirmation of that band. This recording is also noisier than the `maiden-ice-rose`
+calibration-reference recording (two sub-column noise events plus a 2-second tint-artifact span
+in 22.5 seconds), so that recording's historical sub-0.15-percent reproduction error must not
+be assumed for this one. Nothing
+enacted — no engine, data, override, snapshot, or decision change.
 ## Opening-window observable — no material gauge is banked while the drained Full-Burst bar holds the widget slot; the generating window opens at the charging bar's first paint (2026-08-14, logged observation)
 
 Step 1a of `docs/handoffs/2026-08-14-burst-gen-next-session.md` (instrument-prelude lane —
