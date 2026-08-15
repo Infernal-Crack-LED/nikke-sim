@@ -7577,13 +7577,24 @@ R5(a): unresolvable, not failed). Fire-to-credit latency ~0.30s wherever both en
 **Outcome against the pre-committed rule: CANNOT-MEASURE.** The rule requires at least 8 clean
 pulls after exclusions; this recording yields 5 (strict) or 6 (counting pull 8). For the record,
 the medians those small samples give are 11.6 (strict) and 11.25 (lenient), and the
-pixel-independent shot-counting bound (9 pulls fill, 8 do not) puts the steady per-pull total at
-no less than about 11.1 percent under any reading of the opener — arithmetic that the shipped
-8.90 total (9 pulls = 80.1 percent, far from full) and the 10.39 alternatives (opener + 8 pulls
-= 92.5 percent, still not full) both sit below, while the 2026-07-13 band's top edge
-(11.3 percent) is the lowest per-pull compatible with it. These are logged observations at
-hypothesis strength, not a verdict: the sample is below the plan's own bar, the reader's
-large-step magnitude question remains open (the counting bound, however, does not use reader
-magnitudes), and this is the same footage as the original band summary, so it is not an
-independent confirmation of that band. Nothing enacted — no engine, data, override, snapshot,
-or decision change.
+pixel-independent shot-counting bound (9 pulls fill, 8 do not; the bar starts at its rendered
+2.2-percent baseline, so the nine pulls need only ~97.8 points) puts the steady per-pull total
+at no less than about 10.96–11.14 percent depending on the opener read — arithmetic that the
+shipped 8.90 total (baseline + opener + 8 pulls = 82.8 percent, far from full) and the 10.39
+alternatives (baseline + opener + 8 pulls = 94.7 percent, still not full) both sit below, while
+the 2026-07-13 band is compatible from about its midpoint (~11.0–11.1 percent) upward.
+[Post-op corrections, 2026-08-15: this entry's first wording omitted the 2.2 baseline from the
+counting arithmetic — the floor read "about 11.1 under any reading of the opener" and called the
+band's 11.3 top edge "the lowest per-pull compatible", both overstated; and the blind post-op
+judge STRUCK the deliverable's side-note mapping the medians into the widened plus/minus 1.45
+tolerance windows — that half-width matches the hypotheses' own 1.49-point separation, so those
+windows cannot discriminate; under the packet's original windows the medians and the counting
+floor sit in the "at or above 10.74" region.] These are logged observations at hypothesis
+strength, not a verdict: the sample is below the plan's own bar, the reader's large-step
+magnitude question remains open (the counting bound, however, does not use reader magnitudes),
+and this is the same footage as the original band summary, so it is not an independent
+confirmation of that band. This recording is also noisier than the `maiden-ice-rose`
+calibration-reference recording (two sub-column noise events plus a 2-second tint-artifact span
+in 22.5 seconds), so that recording's historical sub-0.15-percent reproduction error must not
+be assumed for this one. Nothing
+enacted — no engine, data, override, snapshot, or decision change.

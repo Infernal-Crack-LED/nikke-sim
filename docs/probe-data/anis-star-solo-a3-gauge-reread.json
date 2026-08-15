@@ -29,7 +29,7 @@
     },
     "vitest": "scripts/tests/gauge-fill-anchor.test.ts + scripts/tests/gauge-fill-team.test.ts: 17/17 pass",
     "quantizationBound": "+-1 column of the 138px bar = +-0.725 percentage points per reading (calibration doc + script header)",
-    "toleranceDerivation": "0.725 > 0.35, so per the pre-committed rule the tolerance becomes 2 x 0.725 = +-1.45 percentage points; stated before the target numbers were read. Widened half-open windows: H0 [7.45,10.35), H1/H1b [8.94,11.84), overlap [8.94,10.35) doubly consistent, H-band >= 11.84. The packet's original +-0.35 windows are also reported for comparison."
+    "toleranceDerivation": "0.725 > 0.35, so per the pre-committed rule the tolerance becomes 2 x 0.725 = +-1.45 percentage points; stated before the target numbers were read. Widened half-open windows: H0 [7.45,10.35), H1/H1b [8.94,11.84), overlap [8.94,10.35) doubly consistent, H-band >= 11.84. The packet's original +-0.35 windows are also reported for comparison. [Post-op note: the widened +-1.45 windows overlap so heavily that they are non-discriminating by construction (half-width ~ the 1.49pp H0-vs-H1 separation); they are recorded for rule compliance, not as usable separators.]"
   },
   "readerInvocation": {
     "frames": "ffmpeg fps=30 (and fps=60) crop=400:160:2350:430 over the target video",
@@ -170,28 +170,30 @@
     "cleanDeltasStrict": [10.9, 11.6, 11.6, 10.1, 11.6],
     "distribution": "steady deltas occupy 14-16 columns (10.1-11.6), unimodal; consistent with one process plus +-1-column endpoint quantization",
     "subStepDecomposition": "UNRESOLVED - every steady pull lands in a single 60fps frame (16.7 ms); the maiden-ice-rose anchor's 0.15-0.17s rider-vs-weapon separation does not appear on this unit. Shot-leg focus check therefore cannot execute (plan revision R5(a): unresolvable, not failed).",
-    "fireToCreditLatency": "~0.30s fire->credit on every pull where both are observable (17.15->~17.3, 18.05->18.37, 19.05->19.38; mag-1 cadence consistent with the same offset)"
+    "fireToCreditLatency": "~0.30s fire->credit on every pull where both are observable (17.15->~17.3, 18.05->18.37, 19.05->19.38; mag-1 cadence consistent with the same offset)",
+    "renderNoise": "this recording is noisier than the maiden-ice-rose anchor: in 22.5s it shows two sub-column noise events (the 13.83-13.98 transient dip 55.8->55.1 and the pull-8->9 plateau backstep 89.9->89.1) plus the 16.0-17.97 screen-tint artifact span; the anchor's historical <0.15% reproduction error must not be assumed for reads taken from this footage"
   },
   "countingCrossCheck": {
     "method": "shot counting per the calibration doc section 2 (owner-primary instrument, pixel-free): ammo counter read from full frames (montage fps=10 over t=15.0-20.2, spot frames t=9, 9.95, 12.95, 13); bar full = green state at t=19.38",
     "count": "9 pulls fill the bar from empty (6 in magazine 1: fired ~8.82-13.73; reload 14.0-16.0; 3 in magazine 2: fired ~17.15/18.05/19.05); after 8 pulls the bar read 89.9 (not full)",
     "arithmetic": {
-      "allNinePullsEqual": "P in [100/9, 100/8) = [11.11, 12.50) percent per pull",
-      "openerAsRendered": "with the opening pull's rendered 9.4 +-0.7: steady P in [~11.24, ~13.04)",
-      "against8.90": "9 x 8.90 = 80.1 - under the shipped per-pull total the bar cannot be full after 9 pulls",
-      "against10.39": "opener 9.4 + 8 x 10.39 = 92.5 - under the 10.39 per-pull total the bar is also not full after 9 pulls",
-      "against band": "opener 9.4 + 8 x 11.3 = 99.8~100 - the 2026-07-13 band's top edge is the lowest per-pull compatible with the 9-pull fill; its lower half (10.7) gives 95.0 and is not compatible"
+      "baseline": "the bar's rendered starting level is 2.2 (the border floor row of the per-pull table) - the fill condition is 2.2 + credits >= 100, i.e. the nine pulls need only ~97.8 points [post-op correction 2026-08-15: the first issue of this bundle omitted the baseline and overstated the floor]",
+      "allNinePullsEqual": "2.2 + 9P >= 100 and 2.2 + 8P < 100 -> P in [10.87, 12.23) percent per pull",
+      "openerAsRendered": "with the opening pull's rendered 9.4 +-0.7: steady P >= (97.8 - E)/8 in [10.96, 11.14] and P < (97.8 - E)/7 in [12.53, 12.73) - floor ~10.96-11.14 depending on the opener read",
+      "against8.90": "2.2 + 9.4 + 8 x 8.90 = 82.8 - under the shipped per-pull total the bar is far from full after 9 pulls",
+      "against10.39": "2.2 + 9.4 + 8 x 10.39 = 94.7 - under the 10.39 per-pull total the bar is still not full after 9 pulls",
+      "againstBand": "2.2 + 9.4 + 8 x 11.0 = 99.6 and 8 x 11.1 -> 100.4 - the 2026-07-13 band is compatible from about its midpoint (~11.0-11.1) upward, not only at its 11.3 top edge"
     },
     "immunity": "this bound does not use the reader's large-step magnitudes (whose ~+1.0-1.3 percentage-point hot bias on the tb2 anchors is UNRESOLVED); it needs only the shot count, the empty start, and the green transition frame"
   },
   "decisionRuleMapping": {
     "branch": "CANNOT-MEASURE",
     "mechanical": "the pre-committed rule requires n >= 8 clean pulls after exclusions; n = 5 (strict R3 reading) or 6 (lenient pull-8 inclusion) - below the bar either way. The judge's carried risk flag anticipated exactly this on a short recording containing a chain collapse.",
-    "informational": "had n sufficed: median T = 11.6 (strict) / 11.25 (lenient). Under the amended +-1.45 tolerance both land only in the H1/H1b window [8.94,11.84). Under the packet's original +-0.35 windows both land in T >= 10.74 (H-band). The n-independent counting bound (floor ~11.1) sits above the original H1 window in every variant. No verdict is attached; the encoding question (H1 vs H1b) is additionally out of reach because sub-steps never resolve.",
+    "informational": "had n sufficed: median T = 11.6 (strict) / 11.25 (lenient). [STRUCK by the blind post-op judge, 2026-08-15: the first issue's line 'under the amended +-1.45 tolerance both land only in the H1/H1b window [8.94,11.84)' is non-discriminating by construction - the +-1.45 half-width is essentially the hypotheses' own 1.49pp separation, so the widened windows cannot separate H0 from H1/H1b; do not cite that mapping.] Under the packet's original +-0.35 windows both medians land in T >= 10.74 (the H-band region), and the baseline-corrected counting floor (~10.96-11.14) also sits above the original H1 window [10.04,10.74) - if the informational data leans anywhere it leans H-band. No verdict is attached; the sample is below the plan's n >= 8 bar, and the encoding question (H1 vs H1b) is additionally out of reach because sub-steps never resolve.",
     "hBasisCheck": "does not fire - the prelude control passed and the shot-leg focus check is unresolvable (plan revision R5(a)), not failed; T < 8.55 clause not triggered"
   },
   "anomalies": [
-    "red 'CORE HIT' popups appear on this recording (e.g. 345079 at t~17) although the packet's context sheet says rocket launchers never core on range and skills never core - not load-bearing for the gauge read; recorded for whatever session owns popup attribution",
+    "red 'CORE HIT' popups appear on this recording (e.g. 345079 at t~17). RESOLVED post-op: the packet's context line 'rocket launchers never core on range' conflated range-exemption with core - AUTO_CORE_RATE indexes RL at 0.95, so RL normals core routinely; the popups are expected behaviour, not an anomaly",
     "the bar renders 'filling 100.0' (not green full) during the t=17.25-17.72 artifact flash while generation demonstrably continues afterwards - consistent with a tint/flash render, not a real full",
     "after the Burst I cast the bar zeroes at t=21.73 and stays 0 to video end (22.5s); the A3 entry's 'window expiry, refill' tail is not inside this file's 22.5s span",
     "the stage-II hand-off hexagon counts down from ~08.32s with no eligible teammate - the solo burst-chain collapse the A3 entry recorded"
