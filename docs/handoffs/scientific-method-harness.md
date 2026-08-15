@@ -824,3 +824,55 @@ band's top edge). Artifacts: `docs/probe-data/anis-star-solo-a3-gauge-reread.jso
    file contains a second clean generating window for free; targets n ≥ 8 plus a second
    count-to-fill); the `modernia` Destroy-Mode bar read (U28's named probe — independent unit AND
    the separate `extraHitDamagePct` call site, breaking same-footage dependence entirely).
+
+## 2026-08-15 — H-A/H-B/H-C classification read → LOG (driver ACCEPT MEDIUM + blind post-op ACCEPT MEDIUM, iron branch STRUCK)
+
+**Outcome: LOG.** 2-of-2 ACCEPT, both MEDIUM — the accepted claim is NARROWER than the
+deliverable's: (1) the fresh in-window mass-rate elevation is real and replayable on both arms —
+iron sweep ρ 1.62 pooled (median 1.79, 10 windows), T5 wind-weak ρ 1.76 (median 1.87, 9 windows),
+carried as a **1.6–1.9× band** (±10% systematics: banked-at-paint mass ~14% of Σ real Δ riding
+the 0.13–0.22s bar-paint lateness; asymmetric negative-Δ truncation unquantified); (2) BOTH arms
+land MIXED/INCONCLUSIVE on classification; (3) iron's "H-C mass present" stamp is STRUCK to
+"H-C-candidate event-rate excess, observed, not established"; (4) no class-level claim
+(cross-comp rule); (5) T5's fenced symmetric-threshold diagnostic stays non-evidentiary. The
+board's ~1.7–2× generation deficit is confirmed in-window at fresh-measurement tier; WHERE it
+lives stays open. Artifacts: `docs/probe-data/fill-trace-habc-classification.json` + the
+`classify` subcommand + 8-assertion vitest (branch `measure/habc-classification`; corrections
+per the strike applied before PR).
+
+**Why the strike (both grounds verified by the driver after the blind return):**
+
+- The packet's own closure clause ("residual > 0.25 → INCONCLUSIVE regardless of branch hits")
+  fired on iron (0.2579); the deliverable carried the failure onto only the demoted H-B remainder
+  — a post-hoc reinterpretation toward the positive finding. By the letter, iron is branch 5.
+  **The driver's gate-#1 review missed this; the blind gate caught it — the two-gate design
+  working as intended.**
+- The C4 noise gate lacked the power the ceiling test assumed: at iron's credit fraction, a
+  quiet false-event rate anywhere in 4.2–6.9% reproduces the entire branch-1 margin (true rate
+  2.8–3.6 bins/s vs threshold 4.13). Closure failing in the direction O_eff×S > ρ is the
+  signature of event-count inflation — the two flagged anomalies were one coherent story.
+
+**Harness lessons:**
+
+1. **A failed basis/closure clause may never be re-scoped onto a sub-reading after the fact** —
+   the clause voids the arm's classification, full stop. If a partial carry is ever wanted, it
+   must be pre-committed in the packet.
+2. **Size detector margins against the power of their noise gates.** A flat ×1.15 ceiling factor
+   is meaningless beside a ≤5% quiet false-event allowance on a comp where quiet bins are ~85% of
+   usable bins — the margin must be credit-fraction-aware (or the ceiling test noise-corrected:
+   subtract falseRate × quietBins before comparing).
+3. **Threshold asymmetry between arms is a structural confound**: §C thresholded only the real
+   side at E_min, making O and S uninterpretable on a comp whose sim credits are dominantly
+   sub-threshold (T5: sim p50 0.212 vs reader floor 1.5). A symmetric-E_min statistic needs its
+   own pre-committed pass — it cannot be salvaged mid-run (the run correctly fenced it).
+4. **Quiet-basis regime match is part of a noise control's design**: C4's quiet spans were
+   drain-hold frames, a different render regime from in-window between-credit frames; the
+   control's number may not transfer in either direction.
+
+**Named next steps (judge-ranked):** (1) re-run C4 on a same-regime quiet basis (offCurve-
+reflagged quiet reads / between-shot spans of a solo-validated SR trace) — if the in-window
+false-event rate is ≲1%, "H-C mass present" re-stamps on iron; the single cheapest resolver.
+(2) A pre-registered noise-corrected ceiling test. (3) Source-hunt the excess event instants
+(clustered-at-visual-cause supports H-C; scattered refutes). (4) A third comp with a
+non-vacuous ceiling (T5's was cap-saturated, so the H-C detector was effectively n=1).
+(5) The symmetric-E_min variant as its own pre-op.
