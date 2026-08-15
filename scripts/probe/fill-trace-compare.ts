@@ -59,7 +59,14 @@ export const CLASS_STAMP_SHARE = 0.6;
 /** H-C threshold: off-schedule surplus at/above this share of surplus gauge. */
 export const HC_SHARE = 0.3;
 
-/** Reader flags that make a `filling` read untrustworthy. Union of the reader's own taxonomy. */
+/**
+ * Reader flags that make a `filling` read untrustworthy. Union of the reader's own taxonomy.
+ * `offCurve` (added 2026-08-14) closes the leak this tool's own monotonicity census exposed:
+ * multi-frame spurious-high excursions escaped `spike` and poisoned the `levelDrop` re-anchor,
+ * leaving 11 of 36 refill windows with clean-set monotonicity violations (worst 91%). The
+ * committed replay bundles predate the flag — their traces carry no `offCurve` read, so their
+ * pinned results reproduce unchanged; traces emitted by the current reader do carry it.
+ */
 export const DIRTY_FLAGS = [
   'lowFill',
   'flash',
@@ -67,6 +74,7 @@ export const DIRTY_FLAGS = [
   'spike',
   'nonMonotonic',
   'levelDrop',
+  'offCurve',
   'noDarkTrack',
   'burstRender',
   'drainTail',
@@ -929,6 +937,357 @@ export function analyzeComp(
   };
 }
 
+// ---------------------------------------------------------------------------
+// OPENING-WINDOW OBSERVABLE (step 1a of docs/handoffs/2026-08-14-burst-gen-next-session.md)
+//
+// QUESTION it makes measurable: does ANY gauge bank during the ~1.45-1.52s the drained Full-Burst
+// bar holds the widget slot after FB-end, before the charging bar paints? Two rival accounts:
+//   * BANK-FROM-FB-END  — generation starts at FB-end; whatever accumulated during the hold is
+//     already in the bar when it first paints. Prediction: fill at paint ~= holdSec x in-window
+//     rate (given per prediction below at sim credit sizes AND at the real visible-span rate).
+//   * BANK-FROM-BAR-PAINT — nothing banks until the charging bar exists. Prediction: fill at
+//     paint ~= 0, and the early visible trace extrapolates back to ~0 at the paint instant.
+//
+// OBSERVABLES, all per window (none of them is the pre-committed R statistic, and none stamps a
+// verdict — this emits measurements for a later /scientific-method pass):
+//   * paintFill        — fillRaw at the charging bar's first paint (low-fill band: owner-ruled
+//                        unreliable in absolute terms, so it is reported, not relied on alone).
+//   * maxLowBeforeClean— the largest low-band read between paint and the first clean read.
+//   * tToExceedLow     — seconds from paint until the trace first clears the low-fill band (8%).
+//   * interceptAtPaint — the early clean trace (first OPENING_EARLY_FIT_SEC of the clean span)
+//                        extrapolated back to the paint instant. This is the primary banked-gauge
+//                        estimate: it never uses a low-band read. interceptWholeRate is the same
+//                        arithmetic with the whole-span rate, as a sensitivity check.
+//   * predBankFbEndSim — sim credits over the SAME fraction of the sim window as [fbEnd, barPaint]
+//                        (fraction mapping, as everywhere in this tool); NaN when the schedule's
+//                        amounts are untrusted or the window is unpaired.
+//   * predBankFbEndReal— realRate x holdSec: what the hold would bank at the visible-span rate.
+//   * diag (optional)  — from a `gauge-fill.py --team --diag` run: raw pre-classification pixel
+//                        reads inside the hold span, split into glow (red/magenta blink phases,
+//                        fill arithmetic is garbage there), fade (within OPENING_FADE_FRAMES of a
+//                        glow frame — decaying glow still lights columns), and quiet frames. The
+//                        quiet-frame fill level is the direct "is anything painted under the
+//                        drain render?" observable.
+// ---------------------------------------------------------------------------
+/** Early-fit span for the back-extrapolation (local slope; the real trace back-loads). */
+export const OPENING_EARLY_FIT_SEC = 0.75;
+/** Mirror of the reader's TEAM_LOW_FILL_PCT — the owner-ruled-unreliable low-fill band. */
+export const OPENING_LOW_FILL_PCT = 8;
+/** A hold frame with red or magenta fraction at/above this is a glow (blink-on) frame. */
+export const OPENING_GLOW_FRAC = 0.05;
+/** Frames this close after a glow frame still carry decaying glow — binned as fade, not quiet. */
+export const OPENING_FADE_FRAMES = 2;
+
+export interface DiagRead {
+  t: number;
+  fill: number;
+  mag: number;
+  red: number;
+  green: number;
+}
+
+export interface OpeningWindow {
+  id: number;
+  status: string;
+  fbEnd: number;
+  barPaint: number | null;
+  /** [fbEnd, barPaint] — the reader-blind hold while the drained FB bar owns the widget slot */
+  holdSec: number;
+  paintFill: number | null;
+  maxLowBeforeClean: number;
+  tToExceedLow: number;
+  firstClean: number;
+  tFirstClean: number;
+  paintToFirstCleanSec: number;
+  earlyRate: number;
+  interceptAtPaint: number;
+  interceptWholeRate: number;
+  predBankFbEndSim: number;
+  predBankFbEndReal: number;
+  diag: {
+    holdFrames: number;
+    glowFrames: number;
+    fadeFrames: number;
+    quietFrames: number;
+    quietFillMedian: number;
+    quietFillMax: number;
+    /**
+     * Despiked max: for each quiet frame, min(own fill, max of the two adjacent frames' fill) —
+     * an isolated one-frame flash (the widget swap paints a single bright frame) cannot carry it.
+     * A genuinely painted fill level persists across frames and passes through unchanged.
+     */
+    quietFillSustainedMax: number;
+    fadeFillMax: number;
+    /** the last quiet frame before the paint instant */
+    lastQuietFill: number;
+  } | null;
+}
+
+export interface OpeningResult {
+  comp: string;
+  video: string;
+  amountsTrusted: boolean;
+  windows: OpeningWindow[];
+  /** aggregates over windows with a usable intercept (>= 2 early clean reads) */
+  medianPaintFill: number;
+  medianInterceptAtPaint: number;
+  interceptIqr: { p25: number; p75: number; iqr: number };
+  medianPredBankFbEndSim: number;
+  medianPredBankFbEndReal: number;
+  medianHoldSec: number;
+  quietFillMaxAcrossWindows: number;
+  quietFillSustainedMaxAcrossWindows: number;
+}
+
+/** Minimal slice of a replay bundle that the opening observable needs. */
+export interface BundleLike {
+  simSchedule: SimSchedule;
+  trace: FillTrace;
+  result: CompResult;
+}
+
+export function openingAnalysis(
+  bundle: BundleLike,
+  diagHold: { window: number; reads: DiagRead[] }[] | null
+): OpeningResult {
+  const { simSchedule: sched, trace, result } = bundle;
+  const simRefills = sched.windows
+    .filter((w) => w.kind === 'refill')
+    .sort((a, b) => a.index - b.index);
+  const out: OpeningWindow[] = [];
+
+  for (const w of result.windows) {
+    if (w.barPaint === null) {
+      continue; // no charging-bar paint was ever observed: no opening to characterize
+    }
+    const barPaint = w.barPaint;
+    const holdSec = round(barPaint - w.fbEnd, 4);
+    const inWin = trace.reads.filter((r) => r.t >= w.fbEnd && r.t <= w.stage1);
+    const paintRead = inWin.find((r) => r.t === barPaint);
+    const paintFill = paintRead?.fillRaw ?? null;
+
+    const clean = inWin.filter(
+      (r) =>
+        isClean(r) &&
+        w.fullInstant !== null &&
+        r.t >= barPaint &&
+        r.t <= w.fullInstant
+    );
+    const lowSpan = inWin.filter(
+      (r) =>
+        r.state === 'filling' &&
+        r.fillRaw !== null &&
+        r.t >= barPaint &&
+        (clean.length === 0 || r.t < clean[0].t)
+    );
+    const maxLowBeforeClean = lowSpan.length
+      ? Math.max(...lowSpan.map((r) => r.fillRaw!))
+      : NaN;
+    const exceed = inWin.find(
+      (r) =>
+        r.state === 'filling' &&
+        r.fillRaw !== null &&
+        r.t >= barPaint &&
+        r.fillRaw >= OPENING_LOW_FILL_PCT
+    );
+    const tToExceedLow = exceed ? round(exceed.t - barPaint, 4) : NaN;
+
+    let earlyRate = NaN;
+    let interceptAtPaint = NaN;
+    let interceptWholeRate = NaN;
+    let firstClean = NaN;
+    let tFirstClean = NaN;
+    if (clean.length >= 2) {
+      const c0 = clean[0];
+      firstClean = c0.fillRaw!;
+      tFirstClean = c0.t;
+      const early = clean.filter((r) => r.t - c0.t <= OPENING_EARLY_FIT_SEC);
+      const cN = early.length >= 2 ? early[early.length - 1] : clean[1];
+      earlyRate = round((cN.fillRaw! - c0.fillRaw!) / (cN.t - c0.t), 3);
+      interceptAtPaint = round(
+        c0.fillRaw! - earlyRate * (c0.t - w.barPaint),
+        2
+      );
+      if (Number.isFinite(w.realRate)) {
+        interceptWholeRate = round(
+          c0.fillRaw! - w.realRate * (c0.t - w.barPaint),
+          2
+        );
+      }
+    }
+
+    // predictions under bank-from-FB-end
+    const simWin = simRefills[w.id - 1];
+    let predBankFbEndSim = NaN;
+    if (
+      result.amountsTrusted &&
+      simWin &&
+      !simWin.truncated &&
+      Number.isFinite(w.wholeWindowSec)
+    ) {
+      const fPaint = holdSec / w.wholeWindowSec;
+      const simWhole = simWin.endSec - simWin.startSec;
+      const m = simTeamSumByFrame(
+        sched.credits,
+        simWin.startSec - 1e-9,
+        simWin.startSec + fPaint * simWhole
+      );
+      predBankFbEndSim = round(
+        [...m.values()].reduce((a, b) => a + b, 0),
+        2
+      );
+    }
+    const predBankFbEndReal = Number.isFinite(w.realRate)
+      ? round(w.realRate * holdSec, 2)
+      : NaN;
+
+    // diag: raw pixel reads inside the hold span
+    let diag: OpeningWindow['diag'] = null;
+    const dh = diagHold?.find((d) => d.window === w.id);
+    if (dh) {
+      const reads = dh.reads;
+      const glow = reads.map(
+        (r) => r.red >= OPENING_GLOW_FRAC || r.mag >= OPENING_GLOW_FRAC
+      );
+      const fade = reads.map((_, i) => {
+        if (glow[i]) {
+          return false;
+        }
+        for (let k = 1; k <= OPENING_FADE_FRAMES; k += 1) {
+          if (glow[i - k] || glow[i + k]) {
+            return true;
+          }
+        }
+        return false;
+      });
+      const quiet = reads.filter((_, i) => !glow[i] && !fade[i]);
+      const fadeReads = reads.filter((_, i) => fade[i]);
+      const quietFills = quiet.map((r) => r.fill);
+      const sustained = reads
+        .map((r, i) => {
+          if (glow[i] || fade[i]) {
+            return null;
+          }
+          const nb = Math.max(reads[i - 1]?.fill ?? 0, reads[i + 1]?.fill ?? 0);
+          return Math.min(r.fill, nb);
+        })
+        .filter((x): x is number => x !== null);
+      diag = {
+        holdFrames: reads.length,
+        glowFrames: glow.filter(Boolean).length,
+        fadeFrames: fadeReads.length,
+        quietFrames: quiet.length,
+        quietFillMedian: quietFills.length ? round(median(quietFills), 2) : NaN,
+        quietFillMax: quietFills.length ? Math.max(...quietFills) : NaN,
+        quietFillSustainedMax: sustained.length ? Math.max(...sustained) : NaN,
+        fadeFillMax: fadeReads.length
+          ? Math.max(...fadeReads.map((r) => r.fill))
+          : NaN,
+        lastQuietFill: quiet.length ? quiet[quiet.length - 1].fill : NaN,
+      };
+    }
+
+    out.push({
+      id: w.id,
+      status: w.status,
+      fbEnd: w.fbEnd,
+      barPaint: w.barPaint,
+      holdSec,
+      paintFill,
+      maxLowBeforeClean,
+      tToExceedLow,
+      firstClean,
+      tFirstClean,
+      paintToFirstCleanSec: Number.isFinite(tFirstClean)
+        ? round(tFirstClean - w.barPaint, 4)
+        : NaN,
+      earlyRate,
+      interceptAtPaint,
+      interceptWholeRate,
+      predBankFbEndSim,
+      predBankFbEndReal,
+      diag,
+    });
+  }
+
+  // Aggregates exclude `dropped` windows: the pre-committed R1 coverage rule already declares
+  // their visible span unusable (reported, not used), and a sparse clean span makes the
+  // back-extrapolation meaningless (a 2.3s gap to the first clean read on one such window).
+  const usable = out.filter((w) => w.status !== 'dropped');
+  const withIntercept = usable.filter((w) =>
+    Number.isFinite(w.interceptAtPaint)
+  );
+  const intercepts = withIntercept.map((w) => w.interceptAtPaint);
+  const r = iqr(intercepts);
+  const quietMaxes = out
+    .map((w) => w.diag?.quietFillMax)
+    .filter((x): x is number => x !== undefined && Number.isFinite(x));
+  return {
+    comp: result.comp,
+    video: result.video,
+    amountsTrusted: result.amountsTrusted,
+    windows: out,
+    medianPaintFill: round(
+      median(
+        usable.map((w) => w.paintFill).filter((x): x is number => x !== null)
+      ),
+      2
+    ),
+    medianInterceptAtPaint: round(median(intercepts), 2),
+    interceptIqr: {
+      p25: round(r.p25, 2),
+      p75: round(r.p75, 2),
+      iqr: round(r.iqr, 2),
+    },
+    medianPredBankFbEndSim: round(
+      median(
+        withIntercept
+          .map((w) => w.predBankFbEndSim)
+          .filter((x) => Number.isFinite(x))
+      ),
+      2
+    ),
+    medianPredBankFbEndReal: round(
+      median(
+        withIntercept
+          .map((w) => w.predBankFbEndReal)
+          .filter((x) => Number.isFinite(x))
+      ),
+      2
+    ),
+    medianHoldSec: round(median(out.map((w) => w.holdSec)), 3),
+    quietFillMaxAcrossWindows: quietMaxes.length
+      ? Math.max(...quietMaxes)
+      : NaN,
+    quietFillSustainedMaxAcrossWindows: (() => {
+      const xs = out
+        .map((w) => w.diag?.quietFillSustainedMax)
+        .filter((x): x is number => x !== undefined && Number.isFinite(x));
+      return xs.length ? Math.max(...xs) : NaN;
+    })(),
+  };
+}
+
+/** Extract hold-span diag reads (fbEnd -> barPaint) from a `--diag` reader trace. */
+export function extractDiagHold(
+  diagTrace: {
+    reads: (FillRead & { diag?: Omit<DiagRead, 't'> })[];
+  },
+  result: CompResult
+): { window: number; reads: DiagRead[] }[] {
+  const out: { window: number; reads: DiagRead[] }[] = [];
+  for (const w of result.windows) {
+    if (w.barPaint === null) {
+      continue;
+    }
+    const reads = diagTrace.reads
+      .filter((r) => r.diag && r.t >= w.fbEnd && r.t < w.barPaint!)
+      .map((r) => ({ t: r.t, ...r.diag! }));
+    out.push({ window: w.id, reads });
+  }
+  return out;
+}
+
 /** The section-C decision rule, applied mechanically. */
 export function decisionRule(
   perComp: { comp: string; medianR: number; iqr: number; readable: number }[]
@@ -1134,8 +1493,97 @@ function tables(bundlePaths: string[]): string {
   return out.join('\n');
 }
 
+function openingCli(): void {
+  const bundlePath = process.argv[3];
+  if (!bundlePath || bundlePath.startsWith('--')) {
+    throw new Error(
+      'usage: fill-trace-compare.ts opening <bundle json> [--diag <gauge-fill --diag trace>] [--artifact <out json>]'
+    );
+  }
+  const bundle = JSON.parse(readFileSync(bundlePath, 'utf8')) as BundleLike;
+  const diagPath = arg('diag');
+  let diagHold: { window: number; reads: DiagRead[] }[] | null = null;
+  if (diagPath) {
+    const diagTrace = JSON.parse(readFileSync(diagPath, 'utf8')) as {
+      reads: (FillRead & { diag?: Omit<DiagRead, 't'> })[];
+    };
+    diagHold = extractDiagHold(diagTrace, bundle.result);
+  }
+  const res = openingAnalysis(bundle, diagHold);
+
+  const artifact = arg('artifact');
+  if (artifact) {
+    writeFileSync(
+      artifact,
+      `${JSON.stringify(
+        {
+          _note:
+            'Opening-window observable (step 1a, docs/handoffs/2026-08-14-burst-gen-next-session.md): ' +
+            'does any gauge bank while the drained Full-Burst bar holds the widget slot, before the ' +
+            'charging bar paints? Self-contained: `diagHold` carries the raw hold-span pixel reads ' +
+            'from a gauge-fill.py --team --diag run, so the analysis replays without the gitignored ' +
+            'video. Replayed by scripts/tests/probe/fill-trace-opening.test.ts. MEASUREMENT ONLY — ' +
+            'no verdict; the hypothesis classification belongs to a /scientific-method pass.',
+          bundle: bundlePath,
+          commands: {
+            diag:
+              'scripts/probe/gauge-fill.py --team --frames fine --fps 60 --lock-frames lock ' +
+              '--crop 280:70:2342:465 --diag --spans "$(npx tsx scripts/probe/fill-trace-compare.ts ' +
+              'spans --fixture <fixture>)"',
+            opening:
+              'npx tsx scripts/probe/fill-trace-compare.ts opening <bundle> --diag <diag trace> ' +
+              '--artifact <this file>',
+          },
+          diagHold,
+          result: res,
+        },
+        null,
+        1
+      )}\n`
+    );
+    process.stdout.write(`wrote ${artifact}\n`);
+  }
+
+  const n = (x: number | null): string =>
+    x === null || !Number.isFinite(x as number) ? '—' : String(x);
+  process.stdout.write(
+    `\n===== OPENING-WINDOW OBSERVABLE — ${res.comp} =====\n` +
+      `video ${res.video}\n` +
+      `amounts trusted: ${res.amountsTrusted ? 'yes' : 'NO (predBankFbEndSim void)'}\n\n` +
+      `win  hold(s)  paintFill  maxLow  t>8%   firstClean@t        earlyRate  intercept@paint (whole-rate)  predSim  predReal | quiet n/med/max/last  fadeMax\n` +
+      res.windows
+        .map((w) => {
+          const d = w.diag;
+          return (
+            `${String(w.id).padStart(3)}  ${String(w.holdSec).padStart(6)}  ${String(n(w.paintFill)).padStart(8)}  ` +
+            `${String(n(w.maxLowBeforeClean)).padStart(6)}  ${String(n(w.tToExceedLow)).padStart(5)}  ` +
+            `${String(n(w.firstClean)).padStart(6)}@${String(n(w.paintToFirstCleanSec)).padEnd(7)}  ` +
+            `${String(n(w.earlyRate)).padStart(8)}  ${String(n(w.interceptAtPaint)).padStart(10)} (${n(w.interceptWholeRate)})  ` +
+            `${String(n(w.predBankFbEndSim)).padStart(7)}  ${String(n(w.predBankFbEndReal)).padStart(8)}` +
+            (d
+              ? ` | ${d.quietFrames}/${n(d.quietFillMedian)}/${n(d.quietFillMax)}(${n(d.quietFillSustainedMax)})/${n(d.lastQuietFill)}  ${n(d.fadeFillMax)}`
+              : ' | —') +
+            `  ${w.status}`
+          );
+        })
+        .join('\n') +
+      `\n\nmedians: hold ${n(res.medianHoldSec)}s · paintFill ${n(res.medianPaintFill)} · ` +
+      `intercept@paint ${n(res.medianInterceptAtPaint)} (IQR ${n(res.interceptIqr.iqr)} ` +
+      `[${n(res.interceptIqr.p25)}, ${n(res.interceptIqr.p75)}])\n` +
+      `predictions if banking ran from FB-end: sim-credit sizes ${n(res.medianPredBankFbEndSim)} · ` +
+      `at the visible-span real rate ${n(res.medianPredBankFbEndReal)}\n` +
+      `prediction if banking starts at bar-paint: 0\n` +
+      `quiet-frame fill max across hold spans: ${n(res.quietFillMaxAcrossWindows)} ` +
+      `(sustained, despiked: ${n(res.quietFillSustainedMaxAcrossWindows)})\n`
+  );
+}
+
 function main(): void {
   const mode = process.argv[2];
+  if (mode === 'opening') {
+    openingCli();
+    return;
+  }
   if (mode === 'tables') {
     process.stdout.write(
       `${tables(process.argv.slice(3).filter((a) => !a.startsWith('--')))}\n`

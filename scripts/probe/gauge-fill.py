@@ -124,6 +124,19 @@ LOCK METHOD (explicit, reported, and refuses rather than guessing)
 STATES (`state`) — only `filling` and `full` carry gauge; every other state has fillRaw = null:
   filling | full | chain | burstRender | fullburst | flash | unknown
 
+DIAG MODE (--diag, team only) — the opening-window observable (2026-08-14, step 1a of
+docs/handoffs/2026-08-14-burst-gen-next-session.md). The artifact resolver nulls fillRaw on every
+non-charging render BY DESIGN; --diag additionally records, for EVERY frame, what the widget's
+pixels contain before any classification: `diag = {fill, mag, red, green}` where `fill` is the raw
+dark-track arithmetic (100 * litColumns / width) applied unconditionally and mag/red/green are the
+colour-mask fractions over the locked band. Purpose: during the ~1.5s after a Full Burst when the
+drained drain-bar still owns the widget slot (the reader's known blind spot), diag.fill answers
+whether ANY fill-like paint exists under/behind the drain render — i.e. whether the blind spot is a
+rendering fact of the game (nothing to read) or a flag-taxonomy choice (something readable was
+discarded). diag.fill on a drain/blink/chain frame is NOT gauge and must never be fed to a rate —
+it is raw pixel arithmetic, published only so a measurement can characterize the opening. Default
+output (no --diag) is byte-identical to before the flag existed.
+
 ARTIFACT FLAGS (per frame, in `flags`) — these are the reasons a team read is NOT trustworthy:
   * `lowFill`   — fill < TEAM_LOW_FILL_PCT. Owner-ruled UI artifact (the bar's first paint and the
                   "BURST" label both paint low-fill pixels), NOT gauge. Absolute low-fill levels
@@ -149,6 +162,22 @@ ARTIFACT FLAGS (per frame, in `flags`) — these are the reasons a team read is 
                   every honest read after it.
   * `noDarkTrack` — diagnostic: no unfilled columns at all. On a `full` frame that is the real thing;
                   on a `flash` frame it is the animation.
+  * `offCurve`  — the read is inconsistent with the window's DOMINANT monotone fill curve (added
+                  2026-08-14, second pass). Gauge only rises inside a refill window, so the honest
+                  reads of a window form one non-decreasing curve; the largest set of reads
+                  consistent with such a curve (within TEAM_NOISE_PCT, persistence-weighted — every
+                  frame is one vote) IS that curve, and every read off it is an artifact. This is
+                  the flag that closes the taxonomy leak the 2026-08-14 fill-trace measurement
+                  found: a gain-pulse/paint-in excursion reading spuriously HIGH for >= 2
+                  consecutive frames escapes `spike` (which only tests ISOLATED one-frame jumps),
+                  survives as a "clean" read, and then `levelDrop` re-anchors the baseline BELOW it
+                  — so the phantom high itself stayed clean and every honest read after it read as
+                  a monotonicity violation downstream (11 of 36 refill windows in the fill-trace
+                  clean set, worst apparent drop 91%: docs/handoffs/2026-08-14-fill-trace-deliverable.md
+                  §6 — the deliverable's "24 of 36 have zero" counted the coverage-dropped window
+                  I-5, whose census never ran). The persistence vote decides WHICH side of a
+                  contradiction is honest: a brief high excursion loses to the sustained curve the
+                  trace returns to.
 
 VALIDATION STATUS OF TEAM MODE (2026-08-14) — scored ONLY against sim-independent labels, i.e. the
 committed detector fixtures `docs/probe-data/tempo-cycle-u8-g-iron-sweep.json` and
@@ -184,6 +213,7 @@ usage: gauge-fill.py --frames <dir> --fps <n> [--at <s>] [--calib-frame <i>] [--
        gauge-fill.py --team --frames <dir> --fps <n> [--at <s>] [--lock-frames <dir>]
                      [--crop <w:h:x:y>] [--bar <y0:y1:x0:x1>] [--spans <a-b,c-d,...>]
                      [--out <file>]
+       gauge-fill.py --reflag <trace-or-bundle.json> [--out <file>]   # offCurve pass only
 
   # the documented team crop (2622x1206 landscape, after auto-rotate) and a whole-video lock set:
   ffmpeg -i VIDEO -vf "fps=5,crop=280:70:2342:465"  lock/f_%05d.png
@@ -410,28 +440,39 @@ def gate_team_width(band, extent, who):
               f'any fill percentage.', file=sys.stderr)
 
 
-def read_team_fill(img, band, extent):
-    """Return (state, fillPct|None, flags) for one frame of a TEAM recording."""
+def read_team_fill(img, band, extent, diag=False):
+    """Return (state, fillPct|None, flags, diag|None) for one frame of a TEAM recording.
+
+    The 4th element is None unless diag=True, in which case it carries the RAW per-frame pixel
+    measurements taken BEFORE any state classification (see DIAG MODE in the module docstring).
+    """
     (y0, y1), (x0, x1) = band, extent
     seg = img[y0:y1 + 1, x0:x1 + 1]
     if seg.size == 0:
-        return 'unknown', None, []
-    if magenta_mask(seg).mean() >= TEAM_MAG_FRAC:
-        return 'fullburst', None, ['fullBurstDrain']
-    if green_mask(seg).mean() >= GREEN_FRAC:
-        return 'full', 100.0, ['greenFull']
-    if red_mask(seg).mean() >= TEAM_RED_FRAC:
-        return 'burstRender', None, ['burstRender']
+        return 'unknown', None, [], None
+    mag = magenta_mask(seg).mean()
+    grn = green_mask(seg).mean()
+    red = red_mask(seg).mean()
     cols = seg.mean(axis=2).mean(axis=0)
     width = x1 - x0 + 1
     dark = int((cols < DARK_MAX).sum())
     fill = round(100.0 * (width - dark) / width, 1)
+    d = None
+    if diag:
+        d = {'fill': fill, 'mag': round(float(mag), 3),
+             'red': round(float(red), 3), 'green': round(float(grn), 3)}
+    if mag >= TEAM_MAG_FRAC:
+        return 'fullburst', None, ['fullBurstDrain'], d
+    if grn >= GREEN_FRAC:
+        return 'full', 100.0, ['greenFull'], d
+    if red >= TEAM_RED_FRAC:
+        return 'burstRender', None, ['burstRender'], d
     flags = []
     if dark == 0:
         flags.append('noDarkTrack')
     if fill < TEAM_LOW_FILL_PCT:
         flags.append('lowFill')
-    return 'filling', fill, flags
+    return 'filling', fill, flags, d
 
 
 def resolve_team_artifacts(reads):
@@ -569,7 +610,139 @@ def resolve_team_artifacts(reads):
                 run_max = v
             else:
                 r['flags'].append('nonMonotonic')  # a transient dip: reader noise, not gauge
+
+    # 6. the dominant-curve pass (`offCurve`) — catches what 5 structurally cannot: a multi-frame
+    #    spurious-high excursion is not an isolated `spike`, and once `levelDrop` re-anchors the
+    #    baseline below it the phantom read itself stays "clean". Judging every read against the
+    #    window's persistence-weighted dominant monotone curve condemns the excursion instead.
+    flag_off_curve(reads)
     return reads
+
+
+def _dominant_chain(vals, tol):
+    """Indices of the LARGEST subset of `vals` consistent with one non-decreasing fill curve.
+
+    Consistency is judged against the chain's RUNNING MAX (each kept read must sit within `tol`
+    below every read kept before it), not merely against the previous element — an
+    adjacent-only tolerance would let a chain ratchet downhill `tol` at a time. Exact
+    O(n^2 * frontier) dynamic program over a Pareto frontier of (length, runningMax) per
+    endpoint: longer is better, and between equal lengths a lower running max can only extend
+    further. Deterministic; ties prefer the lower curve.
+    """
+    n = len(vals)
+    if n == 0:
+        return set()
+    frontiers = []  # frontiers[j] = [(length, runningMax, prevIndex, prevFrontierSlot), ...]
+    for j in range(n):
+        cand = [(1, vals[j], -1, -1)]
+        for i in range(j):
+            for k, (ln, m, _, _) in enumerate(frontiers[i]):
+                if vals[j] >= m - tol:
+                    cand.append((ln + 1, max(m, vals[j]), i, k))
+        cand.sort(key=lambda c: (-c[0], c[1]))
+        front = []
+        best_m = None
+        for c in cand:  # Pareto prune: keep strictly-improving running max as length falls
+            if best_m is None or c[1] < best_m:
+                front.append(c)
+                best_m = c[1]
+        frontiers.append(front)
+    bj = bk = 0
+    best = (0, 0.0)
+    for j in range(n):
+        for k, (ln, m, _, _) in enumerate(frontiers[j]):
+            if (ln, -m) > best:
+                best = (ln, -m)
+                bj, bk = j, k
+    chain = set()
+    while bj != -1:
+        chain.add(bj)
+        _, _, bj, bk = frontiers[bj][bk]
+    return chain
+
+
+def flag_off_curve(reads):
+    """Second artifact pass: flag every read inconsistent with its window's dominant monotone
+    curve as `offCurve`. See the ARTIFACT FLAGS docstring — this closes the multi-frame
+    spurious-high leak that `spike` (isolated frames only) and `levelDrop` (re-anchors BELOW the
+    phantom) leave open. Pure and idempotent over resolved reads, so it can also be re-applied to
+    an already-emitted trace (`--reflag`). Returns the number of newly flagged reads.
+    """
+    added = 0
+    runs = []
+    cur = []
+    for r in reads:  # same segmentation as the monotonicity pass: only a burst/chain render
+        if r['state'] == 'filling' and r['fillRaw'] is not None:  # ends a refill window
+            cur.append(r)
+        elif r['state'] != 'flash':
+            if cur:
+                runs.append(cur)
+            cur = []
+    if cur:
+        runs.append(cur)
+    for run in runs:
+        solid = [r for r in run if 'spike' not in r['flags']]
+        chain = _dominant_chain([r['fillRaw'] for r in solid], TEAM_NOISE_PCT)
+        for k, r in enumerate(solid):
+            if k not in chain and 'offCurve' not in r['flags']:
+                r['flags'].append('offCurve')
+                added += 1
+    return added
+
+
+def reflag_main(args):
+    """--reflag: re-run ONLY the off-curve pass on an already-emitted team trace (or a replay
+    bundle holding one), and report the clean-set monotonicity census before/after per window.
+    This is the committed instrument behind the before/after figures for the `offCurve` flag —
+    the earlier passes are not re-run (they nulled the values they condemned), so the input's
+    existing states/flags are taken as-is and only `offCurve` is added.
+    """
+    doc = json.load(open(args.reflag))
+    trace = doc['trace'] if 'trace' in doc and 'reads' in doc.get('trace', {}) else doc
+    reads = trace['reads']
+    dirty_old = {'lowFill', 'flash', 'inFlashSpan', 'spike', 'nonMonotonic', 'levelDrop',
+                 'noDarkTrack', 'burstRender', 'drainTail', 'chainRender', 'fullBurstDrain'}
+
+    def census(run, dirty):
+        clean = [r for r in run if r['state'] == 'filling' and r['fillRaw'] is not None
+                 and not (set(r['flags']) & dirty)]
+        run_max, viol, worst = -float('inf'), 0, 0.0
+        for r in clean:
+            if r['fillRaw'] < run_max - TEAM_NOISE_PCT:
+                viol += 1
+                worst = max(worst, run_max - r['fillRaw'])
+            run_max = max(run_max, r['fillRaw'])
+        return len(clean), viol, round(worst, 1)
+
+    runs = []
+    cur = []
+    for r in reads:
+        if r['state'] == 'filling' and r['fillRaw'] is not None:
+            cur.append(r)
+        elif r['state'] != 'flash':
+            if cur:
+                runs.append(cur)
+            cur = []
+    if cur:
+        runs.append(cur)
+
+    before = [census(run, dirty_old) for run in runs]
+    added = flag_off_curve(reads)
+    dirty_new = dirty_old | {'offCurve'}
+    print(f'{args.reflag}: {len(runs)} windows, {added} reads newly flagged offCurve')
+    print('win  span(s)              clean  viol/worst  ->  clean  viol/worst  offCurve(new)')
+    for i, run in enumerate(runs):
+        b = before[i]
+        a = census(run, dirty_new)
+        oc = sum(1 for r in run if 'offCurve' in r['flags'])
+        oc_new = sum(1 for r in run if 'offCurve' in r['flags']
+                     and not (set(r['flags']) - {'offCurve'}) & dirty_old)
+        print(f'{i + 1:3}  {run[0]["t"]:8.3f}-{run[-1]["t"]:8.3f}  {b[0]:5}  '
+              f'{b[1]:3}/{b[2]:<5}  ->  {a[0]:5}  {a[1]:3}/{a[2]:<5}  {oc:3} ({oc_new} were clean)')
+    if args.out:
+        with open(args.out, 'w') as fh:
+            fh.write(json.dumps(doc, indent=1))
+        print(f'wrote {args.out}')
 
 
 def parse_spans(text):
@@ -605,8 +778,13 @@ def team_main(args):
         if spans is not None and not any(a <= t <= b for a, b in spans):
             continue
         img = np.array(Image.open(f).convert('RGB')).astype(int)
-        state, fill, flags = read_team_fill(img, band, extent)
-        reads.append({'t': t, 'state': state, 'fillRaw': fill, 'flags': flags})
+        state, fill, flags, d = read_team_fill(img, band, extent, diag=args.diag)
+        read = {'t': t, 'state': state, 'fillRaw': fill, 'flags': flags}
+        if d is not None:
+            read['diag'] = d
+        reads.append(read)
+    # NOTE: the resolver mutates state/fillRaw/flags only — a read's `diag` (raw pre-classification
+    # pixel measurements) survives artifact resolution untouched, which is the whole point of it.
     resolve_team_artifacts(reads)
 
     crop = None
@@ -648,8 +826,12 @@ def team_main(args):
 
 def main():
     ap = argparse.ArgumentParser(description='Burst-gauge FILL reader (CV worker)')
-    ap.add_argument('--frames', required=True, help='directory of extracted PNG frames')
-    ap.add_argument('--fps', type=float, required=True)
+    ap.add_argument('--frames', help='directory of extracted PNG frames')
+    ap.add_argument('--fps', type=float)
+    ap.add_argument('--reflag', help='re-run ONLY the offCurve pass on an already-emitted team '
+                                     'trace JSON (or a replay bundle containing one) and print '
+                                     'the clean-set monotonicity census before/after. No frames '
+                                     'needed; add --out to write the reflagged document.')
     ap.add_argument('--at', type=float, default=0.0)
     ap.add_argument('--calib-frame', type=int, default=None,
                     help='frame index used to self-calibrate bar geometry. Default: the first '
@@ -667,8 +849,18 @@ def main():
                                    'reported lock can also be given in absolute frame coordinates.')
     ap.add_argument('--spans', help='[team] comma-separated "start-end" second ranges to emit, e.g. '
                                     '"22.0-26.2,35.6-39.8". Frames outside are read-skipped.')
+    ap.add_argument('--diag', action='store_true',
+                    help='[team] record raw pre-classification pixel measurements per frame '
+                         '(diag = {fill, mag, red, green}) alongside the resolved read — the '
+                         'opening-window observable. diag.fill on a non-charging render is NOT '
+                         'gauge; see DIAG MODE in the module docstring.')
     ap.add_argument('--out')
     args = ap.parse_args()
+
+    if args.reflag:
+        return reflag_main(args)
+    if not args.frames or args.fps is None:
+        ap.error('--frames and --fps are required (unless using --reflag)')
 
     if args.team:
         return team_main(args)
