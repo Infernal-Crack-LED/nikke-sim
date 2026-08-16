@@ -14,7 +14,7 @@
 > was decided." If STATE.md disagrees with either, STATE.md is the bug — fix it here.
 >
 > Authority order, doc taxonomy, and the update discipline that keeps this current: CONVENTIONS.md.
-> Last swept from DECISIONS + `sim.ts` on 2026-07-21.
+> Last swept from DECISIONS + `sim.ts` on 2026-07-21; probe-reader table updated 2026-08-16 for the 2026-08-15 burst-generation instruments.
 
 ---
 
