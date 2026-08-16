@@ -18,16 +18,16 @@
 //      ■ self (Additional): Normal attacks deal true damage for 10 sec  (trueNormals on the swap) [T7]
 //      ■ targets hit (Additional): Damage Taken ▲6.04% for 5 sec  (swap-weapon hits)           [T8]
 //
-// SKILL2 STEADY-STATE MODELING (why S2 is a permanent uptime-average, not a 5s/10s timed pulse): the S2 prose
-// carries NO trigger/cooldown clause; the datamine skill2 table is a passive `CharacterSkill` with no
-// `skill_cooltime`. Prydwen (COMMUNITY ⚑) lists a 15s cooldown pulse. The engine cannot pulse a passive-trigger
-// buff (a passive trigger ignores durationSec — sim.ts:983-993 — so encoding 10.09%/5s as passive+durationSec
-// would be a 100%-uptime permanent, OVER-crediting). The faithful steady-state is the UPTIME-AVERAGE over the
-// 15s cycle: enemy damageTakenPct 10.09 × 5/15 = 3.36 (33% uptime), ally trueDamagePct 140.49 × 10/15 = 93.66
-// (67% uptime), both encoded as frame-0 permanents. The 15s cooldown is COMMUNITY-sourced (⚑, needs measurement);
-// the durations 5s/10s are the prose's own. This is a documented CALIBRATED ⚑, not a silent value change.
+// SKILL2 PULSE MODELING (owner ruling 2026-08-16): the 15s skill2 cooldown is CONFIRMED correct
+// (data/characters.json skillCooldownsSec.skill2 = 15; the always-on uptime-average encoding this spec
+// previously pinned is INCORRECT). S2 is an interval:15 pulse pair — enemies Damage Taken ▲10.09% for 5 sec,
+// allies True Damage ▲140.49% for 10 sec — at the prose's raw magnitudes and durations. First fire at t=15s
+// (the interval-trigger first-fire convention — S2 has no "at the start of battle" clause, unlike S1; ⚑ phase
+// is convention, pin from footage if a recording ever reads it). The enemy pulse is a non-damage enemy-debuff
+// application, so each application credits takina's datamined per-trigger gauge value (560 → 5.6 bar-%) via
+// applicationGauge — the iron-sweep-relevant generation channel.
 //
-// EVENT-LOG CONVENTIONS (measured for this fixture): boss-held debuffs (the S2 enemy damageTakenPct 3.36 and the
+// EVENT-LOG CONVENTIONS (measured for this fixture): boss-held debuffs (the S2 enemy damageTakenPct 10.09 and the
 // burst target-hit damageTakenPct 6.04) emit buffApply with casterIdx===null AND targetIdx===null, but the buff
 // KEY carries the caster SLOT (`<slot>:<skillSlot>:<stat>:<value>`, takina = slot 1) — so they are read by
 // stat+value+targetIdxnull, never by casterIdx. Ally/self buffs carry casterIdx===1 normally.
@@ -43,12 +43,13 @@
 //   T3  "when entering Full Burst → self True Damage ▲35.05% for 15 sec" = trueDamagePct 35.05, fullBurstEnter,
 //       target self, 15s. Nearest-wrong (a): trigger burstCast (lands on takina's CAST frames, strictly BEFORE
 //       the FB-START frames). (b): duration 5s vs the prose 15s. Frame-discriminated.
-//   T4  "all enemies: Damage Taken ▲10.09% for 5 sec" = damageTakenPct 3.36 (uptime-average ⚑), passive, target
-//       the boss (targetIdx null), permanent. Nearest-wrong (a): value 10.09 (the raw prose magnitude, ignoring
-//       the 15s-pulse uptime-average). (b): target allies (would buff the team, not debuff the boss).
-//   T5  "all allies: True Damage ▲140.49% for 10 sec" = trueDamagePct 93.66 (uptime-average ⚑), passive, target
-//       allies (all 3 slots incl. takina), permanent. Nearest-wrong (a): value 140.49 (raw prose, no uptime-
-//       average). (b): target enemy (would debuff the boss, not buff the team).
+//   T4  "all enemies: Damage Taken ▲10.09% for 5 sec" = damageTakenPct 10.09, interval:15, durationSec 5,
+//       target the boss (targetIdx null). First fire frame 900, cadence 900f. Nearest-wrong (a): the retired
+//       uptime-average permanent (3.36 @ frame 0, no expiry — the pre-2026-08-16 encoding). (b): target allies
+//       (would buff the team, not debuff the boss). T4b pins the applicationGauge credit per pulse.
+//   T5  "all allies: True Damage ▲140.49% for 10 sec" = trueDamagePct 140.49, interval:15, durationSec 10,
+//       target allies (all 3 slots incl. takina). First fire frame 900, cadence 900f. Nearest-wrong (a): the
+//       retired uptime-average permanent (93.66 @ frame 0). (b): target enemy (would strip the team buff).
 //   T6  PIN (documented skip): the S2 "Stuns for 2 sec" is UNMODELED (boss-inert: the partless boss does not
 //       fire/charge/reload, so a stun changes nothing). The S2 SLOT is active (it emits the T4 enemy debuff +
 //       T5 ally buff). Assert: takina's skill2-keyed buffs (key prefix `1:skill2:`) emit EXACTLY the two modeled
@@ -57,7 +58,8 @@
 //   T7  "Changes the weapon in use — Damage 200.64% of final ATK, 10 sec" + "Normal attacks deal true damage for
 //       10 sec" = burstCast → self weaponSwap damagePct 200.64, 10s, trueNormals:true. The swap shots (atkPct
 //       200.64) exist; removing the swap block removes them. trueNormals makes the swap shots TRUE-flavored, which
-//       routes the trueDamagePct buffs (T3 35.05 + T5 93.66) into their Damage-Up bucket (trueDamagePct is
+//       routes the trueDamagePct buffs (T3 35.05 + the T5 140.49 pulse when its window overlaps) into their
+//       Damage-Up bucket (trueDamagePct is
 //       flavor-gated — sim.ts:1414 — it applies ONLY to true-flavored hits). Nearest-wrong (a): weaponSwap removed
 //       → no 200.64 shots. (b): trueNormals:false → swap shots lose the true flavor → their dmgUp drops by the
 //       trueDamagePct contribution (strictly lower than the faithful swap shots). [ENGINE NOTE: true swap normals
@@ -86,7 +88,12 @@
 // Slot order: liter 0 / takina 1 / helm 2.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, withPatchedOverride } from '../lib/harness.js';
+import {
+  bareWeaponOverride,
+  runComp,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
 
 const FPS = 60;
@@ -201,8 +208,8 @@ const cfS1TrueDur5 = withPatchedOverride('takina', (ov: any) => {
   }
   eff(b, 'trueDamagePct').durationSec = 5;
 });
-// T4 nearest-wrong (value): the enemy debuff at the RAW prose magnitude 10.09 (no uptime-average).
-const cfS2TakenRaw = withPatchedOverride('takina', (ov: any) => {
+// T4 nearest-wrong (shape): the RETIRED uptime-average permanent (3.36, passive, no duration).
+const cfS2TakenAveraged = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'damageTakenPct')
   );
@@ -211,7 +218,10 @@ const cfS2TakenRaw = withPatchedOverride('takina', (ov: any) => {
       'takina S2 enemy damageTaken block missing — fixture is stale'
     );
   }
-  eff(b, 'damageTakenPct').value = 10.09;
+  b.trigger = { kind: 'passive' };
+  const e = eff(b, 'damageTakenPct');
+  e.value = 3.36;
+  delete e.durationSec;
 });
 // T4 nearest-wrong (target): enemy → allies (buff the team instead of debuffing the boss).
 const cfS2TakenAllies = withPatchedOverride('takina', (ov: any) => {
@@ -225,8 +235,8 @@ const cfS2TakenAllies = withPatchedOverride('takina', (ov: any) => {
   }
   b.target = { kind: 'allies' };
 });
-// T5 nearest-wrong (value): the ally True Damage buff at the RAW prose magnitude 140.49 (no uptime-average).
-const cfS2TrueRaw = withPatchedOverride('takina', (ov: any) => {
+// T5 nearest-wrong (shape): the RETIRED uptime-average permanent (93.66, passive, no duration).
+const cfS2TrueAveraged = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'trueDamagePct')
   );
@@ -235,7 +245,10 @@ const cfS2TrueRaw = withPatchedOverride('takina', (ov: any) => {
       'takina S2 ally trueDamage block missing — fixture is stale'
     );
   }
-  eff(b, 'trueDamagePct').value = 140.49;
+  b.trigger = { kind: 'passive' };
+  const e = eff(b, 'trueDamagePct');
+  e.value = 93.66;
+  delete e.durationSec;
 });
 // T5 nearest-wrong (target): allies → enemy.
 const cfS2TrueEnemy = withPatchedOverride('takina', (ov: any) => {
@@ -314,9 +327,9 @@ const s1AtkFbEnter = run({ takina: cfS1AtkFbEnter });
 const s1AtkAllies = run({ takina: cfS1AtkAllies });
 const s1TrueBurstCast = run({ takina: cfS1TrueBurstCast });
 const s1TrueDur5 = run({ takina: cfS1TrueDur5 });
-const s2TakenRaw = run({ takina: cfS2TakenRaw });
+const s2TakenAveraged = run({ takina: cfS2TakenAveraged });
 const s2TakenAllies = run({ takina: cfS2TakenAllies });
-const s2TrueRaw = run({ takina: cfS2TrueRaw });
+const s2TrueAveraged = run({ takina: cfS2TrueAveraged });
 const s2TrueEnemy = run({ takina: cfS2TrueEnemy });
 const noSwap = run({ takina: cfNoSwap });
 const noTrueNormals = run({ takina: cfNoTrueNormals });
@@ -429,51 +442,93 @@ describe('takina — kit spec', () => {
     });
   });
 
-  describe('T4 — S2 all enemies: Damage Taken ▲10.09%/5s ⇒ uptime-average damageTakenPct 3.36 (passive permanent ⚑)', () => {
-    const taken = bossDebuff(base.events, 'damageTakenPct', 3.36);
-    it('is a permanent (no expiry) frame-0 debuff on the BOSS (targetIdx null), value 3.36', () => {
-      expect(taken.length).toBeGreaterThan(0);
-      expect(taken.every((b) => b.value === 3.36 && b.targetIdx === null)).toBe(
-        true
-      );
-      expect(dursOf(taken)).toEqual([null]);
-      expect(Math.min(...taken.map((b) => b.frame))).toBe(0);
-    });
-    it('DISCRIMINATING (value): the raw prose 10.09 (nearest-wrong, no uptime-average) is NOT the faithful encoding', () => {
-      expect(bossDebuff(s2TakenRaw.events, 'damageTakenPct', 3.36).length).toBe(
-        0
-      );
+  describe('T4 — S2 all enemies: Damage Taken ▲10.09% for 5s, 15s-cooldown pulse (interval:15, owner-confirmed CD 2026-08-16)', () => {
+    const taken = bossDebuff(base.events, 'damageTakenPct', 10.09);
+    it('pulses 10.09 on the BOSS (targetIdx null): first fire at frame 900 (t=15s), 900-frame cadence, 5s windows', () => {
+      expect(taken.length).toBeGreaterThanOrEqual(11);
       expect(
-        bossDebuff(s2TakenRaw.events, 'damageTakenPct', 10.09).length
-      ).toBeGreaterThan(0);
+        taken.every((b) => b.value === 10.09 && b.targetIdx === null)
+      ).toBe(true);
+      expect(dursOf(taken)).toEqual([5 * FPS]);
+      const frames = taken.map((b) => b.frame);
+      expect(Math.min(...frames)).toBe(15 * FPS);
+      expect(frames.every((f) => f % (15 * FPS) === 0)).toBe(true);
+    });
+    it('DISCRIMINATING (shape): the retired uptime-average permanent (3.36 @ frame 0, no expiry) is NOT emitted', () => {
+      expect(bossDebuff(base.events, 'damageTakenPct', 3.36).length).toBe(0);
+      const avg = bossDebuff(s2TakenAveraged.events, 'damageTakenPct', 3.36);
+      expect(avg.length).toBeGreaterThan(0);
+      expect(dursOf(avg)).toEqual([null]);
+      expect(Math.min(...avg.map((b) => b.frame))).toBe(0);
     });
     it('DISCRIMINATING (target): allies (nearest-wrong) buffs the team (casterIdx takina, all slots), not the boss', () => {
-      const cf = tkBuff(s2TakenAllies.events, 'damageTakenPct', 3.36);
+      const cf = tkBuff(s2TakenAllies.events, 'damageTakenPct', 10.09);
       expect(targetsOf(cf)).toEqual(ALL_SLOTS);
       expect(
-        bossDebuff(s2TakenAllies.events, 'damageTakenPct', 3.36).length
+        bossDebuff(s2TakenAllies.events, 'damageTakenPct', 10.09).length
       ).toBe(0);
     });
   });
 
-  describe('T5 — S2 all allies: True Damage ▲140.49%/10s ⇒ uptime-average trueDamagePct 93.66 (passive permanent ⚑)', () => {
-    const td = tkBuff(base.events, 'trueDamagePct', 93.66);
-    it('is a permanent (no expiry) frame-0 buff on ALL allies (incl. takina), value 93.66', () => {
-      expect(td.length).toBeGreaterThan(0);
-      expect(td.every((b) => b.value === 93.66)).toBe(true);
+  describe('T4b — each S2 enemy pulse credits applicationGauge (takina targetPerTrigger 560 → 5.6 bar-%)', () => {
+    it('paired 40s no-burst delta vs the S2 enemy block removed = 2 applications × 5.6', () => {
+      // Applications at t=15 and t=30 in 40s. The stripped arm keeps the ally True Damage block
+      // (no gauge: ally-targeted) and every damage-side effect of the debuff does not change her
+      // fire cadence, so the gaugeGenerated delta is exactly the two application credits.
+      // 5.6 = data/gauge-per-shot.json takina targetPerTrigger 560 / 100 (datamined row; the
+      // engine-level mechanism is pinned in scripts/tests/engine/application-gauge.test.ts).
+      const strip = withPatchedOverride('takina', (ov: any) => {
+        const before = ov.skill2.length;
+        ov.skill2 = ov.skill2.filter(
+          (b: any) => !b.effects.some((e: any) => e.stat === 'damageTakenPct')
+        );
+        if (ov.skill2.length === before) {
+          throw new Error(
+            'takina S2 enemy damageTaken block missing — fixture is stale'
+          );
+        }
+      });
+      const g = (takinaOv?: any) =>
+        unitOf(
+          runComp({
+            slugs: ['takina', 'crown'],
+            bossElement: 'Iron',
+            focusSlug: 'takina',
+            overrides: {
+              ...(takinaOv ? { takina: takinaOv } : {}),
+              crown: bareWeaponOverride('crown'),
+            },
+            cfg: { disableBursts: true, durationSec: 40 },
+          }),
+          'takina'
+        ).gaugeGenerated;
+      expect(g() - g(strip)).toBeCloseTo(2 * 5.6, 6);
+    });
+  });
+
+  describe('T5 — S2 all allies: True Damage ▲140.49% for 10s, 15s-cooldown pulse (interval:15, owner-confirmed CD 2026-08-16)', () => {
+    const td = tkBuff(base.events, 'trueDamagePct', 140.49);
+    it('pulses 140.49 on ALL allies (incl. takina): first fire at frame 900 (t=15s), 900-frame cadence, 10s windows', () => {
+      expect(td.length).toBeGreaterThanOrEqual(11 * ALL_SLOTS.length);
+      expect(td.every((b) => b.value === 140.49)).toBe(true);
       expect(targetsOf(td)).toEqual(ALL_SLOTS);
-      expect(dursOf(td)).toEqual([null]);
-      expect(Math.min(...td.map((b) => b.frame))).toBe(0);
+      expect(dursOf(td)).toEqual([10 * FPS]);
+      const frames = td.map((b) => b.frame);
+      expect(Math.min(...frames)).toBe(15 * FPS);
+      expect(frames.every((f) => f % (15 * FPS) === 0)).toBe(true);
     });
-    it('DISCRIMINATING (value): the raw prose 140.49 (nearest-wrong, no uptime-average) is NOT the faithful encoding', () => {
-      expect(tkBuff(s2TrueRaw.events, 'trueDamagePct', 93.66).length).toBe(0);
-      expect(
-        tkBuff(s2TrueRaw.events, 'trueDamagePct', 140.49).length
-      ).toBeGreaterThan(0);
+    it('DISCRIMINATING (shape): the retired uptime-average permanent (93.66 @ frame 0, no expiry) is NOT emitted', () => {
+      expect(tkBuff(base.events, 'trueDamagePct', 93.66).length).toBe(0);
+      const avg = tkBuff(s2TrueAveraged.events, 'trueDamagePct', 93.66);
+      expect(avg.length).toBeGreaterThan(0);
+      expect(dursOf(avg)).toEqual([null]);
+      expect(Math.min(...avg.map((b) => b.frame))).toBe(0);
     });
-    it('DISCRIMINATING (target): enemy (nearest-wrong) removes the ally buff (no trueDamagePct 93.66 on any ally)', () => {
+    it('DISCRIMINATING (target): enemy (nearest-wrong) removes the ally buff (no trueDamagePct 140.49 on any ally)', () => {
       // trueDamagePct is a self/ally Damage-Up stat — retargeting it to `enemy` strips the team buff entirely
-      expect(tkBuff(s2TrueEnemy.events, 'trueDamagePct', 93.66).length).toBe(0);
+      expect(tkBuff(s2TrueEnemy.events, 'trueDamagePct', 140.49).length).toBe(
+        0
+      );
     });
   });
 
@@ -588,15 +643,26 @@ describe('takina — kit spec', () => {
       expect(reloads(flavorSwap.events).length).toBeGreaterThan(0);
     });
     it('the swap shots are TRUE-flavored: trueDamagePct (flavor-gated) rides their Damage-Up bucket', () => {
-      // faithful swap shots carry the trueDamagePct buffs (T3 35.05 + T5 93.66) in dmgUp
-      expect(Math.min(...swapDmgUp(base.events))).toBeGreaterThan(1.9); // ≥ +93.66% trueDamagePct alone
+      // Under the S2 pulse model the team True Damage is 140.49 for 10s of every 15 — swap shots
+      // overlapped by a pulse inside an FB window stack T3 35.05 + T5 140.49 (dmgUp ≥ 2.7554);
+      // swap shots in a non-FB window with no pulse overlap carry NO True Damage at all (dmgUp
+      // floor 1.0 — the spec consequence that discriminates the pulse from the retired permanent,
+      // whose floor was ≥ 1.9366 everywhere).
+      expect(Math.max(...swapDmgUp(base.events))).toBeGreaterThan(2.75);
+      expect(Math.min(...swapDmgUp(base.events))).toBe(1);
     });
-    it('DISCRIMINATING (flavor): trueNormals:false (nearest-wrong) strips trueDamagePct → strictly lower swap dmgUp', () => {
-      expect(swapShots(noTrueNormals.events).length).toBeGreaterThan(0);
-      // every faithful swap shot outruns every flavor-stripped swap shot (the trueDamagePct contribution)
-      expect(Math.min(...swapDmgUp(base.events))).toBeGreaterThan(
-        Math.max(...swapDmgUp(noTrueNormals.events))
-      );
+    it('DISCRIMINATING (flavor): trueNormals:false (nearest-wrong) strips trueDamagePct — paired per-shot', () => {
+      // trueNormals:false does not change cadence, so the two runs' swap shots pair by index.
+      const b = swapShots(base.events);
+      const c = swapShots(noTrueNormals.events);
+      expect(c.length).toBe(b.length);
+      expect(b.every((d, i) => d.frame === c[i].frame)).toBe(true);
+      // no stripped shot ever carries the trueDamagePct pulse tier…
+      expect(Math.max(...swapDmgUp(noTrueNormals.events))).toBeLessThan(2.4);
+      // …every faithful shot ≥ its stripped twin, and the pulse-overlapped ones strictly exceed it
+      const dmg = (d: Damage) => d.mult.dmgUp;
+      expect(b.every((d, i) => dmg(d) >= dmg(c[i]) - 1e-9)).toBe(true);
+      expect(b.filter((d, i) => dmg(d) > dmg(c[i]) + 1)).not.toHaveLength(0);
     });
   });
 

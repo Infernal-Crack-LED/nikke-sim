@@ -198,17 +198,23 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      buffs, ~1.6× shortfall) stays UNEXPLAINED — this rules out one candidate class, not the
      excess itself. **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
      U28 addendum; the pass's U41 filing was CLOSED same day as a duplicate — per-unit focus
-     multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — **OWNER-CONFIRMED 2026-08-16
-     (shooting-range test, DECISIONS entry): enemy-targeted standalone debuffs generate
-     (`jackal` S1 confirmed; per-skill exceptions stand — Noah taunt / `snow-white-heavy-arms`
-     counterexamples untouched), and debuff RE-APPLICATIONS/refreshes ALSO generate (bar ticks
-     at re-apply while not firing) — the iron-sweep refresh channel is a REAL generation
-     source.** Ally/self buffs/heals likely NO [MEDIUM], on-bullet riders add nothing
-     (anti-double-count). **Enactable follow-up (gated, not started): per-application/refresh
-     gauge MAGNITUDE is unmeasured (external sources suggest the caster's flat base per-trigger
-     value, same credit as skill-damage hits) and scope is per-skill — needs a magnitude
-     measurement + per-skill scoping pass before any `skillGauge()` engine change; then re-test
-     the iron-sweep excess against the modeled refresh channel.** (2)
+     multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — settled + enacted (owner
+     rulings, DECISIONS 2026-08-16 ×3: application/refresh generation, per-trigger magnitude,
+     generate-by-default scope; engine `applicationGauge()`, spec
+     `scripts/tests/engine/application-gauge.test.ts`). **OPEN residue — the iron-sweep FB
+     shortfall (sim 11 vs measured 13–14) is NOT closed:** `takina` S2 — the largest single
+     candidate — was re-modeled 2026-08-16 as the owner-confirmed 15s pulse (DECISIONS entry;
+     each application credits her 5.6 bar-%), and the comp still reads 11 FBs on 100% of seeds
+     (only ~2–3 of her ~11 applications land inside generating windows ≈ a sixth of one bar).
+     The `iron sweep (run G)` regression comp stays disabled. Remaining leads: audit the other
+     four kits (`d-killer-wife`/`milk-blooming-bunny`/`maxwell`/`liberalio`) for
+     re-apply-encoded-as-passive or mixed-block shapes whose applications should credit (the
+     H-A team-context route was CLOSED by owner ruling 2026-08-16 — no team-scaling credit
+     mechanism exists — so encoding audits and the anis-star U28 divisor read are what remain).
+     Also open: ⚑ four live-credit
+     units carry class-modal (not datamined) gauge rows — `eunhwa`/`ludmilla`/
+     `sakura-suzuhara`/`signal` (see the `applicationGauge` ⚑ comment) — worth a datamine
+     re-pull if any of them ever seats a graded comp. (2)
      per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
      the engine's divisor is CORROBORATED for genuine multi-muzzle units. ~~The bundled
      `anis-star` carve-out removal~~ **ENACTED 2026-08-16** via `/scientific-method` (2-of-2
@@ -316,37 +322,23 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    U28 branch (`scratchpad/gates/2026-08-13-u28-gauge/result-r4.json`); filed rather than made
    because it was outside that diff's intent and the bridges are shared by every gate skill.
 
-8. **`neon-blue-ocean` (nbo) over-models by ~2.7× and the fix is currently UNAUTHORABLE — an engine
-   hole, not just her ⚑1.** Board: sim #10 / community #57-of-70 (`docs/b3-dps-rank-audit.md`,
-   MODEL_ONLY, no measured data). **85% of her sim damage lands inside her 7s burst windows** (19%
-   of the fight): her `weaponSwap` is kit-silent on cadence, so it inherits the engine default
-   "base weapon's cadence", and for an MG that is the most aggressive assumption available — 60
-   rounds/s at the top of the wind-up ladder, belt refilled on entry, so each window fires **~301
-   shots at 33% of final ATK plus one 11% `extraHitDamagePct` rider each** (measured via
-   `DBG_UNIT=neon-blue-ocean`: swap normals 64.3% + rider 20.6% + base normals 15.0%).
-   **(a) THE ENGINE HOLE (hard, verified by inspection + A/B).** `src/engine/sim.ts` fire loop
-   branches `if (chargeFrames > 0) … else if (u.char.weapon === 'MG') { …wind-up ladder… } else
-{ …swap pullsPerSec… }` — the MG branch is keyed on the unit's **base** weapon class and never
-   reads `u.swap.pullsPerSec` / `u.swap.weapon`, so **no swap cadence is authorable on an
-   MG-base unit**. `scripts/battery/nbo-swap-cadence-ab.ts` prints **0.0% movement** for
-   `pullsPerSec: 1.5`. The field is HALF-wired: `u.swap.weapon` IS honoured for SG pellet-landing
-   (~~:1543/1547) and range/core banding (~~:1815) — the `+weapon SG` arm moves −15.8% — just not
-   for cadence. nbo is the only MG-base `weaponSwap` carrier in the tree, which is why nothing
-   caught it (`velvet`'s note already states "the MG wind-up ladder is base-weapon-gated", but she
-   swaps INTO MG from an SR base, so she takes the working branch). Also unreset: `mgRampRound`
-   survives swap entry/exit, so the new weapon starts at full spin.
-   **(b) THE READ (hypothesis-strength — do NOT enact on this alone).** Her override's ⚑1 calls
-   `skill_value_data[1] = 90` "an unlabeled integer". Across all 11 `ChangeWeapon` carriers that
-   column is positionally the swap weapon's `rate_of_fire` (÷60 = shots/s): `k` reads 144 → 2.4/s
-   and her kit TEXT independently states "Attack speed ▼90%" on an SMG (24 × 0.1 = 2.4) — an
-   independent corroboration; `velvet` reads 4200 → the shipped `pullsPerSec: 60`; `modernia`, the
-   other MG swapper, reads 4200 (= MG max), so the column does discriminate "keeps MG cadence"
-   from "doesn't". nbo's 90 → **1.5 shots/s, exactly the SG class rate**. COUNTEREXAMPLE, load-
-   bearing: `moran`'s 1440 (24/s) was board-REFUTED on video (~12/s) — but note her own COLD
-   residual asks for ~1.5× more swap-window hits, i.e. ~18/s, so that refutation is soft.
-   33%/shot at 1.5/s is a DPS _loss_ vs her base MG, which suggests the swap weapon is multi-hit
-   (SG-shaped) — unresolvable without shot `1001402`'s spec or footage.
-   **Recipe (already in her ⚑1):** one isolated nbo-solo scope-lock video — count rounds fired
-   inside one 7s window and watch the ammo counter. That single recording settles cadence, pellet
-   count and belt size at once. **Do (a) regardless of (b)**: the branch hole is a code defect that
-   silently swallows an authored field, and it blocks any fix to (b).
+8. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
+   ⚠ FIRST: the cadence landing itself is not finished shipping — branch `nbo-swap-cadence`
+   (`4aa50dfe`) is committed + `verify.sh` green but UNREVIEWED and UNPUSHED; its `/code-review`
+   result was never read. Resume from
+   `docs/handoffs/2026-08-16-nbo-swap-cadence-landing.md` on that worktree before anything below.
+   The cadence half landed 2026-08-16 (DECISIONS): her burst weapon fires at its datamined 1.5
+   shots/s, not her MG wind-up ladder, and the engine's `swapLeavesMgLadder` gate makes a swap
+   cadence readable on an MG-base unit at all. What that exposed is the open part: at 1.5 shots/s a
+   lone 33%-of-final-ATK shot is LESS throughput than simply holding her MG, so her burst currently
+   COSTS her damage — implausible for a burst skill, and pinned in that direction on purpose by
+   `scripts/tests/units/neon-blue-ocean.test.ts` (N3) so a fix has to flip it deliberately. Likely
+   resolution: the swapped weapon fires several hits per pull (90 rpm is exactly the SG class rate,
+   and an SG-shaped 10-pellet reading lands her near her own base-MG throughput). NOT enactable
+   from the tree — shot `1001402`'s spec does not ship in `characters.json`, so `weapon: 'SG'` /
+   `pelletCount` would be a second inference on top of the first. Corroborating signal that
+   something is still missing in the "too weak" direction: after the cadence landing the community
+   comparison reads Δ **+5 / +7** (sim ranks her slightly BELOW the community lists), where it read
+   −47 / −50 before. **RECIPE:** one isolated nbo-solo scope-lock recording — count rounds fired
+   inside a single 7s burst window and watch the ammo counter. That settles cadence, hits-per-pull
+   and belt size in one go. Sizing arm: `npx tsx scripts/battery/nbo-swap-cadence-ab.ts`.

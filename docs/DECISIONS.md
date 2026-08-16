@@ -9,7 +9,55 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-08-14, latest) `liberalio`'s kit-literal Charge Speed IMMUNITY is now enforced on the
+- **(2026-08-16, latest) A weapon swap on an MG-BASE unit now governs its own cadence
+  (`swapLeavesMgLadder`), and `neon-blue-ocean`'s kit-silent burst weapon is modeled at its
+  datamined 1.5 shots/s instead of her MG wind-up ladder.** Owner-directed enactment; two
+  separable halves, landed together because the first blocks the second.
+  - **The engine defect.** The fire loop branches
+    `if (chargeFrames > 0) … else if (u.char.weapon === 'MG') { …wind-up ladder… } else { …swap
+pullsPerSec… }` (`src/engine/sim.ts`). The MG branch is keyed on the unit's BASE weapon class,
+    so for an MG-base unit the ladder governed the SWAPPED gun too and `u.swap.pullsPerSec` /
+    `u.swap.weapon` were silently discarded — authorable in an override, unreadable by the engine.
+    The field was half-wired: `u.swap.weapon` was already honoured for SG pellet-landing and
+    range/core banding, just not for cadence. Proof it was dead: `scripts/battery/nbo-swap-cadence-ab.ts`
+    printed **0.0% movement** for an injected `pullsPerSec: 1.5`. The gate now diverts a swap that
+    declares a cadence or a different weapon class; one that declares neither stays on the ladder
+    (a re-valued/re-flavored MG). **Inert BY MECHANISM elsewhere** — the consumer sweep
+    `scripts/census-mg-swap-carriers.ts` (which FAILS if that stops holding) finds exactly two
+    MG-base swap carriers, and the other, `cinderella-crystal-wave`, carries `chargeTimeSec` so the
+    charge branch above routes her and she never reaches the gate. Blast radius confirmed: the
+    engine + control regressions passed with NO snapshot edit.
+  - **The value, and its tier.** `role.skillDetails.ulti_skill_detail.skill_value_data[1] = 90`,
+    which her override previously called "an unlabeled integer", is positionally the swap weapon's
+    `rate_of_fire` across the spot-checked ChangeWeapon carriers (k 144→2.4/s ✓, modernia 4200=MG
+    max ✓, velvet 4200→frame-quantized 60/s ✓); ÷60 = 1.5 shots/s under the same conversion the
+    engine already applies to the weapon table (`NOMINAL_PULLS_PER_SEC`: "AR 720→12, SMG 1440→24,
+    SG 90→1.5"). The corroboration that makes it more than a datamine read is `k`: her kit TEXT
+    states "Attack speed ▼90%" on an SMG (24 × 0.1 = 2.4/s), which is both her shipped
+    `pullsPerSec` and her column's 144 ÷ 60 — an independent confirmation of what the column means.
+    `modernia`, the roster's other MG swapper, reads 4200 there (= MG max), so the column
+    discriminates "keeps MG cadence" from "does not". TIER: datamine-derived + one independent
+    kit-text corroboration — **below measurement**, above the estimate it replaced, and enacted on
+    owner direction rather than on a `/scientific-method` verdict. Two standing counterexamples:
+    `moran`'s 1440 (24/s) was board-REFUTED on video at ~12/s, and `takina` reads 150→2.5/s while
+    her override ships an owner-ruled 1.2/s — so this column is corroborated, not authoritative.
+  - **What it moved.** Her 7s burst window went from ~301 shots at 33% of final ATK (60 rounds/s at
+    the top of the ladder, belt refilled on entry) to ~10, and 85% of her sim damage lived in those
+    windows. On the standard control comp vs a Fire boss she drops 494.9M → 94.2M. Her B3 DPS-chart
+    rank range moves **1–33 → 49–72 of 76**, and `docs/b3-dps-rank-audit.md` reclassifies her from a
+    MAJOR over-model flag (Δ −47 neutral / −50 eleweak vs the community lists) to Δ **+5 / +7** —
+    the community rank board being an independently-produced labeled artifact, that is the
+    corroboration of direction, not of the exact value.
+  - **What stayed open (⚑3, and the residual points at it).** At 1.5 shots/s a lone 33% shot makes
+    her burst a THROUGHPUT LOSS against simply holding her MG — implausible for a burst skill. The
+    likely resolution is a multi-hit swap weapon (90 rpm is exactly the SG class rate). NOT enacted:
+    that is a second inference with no kit or datamine support, and shot `1001402`'s own spec does
+    not ship in `characters.json`. The residual sign after this landing (sim now ~5–7 places BELOW
+    the community, where it was ~50 above) is exactly what an unmodeled multi-hit predicts. One
+    isolated solo scope-lock recording settles cadence, pellet count and belt size at once; her spec
+    test pins the loss direction deliberately so a ⚑3 landing has to flip it on purpose.
+
+- **(2026-08-14) `liberalio`'s kit-literal Charge Speed IMMUNITY is now enforced on the
   RECEIVING side, via a new per-unit `charFixes.statImmunities` primitive.**
   - **The kit line, verbatim** (`data/characters.json` → `characters.liberalio.skills.skill2`):
     "Activates at the start of battle. Affects self. Gains immunity to Increase Charge Speed
@@ -5888,7 +5936,9 @@ G1–G4 specs added. Work record: `docs/handoffs/2026-08-16-anis-star-carveout-w
 
 Two in-game observations by the owner in the Union shooting range (no recording; owner-ruling
 tier), running the test recipe filed by the 2026-08-16 gauge research pass ("watch the bar at a
-debuff re-application instant while not firing"):
+debuff re-application instant while not firing") **[PROVENANCE CORRECTED same day — see the
+"scope-expansion + provenance correction" entry below: the re-application half was NOT a
+shooting-range observation; the recipe was not run]**:
 
 1. **A periodic debuff RE-APPLICATION onto the target generates burst gauge** — while holding
    fire, the bar ticks up at the instant the debuff re-applies. This ANSWERS the half every
@@ -5896,7 +5946,9 @@ debuff re-application instant while not firing"):
    the refresh channel a REAL candidate source for the iron-sweep generation excess (steady
    refill windows with zero fresh applications but recurring refreshes). The filed recipe named
    `emma-tactical-upgrade`'s Environment Setup 30s cadence as the test vehicle; the owner's
-   report did not record the exact unit used.
+   report did not record the exact unit used. **[CORRECTED same day: no bar tick was observed —
+   the evidence is community-expert testimony relayed and ruled trusted by the owner; see the
+   correction entry below.]**
 2. **Standalone enemy-targeted debuff skills generate — confirmed for `jackal` S1**, promoting
    the research pass's [MEDIUM] external reading (note.com/_trick_, nikke.gg, nikke-synergy) to
    owner-confirmed for the generating cases. The per-skill-exception structure STANDS — the
@@ -5915,6 +5967,135 @@ Follow-up (magnitude measurement + per-skill scoping, then the engine pass) file
 
 **Recorded in:** `docs/data/burst-gauge.md` §5 (rewritten bullet). Related: the 2026-08-14
 per-hit crediting rulings above; the iron-sweep thread in `docs/handoffs/QUEUE.md`.
+
+## ENACTED: non-damage enemy-debuff applications/refreshes credit the caster's datamined per-trigger gauge value (2026-08-16, owner-authorized)
+
+**Enacts the owner rulings recorded in the previous 2026-08-16 entry.** The owner supplied the two
+missing inputs the same day: (1) the test unit for the re-application observation was confirmed as
+`emma-tactical-upgrade` (Environment Setup) **[CORRECTED same day — see the scope-expansion +
+provenance-correction entry below: there was no observation; the re-application ruling rests on
+trusted community-expert testimony]**, and (2) the MAGNITUDE is ruled: **the amount is the
+unit's weapon per-trigger burst generation from the datamine** (`data/gauge-per-shot.json`
+`targetPerTrigger`), with explicit authorization to enact without the `/scientific-method`
+pipeline — the answered-question path (owner ruling → encode + `/code-review`, 2026-08-11
+convention).
+
+**Engine** (`src/engine/sim.ts`): `applicationGauge()` credits the FULL `targetPerTrigger` (no
+per-hit/SG-pellet division — an application is one discrete event; every current qualifying caster
+is a hitsPerShot-1 weapon so the division would be a no-op today) once per qualifying application
+event, at the top of `applyBlockEffects()` so `delaySec`-deferred blocks credit at their resolve
+frame. `isGeneratingApplication()` gates it: enemy-targeted; PURE non-damage (buff/`targetStatus`
+effects only — a block also carrying `flatDamage`/`dot` already generates through its impacts, and
+crediting both would double-count); trigger in the include set
+{`interval`,`attacked`,`passive`,`battleStart`,`burstCast`,`fullBurstEnter`,`fullBurstEnd`} — the
+anti-double-count rule excludes bullet-delivered/coincident triggers
+(`shotFired`,`lastBullet`,`hitCount`,`chargeCounter`,`teamAmmo`), and anything NOT in the include
+set stays non-crediting by default so a future trigger kind must be classified deliberately; some
+effect with finite `durationSec` < 900 (no-duration = permanent aura, 999 = the permanent-status
+sentinel, e.g. `mast`'s Sea Breeze — neither is an application event); caster not in
+`APPLICATION_NONGEN` = {`noah`, `snow-white-heavy-arms`} (the nikke-synergy arena counterexamples —
+defensive documentation: neither has a qualifying block in today's overrides). Interval re-fires
+credit each time — the refresh ruling. The standard `addGauge` guard scopes all of it to the
+FB-end → chain-start generating window.
+
+**Spec:** `scripts/tests/engine/application-gauge.test.ts` (7 tests: interval application +
+refresh magnitude pinned to the datamined row; `emma-tactical-upgrade`'s real-kit 2-credits-in-40s;
+`jackal` S1 via the `manualAttacks` hook scaling per activation; negatives for bullet-delivered
+triggers, permanent auras/999 sentinel, damage-block no-double-credit, and the non-generator set).
+
+**Blast radius:** the roster audit (committed overrides, the predicate above) finds LIVE credits
+only for `emma-tactical-upgrade` (0.1 gauge-%/application — passive@0 + interval:30) and
+`rosanna`'s battle-start `targetStatus` (one modal-fallback credit at t=0); `jackal`'s S1 is
+kit-faithfully encoded but inert in production BY MECHANISM (the v1 sim has no incoming-damage
+model — `attacked` triggers fire only via the `manualAttacks` test hook); `ether`'s interval
+debuff is double-dead (its `fbGate: inFb` fails outside Full Burst, and inside it `addGauge` is
+locked); every `burstCast`/`fullBurstEnter` qualifier is chain/FB-locked to zero by the same
+guard. **Graded/control exposure: zero BY MECHANISM — no pinned comp in `scripts/regression.ts` /
+`scripts/control-regression.ts` seats any of the four units above (grep-verified), and the full
+`verify.sh` suite passed with both snapshots byte-identical (no `--update`).** The un-modeled
+remainder — kits whose in-game periodic re-applies are encoded as permanent passives or
+chain-locked triggers — is the open iron-sweep question, tracked in `docs/handoffs/QUEUE.md`.
+
+## Scope-expansion + provenance correction: application gauge credits GENERATE BY DEFAULT; the refresh evidence is trusted testimony (2026-08-16, third pass)
+
+**Corrects the two 2026-08-16 entries above and enacts the owner's scope ruling, same session.**
+
+**Provenance correction (owner statement):** the debuff RE-APPLICATION ruling did NOT come from a
+Union shooting-range observation — the filed recipe was never run and no bar tick was watched. The
+owner asked a knowledgeable community expert, who stated that re-applications still generate, and
+the owner ruled to trust that. Tier: owner ruling resting on trusted community-expert testimony
+(stronger than the research pass's silent external sources, weaker than a direct measurement — a
+shooting-range or recorded confirmation remains a cheap upgrade if the iron-sweep thread ever
+needs it). The `jackal` S1 standalone-application confirmation stands as owner-confirmed. All
+current-state docs (burst-gauge.md §5, game-mechanics.md §6, STATE.md) and the engine/test
+comments now state this provenance; the earlier entries carry CORRECTED markers.
+
+**Scope ruling (owner, verbatim intent): "enact for everything except the ones we explicitly know
+don't generate."** The trigger INCLUDE-set of the first enactment (which conservatively excluded
+all bullet-coincident triggers) is replaced by an EXCLUDE-set: only the explicitly-known
+non-generating delivery — the per-shot on-bullet rider (anti-double-count rule; Noise's
+charged-shot taunt), i.e. trigger kinds `shotFired` and `chargeCounter` — plus the named
+non-generators (`noah`, `snow-white-heavy-arms`) and the ally/self category stay out. Everything
+else now credits, including bullet-COINCIDENT discrete activations (`hitCount`, `lastBullet`,
+`teamAmmo`) and any future trigger kind by default — default-generate IS the owner-ruled
+fallthrough, deliberately inverting the first enactment's conservative default.
+
+**Engine:** `APPLICATION_GEN_TRIGGERS` (include-set) → `APPLICATION_NONGEN_TRIGGERS`
+(exclude-set: `shotFired`, `chargeCounter`) in `src/engine/sim.ts`; all other predicate legs
+unchanged (enemy-targeted, pure non-damage, finite `durationSec` < 900, `APPLICATION_NONGEN`
+slugs). **Spec:** `scripts/tests/engine/application-gauge.test.ts` — the lastBullet negative is
+FLIPPED to a positive (bullet-coincident activations credit; whole-number-multiple-of-per-trigger
+assertion) and a `shotFired` Noise-shape negative pins the surviving exclusion; 8 tests green.
+
+**Blast radius (widened-scope re-audit, same predicate script):** LIVE credits now also include
+`eunhwa` + `ludmilla` (lastBullet, once per magazine), `exia` (lastBullet, hackingCode-gated),
+`rosanna` (hitCount + battleStart), `sakura-suzuhara` + `signal` (hitCount),
+`brid-silent-track` (hitCount, Wind-gated) alongside `emma-tactical-upgrade`; `jackal` stays
+inert by mechanism (no incoming-attack model) and `ether` double-dead (`fbGate: inFb` + in-FB
+lock). **Graded/control exposure: still zero by mechanism — the full slug set of both pinned
+suites was intersected against the live-credit list (empty), and `verify.sh` is green with both
+snapshots byte-identical.** Cross-family code review (kimi-code/k3, sighted, packet + result
+under `scratchpad/gates/2026-08-16-application-gauge/`): **CLEAN** — two NOTEs (modal-fallback
+⚑ comment at `applicationGauge`, jackal-test magnitude-unpinned comment) and one FOLLOW-UP (an
+inFb-gated interval-debuff zero-credit test) all applied same session; 9 spec tests green.
+
+## takina S2 re-modeled: 15s-cooldown pulse (owner-confirmed CD), retiring the uptime-average permanents (2026-08-16)
+
+**Owner ruling:** "the 15s cd is correct, which means that modeling it as always on is incorrect."
+Upgrades the S2 cooldown from Prydwen-community ⚑ (which the shipped uptime-average encoding
+hedged on) to owner-confirmed; it also matches datamined `skillCooldownsSec.skill2 = 15`
+(`data/characters.json`). Enacted through `/kit-tdd` (tests written RED first, 6 failing
+assertions against the shipped average model, then the override).
+
+**Model:** both S2 blocks become `interval:15` at the prose's raw magnitudes and durations —
+enemies Damage Taken ▲10.09% for 5 s, allies True Damage ▲140.49% for 10 s — replacing the
+frame-0 permanents 3.36 / 93.66 (= 10.09 × 5/15, 140.49 × 10/15). First fire t=15 s (interval
+first-fire convention; ⚑ phase unpinned, S2 has no battle-start clause — caveat carries the
+recipe). The enemy pulse is a non-damage enemy-debuff application, so each application (refresh
+re-applications included) credits her datamined 560 per-trigger (5.6 bar-%) through
+`applicationGauge` — the first LIVE consumer of the refresh ruling above with a non-trivial
+magnitude. Spec: `scripts/tests/units/takina.test.ts` T4/T4b/T5 rewritten to pin the pulse shape,
+cadence (900 f), durations, gauge credit, and the retired-average as the discriminated
+nearest-wrong; T7's swap-flavor assertions re-derived for pulsed True Damage (probed dmgUp tiers
+1.0 / 1.6292 / 2.4049 / 3.0341 = combinations of T3 35.05, pulse 140.49, and a flavor-independent
+27.87). 29/29 green.
+
+**Board A/B (the honest half):**
+
+- `takina` graded reading (PG iron sweep, her only datapoint): **0.580 → 0.552 COLD** — the
+  faithful pulse removes the always-on True Damage the retired average granted her swap shots in
+  non-overlapped windows (dmgUp floor 1.0 now exists). Fit-exposure, direction faithful > fit; her
+  coldness thread deepens and stays open (override caveat updated).
+- **The iron-sweep FB shortfall does NOT close: sim still reads 11 full bursts (measured 13–14),
+  100% of 25 seeds.** Her ~11 pulse applications per fight credit 5.6 each, but only the ~2–3
+  landing inside FB-end → chain-start generating windows count — roughly a sixth of one bar,
+  nowhere near two extra bursts. The `iron sweep (run G)` regression comp STAYS disabled; the
+  burst-generation shortfall remains the open thread (QUEUE.md item updated — the
+  re-apply-encoded-as-passive audit of the remaining roster is still worth running, but takina's
+  S2, the largest single candidate, is now enacted and insufficient alone).
+
+**Graded/pinned exposure:** zero beyond her own comp — she seats only the DISABLED iron-sweep
+regression comp; `verify.sh` green.
 
 ## Two burst-generation-thread recording asks closed without new footage (2026-08-16)
 

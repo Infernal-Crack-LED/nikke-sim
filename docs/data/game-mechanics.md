@@ -175,7 +175,13 @@ to the middle slot (owner convention; recordings with a different focus perturb 
 they record). Skill
 hits and DoT ticks generate the caster's flat target value (no charge bonus); a sequential
 multi-hit skill rider credits once per sub-hit via `flatDamage.gaugeHits` while keeping its
-damage aggregated.
+damage aggregated. Non-damage ENEMY-debuff applications — including periodic
+re-applications/refreshes — generate the caster's full per-trigger value once per application,
+by default for every trigger shape except per-shot on-bullet riders and the explicitly-known
+non-generating skills (owner rulings 2026-08-16: `jackal` S1 owner-confirmed; the refresh half
+rests on community-expert testimony the owner ruled trusted; scope ruled generate-by-default —
+see burst-gauge.md §5; engine: `applicationGauge`). Ally/self-targeted pure buffs, heals, and
+shields generate nothing.
 **Gauge is generated in exactly ONE window per cycle: after a Full Burst ENDS and before the
 next burst chain STARTS** (owner ruling, re-confirmed 2026-08-13 — settled, do not re-measure).
 Opening the chain CONSUMES the gauge, and during the chain (stages 1-3) or Full Burst NOTHING

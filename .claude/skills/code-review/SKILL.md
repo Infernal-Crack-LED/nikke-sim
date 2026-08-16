@@ -110,6 +110,15 @@ read-only repo access (Read/Grep/Glob/Bash — it can inspect callers and run ty
      command line and the shell wrapping it, so it reports the dispatch as alive when nothing is
      running. That false positive will happily mask a dispatch that died on launch.
 
+     ⚠ **Aborting a stale dispatch (the diff changed under it): inspect BEFORE you clean.** Check
+     for a non-empty `result.json` before the kill AND again after it, and never bundle `rm` of
+     the result path into the kill command — the review may complete in the race window between
+     your decision to abort and the kill landing, and a written result is the product (observed
+     2026-08-16: a `kill && rm -f result.json` one-liner deleted a completed 5.6 KB verdict
+     unread; `dispatch.log` held only the success banner, so nothing was rescuable). A completed
+     verdict on a stale diff still has value — its findings on unchanged code carry into the
+     re-review.
+
    - **Keep the packet lean so the dispatch fits comfortably.** The lever on runtime is packet SIZE,
      not the timeout. EXCLUDE regenerated artifacts from the pasted diff
      (`git diff <base>...HEAD -- . ':(exclude)data/<artifact>.json'`) and instead NAME them in
