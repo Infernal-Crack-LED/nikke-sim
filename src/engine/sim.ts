@@ -1564,6 +1564,63 @@ export function runSim(
       per / (u.char.weapon === 'SG' ? 10 : u.char.hitsPerShot || 1)
     );
   };
+  // Non-damage enemy-debuff APPLICATIONS (and re-applications/refreshes) generate the caster's
+  // datamined per-trigger weapon value — owner rulings 2026-08-16: standalone enemy debuffs
+  // generate (owner-confirmed, jackal S1); RE-applications of a periodic debuff generate too
+  // (community-expert testimony relayed and ruled trusted by the owner — not a direct
+  // observation); amount = the unit's weapon per-trigger burst gen from the datamine; and scope
+  // is GENERATE-BY-DEFAULT for every non-damage enemy application except the explicitly-known
+  // non-generators. Credited ONCE per application event, at the FULL per-trigger value (no
+  // per-hit / SG-pellet division — an application is one discrete event, not a spray).
+  // addGauge's own guard scopes this to the FB-end → chain-start generating window.
+  // ⚑ Units with no data/gauge-per-shot.json row fall back to the class modal (same convention
+  // as gaugePerShot/skillGauge) — for those the credit is an ESTIMATE, not the ruling's
+  // datamined value. Currently-affected live-credit slugs: eunhwa, ludmilla, sakura-suzuhara,
+  // signal (no row; jackal too, but her trigger has no production firing path), and the
+  // rosanna / brid-silent-track rows are themselves class-modal-sourced.
+  const applicationGauge = (u: UnitState, frame: number) => {
+    const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[
+      u.char.slug
+    ];
+    const per =
+      (entry?.targetPerTrigger ?? GAUGE_MODAL_BY_WEAPON[u.char.weapon] ?? 40) /
+      100;
+    addGauge(u, frame, per);
+  };
+  // Known non-generating debuff applications (nikke-synergy arena counterexamples recorded in
+  // docs/data/burst-gauge.md §5 — generation is a PER-SKILL property, not universal). Neither
+  // unit has a qualifying enemy-targeted discrete block in today's overrides (noah's taunt is
+  // unmodeled, snow-white-heavy-arms' damage-taken ▲ is a permanent passive aura with no
+  // application events), so this set is defensive documentation: it keeps a future re-model of
+  // either kit from silently generating.
+  const APPLICATION_NONGEN = new Set(['noah', 'snow-white-heavy-arms']);
+  // Owner scope ruling 2026-08-16: GENERATE BY DEFAULT — every trigger shape credits except the
+  // one explicitly-known non-generating delivery, the on-bullet rider (anti-double-count rule,
+  // note.com/_trick_, Noise's charged-shot taunt: an effect the shot itself carries adds nothing
+  // beyond the bullet's own gauge). That is the per-shot shapes: shotFired and chargeCounter.
+  // hitCount/lastBullet debuffs are bullet-COINCIDENT but are separate skill activations, not
+  // per-shot riders — under the default-generate ruling they credit.
+  const APPLICATION_NONGEN_TRIGGERS = new Set(['shotFired', 'chargeCounter']);
+  // A qualifying application: enemy-targeted, PURE non-damage (buff/targetStatus only — a block
+  // carrying flatDamage/dot already generates through its damage impacts via skillGauge), not a
+  // per-shot rider, opening a DISCRETE window (some finite durationSec < 900 — no durationSec =
+  // permanent aura like snow-white-heavy-arms'/takina's passives, and 999 is the
+  // permanent-status sentinel, e.g. mast's Sea Breeze; neither is a re-applying event).
+  const isGeneratingApplication = (u: UnitState, block: Block): boolean =>
+    block.target.kind === 'enemy' &&
+    !APPLICATION_NONGEN_TRIGGERS.has(block.trigger.kind) &&
+    block.effects.length > 0 &&
+    block.effects.every(
+      (e) => e.kind === 'buff' || e.kind === 'targetStatus'
+    ) &&
+    block.effects.some(
+      (e) =>
+        'durationSec' in e &&
+        typeof e.durationSec === 'number' &&
+        e.durationSec > 0 &&
+        e.durationSec < 900
+    ) &&
+    !APPLICATION_NONGEN.has(u.char.slug);
 
   const transitionFrames = rangeScript
     .slice(1)
@@ -2506,6 +2563,14 @@ export function runSim(
     phase: number | undefined,
     frame: number
   ) {
+    // Owner rulings 2026-08-16: a qualifying non-damage enemy-debuff application credits the
+    // caster's per-trigger gauge value once per application event — including interval
+    // RE-applications/refreshes (delaySec-deferred blocks credit here at their resolve frame,
+    // the application instant). Independent of whether the engine consumes the debuff itself
+    // (an enemy ATK ▼ we don't model still generated in-game when it applied).
+    if (isGeneratingApplication(units[ownerIdx], block)) {
+      applicationGauge(units[ownerIdx], frame);
+    }
     if (phase !== undefined) {
       applyEffect(
         ownerIdx,

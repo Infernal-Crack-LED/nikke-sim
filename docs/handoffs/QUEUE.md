@@ -187,17 +187,23 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      buffs, ~1.6× shortfall) stays UNEXPLAINED — this rules out one candidate class, not the
      excess itself. **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
      U28 addendum; the pass's U41 filing was CLOSED same day as a duplicate — per-unit focus
-     multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — **OWNER-CONFIRMED 2026-08-16
-     (shooting-range test, DECISIONS entry): enemy-targeted standalone debuffs generate
-     (`jackal` S1 confirmed; per-skill exceptions stand — Noah taunt / `snow-white-heavy-arms`
-     counterexamples untouched), and debuff RE-APPLICATIONS/refreshes ALSO generate (bar ticks
-     at re-apply while not firing) — the iron-sweep refresh channel is a REAL generation
-     source.** Ally/self buffs/heals likely NO [MEDIUM], on-bullet riders add nothing
-     (anti-double-count). **Enactable follow-up (gated, not started): per-application/refresh
-     gauge MAGNITUDE is unmeasured (external sources suggest the caster's flat base per-trigger
-     value, same credit as skill-damage hits) and scope is per-skill — needs a magnitude
-     measurement + per-skill scoping pass before any `skillGauge()` engine change; then re-test
-     the iron-sweep excess against the modeled refresh channel.** (2)
+     multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — settled + enacted (owner
+     rulings, DECISIONS 2026-08-16 ×3: application/refresh generation, per-trigger magnitude,
+     generate-by-default scope; engine `applicationGauge()`, spec
+     `scripts/tests/engine/application-gauge.test.ts`). **OPEN residue — the iron-sweep FB
+     shortfall (sim 11 vs measured 13–14) is NOT closed:** `takina` S2 — the largest single
+     candidate — was re-modeled 2026-08-16 as the owner-confirmed 15s pulse (DECISIONS entry;
+     each application credits her 5.6 bar-%), and the comp still reads 11 FBs on 100% of seeds
+     (only ~2–3 of her ~11 applications land inside generating windows ≈ a sixth of one bar).
+     The `iron sweep (run G)` regression comp stays disabled. Remaining leads: audit the other
+     four kits (`d-killer-wife`/`milk-blooming-bunny`/`maxwell`/`liberalio`) for
+     re-apply-encoded-as-passive or mixed-block shapes whose applications should credit (the
+     H-A team-context route was CLOSED by owner ruling 2026-08-16 — no team-scaling credit
+     mechanism exists — so encoding audits and the anis-star U28 divisor read are what remain).
+     Also open: ⚑ four live-credit
+     units carry class-modal (not datamined) gauge rows — `eunhwa`/`ludmilla`/
+     `sakura-suzuhara`/`signal` (see the `applicationGauge` ⚑ comment) — worth a datamine
+     re-pull if any of them ever seats a graded comp. (2)
      per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
      the engine's divisor is CORROBORATED for genuine multi-muzzle units, and `anis-star`'s bite
      is a synthetic carve-out hack (`weapon-fields.ts`) absorbing her burst-DoT over-emission →

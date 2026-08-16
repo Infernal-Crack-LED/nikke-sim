@@ -100,6 +100,17 @@ reloads, or generates gauge; mags start full. On auto the chain is:
   the INSTANT FB ends (owner ruling 2026-08-04: there is NO post-FB chain-open block — the chain opens
   on gauge-full, ~3-4s of natural refill for a good team; the old fixed 150f `POST_FB_CHAIN_DELAY_FRAMES`
   block survives only as the opt-in `ROTMODEL=floor` A/B arm).
+- Non-damage ENEMY-debuff applications (re-applications/refreshes included) credit the caster's
+  full datamined `targetPerTrigger` once per application, GENERATE-BY-DEFAULT for every trigger
+  shape (`applicationGauge` + `isGeneratingApplication` in `sim.ts` — owner rulings + magnitude +
+  scope rulings 2026-08-16; the refresh half rests on owner-trusted community-expert testimony).
+  Excluded: per-shot on-bullet riders (`shotFired`/`chargeCounter`, anti-double-count), permanent
+  auras/999-sentinel statuses (not events), `APPLICATION_NONGEN` = `noah`/`snow-white-heavy-arms`,
+  and blocks that also deal damage (already credited per impact). Live footprint:
+  `emma-tactical-upgrade`, `eunhwa`/`ludmilla`/`exia` (lastBullet), `rosanna`,
+  `sakura-suzuhara`/`signal` (hitCount), `brid-silent-track` (Wind-gated); zero graded exposure by
+  mechanism (no pinned comp seats a live-credit unit — slug-set intersection empty). Spec:
+  `scripts/tests/engine/application-gauge.test.ts`; detail: burst-gauge.md §5.
 - A stage-2/3 filler is the **earliest-ready unit (tie → leftmost)**, and a live chain is filled by the
   first stage-eligible unit that comes off cooldown — there is NO waiting horizon (owner ruling
   2026-08-13; the old 120f grace became unreachable under that rule and was deleted). An unfinished
