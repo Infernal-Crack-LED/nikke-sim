@@ -14,22 +14,6 @@ DECISIONS leaves the stale question here reading as live — always move it.
 
 ## UNANSWERED
 
-### U41 — Is the focused-charge gauge multiplier the unit's CHARGE CAP, not a flat ×2.5? (opened 2026-08-16, research pass)
-
-The engine's `FOCUS_CHARGE_GEN = 2.5` is MEASURED — but only on 250%-charge-cap units
-(`maiden-ice-rose` anchor family). Two independent external sources state the multiplier is the
-charge ratio itself, not a constant: the note.com/_trick_ verification (2025-03-14) computes
-`alice` (SR, 350% cap) at base × 3.50 and 250%-class units at × 2.50, with half-charge =
-(max% − 100)/2 + 100; the nikke-einkk datamine-driven simulator implements
-`focusBonus = 1 + 1.5 × charge%` (≡ ×2.5 at exactly full 250% charge). Every measurement we own
-is consistent with BOTH readings because every measured focused unit caps at 250% — the two
-models diverge only on a focused non-250% unit. `alice` (350%) seats a graded comp
-(`scripts/regression.ts` — with `anis-star`/`mint`/`prika`/`red-hood`) but is not the focused
-slot there, so the constant's current board exposure is zero; it goes live the moment any
-recording focuses a 350%-cap unit. Resolution: a focused `alice` (or other non-250%-cap) solo
-bar read — predicted ×3.5 under the charge-cap reading vs ×2.5 under the flat constant, a 40%
-separation, trivially discriminable. Until then the flat 2.5 stays (measured, unexposed).
-
 ### U39 — `snow-white-heavy-arms` Fully Active: is the volley delivered by USES or by TIME? (opened 2026-08-11, re-filed)
 
 Her burst "Seven Dwarves Fully Active" is modeled as a weapon swap carrying the same 69.04% shot at

@@ -1353,3 +1353,26 @@ movers; the four SG-free comps byte-identical). Instrument:
 `scripts/tests/battery/multihit-crediting.test.ts`. Do not re-open without new evidence — and do
 not enact crediting changes off board movement: the board cannot discriminate here, which is the
 fit-to-data trap the measurement ≠ enactment rule exists to block.
+
+### U41 — Is the focused-charge gauge multiplier the unit's CHARGE CAP, not a flat ×2.5? (opened 2026-08-16, CLOSED same day — already answered and enacted 2026-07-29)
+
+**Closed as a duplicate: the question was answered, measured, and ENACTED eighteen days before it
+was filed.** The 2026-08-16 external-source research pass filed this from the note.com/_trick_
+verification (alice base × 3.50, half-charge = (max% − 100)/2 + 100) and the nikke-einkk
+simulator (`focusBonus = 1 + 1.5 × charge%`) on the premise that "every measurement we own is
+consistent with both readings because every measured focused unit caps at 250%." That premise was
+wrong: the 2026-07-29 DECISIONS entries ("Focus charge-gauge bonus is PER-UNIT, not flat 2.5x"
+and the follow-up "Alice focus charge-gauge un-pinned to 3.5x") record solo measurements that
+discriminate — `alice` (350) shot-counting bound `[16.67%, 20.0%)`/shot contains the 3.5×
+prediction and excludes flat 2.5×; `scarlet-black-shadow` (150) observed ≈1.42× excluding 2.5× —
+and the engine has run the per-unit model since: `gaugePerShot()` reads each unit's datamined
+`fullChargeBonus/100`, with `FOCUS_CHARGE_GEN = 2.5` surviving only as the no-table-row fallback.
+A focused `alice` recording today would be simmed at ×3.5 already; `docs/data/burst-gauge.md` §4
+documented her as ENACTED at the time U41 was filed.
+
+**The one genuinely unmeasured residue** is `vesti-tactical-upgrade` (`fullChargeBonus` 200), the
+sole remaining `PENDING_TEAM_ISOLATION` pin — already tracked at the pin comment in
+`src/engine/sim.ts` and her kit build's ⚑3 recipe (a focused solo recording), not an open
+question of model shape. The external sources' partial-charge scaling law (half-charge =
+(cap − 100)/2 + 100) has no engine consumer today (the sim fires focused charge shots at full
+charge) and is noted here for whenever partial-charge gauge ever matters.

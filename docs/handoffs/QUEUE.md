@@ -175,7 +175,8 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      "credits are bigger in team" from "credits are more frequent" — iron sweep's excess persists
      with zero cadence buffs, so any cadence explanation must be intrinsic team-context
      behavior). **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
-     U28 addendum, new U41): (1) non-damage applications — enemy-targeted standalone YES with
+     U28 addendum; the pass's U41 filing was CLOSED same day as a duplicate — per-unit focus
+     multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — enemy-targeted standalone YES with
      per-skill exceptions [MEDIUM], ally/self buffs/heals likely NO [MEDIUM], on-bullet riders
      add nothing (anti-double-count), **buff REFRESHES: every source silent, CANNOT-DETERMINE —
      still the live unknown for iron sweep**; owner-testable in the Union shooting range without
