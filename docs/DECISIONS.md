@@ -5820,7 +5820,9 @@ satisfied by this ruling, not overturned.
 
 Two in-game observations by the owner in the Union shooting range (no recording; owner-ruling
 tier), running the test recipe filed by the 2026-08-16 gauge research pass ("watch the bar at a
-debuff re-application instant while not firing"):
+debuff re-application instant while not firing") **[PROVENANCE CORRECTED same day — see the
+"scope-expansion + provenance correction" entry below: the re-application half was NOT a
+shooting-range observation; the recipe was not run]**:
 
 1. **A periodic debuff RE-APPLICATION onto the target generates burst gauge** — while holding
    fire, the bar ticks up at the instant the debuff re-applies. This ANSWERS the half every
@@ -5828,7 +5830,9 @@ debuff re-application instant while not firing"):
    the refresh channel a REAL candidate source for the iron-sweep generation excess (steady
    refill windows with zero fresh applications but recurring refreshes). The filed recipe named
    `emma-tactical-upgrade`'s Environment Setup 30s cadence as the test vehicle; the owner's
-   report did not record the exact unit used.
+   report did not record the exact unit used. **[CORRECTED same day: no bar tick was observed —
+   the evidence is community-expert testimony relayed and ruled trusted by the owner; see the
+   correction entry below.]**
 2. **Standalone enemy-targeted debuff skills generate — confirmed for `jackal` S1**, promoting
    the research pass's [MEDIUM] external reading (note.com/_trick_, nikke.gg, nikke-synergy) to
    owner-confirmed for the generating cases. The per-skill-exception structure STANDS — the
@@ -5852,7 +5856,9 @@ per-hit crediting rulings above; the iron-sweep thread in `docs/handoffs/QUEUE.m
 
 **Enacts the owner rulings recorded in the previous 2026-08-16 entry.** The owner supplied the two
 missing inputs the same day: (1) the test unit for the re-application observation was confirmed as
-`emma-tactical-upgrade` (Environment Setup), and (2) the MAGNITUDE is ruled: **the amount is the
+`emma-tactical-upgrade` (Environment Setup) **[CORRECTED same day — see the scope-expansion +
+provenance-correction entry below: there was no observation; the re-application ruling rests on
+trusted community-expert testimony]**, and (2) the MAGNITUDE is ruled: **the amount is the
 unit's weapon per-trigger burst generation from the datamine** (`data/gauge-per-shot.json`
 `targetPerTrigger`), with explicit authorization to enact without the `/scientific-method`
 pipeline — the answered-question path (owner ruling → encode + `/code-review`, 2026-08-11
@@ -5893,3 +5899,43 @@ guard. **Graded/control exposure: zero BY MECHANISM — no pinned comp in `scrip
 `verify.sh` suite passed with both snapshots byte-identical (no `--update`).** The un-modeled
 remainder — kits whose in-game periodic re-applies are encoded as permanent passives or
 chain-locked triggers — is the open iron-sweep question, tracked in `docs/handoffs/QUEUE.md`.
+
+## Scope-expansion + provenance correction: application gauge credits GENERATE BY DEFAULT; the refresh evidence is trusted testimony (2026-08-16, third pass)
+
+**Corrects the two 2026-08-16 entries above and enacts the owner's scope ruling, same session.**
+
+**Provenance correction (owner statement):** the debuff RE-APPLICATION ruling did NOT come from a
+Union shooting-range observation — the filed recipe was never run and no bar tick was watched. The
+owner asked a knowledgeable community expert, who stated that re-applications still generate, and
+the owner ruled to trust that. Tier: owner ruling resting on trusted community-expert testimony
+(stronger than the research pass's silent external sources, weaker than a direct measurement — a
+shooting-range or recorded confirmation remains a cheap upgrade if the iron-sweep thread ever
+needs it). The `jackal` S1 standalone-application confirmation stands as owner-confirmed. All
+current-state docs (burst-gauge.md §5, game-mechanics.md §6, STATE.md) and the engine/test
+comments now state this provenance; the earlier entries carry CORRECTED markers.
+
+**Scope ruling (owner, verbatim intent): "enact for everything except the ones we explicitly know
+don't generate."** The trigger INCLUDE-set of the first enactment (which conservatively excluded
+all bullet-coincident triggers) is replaced by an EXCLUDE-set: only the explicitly-known
+non-generating delivery — the per-shot on-bullet rider (anti-double-count rule; Noise's
+charged-shot taunt), i.e. trigger kinds `shotFired` and `chargeCounter` — plus the named
+non-generators (`noah`, `snow-white-heavy-arms`) and the ally/self category stay out. Everything
+else now credits, including bullet-COINCIDENT discrete activations (`hitCount`, `lastBullet`,
+`teamAmmo`) and any future trigger kind by default — default-generate IS the owner-ruled
+fallthrough, deliberately inverting the first enactment's conservative default.
+
+**Engine:** `APPLICATION_GEN_TRIGGERS` (include-set) → `APPLICATION_NONGEN_TRIGGERS`
+(exclude-set: `shotFired`, `chargeCounter`) in `src/engine/sim.ts`; all other predicate legs
+unchanged (enemy-targeted, pure non-damage, finite `durationSec` < 900, `APPLICATION_NONGEN`
+slugs). **Spec:** `scripts/tests/engine/application-gauge.test.ts` — the lastBullet negative is
+FLIPPED to a positive (bullet-coincident activations credit; whole-number-multiple-of-per-trigger
+assertion) and a `shotFired` Noise-shape negative pins the surviving exclusion; 8 tests green.
+
+**Blast radius (widened-scope re-audit, same predicate script):** LIVE credits now also include
+`eunhwa` + `ludmilla` (lastBullet, once per magazine), `exia` (lastBullet, hackingCode-gated),
+`rosanna` (hitCount + battleStart), `sakura-suzuhara` + `signal` (hitCount),
+`brid-silent-track` (hitCount, Wind-gated) alongside `emma-tactical-upgrade`; `jackal` stays
+inert by mechanism (no incoming-attack model) and `ether` double-dead (`fbGate: inFb` + in-FB
+lock). **Graded/control exposure: still zero by mechanism — the full slug set of both pinned
+suites was intersected against the live-credit list (empty), and `verify.sh` is green with both
+snapshots byte-identical.**

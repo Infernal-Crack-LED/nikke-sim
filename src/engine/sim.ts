@@ -1564,14 +1564,15 @@ export function runSim(
       per / (u.char.weapon === 'SG' ? 10 : u.char.hitsPerShot || 1)
     );
   };
-  // Non-damage enemy-debuff APPLICATIONS (and interval re-applications/refreshes) generate the
-  // caster's datamined per-trigger weapon value — owner rulings 2026-08-16 (Union shooting-range
-  // observations: emma-tactical-upgrade's Environment Setup re-apply ticks the bar while not
-  // firing; jackal S1 generates; amount = the unit's weapon per-trigger burst gen from the
-  // datamine). Credited ONCE per application event, at the FULL per-trigger value (no per-hit /
-  // SG-pellet division — an application is one discrete event, not a spray; today's qualifying
-  // casters are all hitsPerShot-1 weapons so the division would be a no-op anyway). addGauge's
-  // own guard scopes this to the FB-end → chain-start generating window like everything else.
+  // Non-damage enemy-debuff APPLICATIONS (and re-applications/refreshes) generate the caster's
+  // datamined per-trigger weapon value — owner rulings 2026-08-16: standalone enemy debuffs
+  // generate (owner-confirmed, jackal S1); RE-applications of a periodic debuff generate too
+  // (community-expert testimony relayed and ruled trusted by the owner — not a direct
+  // observation); amount = the unit's weapon per-trigger burst gen from the datamine; and scope
+  // is GENERATE-BY-DEFAULT for every non-damage enemy application except the explicitly-known
+  // non-generators. Credited ONCE per application event, at the FULL per-trigger value (no
+  // per-hit / SG-pellet division — an application is one discrete event, not a spray).
+  // addGauge's own guard scopes this to the FB-end → chain-start generating window.
   const applicationGauge = (u: UnitState, frame: number) => {
     const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[
       u.char.slug
@@ -1588,29 +1589,21 @@ export function runSim(
   // application events), so this set is defensive documentation: it keeps a future re-model of
   // either kit from silently generating.
   const APPLICATION_NONGEN = new Set(['noah', 'snow-white-heavy-arms']);
-  // Bullet-delivered triggers are EXCLUDED by the anti-double-count rule (an effect riding a
-  // bullet hit adds nothing beyond the bullet's own gauge — note.com/_trick_, Noise's
-  // charged-shot taunt): shotFired, lastBullet, hitCount, chargeCounter, teamAmmo. Everything
-  // not in this include set stays non-crediting by default (unrecognised input must be quiet
-  // here, loud nowhere — a new trigger kind should be classified deliberately, not credited
-  // by fallthrough).
-  const APPLICATION_GEN_TRIGGERS = new Set([
-    'interval',
-    'attacked',
-    'passive',
-    'battleStart',
-    'burstCast',
-    'fullBurstEnter',
-    'fullBurstEnd',
-  ]);
+  // Owner scope ruling 2026-08-16: GENERATE BY DEFAULT — every trigger shape credits except the
+  // one explicitly-known non-generating delivery, the on-bullet rider (anti-double-count rule,
+  // note.com/_trick_, Noise's charged-shot taunt: an effect the shot itself carries adds nothing
+  // beyond the bullet's own gauge). That is the per-shot shapes: shotFired and chargeCounter.
+  // hitCount/lastBullet debuffs are bullet-COINCIDENT but are separate skill activations, not
+  // per-shot riders — under the default-generate ruling they credit.
+  const APPLICATION_NONGEN_TRIGGERS = new Set(['shotFired', 'chargeCounter']);
   // A qualifying application: enemy-targeted, PURE non-damage (buff/targetStatus only — a block
-  // carrying flatDamage/dot already generates through its damage impacts via skillGauge), from a
-  // non-bullet trigger, opening a DISCRETE window (some finite durationSec < 900 — no
-  // durationSec = permanent aura like snow-white-heavy-arms'/takina's passives, and 999 is the
+  // carrying flatDamage/dot already generates through its damage impacts via skillGauge), not a
+  // per-shot rider, opening a DISCRETE window (some finite durationSec < 900 — no durationSec =
+  // permanent aura like snow-white-heavy-arms'/takina's passives, and 999 is the
   // permanent-status sentinel, e.g. mast's Sea Breeze; neither is a re-applying event).
   const isGeneratingApplication = (u: UnitState, block: Block): boolean =>
     block.target.kind === 'enemy' &&
-    APPLICATION_GEN_TRIGGERS.has(block.trigger.kind) &&
+    !APPLICATION_NONGEN_TRIGGERS.has(block.trigger.kind) &&
     block.effects.length > 0 &&
     block.effects.every(
       (e) => e.kind === 'buff' || e.kind === 'targetStatus'

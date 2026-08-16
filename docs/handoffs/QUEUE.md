@@ -182,16 +182,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      counterexamples untouched), and debuff RE-APPLICATIONS/refreshes ALSO generate (bar ticks
      at re-apply while not firing) — the iron-sweep refresh channel is a REAL generation
      source.** Ally/self buffs/heals likely NO [MEDIUM], on-bullet riders add nothing
-     (anti-double-count). **ENACTED 2026-08-16 (owner magnitude ruling: amount = the caster's
-     datamined weapon per-trigger; DECISIONS enactment entry): `applicationGauge()` credits
-     qualifying non-damage enemy-debuff applications AND interval refreshes; spec
-     `scripts/tests/engine/application-gauge.test.ts`; graded exposure zero by mechanism (no
-     pinned comp seats a live qualifier). REMAINING iron-sweep half (findings-only): the
-     modeled refresh channel is tiny (`emma-tactical-upgrade` 0.1/application) — if iron
-     sweep's excess is refresh-driven, the missing generation sits in kits whose in-game
-     periodic re-applies are ENCODED as permanent passives or chain-locked triggers (e.g.
-     continuous damage-taken auras); auditing the iron-sweep comp's kits for
-     re-apply-encoded-as-passive shapes is the next discriminator, BEFORE any re-model.** (2)
+     (anti-double-count). **ENACTED 2026-08-16, then WIDENED same session by owner scope ruling
+     ("enact for everything except the ones we explicitly know don't generate") — provenance
+     note: the refresh half is owner-trusted community-expert testimony, NOT an observation
+     (DECISIONS third-pass entry). `applicationGauge()` credits every qualifying non-damage
+     enemy application by default; excluded only: `shotFired`/`chargeCounter` per-shot riders,
+     permanent auras/999 sentinel, damage-carrying blocks, `noah`/`snow-white-heavy-arms`.
+     Spec `scripts/tests/engine/application-gauge.test.ts` (8 tests); graded exposure zero by
+     mechanism (pinned-suite slug intersection empty). REMAINING iron-sweep half
+     (findings-only): the PG iron sweep roster (`d-killer-wife`/`takina`/`milk-blooming-bunny`/
+     `maxwell`/`liberalio`) seats ZERO live-credit blocks — its debuffs are encoded as
+     permanent passives or mixed damage blocks. Sharpest candidate: `takina` S2 damage-taken ▲
+     is modeled as a permanent aura; if the real kit re-applies it periodically, each re-apply
+     would credit her 560 per-trigger (5.6%/event — iron-sweep-excess scale). Audit the comp's
+     kit text for re-apply-encoded-as-passive shapes FIRST; a kit-text cadence found there is
+     an encoding fix (kit-literal path), not a new mechanic.** (2)
      per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
      the engine's divisor is CORROBORATED for genuine multi-muzzle units, and `anis-star`'s bite
      is a synthetic carve-out hack (`weapon-fields.ts`) absorbing her burst-DoT over-emission →

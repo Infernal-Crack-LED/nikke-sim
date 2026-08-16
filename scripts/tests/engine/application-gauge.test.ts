@@ -5,14 +5,13 @@
 // THE RULE (sim.ts `applicationGauge` + `isGeneratingApplication`): a skill application that is
 //   - enemy-targeted,
 //   - PURE non-damage (buff/targetStatus effects only),
-//   - from a non-bullet trigger (interval/attacked/passive/battleStart/burstCast/
-//     fullBurstEnter/fullBurstEnd — bullet-delivered triggers are excluded by the
-//     anti-double-count rule),
+//   - not a per-shot on-bullet rider (shotFired/chargeCounter are the anti-double-count
+//     exclusions; everything else GENERATES BY DEFAULT — owner scope ruling 2026-08-16),
 //   - opening a DISCRETE window (some finite durationSec < 900),
 //   - and whose caster is not a known non-generator (noah, snow-white-heavy-arms)
 // credits the caster's datamined per-trigger weapon gauge value ONCE per application event —
-// re-applications/refreshes included (the owner's Union shooting-range observation: the bar
-// ticks at the instant a periodic debuff re-applies while not firing).
+// re-applications/refreshes included (community-expert testimony relayed and ruled trusted by
+// the owner; jackal S1's standalone application is owner-confirmed).
 //
 // METHOD: paired runs. `UnitResult.gaugeGenerated` is UNCAPPED (pre-clamp), so with
 // `disableBursts` the with-kit vs without-kit delta is exactly the application credits — the
@@ -118,18 +117,38 @@ describe('non-damage enemy-debuff application gauge credit', () => {
     expect(two - zero).toBeCloseTo(2 * (one - zero), 6);
   });
 
-  it('bullet-delivered triggers do NOT credit (anti-double-count)', () => {
-    // eunhwa-shape lastBullet defPct debuff: delivered by the magazine's final bullet, which
-    // already generated its own gauge — no application credit on top.
+  it('per-shot on-bullet riders do NOT credit (anti-double-count, Noise-shape)', () => {
+    // A shotFired-triggered debuff is carried by every shot; the shot already generated its
+    // own gauge and the rider adds nothing (note.com/_trick_, Noise's charged-shot taunt).
+    const block = {
+      slot: 'skill1',
+      trigger: { kind: 'shotFired' },
+      target: { kind: 'enemy' },
+      effects: [
+        { kind: 'buff', stat: 'damageTakenPct', value: 5, durationSec: 5 },
+      ],
+    };
+    const withKit = gaugeOf(CARRY, syntheticKit(CARRY, block), 12);
+    const bare = gaugeOf(CARRY, syntheticKit(CARRY, null), 12);
+    expect(withKit - bare).toBeCloseTo(0, 9);
+  });
+
+  it('bullet-COINCIDENT skill activations DO credit (default-generate scope)', () => {
+    // eunhwa-shape lastBullet defPct debuff: a discrete once-per-magazine skill activation,
+    // not a per-shot rider — under the owner's default-generate scope ruling it credits the
+    // full per-trigger value once per application (a whole-number multiple over the run).
     const block = {
       slot: 'skill1',
       trigger: { kind: 'lastBullet' },
       target: { kind: 'enemy' },
       effects: [{ kind: 'buff', stat: 'defPct', value: -29, durationSec: 5 }],
     };
-    const withKit = gaugeOf(CARRY, syntheticKit(CARRY, block), 12);
-    const bare = gaugeOf(CARRY, syntheticKit(CARRY, null), 12);
-    expect(withKit - bare).toBeCloseTo(0, 9);
+    const withKit = gaugeOf(CARRY, syntheticKit(CARRY, block), 20);
+    const bare = gaugeOf(CARRY, syntheticKit(CARRY, null), 20);
+    const delta = withKit - bare;
+    const per = perApplication(CARRY);
+    expect(delta).toBeGreaterThan(0);
+    expect(delta / per).toBeCloseTo(Math.round(delta / per), 6);
   });
 
   it('permanent auras do NOT credit — no durationSec, and the 999 permanent sentinel', () => {
