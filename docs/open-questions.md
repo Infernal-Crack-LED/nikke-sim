@@ -653,16 +653,13 @@ entirely inside the gauge lock, so the probe must read the BAR, not infer from h
 then: do NOT author a true-flavored rider (the flavor half of the asymmetry is unchanged). The
 "do not re-encode a unit between the two primitives" rule is LIFTED for gauge as of 2026-08-13.
 **2026-08-14 (gauge-source census, investigation-plan item 2):** an EXISTING labeled fixture already
-bears on the divisor — `anis-star` (RL, hitsPerShot 2) battery-3-A3 solo (probe-runs.md) measured
-~10.7–11.3%/pull, and the shipped model generates only 8.9%/pull (700 focused shot + 140 rider
-HALVED by the divisor, ×1.06 aura) — below the band, while the fixture's own decomposition (proc =
-full 280, not halved) is compatible. She seats four of the nine off-count comps (+42–59 gauge/fight
-if resolved her way ≈ 0.2s refill per cycle on T5 ≈ 12% of its cycle gap); `modernia`'s exposure is
-+66.5 gauge/fight on N2 (1330 unlocked rider impacts); every SG carrier's skill hits land inside
-the lock (zero exposure). The census nominates anis-star as the mechanism probe: divisor 1 vs TWO
-impacts per pull (her rockets may each carry a proc) — gauge-equivalent resolutions, distinguishable
-only by popup/footage. Instrument: `npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources`.
-→ A32 (U13), DECISIONS 2026-07-22 + 2026-08-13.
+bears on the divisor — `anis-star` (RL) battery-3-A3 solo (probe-runs.md) measured ~10.7–11.3%/pull.
+`modernia`'s exposure is +66.5 gauge/fight on N2 (1330 unlocked rider impacts); every SG carrier's
+skill hits land inside the lock (zero exposure). The rider-structure question the census raised for
+`anis-star` — one impact crediting 280 vs TWO impacts per pull at 140 each (her rockets carrying a
+proc apiece) — remains open and popup/footage-gated, but is gauge- AND damage-equivalent in the
+engine, so nothing rides on it. Instrument: `npx tsx scripts/battery/fb-count-matrix.ts
+--gauge-sources`. → A32 (U13), DECISIONS 2026-07-22 + 2026-08-13.
 
 **2026-08-16 research pass (owner-directed; external sources, findings-only) — the divisor question
 is now much narrower:**
@@ -681,17 +678,19 @@ is now much narrower:**
 focus`. ⇒ For a GENUINE multi-muzzle unit, the engine's `targetPerTrigger / hitsPerShot`
    rider credit recovers exactly the per-projectile value the community rule prescribes — the
    divisor is CORROBORATED for real multi-hit units, not refuted.
-2. **`anis-star` is NOT a real multi-hit unit — her divisor bite is a HACK, not data.** Datamine:
-   `shot_count 1 × muzzle_count 1`, one projectile crediting 280 on boss (matches our own
-   2026-07-13 solo measurement). Her `hitsPerShot: 2` is an explicit carve-out documented in
-   `src/data/weapon-fields.ts` (~:54-63) as a "LOAD-BEARING gauge-calibration hack" that halves
-   her 40-tick burst-DoT's over-emitted `skillGauge`; removing it flips comp "PA MiKa" to 12 FBs
-   vs measured 11. ⇒ Her rider halving divides by a synthetic 2 the game data does not contain —
-   but it CANNOT be removed in isolation (compensating-errors class): the enactable shape is a
-   BUNDLED re-model of her burst-DoT gauge emission + carve-out removal, verified on PA MiKa's
-   pinned 11 AND T5 wind-weak (+58.8 gauge/fight ≈ 12% of its cycle gap rides this). Gated:
-   engine change on a derived value → `/scientific-method` (or an owner ruling on the mechanic +
-   `/code-review` on the bundle).
+2. **`anis-star` is NOT a real multi-hit unit — ENACTED 2026-08-16 (DECISIONS): her carve-out
+   is REMOVED.** Datamine: `shot_count 1 × muzzle_count 1`, one projectile crediting 280 on
+   boss (matches our own 2026-07-13 solo measurement). The `/scientific-method` run (packet
+   `docs/handoffs/2026-08-16-anis-star-carveout-preop-packet.md`, 2-of-2 ACCEPT HIGH) verified
+   the hack's recorded justification stale at HEAD — the gauge lock had independently removed
+   the dot over-emission it compensated — and landed `hitsPerShot` 1 with every enabled
+   measured FB pin byte-identical. She now sits at hitsPerShot 1 where the divisor is a no-op,
+   so **she no longer bears on the divisor question**; what remains of U28's divisor half rides
+   on genuine multi-hit units only (`modernia` MG ÷2, the SG ÷10), gated on the `modernia`
+   Destroy-Mode bar read. **The magnitude half stays open**: her post-change solo decomposition
+   (700 + 280) × 1.06 = 10.39%/pull moves TOWARD the 2026-08-15 count-to-fill exclusion bound
+   (steady ≥ ~10.96) but is still excluded — the residual is the in-window elevation class,
+   footage-gated (the ≥60s solo re-record ask, QUEUE item 2).
 
 ### U27 — isabel's mid/midfar SG landing needs a clock-drift-corrected re-derive (split out of U17, 2026-07-22)
 

@@ -941,3 +941,37 @@ solo series); replay pin `scripts/tests/probe/noise-solo.test.ts` (6 tests, byte
 regenerated `snow-white-heavy-arms` solo trace WITH full invocation
 `docs/probe-data/swha-solo-30fps-c4-trace.json` (closes the undocumented-invocation gap flagged
 by the step-0 premise verifier). Work commit `6311cc2d`; packet pre-registration `22460e2a`.
+
+## 2026-08-16 — anis-star hitsPerShot carve-out removal → IMPLEMENT (driver ACCEPT HIGH + blind post-op ACCEPT HIGH)
+
+**Outcome: IMPLEMENT.** 2-of-2 ACCEPT, both HIGH. Packet:
+`docs/handoffs/2026-08-16-anis-star-carveout-preop-packet.md` (pre-op APPROVED-WITH-REVISIONS,
+R1–R3 executed); work deliverable:
+`docs/handoffs/2026-08-16-anis-star-carveout-work-deliverable.md`; change commit `145d8df6`
+(branch `anis-star-gauge-divisor`); ruling: DECISIONS 2026-08-16. Accepted claim (blind judge's
+words): the `'anis-star': 2` carve-out was a stale compensator — the dot over-emission it
+halved was independently removed by the gauge-lock rulings — and its removal preserves every
+enabled measured FB pin byte-exactly, confines all movement to the six comps seating her
+(84-row exact-zero negative control), and moves the solo decomposition 8.90 → 10.39 %/pull
+toward but still below the exclusion bound. STRUCK from acceptance: any solo-magnitude
+closure claim; rider structure 1×280 vs 2×140; confirmation weight from T5/T1 moving toward
+13; the divisor as a game rule for hitsPerShot > 1 generally.
+
+**Harness lessons:**
+
+1. **A carve-out's recorded justification is a premise with a date.** The weapon-fields comment
+   ("at 1, PA MiKa makes 12 FBs vs measured 11") was measured true in 2026-07-17 and silently
+   falsified by the 2026-08-04/08-13 gauge-lock rulings; the premise-gate A/B caught it
+   (premise-verifier REFUTED the live claim before the plan rested on it). Hacks that
+   compensate a defect should cite the defect, not just the symptom count, so a later fix of
+   the defect flags the hack for re-audit.
+2. **The pre-op judge's file-level spot-check earned its keep**: R1 caught that
+   `burstGaugePerShot`'s derivation never involves `hitsPerShot` — the packet's hand-reasoned
+   2.8 edit would have been silently reverted by the next sync and manufactured a phantom
+   `data/**` diff. The determinism claim is now a spec (characters.json row ==
+   `deriveWeaponFields` output).
+3. **Board-band movement from a rotation-timing fix is fit-exposure, and pre-declaring that
+   reading matters**: the post-op judge pre-committed "any band exits are re-tune items, not
+   evidence against the change" BEFORE the board diff ran (bands 10/15/25/20 → 9/15/23/22,
+   PA MiKa supports hotter, `anis-star`/`cinderella` improved). Follow-up filed in QUEUE
+   item 2 rather than re-litigated.
