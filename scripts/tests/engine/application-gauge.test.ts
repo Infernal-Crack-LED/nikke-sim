@@ -105,6 +105,10 @@ describe('non-damage enemy-debuff application gauge credit', () => {
   it('jackal S1 (attacked-trigger) credits once per application, scaling with activations', () => {
     // The v1 sim has no incoming-damage model, so in production runs this trigger is inert;
     // the manualAttacks hook exercises it. jackal S1 activates per 10 incoming attacks.
+    // Magnitude is deliberately UNPINNED here: jackal has no data/gauge-per-shot.json row, so
+    // her credit is the class-modal fallback — only sign and per-application proportionality
+    // are asserted; the absolute per-trigger pins live in the blanc/emma-tactical-upgrade
+    // tests, whose rows are datamined.
     const slug = 'jackal';
     const attacks = (n: number) =>
       Array.from({ length: n }, (_, i) => 60 * (i + 1));
@@ -185,6 +189,28 @@ describe('non-damage enemy-debuff application gauge credit', () => {
     const a = gaugeOf(CARRY, syntheticKit(CARRY, damageOnly), 12);
     const b = gaugeOf(CARRY, syntheticKit(CARRY, damagePlusDebuff), 12);
     expect(b - a).toBeCloseTo(0, 9);
+  });
+
+  it('chain/FB-locked windows net zero: an inFb-gated interval debuff credits nothing', () => {
+    // ether-shape production case: fbGate:'inFb' fails outside Full Burst (blockGatesPass runs
+    // before the credit), and inside Full Burst addGauge's lock swallows it — so with bursts
+    // ENABLED the paired delta must still be zero. Locks the credit against a future
+    // reordering of the burst-cast sequence.
+    const block = intervalDebuff({ fbGate: 'inFb' });
+    const res = (ov: ReturnType<typeof syntheticKit>) =>
+      runComp({
+        slugs: [CARRY, OTHER],
+        bossElement: 'Iron',
+        focusSlug: CARRY,
+        overrides: { [CARRY]: ov, [OTHER]: bareWeaponOverride(OTHER) },
+        cfg: { durationSec: 60 },
+      });
+    const withKit = unitOf(
+      res(syntheticKit(CARRY, block)),
+      CARRY
+    ).gaugeGenerated;
+    const bare = unitOf(res(syntheticKit(CARRY, null)), CARRY).gaugeGenerated;
+    expect(withKit - bare).toBeCloseTo(0, 9);
   });
 
   it('known non-generators (nikke-synergy counterexamples) never credit, even with a qualifying block', () => {

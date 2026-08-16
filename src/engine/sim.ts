@@ -1573,6 +1573,11 @@ export function runSim(
   // non-generators. Credited ONCE per application event, at the FULL per-trigger value (no
   // per-hit / SG-pellet division — an application is one discrete event, not a spray).
   // addGauge's own guard scopes this to the FB-end → chain-start generating window.
+  // ⚑ Units with no data/gauge-per-shot.json row fall back to the class modal (same convention
+  // as gaugePerShot/skillGauge) — for those the credit is an ESTIMATE, not the ruling's
+  // datamined value. Currently-affected live-credit slugs: eunhwa, ludmilla, sakura-suzuhara,
+  // signal (no row; jackal too, but her trigger has no production firing path), and the
+  // rosanna / brid-silent-track rows are themselves class-modal-sourced.
   const applicationGauge = (u: UnitState, frame: number) => {
     const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[
       u.char.slug

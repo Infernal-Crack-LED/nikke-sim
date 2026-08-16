@@ -5938,4 +5938,7 @@ assertion) and a `shotFired` Noise-shape negative pins the surviving exclusion; 
 inert by mechanism (no incoming-attack model) and `ether` double-dead (`fbGate: inFb` + in-FB
 lock). **Graded/control exposure: still zero by mechanism — the full slug set of both pinned
 suites was intersected against the live-credit list (empty), and `verify.sh` is green with both
-snapshots byte-identical.**
+snapshots byte-identical.** Cross-family code review (kimi-code/k3, sighted, packet + result
+under `scratchpad/gates/2026-08-16-application-gauge/`): **CLEAN** — two NOTEs (modal-fallback
+⚑ comment at `applicationGauge`, jackal-test magnitude-unpinned comment) and one FOLLOW-UP (an
+inFb-gated interval-debuff zero-credit test) all applied same session; 9 spec tests green.
