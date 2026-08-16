@@ -228,8 +228,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `anis-star` carve-out removal~~ **ENACTED 2026-08-16** via `/scientific-method` (2-of-2
      ACCEPT HIGH; DECISIONS 2026-08-16, branch `anis-star-gauge-divisor`, PR pending): every
      enabled measured FB pin byte-identical, T5 moves 11/12→12 toward its measured 13. The
-     noise-floor half of the `anis-star` re-record ask STANDS (and the solo magnitude residual
-     now reads 10.39 vs the ≥ ~10.96 exclusion bound — same footage ask resolves it).
+     noise-floor half of the `anis-star` re-record ask STANDS (Question B MEASURED: 492/597
+     quiet bins, zero false events, Wilson 0.55%/0.45%; feeds the classification thread's
+     noise-corrected ceiling test). The solo magnitude residual (10.39 vs ≥ ~10.96 exclusion
+     bound) returned INCONCLUSIVE-LOG from solo #2 — the ≥2-window counting rule cannot fire;
+     no hypothesis discriminated. U28 both halves resolved per the autonomous audit
+     (2026-08-16).
      ~~**NEW follow-up (fit-exposure re-tune):** PA MiKa's supports were fit to the old
      halved-gauge burst timing and got hotter on the board~~ **INVESTIGATED 2026-08-16,
      NOTHING TO RE-TUNE:** all four PA MiKa support overrides (`mint`, `prika`, `alice`,
@@ -250,8 +254,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      exact 2.8×1.06 per-impact credit at the `addGauge` level). Catches any drift between the
      engine's `skillGauge` path and the `skillImpactGauge()` mirror formula that G4 pins.
    - **Residue ledger (findings-only):** ~~`snow-white-heavy-arms` U11c~~ **MEASURED 2026-08-15,
-     PROMOTED TO ITEM 8** (volley generates per HIT; per-sub-hit gauge enactment planned there).
-     `ein` U8 0.7× team residual (N2); stage1→2 real 33f/32f vs modeled 30f (runs AGAINST the gap).
+     ENACTED 2026-08-15** via `flatDamage.gaugeHits` (per-sub-hit gauge credit; volleys generate
+     per HIT, not per proc). `ein` U8 0.7× team residual (N2); stage1→2 real 33f/32f vs modeled
+     30f (runs AGAINST the gap).
    - ~~Liberalio patch-note draft~~ **DROPPED by owner 2026-08-16** ("it doesn't matter") —
      never published, no draft file existed; do not resurrect.
 3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
