@@ -159,27 +159,56 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      descriptive-only, no stamp moved. Record: `scientific-method-harness.md` 2026-08-16;
      resolver folded into the `anis-star` re-record ask below — ~45–75 more quiet bins clear
      BOTH the floor and the Wilson clause in one pass, and any new packet must power-check its
-     floor against the guard spec first). Still open, re-ranked: (2) a pre-registered
-     noise-corrected ceiling test (subtract falseRate × quietBins); (3) source-hunt the excess
+     floor against the guard spec first). **Noise-floor input NOW AVAILABLE from the solo #2
+     measurement (492 primary / 597 pooled quiet bins, zero false events, Wilson 0.55%/0.45%)
+     — the C4 deficit is resolved at 3.3× margin.** Still open, re-ranked: (2) a pre-registered
+     noise-corrected ceiling test (subtract falseRate × quietBins — the falseRate input is now
+     measured; this needs its OWN pre-op); (3) source-hunt the excess
      event instants (clustered-at-visual-cause supports H-C, scattered refutes); (4) a third comp
      with a non-vacuous ceiling (T5's was cap-saturated — the H-C detector was effectively n=1);
      (5) a symmetric-E_min statistic as its OWN pre-op (T5's O/S were structurally
      uninterpretable with the one-sided threshold).
-   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — now serves DOUBLE
-     duty: the divisor read (n≥8 + a second count-to-fill; her bar zeroes at 21.73s so a longer
-     file contains a second clean window free) AND the same-regime noise floor (the 2026-08-16
-     C4 re-run missed its basis floor by ~45 quiet bins; same footage resolves both);
-     `modernia` Destroy-Mode bar read (U28's named probe — independent unit AND the separate
-     `extraHitDamagePct` site); T1 wind-weak video (screenshot only); a TEAM-seated bar read of
-     an already-solo-validated unit (the classification's named H-A discriminator: separates
-     "credits are bigger in team" from "credits are more frequent" — iron sweep's excess persists
-     with zero cadence buffs, so any cadence explanation must be intrinsic team-context
-     behavior). **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
-     U28 addendum, new U41): (1) non-damage applications — enemy-targeted standalone YES with
-     per-skill exceptions [MEDIUM], ally/self buffs/heals likely NO [MEDIUM], on-bullet riders
-     add nothing (anti-double-count), **buff REFRESHES: every source silent, CANNOT-DETERMINE —
-     still the live unknown for iron sweep**; owner-testable in the Union shooting range without
-     any recording (watch the bar at a debuff re-application instant while not firing). (2)
+   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — **LANDED
+     2026-08-16** (2-of-2 ACCEPT HIGH, driver + blind kimi-code/k3). Question A:
+     **INCONCLUSIVE-LOG** — the ≥2-window counting rule cannot fire (anomalous-magnitude
+     credits violate the steady premise on W2/W4; W3 is doubly-consistent per R1; W1 separate
+     corroborates H-elevated but does not enter the rule). The magnitude half is recorded but
+     unresolved — no hypothesis is discriminated. Three anomalous credits (+15.2–16.0%, each
+     montage-confirmed single ammo decrement) filed descriptively. Question B: **MEASURED** —
+     492 primary / 597 pooled quiet bins (3.3× both floors), zero false events, Wilson 0.55%
+     primary / 0.45% pooled. The C4 basis deficit is resolved. This is the input the
+     classification thread's ranked item (2) (noise-corrected ceiling test) needs — feed it
+     there (that item needs its OWN pre-op). Record:
+     `scientific-method-harness.md` 2026-08-16 (second entry);
+     `docs/handoffs/2026-08-16-anis-star-session-handoff.md` (Thread B) closes.
+     ~~`modernia` Destroy-Mode bar read (U28's named probe)~~ **CLOSED 2026-08-16 — forced dead
+     by the already-settled FB gauge-lock rule** (CLAUDE.md verified facts: nothing generates
+     during the chain or Full Burst): her Destroy Mode window is coincident with her own
+     `fullBurstExtend`-extended (15s) Full Burst, so it sits entirely inside the locked period,
+     never inside the FB-end→chain-start generating window — a bar recording there reads
+     flat/locked throughout and cannot pin the `hitsPerShot` divisor. That question stays open;
+     its live candidate is `anis-star` (rider fires on normal weapon shots, outside FB) — see
+     above. ~~T1 wind-weak video (screenshot only)~~ **RECEIVED 2026-08-16** —
+     `docs/probes/misc/t1 wind weak v2.jpg` + `.mov`, queued for `/probe-processing`.
+     ~~a TEAM-seated bar read of an already-solo-validated unit (the classification's named H-A
+     discriminator...)~~ **CLOSED 2026-08-16, owner ruling (method not stated): no game
+     mechanism grants extra burst-gauge credit for being in a team** — the known ×2.5
+     focus-charge bonus is the only context-dependent credit term and it is already modeled.
+     H-A is struck from the classification's candidate list; the iron-sweep excess (no cadence
+     buffs, ~1.6× shortfall) stays UNEXPLAINED — this rules out one candidate class, not the
+     excess itself. **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
+     U28 addendum; the pass's U41 filing was CLOSED same day as a duplicate — per-unit focus
+     multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — **OWNER-CONFIRMED 2026-08-16
+     (shooting-range test, DECISIONS entry): enemy-targeted standalone debuffs generate
+     (`jackal` S1 confirmed; per-skill exceptions stand — Noah taunt / `snow-white-heavy-arms`
+     counterexamples untouched), and debuff RE-APPLICATIONS/refreshes ALSO generate (bar ticks
+     at re-apply while not firing) — the iron-sweep refresh channel is a REAL generation
+     source.** Ally/self buffs/heals likely NO [MEDIUM], on-bullet riders add nothing
+     (anti-double-count). **Enactable follow-up (gated, not started): per-application/refresh
+     gauge MAGNITUDE is unmeasured (external sources suggest the caster's flat base per-trigger
+     value, same credit as skill-damage hits) and scope is per-skill — needs a magnitude
+     measurement + per-skill scoping pass before any `skillGauge()` engine change; then re-test
+     the iron-sweep excess against the modeled refresh channel.** (2)
      per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
      the engine's divisor is CORROBORATED for genuine multi-muzzle units. ~~The bundled
      `anis-star` carve-out removal~~ **ENACTED 2026-08-16** via `/scientific-method` (2-of-2
@@ -286,3 +315,38 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    bridges before the `model` injection. Surfaced as a FOLLOW-UP by the round-4 code review of the
    U28 branch (`scratchpad/gates/2026-08-13-u28-gauge/result-r4.json`); filed rather than made
    because it was outside that diff's intent and the bridges are shared by every gate skill.
+
+8. **`neon-blue-ocean` (nbo) over-models by ~2.7× and the fix is currently UNAUTHORABLE — an engine
+   hole, not just her ⚑1.** Board: sim #10 / community #57-of-70 (`docs/b3-dps-rank-audit.md`,
+   MODEL_ONLY, no measured data). **85% of her sim damage lands inside her 7s burst windows** (19%
+   of the fight): her `weaponSwap` is kit-silent on cadence, so it inherits the engine default
+   "base weapon's cadence", and for an MG that is the most aggressive assumption available — 60
+   rounds/s at the top of the wind-up ladder, belt refilled on entry, so each window fires **~301
+   shots at 33% of final ATK plus one 11% `extraHitDamagePct` rider each** (measured via
+   `DBG_UNIT=neon-blue-ocean`: swap normals 64.3% + rider 20.6% + base normals 15.0%).
+   **(a) THE ENGINE HOLE (hard, verified by inspection + A/B).** `src/engine/sim.ts` fire loop
+   branches `if (chargeFrames > 0) … else if (u.char.weapon === 'MG') { …wind-up ladder… } else
+{ …swap pullsPerSec… }` — the MG branch is keyed on the unit's **base** weapon class and never
+   reads `u.swap.pullsPerSec` / `u.swap.weapon`, so **no swap cadence is authorable on an
+   MG-base unit**. `scripts/battery/nbo-swap-cadence-ab.ts` prints **0.0% movement** for
+   `pullsPerSec: 1.5`. The field is HALF-wired: `u.swap.weapon` IS honoured for SG pellet-landing
+   (~~:1543/1547) and range/core banding (~~:1815) — the `+weapon SG` arm moves −15.8% — just not
+   for cadence. nbo is the only MG-base `weaponSwap` carrier in the tree, which is why nothing
+   caught it (`velvet`'s note already states "the MG wind-up ladder is base-weapon-gated", but she
+   swaps INTO MG from an SR base, so she takes the working branch). Also unreset: `mgRampRound`
+   survives swap entry/exit, so the new weapon starts at full spin.
+   **(b) THE READ (hypothesis-strength — do NOT enact on this alone).** Her override's ⚑1 calls
+   `skill_value_data[1] = 90` "an unlabeled integer". Across all 11 `ChangeWeapon` carriers that
+   column is positionally the swap weapon's `rate_of_fire` (÷60 = shots/s): `k` reads 144 → 2.4/s
+   and her kit TEXT independently states "Attack speed ▼90%" on an SMG (24 × 0.1 = 2.4) — an
+   independent corroboration; `velvet` reads 4200 → the shipped `pullsPerSec: 60`; `modernia`, the
+   other MG swapper, reads 4200 (= MG max), so the column does discriminate "keeps MG cadence"
+   from "doesn't". nbo's 90 → **1.5 shots/s, exactly the SG class rate**. COUNTEREXAMPLE, load-
+   bearing: `moran`'s 1440 (24/s) was board-REFUTED on video (~12/s) — but note her own COLD
+   residual asks for ~1.5× more swap-window hits, i.e. ~18/s, so that refutation is soft.
+   33%/shot at 1.5/s is a DPS _loss_ vs her base MG, which suggests the swap weapon is multi-hit
+   (SG-shaped) — unresolvable without shot `1001402`'s spec or footage.
+   **Recipe (already in her ⚑1):** one isolated nbo-solo scope-lock video — count rounds fired
+   inside one 7s window and watch the ammo counter. That single recording settles cadence, pellet
+   count and belt size at once. **Do (a) regardless of (b)**: the branch hole is a code defect that
+   silently swallows an authored field, and it blocks any fix to (b).

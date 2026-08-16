@@ -5883,3 +5883,61 @@ hits (was 0; threshold still passes) — observation only.
 rows gone; `skillImpactGauge('anis-star')` 2.8), `focus-columns.test.ts`,
 `multihit-crediting.test.ts`, `refill-starvation.test.ts`, snapshot regen in the same commit;
 G1–G4 specs added. Work record: `docs/handoffs/2026-08-16-anis-star-carveout-work-deliverable.md`.
+
+## Owner rulings: non-damage enemy-debuff APPLICATIONS generate burst gauge, and so do their RE-APPLICATIONS/refreshes (2026-08-16)
+
+Two in-game observations by the owner in the Union shooting range (no recording; owner-ruling
+tier), running the test recipe filed by the 2026-08-16 gauge research pass ("watch the bar at a
+debuff re-application instant while not firing"):
+
+1. **A periodic debuff RE-APPLICATION onto the target generates burst gauge** — while holding
+   fire, the bar ticks up at the instant the debuff re-applies. This ANSWERS the half every
+   external source was silent on (the research pass had filed it CANNOT-DETERMINE) and makes
+   the refresh channel a REAL candidate source for the iron-sweep generation excess (steady
+   refill windows with zero fresh applications but recurring refreshes). The filed recipe named
+   `emma-tactical-upgrade`'s Environment Setup 30s cadence as the test vehicle; the owner's
+   report did not record the exact unit used.
+2. **Standalone enemy-targeted debuff skills generate — confirmed for `jackal` S1**, promoting
+   the research pass's [MEDIUM] external reading (note.com/_trick_, nikke.gg, nikke-synergy) to
+   owner-confirmed for the generating cases. The per-skill-exception structure STANDS — the
+   arena counterexamples (Noah's taunt, `snow-white-heavy-arms`' damage-taken ▲ generating
+   nothing) are not touched by this ruling, so "generates" remains a per-skill property, not a
+   universal rule.
+
+**What changes: docs only — NOTHING is enacted.** The engine's `skillGauge()` still credits only
+skill-damage hits and DoT ticks; non-damage applications/refreshes remain unmodeled. Enactment
+is a separate gated pass because two inputs are missing: (a) the per-application/per-refresh
+gauge AMOUNT is unmeasured (external sources suggest the caster's flat base per-trigger value —
+the same flat credit as skill-damage hits — but no owned measurement pins it), and (b) the
+per-skill exceptions mean a blanket "debuffs generate" enactment is known-wrong at roster scale.
+Follow-up (magnitude measurement + per-skill scoping, then the engine pass) filed in
+`docs/handoffs/QUEUE.md`.
+
+**Recorded in:** `docs/data/burst-gauge.md` §5 (rewritten bullet). Related: the 2026-08-14
+per-hit crediting rulings above; the iron-sweep thread in `docs/handoffs/QUEUE.md`.
+
+## Two burst-generation-thread recording asks closed without new footage (2026-08-16)
+
+**1. H-A (per-hit burst-gauge credit scales up in team context vs solo) — CLOSED, owner ruling
+(method not stated).** No game mechanism grants extra burst-gauge credit for being in a team; the
+known ×2.5 focus-charge bonus is the only context-dependent credit term and it is already
+modeled. This retires the "team-seated bar read of an already-solo-validated unit" recording ask
+and strikes H-A from the 2026-08-15 H-A/H-B/H-C classification's candidate list
+(`docs/handoffs/2026-08-16-burst-gen-autonomous-audit.md`). **What does NOT change:** the
+underlying iron-sweep excess (~1.6× shortfall on a comp with zero cadence buffs) stays
+UNEXPLAINED — this rules out one candidate class, not the excess itself.
+
+**2. `modernia`'s Destroy Mode as the `hitsPerShot > 1` gauge-divisor probe (U28) — CLOSED,
+forced by the already-settled FB gauge-lock rule, not a new claim.** `modernia`'s burst grants
+`fullBurstExtend: 5`, extending the team's Full Burst to 15s to exactly match her own 15s Destroy
+Mode window — so Destroy Mode is coincident with (fully contained inside) Full Burst. The
+standing verified fact (CLAUDE.md: "nothing generates gauge during the burst chain or during
+Full Burst") means her whole Destroy Mode window sits inside the gauge lock, never inside the
+FB-end→chain-start generating window. A bar recording during Destroy Mode would read
+flat/locked throughout and cannot pin the divisor. The `hitsPerShot` divisor question stays
+open; its live candidate is `anis-star` (rider fires on normal weapon shots, outside FB — her
+footage was handed to another session the same day for the parallel U28 divisor read).
+
+**Recorded in:** `docs/handoffs/QUEUE.md` (burst-generation thread, recording-asks list);
+`docs/open-questions.md` U28 (Gate paragraph corrected); `docs/handoffs/2026-08-16-burst-gen-autonomous-audit.md`
+(candidate list items 2/3).

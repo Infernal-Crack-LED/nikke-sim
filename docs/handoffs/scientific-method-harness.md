@@ -975,3 +975,85 @@ closure claim; rider structure 1×280 vs 2×140; confirmation weight from T5/T1 
    evidence against the change" BEFORE the board diff ran (bands 10/15/25/20 → 9/15/23/22,
    PA MiKa supports hotter, `anis-star`/`cinderella` improved). Follow-up filed in QUEUE
    item 2 rather than re-litigated.
+
+## 2026-08-16 — anis-star solo #2 gauge magnitude + same-regime noise floor → LOG (driver ACCEPT HIGH + blind post-op ACCEPT HIGH)
+
+**Outcome: LOG, disposition INCONCLUSIVE (Question A) + MEASURED (Question B).** 2-of-2 ACCEPT,
+both HIGH. Measurement-only packet — no enactment. The two halves resolve differently:
+
+**Question A (per-pull gauge magnitude): INCONCLUSIVE-LOG.** The pre-committed ≥2-window
+counting rule cannot fire regardless of how the R2 map-vs-trace conflict resolves:
+
+- If the pre-registered 1fps map stands (R2 mechanical): all three refill windows carry an
+  out-of-tolerance boundary → BASIS-BROKEN (<2 survive).
+- If the trace stands (three independent instruments — countdown digits, montage ammo
+  decrements, cycle length — all corroborate the trace and localize the disagreement to the
+  map itself): the surviving windows are W2 (K=9 but the 9-pull fill is arithmetically
+  enabled by an anomalous +15.3 credit — counterfactual at steady ~11.25 gives ~97, not full),
+  W3 (K=10, DOUBLY-CONSISTENT per R1: both H-model 10.39 and H-elevated up to ~11.69 produce
+  K=10 with the opener), W4 (K=9 but steady-premise violated by two anomalous credits
+  +16.0/+15.2 and a smeared p7). Zero windows count cleanly toward exactly-ONE hypothesis.
+- W1 (opening, separate per packet): K=9, excludes H-legacy (82.8, not full) and H-model
+  (94.7, not full), consistent with H-elevated from ~11.05+ — corroborates the A3 window's
+  structure on independent footage, but does not enter the ≥2-window rule.
+
+**Question B (same-regime noise floor): MEASURED.** 492 primary quiet bins (3.3× the 150
+floor), 597 joint-pooled (3.3× the 180 floor). Zero false-event bins at all three thresholds
+(1.41/1.5/1.596). Wilson 95% one-sided upper: 0.55% primary, 0.45% pooled — well under the
+~1% the classification thread's ceiling test needs. The C4 basis-size deficit (105 bins vs 150
+floor) is resolved at ~4.7× margin. Regime coverage (317/492 bins in 60–80% fill range) closes
+the C4 70–80% gap. This is INPUT to the classification thread's ranked item (2), the
+noise-corrected ceiling test — it stamps nothing about H-C by itself.
+
+**Anomalous-magnitude credits (descriptive finding, no hypothesis predicts them):** three
+pulls across two windows credited +15.2–16.0% each, montage-confirmed as single ammo
+decrements (W2p8 +15.3, W4p2 +16.0, W4p3 +15.2). Not observed on the A3 footage. They form
+a separate ~15.2–16.0 family (21–22 columns of the 138px bar) distinct from the steady
+10.1–11.6 family. No current hypothesis accounts for them. They are mechanically clean
+(stable plateaus, single decrement) but no game mechanic is identified. Filed descriptively.
+
+**Pre-registration map defect (R2 conflict):** the 1fps montage map (built before the 30fps
+trace ran) placed the three refill-window opens 2.2–4.9s later than the trace shows. Three
+independent instruments corroborate the trace: (1) countdown digits fix the three 10s spans
+ending 0.55–0.8s before the trace opens; (2) montage ammo first-decrement instants fall
+0.5–1.6s after the trace opens but 2.1–4.7s before the map's opens; (3) full→open cycle
+length is a consistent 10.6–11.1s on all three cycles. The map's cast-3 anchor (~64.5) is
+directly contradicted by the countdown digit 09.00 at t=62.5. Harness lesson: a
+pre-registered map built from a lower-tempo instrument (1fps) can be wrong even when the
+higher-tempo trace (30fps) is right — the R2 tolerance was sized for same-instrument
+boundary disagreement, not for a systematic map lag. Future packets building maps from 1fps
+montages should pre-register a wider tolerance or a trace-override clause.
+
+**The accepted claim (blind judge's words, condensed):** the work followed the pre-registered
+method end-to-end (instrument gate before target read, tolerance guard declared pre-read,
+counting branch sole discriminator, R1–R4 correctly applied); the decision rule correctly
+surfaces INCONCLUSIVE-LOG regardless of R2 resolution; the anomalies are flagged not smoothed;
+Question B's floors are cleared at large margin. ONE minor defect found and corrected: the
+deliverable's §6 claimed "n≥8 requirement met in every pool" but the W1-separate pool had n=7
+— non-load-bearing (medians non-discriminating by construction) but a stated-number error.
+
+**Harness lessons:**
+
+1. **Pre-registered maps from lower-tempo instruments need a trace-override clause.** This
+   packet's R2 tolerance (±1.5s) was designed for same-instrument boundary disagreement. The
+   1fps map systematically lagged the 30fps trace by 2.2–4.9s, which the tolerance could not
+   absorb. Three independent instruments rescued the trace; without them, BASIS-BROKEN would
+   have been the mechanical result despite the trace being correct. Future packets: either
+   widen R2 when the map comes from a lower-tempo source, or pre-register that the trace
+   supersedes the map when corroborated by ≥2 independent instruments.
+2. **Anomalous-magnitude credits that are mechanically clean (single ammo decrement, stable
+   plateaus) but unpredicted by every hypothesis are a DESCRIPTIVE finding, not a defect.**
+   They do not invalidate the counting rule (the rule correctly surfaces INCONCLUSIVE when the
+   steady-premise is violated); they are a game-mechanics observation for future work.
+3. **A measurement-only packet can produce a clean MEASURED result on one question
+   (Question B) while the other (Question A) is INCONCLUSIVE.** The two halves are independent
+   by construction; Question B's basis does not depend on Question A's decision rule.
+
+**Artifacts (all committed):** pre-op packet
+`docs/handoffs/2026-08-16-anis-star-solo2-gauge-preop-packet.md` (APPROVED-WITH-REVISIONS,
+R1–R5 executed); verdict-free artifact `docs/probe-data/anis-star-solo2-gauge.json`; work
+deliverable `docs/handoffs/2026-08-16-anis-star-solo2-gauge-work-deliverable.md`; blind
+post-op packet `docs/handoffs/2026-08-16-anis-star-solo2-blind-postop-packet.md` + result
+`docs/handoffs/2026-08-16-anis-star-solo2-blind-postop-result.json` (kimi-code/k3, ACCEPT
+HIGH); replay pin `scripts/tests/probe/noise-solo2.test.ts` (5/5 GREEN); tooling extension
+`scripts/probe/fill-trace-compare.ts` noise-solo2 subcommand (+243 lines).

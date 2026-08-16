@@ -1,0 +1,37 @@
+{
+  "verdict": "PASS",
+  "outcome_class": "LOG",
+  "scores": {
+    "Q1_method_fidelity": {
+      "score": "pass",
+      "notes": "Pre-registered method followed end-to-end: instrument gate (maiden-ice-rose fixture reproduction 450/450 exact, 18/18 vitest anchors) run BEFORE any target read; tolerance-widening guard (2x0.725=1.45pp >= 0.57pp) declared pre-read, correctly demoting the medians branch to descriptive-only; counting branch used as sole discriminator as specified. Question B guard construction matches the C4 packet spec (bin, grouping, 2+0.3s+8 guard, doubling on widened pulls, offCurve span drops). Replay pin 5/5 GREEN satisfies the REUSE/PROVE-IT-DIFFERENTLY bar — the harness IS the independent check; correctly stopped there."
+    },
+    "Q2_decision_rule_application": {
+      "score": "pass",
+      "notes": "R1: K-bands at rendered baseline 2.2 computed correctly (11/10/9, integer-disjoint on the all-equal premise), and the deliverable correctly identifies that W3's partial opener (+4.3) breaks the naive disjointness — 10.39 and [10.96, 11.69) both yield K=10 — declaring W3 DOUBLY-CONSISTENT, which is exactly the pre-op judge's note-(a) failure mode, caught here at a nominally-favorable baseline. R2: applied mechanically (all three refill windows carry an out-of-tolerance boundary, BASIS-BROKEN condition surfaced) and the map-vs-trace conflict escalated to driver/judge with three independent corroborating instruments (countdown digits, ammo montage first-pull instants, full-to-open cycle length) rather than unilaterally resolved — correct REPORT-don't-ACT posture. R3: W4 gate satisfied (duration reconciled to 11.07s cadence-consistent, montage-verified 9 pulls) and residual anomaly correctly re-classified as magnitude, not duration. R4: montage cross-check present and agreeing for every counted window. W1 correctly held separate per packet. No verdict stamped — verdict-free as required."
+    },
+    "Q3_arithmetic_soundness": {
+      "score": "pass_with_one_minor_defect",
+      "notes": "Verified: K arithmetic (97.8/8.90->11, /10.39->10, /[10.96,12.2]->9); W2 fill checks (84.3 / 94.7 / 100.8 at 8.90/10.39/11.25) and counterfactual (~97 not full at steady 11.25); W3 (86.6 / 100.01 / 105.1; steady band [10.39, 11.69)); W1 (82.8 / 94.7 / 100.0-at-11.05; band [11.05, 12.63)); W4 plateau reconstruction 2.2+7.2+16.0+15.2+11.6+10.8+11.6=74.6 matches trace plateaus exactly; Wilson upper bounds (z^2/n with x=0: 2.706/492=0.55%, 2.706/597=0.45%) correct; floors 492>=150 and 597>=180 met; decile counts sum to 492; 162+155=317 regime-coverage figure consistent. DEFECT (minor, non-load-bearing): section 6 claims 'the n>=8 requirement is met in every pool' but the W1-separate pool has n=7 — arithmetically false for that pool. Immaterial because the medians branch was declared non-discriminating by construction, but it is a stated-number error and should be corrected in the artifact's transcript."
+    },
+    "Q4_honesty_flags_scope": {
+      "score": "pass",
+      "notes": "Anomalies flagged, not smoothed: W2p8 +15.3, W4p2/p3 +16.0/+15.2, smeared W4p7, clipped pulls — each montage-confirmed as single ammo decrements and explicitly labeled as outside all hypothesis families, with the +15.2-16.0 family (3 events) noted as NOT present on A3 footage. CONDITIONAL inclusions marked. Steady-premise violations tabulated per window. Cannot-establish list restated verbatim including the pre-op judge's two chat-only additions. Constraint-9 items located. Terrain-lock reader defect and read-ammo HUD gap surfaced as maintenance candidates without scope expansion. No invented values."
+    }
+  },
+  "rule_implied_classification": {
+    "question_A": "INCONCLUSIVE-LOG on the strict counting rule regardless of how the R2 map-vs-trace conflict resolves: if the map stands, <2 refill windows survive (BASIS-BROKEN, logged); if the trace stands (supported by three independent instruments — the PROVE-IT-DIFFERENTLY bar is met for map-indictment), the surviving windows are W2 (K=9 but fill arithmetically enabled by anomalous +15.3; steady premise violated), W3 (K=10, DOUBLY-CONSISTENT per R1), W4 (steady premise violated, descriptive only) — zero windows count cleanly toward exactly-ONE hypothesis, so the >=2-window clause cannot fire. W1 (separate, per packet) excludes H-legacy 8.90 (82.8) and H-model 10.39 (94.7), consistent with H-elevated from ~11.05 — corroborating elevation signal on independent footage, structurally matching A3, but it does not enter the decision rule.",
+    "question_B": "Both floors met with large margin (492 primary, 597 pooled vs 150/180). Zero false-event bins at all thresholds; Wilson 95% upper 0.55% primary / 0.45% pooled — comfortably under the ~1% the classification thread's ceiling test wants (pre-op note b's ~355-385-bin sufficiency estimate confirmed and exceeded). Correctly stamps nothing about H-C. Regime coverage (317/492 bins in deciles 7-8) closes the C4 70-80% gap."
+  },
+  "defects": [
+    {
+      "id": "D1",
+      "severity": "minor",
+      "location": "section 6, pool table",
+      "description": "'n>=8 requirement is met in every pool' is false for the W1-separate pool (n=7). Non-load-bearing (medians branch non-discriminating by pre-committed guard) but is a stated-number error; recommend a one-line correction in the artifact transcript."
+    }
+  ],
+  "what_i_verified": "All K-band and per-window fill arithmetic recomputed independently; Wilson bounds recomputed; floor margins, pool counts, decile sums, and W4 plateau reconstruction recomputed; R1-R4 and tolerance-guard application checked against the pre-op rules as written; verdict-free posture and anomaly flagging checked against NON-NEGOTIABLES 2-4, 7, 9. Blindness preserved: I saw no driver verdict; this scores only the deliverable against the pre-registered packet.",
+  "confidence": "high",
+  "model": "kimi-code/k3"
+}
