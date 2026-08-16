@@ -265,6 +265,29 @@ const MG_LADDER_CUM: number[] = [0];
 for (const iv of MG_RAMP_INTERVALS) {
   MG_LADDER_CUM.push(MG_LADDER_CUM[MG_LADDER_CUM.length - 1] + iv);
 }
+// Does an active weapon swap take an MG-BASE unit off the wind-up ladder? The ladder is the
+// cadence of the MG the unit was BORN with, so it must not govern a gun the unit is no longer
+// holding: a swap that declares its own cadence (`pullsPerSec`) or a different weapon class
+// leaves the ladder for the flat-cadence path, where those two fields are actually read.
+//
+// A swap that declares NEITHER stays on the ladder — that is a re-valued/re-flavored MG
+// (`sameWeapon` true-damage swaps, or a kit-silent swap whose cadence is deliberately inherited).
+//
+// INERT BY MECHANISM for every unit but `neon-blue-ocean`, and the argument is the consumer sweep
+// `npx tsx scripts/census-mg-swap-carriers.ts` (which FAILS if that stops being true), not any one
+// comp: the roster holds exactly TWO MG-base `weaponSwap` carriers, and the other one —
+// `cinderella-crystal-wave` — carries `chargeTimeSec`, so the charge branch ABOVE this one routes
+// her and she never reaches the gate. Every other carrier is non-MG-base and already read its
+// swap's cadence on the flat path.
+//
+// Before this gate the branch was keyed on `u.char.weapon === 'MG'` alone, so `pullsPerSec` and
+// `weapon` were SILENTLY DISCARDED on an MG-base unit — authorable in the override, unreadable by
+// the engine (`neon-blue-ocean` is the tree's only MG-base `weaponSwap` carrier, which is why it
+// went unnoticed; the reverse direction, a swap INTO MG from another base, always worked —
+// see the NOMINAL_PULLS_PER_SEC MG entry).
+const swapLeavesMgLadder = (swap: WeaponSwap | null | undefined): boolean =>
+  swap != null &&
+  (swap.pullsPerSec != null || (swap.weapon != null && swap.weapon !== 'MG'));
 // RELOAD (2026-07-13): actual reload = displayed x 0.975 x (1 - buff) + 0.21s — SUBTRACTIVE,
 // like charge speed, with a fixed 0.21s tail; buffs past 100% only remove the scaled part
 // (https://ore-game.com/nikke/post/reload-limit/). Replaces the old divisive
@@ -3960,7 +3983,7 @@ export function runSim(
             }
           }
         }
-      } else if (u.char.weapon === 'MG') {
+      } else if (u.char.weapon === 'MG' && !swapLeavesMgLadder(u.swap)) {
         if (u.mgIdleFrames > 0) {
           // wind-down: retrace the ladder at MG_WINDDOWN_DECAY x after the grace period
           const lost =
