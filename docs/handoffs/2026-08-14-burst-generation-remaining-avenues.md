@@ -48,10 +48,11 @@ Hypothesis classes the next measurement must discriminate:
    **In flight 2026-08-14 via `/scientific-method`.** Known confound to premise-check first: the
    bar's under-render (the drain-side defects found 2026-08-13) and the bar-render calibration's
    validity on the fill side.
-2. **The `anis-star` `skillGauge` divisor (U28 residual) — the one candidate with an existing
-   labeled fixture that EXCLUDES the shipped value.** Shipped 8.9%/pull vs her battery-3 A3 solo
-   measured ~10.7–11.3%; sized at ~12% of T5's cycle gap (+42–59 gauge/fight on her four comps).
-   `/scientific-method`, leading with the existing fixture (reuse-before-derive); note the
+2. **The `anis-star` `skillGauge` divisor — ENACTED 2026-08-16 (DECISIONS: carve-out
+   removed via `/scientific-method`, 2-of-2 ACCEPT HIGH).** Delivered the sized ~12% of T5's
+   cycle gap (T5 11/12-mix → 12×100%, shortfall 26.0 → 22.7 gauge/s; every enabled measured FB
+   pin byte-identical). The solo magnitude residual (10.39 vs ≥ ~10.96 exclusion) stays open
+   (U28), footage-gated; note the
    fixture's own decomposition lands ~3% under its band floor, so the pipeline may still want the
    solo re-read. The encoding choice (divisor 1 vs per-impact procs) propagates to `modernia` —
    engine semantics, not a one-unit tweak.

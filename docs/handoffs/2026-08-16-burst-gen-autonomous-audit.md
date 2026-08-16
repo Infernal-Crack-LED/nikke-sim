@@ -45,9 +45,9 @@ affects only the first three and still does **not** move the two filmed shortfal
 - `hitRepeat` has one carrier (`emilia`) and is gated to weapon-hit frames; she seats no
   off-count comp.
 - `extraHitDamagePct` carriers (`modernia`, `nayuta`, `neon-blue-ocean`, `neon-vision-eye`)
-  already emit `skillGauge` per pull (U28 landed 2026-08-13). The U28 residual — whether the
-  `skillGauge` divisor should be 1 for `hitsPerShot > 1` — remains open on `anis-star` and
-  `modernia`.
+  already emit `skillGauge` per pull (U28 landed 2026-08-13). The U28 divisor residual is
+  ENACTED for `anis-star` (2026-08-16, DECISIONS: carve-out removed, hitsPerShot 1, credit
+  2.8/impact) and remains open only for genuine multi-hit units (`modernia` MG ÷2, SG ÷10).
 - The gauge-source census (`GAUGE_KIND_CENSUS`) is exhaustive at the effect-kind level.
   The gap is not a missing _kind_; it is missing _credit multiplicity within_ `flatDamage`
   (the SWHA finding) or an entirely unmodeled source class.
@@ -100,10 +100,10 @@ Ranked by how much autonomous work can still be done:
    - Implementation plan exists: add `gaugeHits` field, fire `skillGauge` that many times
      without expanding damage instances.
 
-2. **`anis-star` / `modernia` `skillGauge` divisor (U28 residual, footage-gated).**
-   - The 2026-08-15 solo re-read returned CANNOT-MEASURE at n≥8.
-   - If the rider credited full `targetPerTrigger` instead of `÷hitsPerShot`, T5 would gain
-     ~58.8 gauge over the fight (~12% of its cycle gap).
+2. **`modernia` `skillGauge` divisor (U28 residual, bar-read-gated).** The `anis-star` half
+   is ENACTED (2026-08-16, DECISIONS): carve-out removed, rider credits full 280, T5 gained the
+   sized ~58.8 gauge/fight (11/12-mix → 12×100%, shortfall 26.0 → 22.7 gauge/s — narrowed, open).
+   - The 2026-08-15 solo re-read returned CANNOT-MEASURE at n≥8 (magnitude half still open).
    - Needs a clean ≥60 s solo `anis-star` re-record.
 
 3. **Team-context charge / fire cadence differs from solo (footage-gated).**

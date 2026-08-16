@@ -192,6 +192,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      1.112, `alice` 1.099 → 1.114, `red-hood` +2.7%) while `anis-star`/`cinderella` improved —
      re-tune those overrides against the corrected rotation timing per the rotation-fix
      doctrine (never re-fudge the divisor).
+     **NEW follow-up (implementation-review FOLLOW-UP 6):** the rider channel that drives every
+     board delta (`anis-star`'s unlocked `shotFired` flatDamage credit, now 2.8/impact) is
+     pinned only via `skillImpactGauge()` — a MIRROR of the sim.ts formula, so it stays green
+     if the engine's divisor changed underneath. Add an engine-level G5 spec reading the
+     per-pull generation off `gaugeGenerated` through the engine in a fixture whose unlocked
+     windows are controlled (the naive `gaugeGenerated / pulls` conflates locked pulls — needs
+     a window-aware shape; that subtlety is why it was filed, not rushed).
    - **Residue ledger (findings-only):** ~~`snow-white-heavy-arms` U11c~~ **MEASURED 2026-08-15,
      PROMOTED TO ITEM 8** (volley generates per HIT; per-sub-hit gauge enactment planned there).
      `ein` U8 0.7× team residual (N2); stage1→2 real 33f/32f vs modeled 30f (runs AGAINST the gap).

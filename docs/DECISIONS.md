@@ -5816,14 +5816,19 @@ cite this entry instead of re-fencing the observable.
 ("promotion requires a pre-registered replication on NEW footage or an owner ruling") is
 satisfied by this ruling, not overturned.
 
-## `anis-star` hitsPerShot carve-out REMOVED — her burst-DoT gauge models via the general lock; rider credits the datamined 280 undivided (2026-08-16)
+## `anis-star` hitsPerShot carve-out REMOVED — her burst-DoT gauge models via the general lock; rider credits the full 280 target-base undivided (2026-08-16)
 
 **Change (branch `anis-star-gauge-divisor`, commit `145d8df6`):** removed the `'anis-star': 2`
 entry from `HITS_PER_SHOT_CARVEOUTS` (`src/data/weapon-fields.ts`; `modernia: 2` stays — her
 double-hit is genuine) and applied the deterministic derivation delta to
 `data/characters.json` (`hitsPerShot` 2→1 = shot_count 1 × muzzle_count 1; `burstGaugePerShot`
 untouched at 1.4 — its formula never involves hitsPerShot). Anis: Star's skill/DoT/rider
-impacts now credit the full datamined 280 (2.8%/impact) instead of a halved 140.
+impacts now credit the full 280 target-base (2.8%/impact) instead of a halved 140. Provenance:
+the DATAMINED part of this change is the divisor input `hitsPerShot 1` (shot_count 1 ×
+muzzle_count 1, byte-verified); the 280 itself is `data/gauge-per-shot.json`'s ⚑
+battery-3-measured value (its own source label; `sim.ts` names her the battery-estimate row),
+which reconciles byte-exactly with the raw shot row's `target_burst_energy_pershot` 28000 ÷ 100
+— it stays ⚑ (a refit candidate) and is NOT promoted by this landing.
 
 **Why (procedure: `/scientific-method`, packet
 `docs/handoffs/2026-08-16-anis-star-carveout-preop-packet.md`, pre-op APPROVED-WITH-REVISIONS,
@@ -5839,7 +5844,10 @@ recorded justification ("at 1, PA MiKa makes 12 FBs vs measured 11") was verifie
 HEAD: with the carve-out removed, **every enabled measured FB pin is byte-identical**
 (PA MiKa 11×25, T2 elec-weak 12×25, N5 12×21/13×4, misc B3s 12×25 — its `simFullBursts: 12`
 divergence pin STANDS), and all snapshot movement is confined to the six comps seating her
-(84 rows across 17 other comps exactly unmoved). Disabled shortfall comps move TOWARD their
+(exact-zero on 74 rows across the 15 comps that do NOT seat her — the true negative control;
+the other 10 unmoved rows are the two DISABLED comps T5/T1 wind-weak, which DO seat her and
+are frozen by the gate, not verified-zero — their live FB counts did move). Disabled shortfall
+comps move TOWARD their
 measured 13 without closing (T5 wind-weak 11/12-mix → 12×100%, shortfall narrows 49.7→43.3
 gauge/cycle and stays open; T1 12-share 28%→40%) — consistent with H1 but carrying NO
 confirmation weight (equally predicted under the compensating-error rival; the discriminator

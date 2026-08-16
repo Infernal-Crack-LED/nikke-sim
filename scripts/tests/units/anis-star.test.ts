@@ -438,12 +438,13 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
     });
   });
 
-  describe('G — burst-DoT gauge emission (datamined 280/impact, divisor 1, lock-swallowed)', () => {
+  describe('G — burst-DoT gauge emission (280 target-base/impact, divisor 1, lock-swallowed)', () => {
     // Her gauge model is the engine's GENERAL one: each Shooting Stars dot tick calls
-    // skillGauge at her full datamined target-base credit (280 energy = 2.8 gauge,
-    // gauge-per-shot.json), and the addGauge chain/FB lock swallows the ticks wherever the
-    // game's own lock would. hitsPerShot is the datamined shot_count × muzzle_count = 1,
-    // so the skillGauge divisor leaves the credit whole.
+    // skillGauge at her full target-base credit (280 energy = 2.8 gauge — gauge-per-shot.json's
+    // ⚑ battery-3-measured value, which reconciles byte-exactly with the raw shot row's
+    // target_burst_energy_pershot 28000 ÷ 100), and the addGauge chain/FB lock swallows the
+    // ticks wherever the game's own lock would. The DATAMINED input here is hitsPerShot =
+    // shot_count × muzzle_count = 1, so the skillGauge divisor leaves the credit whole.
 
     it('G1 — dot ticks are gauge-INERT in a bursting comp: the lock swallows all 40 (delta exactly 0)', () => {
       // Removing the dot is LIVE (her damage drops) yet her generated gauge is unchanged
@@ -493,7 +494,7 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
       expect(c.chargeMultiplier).toBeCloseTo(derived.chargeMultiplier, 6);
     });
 
-    it('G4 — skillGauge per-impact credit is the full datamined 2.8 (divisor 1)', () => {
+    it('G4 — skillGauge per-impact credit is the full 2.8 target-base (divisor 1)', () => {
       expect(skillImpactGauge('anis-star')).toBeCloseTo(2.8, 6);
     });
   });
