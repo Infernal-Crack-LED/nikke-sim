@@ -292,3 +292,38 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    bridges before the `model` injection. Surfaced as a FOLLOW-UP by the round-4 code review of the
    U28 branch (`scratchpad/gates/2026-08-13-u28-gauge/result-r4.json`); filed rather than made
    because it was outside that diff's intent and the bridges are shared by every gate skill.
+
+8. **`neon-blue-ocean` (nbo) over-models by ~2.7× and the fix is currently UNAUTHORABLE — an engine
+   hole, not just her ⚑1.** Board: sim #10 / community #57-of-70 (`docs/b3-dps-rank-audit.md`,
+   MODEL_ONLY, no measured data). **85% of her sim damage lands inside her 7s burst windows** (19%
+   of the fight): her `weaponSwap` is kit-silent on cadence, so it inherits the engine default
+   "base weapon's cadence", and for an MG that is the most aggressive assumption available — 60
+   rounds/s at the top of the wind-up ladder, belt refilled on entry, so each window fires **~301
+   shots at 33% of final ATK plus one 11% `extraHitDamagePct` rider each** (measured via
+   `DBG_UNIT=neon-blue-ocean`: swap normals 64.3% + rider 20.6% + base normals 15.0%).
+   **(a) THE ENGINE HOLE (hard, verified by inspection + A/B).** `src/engine/sim.ts` fire loop
+   branches `if (chargeFrames > 0) … else if (u.char.weapon === 'MG') { …wind-up ladder… } else
+{ …swap pullsPerSec… }` — the MG branch is keyed on the unit's **base** weapon class and never
+   reads `u.swap.pullsPerSec` / `u.swap.weapon`, so **no swap cadence is authorable on an
+   MG-base unit**. `scripts/battery/nbo-swap-cadence-ab.ts` prints **0.0% movement** for
+   `pullsPerSec: 1.5`. The field is HALF-wired: `u.swap.weapon` IS honoured for SG pellet-landing
+   (~~:1543/1547) and range/core banding (~~:1815) — the `+weapon SG` arm moves −15.8% — just not
+   for cadence. nbo is the only MG-base `weaponSwap` carrier in the tree, which is why nothing
+   caught it (`velvet`'s note already states "the MG wind-up ladder is base-weapon-gated", but she
+   swaps INTO MG from an SR base, so she takes the working branch). Also unreset: `mgRampRound`
+   survives swap entry/exit, so the new weapon starts at full spin.
+   **(b) THE READ (hypothesis-strength — do NOT enact on this alone).** Her override's ⚑1 calls
+   `skill_value_data[1] = 90` "an unlabeled integer". Across all 11 `ChangeWeapon` carriers that
+   column is positionally the swap weapon's `rate_of_fire` (÷60 = shots/s): `k` reads 144 → 2.4/s
+   and her kit TEXT independently states "Attack speed ▼90%" on an SMG (24 × 0.1 = 2.4) — an
+   independent corroboration; `velvet` reads 4200 → the shipped `pullsPerSec: 60`; `modernia`, the
+   other MG swapper, reads 4200 (= MG max), so the column does discriminate "keeps MG cadence"
+   from "doesn't". nbo's 90 → **1.5 shots/s, exactly the SG class rate**. COUNTEREXAMPLE, load-
+   bearing: `moran`'s 1440 (24/s) was board-REFUTED on video (~12/s) — but note her own COLD
+   residual asks for ~1.5× more swap-window hits, i.e. ~18/s, so that refutation is soft.
+   33%/shot at 1.5/s is a DPS _loss_ vs her base MG, which suggests the swap weapon is multi-hit
+   (SG-shaped) — unresolvable without shot `1001402`'s spec or footage.
+   **Recipe (already in her ⚑1):** one isolated nbo-solo scope-lock video — count rounds fired
+   inside one 7s window and watch the ammo counter. That single recording settles cadence, pellet
+   count and belt size at once. **Do (a) regardless of (b)**: the branch hole is a code defect that
+   silently swallows an authored field, and it blocks any fix to (b).
