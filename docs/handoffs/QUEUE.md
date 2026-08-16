@@ -174,13 +174,19 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      an already-solo-validated unit (the classification's named H-A discriminator: separates
      "credits are bigger in team" from "credits are more frequent" — iron sweep's excess persists
      with zero cadence buffs, so any cadence explanation must be intrinsic team-context
-     behavior). **Owner-knowledge substitutes offered 2026-08-16, owner unsure — research passes
-     launched instead** on the two rulable candidates: (1) non-damage skill applications / buff
-     REFRESHES generating gauge (the note.com/_trick_ claim — refreshes are the half that could
-     explain iron sweep); (2) per-HIT vs per-TRIGGER credit on hitsPerShot>1 units (the U28
-     divisor — SG-per-landed-pellet and the `snow-white-heavy-arms` per-sub-hit measurement both
-     point per-hit; a settled rule replaces the `anis-star` divisor-read and `modernia`
-     Destroy-Mode footage asks).
+     behavior). **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
+     U28 addendum, new U41): (1) non-damage applications — enemy-targeted standalone YES with
+     per-skill exceptions [MEDIUM], ally/self buffs/heals likely NO [MEDIUM], on-bullet riders
+     add nothing (anti-double-count), **buff REFRESHES: every source silent, CANNOT-DETERMINE —
+     still the live unknown for iron sweep**; owner-testable in the Union shooting range without
+     any recording (watch the bar at a debuff re-application instant while not firing). (2)
+     per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
+     the engine's divisor is CORROBORATED for genuine multi-muzzle units, and `anis-star`'s bite
+     is a synthetic carve-out hack (`weapon-fields.ts`) absorbing her burst-DoT over-emission →
+     **the enactable is a BUNDLED `anis-star` burst-DoT-gauge re-model + carve-out removal
+     (gated: pipeline or owner mechanic ruling + code-review), verified on PA MiKa's pinned 11 FB
+     AND T5** — this replaces the divisor half of the `anis-star`/`modernia` footage asks; the
+     noise-floor half of the `anis-star` re-record ask stands.
    - **Residue ledger (findings-only):** ~~`snow-white-heavy-arms` U11c~~ **MEASURED 2026-08-15,
      PROMOTED TO ITEM 8** (volley generates per HIT; per-sub-hit gauge enactment planned there).
      `ein` U8 0.7× team residual (N2); stage1→2 real 33f/32f vs modeled 30f (runs AGAINST the gap).

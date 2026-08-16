@@ -14,6 +14,22 @@ DECISIONS leaves the stale question here reading as live — always move it.
 
 ## UNANSWERED
 
+### U41 — Is the focused-charge gauge multiplier the unit's CHARGE CAP, not a flat ×2.5? (opened 2026-08-16, research pass)
+
+The engine's `FOCUS_CHARGE_GEN = 2.5` is MEASURED — but only on 250%-charge-cap units
+(`maiden-ice-rose` anchor family). Two independent external sources state the multiplier is the
+charge ratio itself, not a constant: the note.com/_trick_ verification (2025-03-14) computes
+`alice` (SR, 350% cap) at base × 3.50 and 250%-class units at × 2.50, with half-charge =
+(max% − 100)/2 + 100; the nikke-einkk datamine-driven simulator implements
+`focusBonus = 1 + 1.5 × charge%` (≡ ×2.5 at exactly full 250% charge). Every measurement we own
+is consistent with BOTH readings because every measured focused unit caps at 250% — the two
+models diverge only on a focused non-250% unit. `alice` (350%) seats a graded comp
+(`scripts/regression.ts` — with `anis-star`/`mint`/`prika`/`red-hood`) but is not the focused
+slot there, so the constant's current board exposure is zero; it goes live the moment any
+recording focuses a 350%-cap unit. Resolution: a focused `alice` (or other non-250%-cap) solo
+bar read — predicted ×3.5 under the charge-cap reading vs ×2.5 under the flat constant, a 40%
+separation, trivially discriminable. Until then the flat 2.5 stays (measured, unexposed).
+
 ### U39 — `snow-white-heavy-arms` Fully Active: is the volley delivered by USES or by TIME? (opened 2026-08-11, re-filed)
 
 Her burst "Seven Dwarves Fully Active" is modeled as a weapon swap carrying the same 69.04% shot at
@@ -647,6 +663,35 @@ the lock (zero exposure). The census nominates anis-star as the mechanism probe:
 impacts per pull (her rockets may each carry a proc) — gauge-equivalent resolutions, distinguishable
 only by popup/footage. Instrument: `npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources`.
 → A32 (U13), DECISIONS 2026-07-22 + 2026-08-13.
+
+**2026-08-16 research pass (owner-directed; external sources, findings-only) — the divisor question
+is now much narrower:**
+
+1. **The per-HIT rule itself is community-settled at HIGH confidence for weapon normals** and
+   MEDIUM-HIGH for skill sub-hits: (a) the note.com/_trick_ verification (2025-03-14, controlled
+   shooting-range counting) states gauge has a per-HIT base per character, SG credits per pellet
+   (×10 all-landed), missed shots credit nothing, and "skill generation = what ONE normal-attack
+   HIT generates"; (b) nikke.gg (2023-01-12, measured) lists the 2-bullet-per-trigger units
+   (`noah` RL, and the `crow` / `soline` / `quency` base SMGs — the datamine's
+   `muzzle_count: 2` rows) crediting PER HIT; (c) the raw datamine
+   (`CharacterShotTable`) stores `burst_energy_pershot` PER PROJECTILE beside `shot_count` ×
+   `muzzle_count`, and our own `data/gauge-per-shot.json` per-trigger values reconcile as
+   raw × muzzle_count exactly (`quency-escape-queen` 740×2 = 14.8); (d) an independent
+   datamine-driven simulator (nikke-einkk) implements `pershot × shot_count × muzzle_count ×
+focus`. ⇒ For a GENUINE multi-muzzle unit, the engine's `targetPerTrigger / hitsPerShot`
+   rider credit recovers exactly the per-projectile value the community rule prescribes — the
+   divisor is CORROBORATED for real multi-hit units, not refuted.
+2. **`anis-star` is NOT a real multi-hit unit — her divisor bite is a HACK, not data.** Datamine:
+   `shot_count 1 × muzzle_count 1`, one projectile crediting 280 on boss (matches our own
+   2026-07-13 solo measurement). Her `hitsPerShot: 2` is an explicit carve-out documented in
+   `src/data/weapon-fields.ts` (~:54-63) as a "LOAD-BEARING gauge-calibration hack" that halves
+   her 40-tick burst-DoT's over-emitted `skillGauge`; removing it flips comp "PA MiKa" to 12 FBs
+   vs measured 11. ⇒ Her rider halving divides by a synthetic 2 the game data does not contain —
+   but it CANNOT be removed in isolation (compensating-errors class): the enactable shape is a
+   BUNDLED re-model of her burst-DoT gauge emission + carve-out removal, verified on PA MiKa's
+   pinned 11 AND T5 wind-weak (+58.8 gauge/fight ≈ 12% of its cycle gap rides this). Gated:
+   engine change on a derived value → `/scientific-method` (or an owner ruling on the mechanic +
+   `/code-review` on the bundle).
 
 ### U27 — isabel's mid/midfar SG landing needs a clock-drift-corrected re-derive (split out of U17, 2026-07-22)
 
