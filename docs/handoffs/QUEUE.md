@@ -176,27 +176,20 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      with zero cadence buffs, so any cadence explanation must be intrinsic team-context
      behavior). **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
      U28 addendum; the pass's U41 filing was CLOSED same day as a duplicate — per-unit focus
-     multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — **OWNER-CONFIRMED 2026-08-16
-     (shooting-range test, DECISIONS entry): enemy-targeted standalone debuffs generate
-     (`jackal` S1 confirmed; per-skill exceptions stand — Noah taunt / `snow-white-heavy-arms`
-     counterexamples untouched), and debuff RE-APPLICATIONS/refreshes ALSO generate (bar ticks
-     at re-apply while not firing) — the iron-sweep refresh channel is a REAL generation
-     source.** Ally/self buffs/heals likely NO [MEDIUM], on-bullet riders add nothing
-     (anti-double-count). **ENACTED 2026-08-16, then WIDENED same session by owner scope ruling
-     ("enact for everything except the ones we explicitly know don't generate") — provenance
-     note: the refresh half is owner-trusted community-expert testimony, NOT an observation
-     (DECISIONS third-pass entry). `applicationGauge()` credits every qualifying non-damage
-     enemy application by default; excluded only: `shotFired`/`chargeCounter` per-shot riders,
-     permanent auras/999 sentinel, damage-carrying blocks, `noah`/`snow-white-heavy-arms`.
-     Spec `scripts/tests/engine/application-gauge.test.ts` (8 tests); graded exposure zero by
-     mechanism (pinned-suite slug intersection empty). REMAINING iron-sweep half
-     (findings-only): the PG iron sweep roster (`d-killer-wife`/`takina`/`milk-blooming-bunny`/
+     multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — settled + enacted (owner
+     rulings, DECISIONS 2026-08-16 ×3: application/refresh generation, per-trigger magnitude,
+     generate-by-default scope; engine `applicationGauge()`, spec
+     `scripts/tests/engine/application-gauge.test.ts`). **OPEN residue — the iron-sweep
+     discriminator:** the PG iron sweep roster (`d-killer-wife`/`takina`/`milk-blooming-bunny`/
      `maxwell`/`liberalio`) seats ZERO live-credit blocks — its debuffs are encoded as
      permanent passives or mixed damage blocks. Sharpest candidate: `takina` S2 damage-taken ▲
      is modeled as a permanent aura; if the real kit re-applies it periodically, each re-apply
      would credit her 560 per-trigger (5.6%/event — iron-sweep-excess scale). Audit the comp's
      kit text for re-apply-encoded-as-passive shapes FIRST; a kit-text cadence found there is
-     an encoding fix (kit-literal path), not a new mechanic.** (2)
+     an encoding fix (kit-literal path), not a new mechanic. Also open: ⚑ four live-credit
+     units carry class-modal (not datamined) gauge rows — `eunhwa`/`ludmilla`/
+     `sakura-suzuhara`/`signal` (see the `applicationGauge` ⚑ comment) — worth a datamine
+     re-pull if any of them ever seats a graded comp. (2)
      per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
      the engine's divisor is CORROBORATED for genuine multi-muzzle units, and `anis-star`'s bite
      is a synthetic carve-out hack (`weapon-fields.ts`) absorbing her burst-DoT over-emission →
