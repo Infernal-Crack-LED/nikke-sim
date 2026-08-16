@@ -305,6 +305,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    because it was outside that diff's intent and the bridges are shared by every gate skill.
 
 8. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
+   ⚠ FIRST: the cadence landing itself is not finished shipping — branch `nbo-swap-cadence`
+   (`4aa50dfe`) is committed + `verify.sh` green but UNREVIEWED and UNPUSHED; its `/code-review`
+   result was never read. Resume from
+   `docs/handoffs/2026-08-16-nbo-swap-cadence-landing.md` on that worktree before anything below.
    The cadence half landed 2026-08-16 (DECISIONS): her burst weapon fires at its datamined 1.5
    shots/s, not her MG wind-up ladder, and the engine's `swapLeavesMgLadder` gate makes a swap
    cadence readable on an MG-base unit at all. What that exposed is the open part: at 1.5 shots/s a

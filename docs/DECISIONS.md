@@ -29,21 +29,22 @@ pullsPerSec… }` (`src/engine/sim.ts`). The MG branch is keyed on the unit's BA
     engine + control regressions passed with NO snapshot edit.
   - **The value, and its tier.** `role.skillDetails.ulti_skill_detail.skill_value_data[1] = 90`,
     which her override previously called "an unlabeled integer", is positionally the swap weapon's
-    `rate_of_fire` across all 11 ChangeWeapon carriers; ÷60 = 1.5 shots/s under the same conversion
-    the engine already applies to the weapon table (`NOMINAL_PULLS_PER_SEC`: "AR 720→12, SMG
-    1440→24, SG 90→1.5"). The corroboration that makes it more than a datamine read is `k`: her kit
-    TEXT states "Attack speed ▼90%" on an SMG (24 × 0.1 = 2.4/s), which is both her shipped
+    `rate_of_fire` across the spot-checked ChangeWeapon carriers (k 144→2.4/s ✓, modernia 4200=MG
+    max ✓, velvet 4200→frame-quantized 60/s ✓); ÷60 = 1.5 shots/s under the same conversion the
+    engine already applies to the weapon table (`NOMINAL_PULLS_PER_SEC`: "AR 720→12, SMG 1440→24,
+    SG 90→1.5"). The corroboration that makes it more than a datamine read is `k`: her kit TEXT
+    states "Attack speed ▼90%" on an SMG (24 × 0.1 = 2.4/s), which is both her shipped
     `pullsPerSec` and her column's 144 ÷ 60 — an independent confirmation of what the column means.
     `modernia`, the roster's other MG swapper, reads 4200 there (= MG max), so the column
     discriminates "keeps MG cadence" from "does not". TIER: datamine-derived + one independent
     kit-text corroboration — **below measurement**, above the estimate it replaced, and enacted on
-    owner direction rather than on a `/scientific-method` verdict. `moran`'s 1440 (24/s) was
-    board-REFUTED on video at ~12/s and that counterexample still stands: this column is
-    corroborated, not authoritative.
+    owner direction rather than on a `/scientific-method` verdict. Two standing counterexamples:
+    `moran`'s 1440 (24/s) was board-REFUTED on video at ~12/s, and `takina` reads 150→2.5/s while
+    her override ships an owner-ruled 1.2/s — so this column is corroborated, not authoritative.
   - **What it moved.** Her 7s burst window went from ~301 shots at 33% of final ATK (60 rounds/s at
     the top of the ladder, belt refilled on entry) to ~10, and 85% of her sim damage lived in those
     windows. On the standard control comp vs a Fire boss she drops 494.9M → 94.2M. Her B3 DPS-chart
-    rank range moves **1–33 → 52–75 of 76**, and `docs/b3-dps-rank-audit.md` reclassifies her from a
+    rank range moves **1–33 → 49–72 of 76**, and `docs/b3-dps-rank-audit.md` reclassifies her from a
     MAJOR over-model flag (Δ −47 neutral / −50 eleweak vs the community lists) to Δ **+5 / +7** —
     the community rank board being an independently-produced labeled artifact, that is the
     corroboration of direction, not of the exact value.

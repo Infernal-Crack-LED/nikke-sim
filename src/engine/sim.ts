@@ -285,6 +285,13 @@ for (const iv of MG_RAMP_INTERVALS) {
 // the engine (`neon-blue-ocean` is the tree's only MG-base `weaponSwap` carrier, which is why it
 // went unnoticed; the reverse direction, a swap INTO MG from another base, always worked —
 // see the NOMINAL_PULLS_PER_SEC MG entry).
+//
+// SIDE EFFECT (FOLLOW-UP, 2026-08-16 code-review): while a diverted swap runs the flat path,
+// mgIdleFrames (stun/reload/boss-unhittable) accumulates without reset and mgRampRound freezes.
+// At swap exit the MG branch's wind-down decay applies to ALL idle frames accrued since the MG
+// branch last ran — so a diverted unit's post-window MG starts wound-down rather than at the
+// ladder position it held pre-swap. Arguably more faithful (she was not holding the MG) but
+// unmeasured; note it when a second diverted carrier appears.
 const swapLeavesMgLadder = (swap: WeaponSwap | null | undefined): boolean =>
   swap != null &&
   (swap.pullsPerSec != null || (swap.weapon != null && swap.weapon !== 'MG'));

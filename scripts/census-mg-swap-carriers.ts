@@ -82,9 +82,18 @@ for (const slug of slugs) {
 const leavesLadder = (r: Row) =>
   r.pullsPerSec != null || (r.weapon != null && r.weapon !== 'MG');
 
-// the engine's if-chain, in order: charge branch → MG ladder branch → flat-cadence branch
+// the engine's if-chain, in order: charge branch → MG ladder branch → flat-cadence branch.
+// The engine computes chargeFrames = u.swap?.chargeFrames ?? u.char.chargeFrames (sim.ts:3903) —
+// a swap WITHOUT chargeTimeSec inherits the BASE character's chargeFrames. Mirror that fallback
+// so a base-charge unit (frima, snow-white-heavy-arms) routes through the charge branch even when
+// its swap declares no chargeTimeSec of its own.
 function route(r: Row): string {
-  if (r.chargeTimeSec != null && r.chargeTimeSec > 0) {
+  const baseChargeFrames = data.characters[r.slug]?.chargeFrames ?? 0;
+  const chargeFrames =
+    r.chargeTimeSec != null
+      ? Math.round(r.chargeTimeSec * 60)
+      : baseChargeFrames;
+  if (chargeFrames > 0) {
     return 'charge branch (never reaches the gate)';
   }
   if (r.base !== 'MG') {
@@ -124,12 +133,22 @@ console.log(
 console.log(`  of which the gate diverts: ${diverted.join(', ') || '(none)'}`);
 
 const unexpected = diverted.filter((s) => !EXPECTED_DIVERTED.includes(s));
-if (unexpected.length > 0) {
-  console.error(
-    `\nFAIL: the gate diverts a carrier the engine comment does not name: ${unexpected.join(', ')}.\n` +
-      `src/engine/sim.ts (swapLeavesMgLadder) claims inertness for everyone but ${EXPECTED_DIVERTED.join(', ')} —\n` +
-      `re-check that unit's swap and update the comment + this expectation together.`
-  );
+const missing = EXPECTED_DIVERTED.filter((s) => !diverted.includes(s));
+if (unexpected.length > 0 || missing.length > 0) {
+  if (unexpected.length > 0) {
+    console.error(
+      `\nFAIL: the gate diverts a carrier the engine comment does not name: ${unexpected.join(', ')}.\n` +
+        `src/engine/sim.ts (swapLeavesMgLadder) claims inertness for everyone but ${EXPECTED_DIVERTED.join(', ')} —\n` +
+        `re-check that unit's swap and update the comment + this expectation together.`
+    );
+  }
+  if (missing.length > 0) {
+    console.error(
+      `\nFAIL: EXPECTED_DIVERTED names a carrier the gate no longer diverts: ${missing.join(', ')}.\n` +
+        `Either the override lost its pullsPerSec/weapon field, or the engine gate changed —\n` +
+        `re-check and update the comment + this expectation together.`
+    );
+  }
   process.exit(1);
 }
 console.log(
