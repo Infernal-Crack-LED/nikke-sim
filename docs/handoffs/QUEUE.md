@@ -129,8 +129,8 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 2. **Burst-generation thread — steps 1a/1b/2/3 of the 2026-08-14 pickup packet LANDED 2026-08-15**
    (packet CLOSED → `closed/`; records: `scientific-method-harness.md` 2026-08-15 entries ×2, the
-   preop packets `2026-08-15-anis-star-divisor-preop-packet.md` +
-   `2026-08-15-classification-preop-packet.md`, PRs #120/#121/#122 — **all merged 2026-08-15**). State in one line: the in-window generation elevation is
+   preop packets `docs/handoffs/closed/2026-08-15-anis-star-divisor-preop-packet.md` +
+   `docs/handoffs/closed/2026-08-15-classification-preop-packet.md`, PRs #120/#121/#122 — **all merged 2026-08-15**). State in one line: the in-window generation elevation is
    measured FRESH at a **1.6–1.9× band** on both filmed arms (LOG, 2-of-2); classification of
    WHERE it lives is INCONCLUSIVE on both arms by the pre-committed rules (iron sweep's H-C
    reading survives only as a candidate — struck by the blind gate on the closure clause + noise
@@ -139,11 +139,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    sub-steps permanently unresolvable at 60fps on that footage; the opening-window observable
    shows ~0 banked during the drain hold (hypothesis-tier — promotion needs NEW footage or an
    owner ruling); the team reader's flag-taxonomy leak is CLOSED (`offCurve`). Open items:
-   - ~~Owner: merge PR #120/#121 + the classification branch~~ **DONE 2026-08-15** — all three
-     merged (#120 step-1 instruments, #121 divisor measurement, #122 `measure/habc-classification`).
-     **What remains of this bullet: the `docs/STATE.md` reader-table rows for the new instruments
-     (`offCurve`/`--reflag`/`--diag`/`opening`/`classify`)** — they were gated on the merges and
-     STATE.md still has none of them. Now unblocked, no longer owner-gated.
+   - ~~`docs/STATE.md` reader-table rows for the new instruments
+     (`offCurve`/`--reflag`/`--diag`/`opening`/`classify`)~~ **DONE 2026-08-15** — added to §7 and
+     preop packets archived to `closed/`.
    - **Owner-gated engine touch (packet step 1c):** SG landed-pellet gauge fraction onto the
      event tap — unblocks the misc B3s sim arm and later N2/N3/N5/`soda-twinkling-bunny` credit
      analyses.
