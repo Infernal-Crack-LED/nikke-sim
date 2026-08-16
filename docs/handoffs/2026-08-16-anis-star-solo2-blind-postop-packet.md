@@ -1,3 +1,94 @@
+# scientific-method blind post-op judge — anis-star solo #2 gauge measurement
+
+You are the BLIND post-op judge. You receive the pre-op context and the work deliverable.
+You do NOT know the driver's verdict. Score on the Q1–Q4 rubric and return your verdict.
+
+This is a MEASUREMENT-ONLY packet — no enactment. The outcome is LOG-class regardless: the
+measurement records, nothing changes. Your job is to verify that the work followed the
+pre-registered method, that the decision rules are correctly applied, and that the stated
+numbers are arithmetically sound.
+
+## Pre-op context — decision rules (from the pre-op packet)
+
+### Question A — per-pull gauge magnitude
+
+Hypotheses (steady per-pull total, %/bar, at her solo decomposition
+`(280×2.5 focused shot + 280 rider) × 1.06 aura`):
+
+- **H-model = 10.39 %/pull** — the divisor-1 model (enacted 2026-08-16 on branch).
+- **H-elevated ∈ [10.96, ~12.2] %/pull** — the measured-band/elevation reading.
+- **H-legacy = 8.90 %/pull** — the pre-2026-08-16 shipped decomposition (halved rider).
+
+**Primary discriminator:** pixel-free count-to-fill per window.
+`K = ceil((100 − baseline_rendered) / P)` per window.
+
+**R1 (K-band disjointness):** K-bands are baseline-dependent — H-model and H-elevated are
+integer-disjoint ONLY when the window's rendered baseline ∈ ~[1.4, 6.5). If two hypotheses
+share the observed K at a window's baseline, that window is DOUBLY-CONSISTENT and cannot count
+toward "exactly ONE hypothesis."
+
+**R2 (per-window drop):** a window whose 30fps trace boundaries miss the ±1.5s montage
+tolerance is DROPPED. BASIS-BROKEN if <2 refill windows survive, or ALL disagree.
+
+**R3 (W4 anomaly gate):** W4 fills ~2× faster than W2/W3 in the pre-registered map; no
+hypothesis predicts a 6.5s fill. W4 enters the decision rule only if montage-verified AND
+trace boundaries reconciled.
+
+**R4 (cross-check every counted window):** every window entering the decision rule has the
+hand-montage ammo pull-count cross-check.
+
+**Tolerance-widening guard:** if 2× the quantization bound ≥ 0.57pp → MEDIANS branch is
+NON-DISCRIMINATING; counting branch is the sole discriminator.
+
+**Decision rule:**
+
+- ≥2 complete refill windows yield K values all consistent with exactly ONE hypothesis's
+  K-band ⇒ MEASURED on this footage.
+- Windows disagree, or K between bands ⇒ INCONCLUSIVE-LOG.
+- Opening window W1 reported SEPARATELY — corroborates but does not enter the ≥2-window rule.
+
+### Question B — same-regime noise floor
+
+Guard construction identical to the C4 packet. Bin = 1/30s, event grouping ≤2 trace-frames,
+guard = 2 pre-frames + 0.3s latency + 8 post-frames (doubled on widened pulls), quiet bins =
+in-window filling reads outside all guards and exclusions.
+
+Floors: primary ≥150 quiet bins, pooled (with old A3 basis 105) ≥180.
+Output: false-event bin rate + Wilson 95% upper bound per threshold.
+This is INPUT to the classification thread's ceiling test — it stamps nothing about H-C.
+
+### What this plan CANNOT establish
+
+- Team-context in-window elevation — solo footage only.
+- Rider structure 1×280 vs 2×140.
+- The skillGauge/hitsPerShot divisor for multi-hit units.
+- Any engine/data value — measurement-only.
+
+### Pre-op judge's cannot-establish additions (two items that existed only in the prior
+
+session's chat, recorded here):
+
+(a) At unfavorable rendered baselines (outside ~[1.4, 6.5)), K=10 is doubly-consistent
+between H-model 10.39 and the elevated band's bottom sliver [10.96, 11.11] — not a
+confirmation.
+
+(b) Question B's output is INPUT to the classification thread's ceiling test — it stamps
+nothing about H-C, and a floor-scraping ~150 bins with zero false events gives Wilson ~1.8%,
+short of the ~1% that thread wants (pooled ~355–385 bins reaches ~0.75–0.95%).
+
+### Partial-blindness declaration
+
+The packet author had seen a 1fps bar-region montage (window boundaries, countdown digits,
+coarse bar shapes) and the invalid terrain trace's structural counts. NOT seen: any per-pull
+delta, any count-to-fill, any fill reading at measurement resolution, any false-event
+quantity.
+
+---
+
+## THE WORK DELIVERABLE (transcribed verbatim from the committed document)
+
+[FOLLOWS]
+
 # Work deliverable — `anis-star` solo recording #2: per-pull gauge magnitude + same-regime noise floor (2026-08-16)
 
 **Status:** work step COMPLETE. This document transcribes the verdict-free artifact
@@ -295,9 +386,7 @@ non-discriminating before any target value was read. Reported for completeness.
 | Lenient refill (+ conditionals)      | 18  | 11.6   | 10.2–16.0 |
 | W1 separate                          | 7   | 11.6   | 10.1–11.6 |
 
-The n≥8 requirement is met in the three refill pools (strict 15, steady-only 12, lenient 18);
-the W1-separate pool (n=7) falls one short — immaterial since the branch is non-discriminating
-by construction. The steady deltas occupy 10.1–11.6 (14–16 columns
+The n≥8 requirement is met in every pool. The steady deltas occupy 10.1–11.6 (14–16 columns
 of the 138px bar), unimodal — the same family as the A3 read. **PLUS a separate ~15.2–16.0
 family (3 events, 21–22 columns) not observed on the A3 footage.**
 

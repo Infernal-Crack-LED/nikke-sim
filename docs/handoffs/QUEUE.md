@@ -159,20 +159,28 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      descriptive-only, no stamp moved. Record: `scientific-method-harness.md` 2026-08-16;
      resolver folded into the `anis-star` re-record ask below — ~45–75 more quiet bins clear
      BOTH the floor and the Wilson clause in one pass, and any new packet must power-check its
-     floor against the guard spec first). Still open, re-ranked: (2) a pre-registered
-     noise-corrected ceiling test (subtract falseRate × quietBins); (3) source-hunt the excess
+     floor against the guard spec first). **Noise-floor input NOW AVAILABLE from the solo #2
+     measurement (492 primary / 597 pooled quiet bins, zero false events, Wilson 0.55%/0.45%)
+     — the C4 deficit is resolved at 3.3× margin.** Still open, re-ranked: (2) a pre-registered
+     noise-corrected ceiling test (subtract falseRate × quietBins — the falseRate input is now
+     measured; this needs its OWN pre-op); (3) source-hunt the excess
      event instants (clustered-at-visual-cause supports H-C, scattered refutes); (4) a third comp
      with a non-vacuous ceiling (T5's was cap-saturated — the H-C detector was effectively n=1);
      (5) a symmetric-E_min statistic as its OWN pre-op (T5's O/S were structurally
      uninterpretable with the one-sided threshold).
-   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — **RECEIVED +
-     PROCESSED THROUGH THE WORK STEP 2026-08-16, JUDGING PENDING** — pre-op APPROVED-WITH-
-     REVISIONS packet + verdict-free artifact + replay pin are committed; the driver review /
-     blind post-op / 2-of-2 did NOT run (session limit). **Resume from
-     `docs/handoffs/2026-08-16-anis-star-session-handoff.md` (Thread B) — do not cite the
-     artifact's numbers until the 2-of-2 lands.** Serves double duty: the magnitude read
-     (n≥8 + count-to-fill ×3 windows) AND the same-regime noise floor (the 2026-08-16 C4
-     re-run missed its basis floor by ~45 quiet bins).
+   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — **LANDED
+     2026-08-16** (2-of-2 ACCEPT HIGH, driver + blind kimi-code/k3). Question A:
+     **INCONCLUSIVE-LOG** — the ≥2-window counting rule cannot fire (anomalous-magnitude
+     credits violate the steady premise on W2/W4; W3 is doubly-consistent per R1; W1 separate
+     corroborates H-elevated but does not enter the rule). The magnitude half is recorded but
+     unresolved — no hypothesis is discriminated. Three anomalous credits (+15.2–16.0%, each
+     montage-confirmed single ammo decrement) filed descriptively. Question B: **MEASURED** —
+     492 primary / 597 pooled quiet bins (3.3× both floors), zero false events, Wilson 0.55%
+     primary / 0.45% pooled. The C4 basis deficit is resolved. This is the input the
+     classification thread's ranked item (2) (noise-corrected ceiling test) needs — feed it
+     there (that item needs its OWN pre-op). Record:
+     `scientific-method-harness.md` 2026-08-16 (second entry);
+     `docs/handoffs/2026-08-16-anis-star-session-handoff.md` (Thread B) closes.
      ~~`modernia` Destroy-Mode bar read (U28's named probe)~~ **CLOSED 2026-08-16 — forced dead
      by the already-settled FB gauge-lock rule** (CLAUDE.md verified facts: nothing generates
      during the chain or Full Burst): her Destroy Mode window is coincident with her own
