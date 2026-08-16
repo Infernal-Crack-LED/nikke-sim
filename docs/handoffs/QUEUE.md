@@ -165,16 +165,27 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      with a non-vacuous ceiling (T5's was cap-saturated — the H-C detector was effectively n=1);
      (5) a symmetric-E_min statistic as its OWN pre-op (T5's O/S were structurally
      uninterpretable with the one-sided threshold).
-   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — now serves DOUBLE
-     duty: the divisor read (n≥8 + a second count-to-fill; her bar zeroes at 21.73s so a longer
-     file contains a second clean window free) AND the same-regime noise floor (the 2026-08-16
-     C4 re-run missed its basis floor by ~45 quiet bins; same footage resolves both);
-     `modernia` Destroy-Mode bar read (U28's named probe — independent unit AND the separate
-     `extraHitDamagePct` site); T1 wind-weak video (screenshot only); a TEAM-seated bar read of
-     an already-solo-validated unit (the classification's named H-A discriminator: separates
-     "credits are bigger in team" from "credits are more frequent" — iron sweep's excess persists
-     with zero cadence buffs, so any cadence explanation must be intrinsic team-context
-     behavior). **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
+   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — HANDED OFF
+     2026-08-16 to another session for processing (not yet landed) — serves DOUBLE duty: the
+     divisor read (n≥8 + a second count-to-fill; her bar zeroes at 21.73s so a longer file
+     contains a second clean window free) AND the same-regime noise floor (the 2026-08-16 C4
+     re-run missed its basis floor by ~45 quiet bins; same footage resolves both).
+     ~~`modernia` Destroy-Mode bar read (U28's named probe)~~ **CLOSED 2026-08-16 — forced dead
+     by the already-settled FB gauge-lock rule** (CLAUDE.md verified facts: nothing generates
+     during the chain or Full Burst): her Destroy Mode window is coincident with her own
+     `fullBurstExtend`-extended (15s) Full Burst, so it sits entirely inside the locked period,
+     never inside the FB-end→chain-start generating window — a bar recording there reads
+     flat/locked throughout and cannot pin the `hitsPerShot` divisor. That question stays open;
+     its live candidate is `anis-star` (rider fires on normal weapon shots, outside FB) — see
+     above. ~~T1 wind-weak video (screenshot only)~~ **RECEIVED 2026-08-16** —
+     `docs/probes/misc/t1 wind weak v2.jpg` + `.mov`, queued for `/probe-processing`.
+     ~~a TEAM-seated bar read of an already-solo-validated unit (the classification's named H-A
+     discriminator...)~~ **CLOSED 2026-08-16, owner ruling (method not stated): no game
+     mechanism grants extra burst-gauge credit for being in a team** — the known ×2.5
+     focus-charge bonus is the only context-dependent credit term and it is already modeled.
+     H-A is struck from the classification's candidate list; the iron-sweep excess (no cadence
+     buffs, ~1.6× shortfall) stays UNEXPLAINED — this rules out one candidate class, not the
+     excess itself. **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
      U28 addendum; the pass's U41 filing was CLOSED same day as a duplicate — per-unit focus
      multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — settled + enacted (owner
      rulings, DECISIONS 2026-08-16 ×3: application/refresh generation, per-trigger magnitude,
@@ -186,8 +197,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      (only ~2–3 of her ~11 applications land inside generating windows ≈ a sixth of one bar).
      The `iron sweep (run G)` regression comp stays disabled. Remaining leads: audit the other
      four kits (`d-killer-wife`/`milk-blooming-bunny`/`maxwell`/`liberalio`) for
-     re-apply-encoded-as-passive or mixed-block shapes whose applications should credit; then
-     the team-context bar-read ask above (H-A discriminator) remains the measurement route. Also open: ⚑ four live-credit
+     re-apply-encoded-as-passive or mixed-block shapes whose applications should credit (the
+     H-A team-context route was CLOSED by owner ruling 2026-08-16 — no team-scaling credit
+     mechanism exists — so encoding audits and the anis-star U28 divisor read are what remain).
+     Also open: ⚑ four live-credit
      units carry class-modal (not datamined) gauge rows — `eunhwa`/`ludmilla`/
      `sakura-suzuhara`/`signal` (see the `applicationGauge` ⚑ comment) — worth a datamine
      re-pull if any of them ever seats a graded comp. (2)

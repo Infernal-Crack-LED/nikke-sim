@@ -5980,3 +5980,29 @@ nearest-wrong; T7's swap-flavor assertions re-derived for pulsed True Damage (pr
 
 **Graded/pinned exposure:** zero beyond her own comp — she seats only the DISABLED iron-sweep
 regression comp; `verify.sh` green.
+
+## Two burst-generation-thread recording asks closed without new footage (2026-08-16)
+
+**1. H-A (per-hit burst-gauge credit scales up in team context vs solo) — CLOSED, owner ruling
+(method not stated).** No game mechanism grants extra burst-gauge credit for being in a team; the
+known ×2.5 focus-charge bonus is the only context-dependent credit term and it is already
+modeled. This retires the "team-seated bar read of an already-solo-validated unit" recording ask
+and strikes H-A from the 2026-08-15 H-A/H-B/H-C classification's candidate list
+(`docs/handoffs/2026-08-16-burst-gen-autonomous-audit.md`). **What does NOT change:** the
+underlying iron-sweep excess (~1.6× shortfall on a comp with zero cadence buffs) stays
+UNEXPLAINED — this rules out one candidate class, not the excess itself.
+
+**2. `modernia`'s Destroy Mode as the `hitsPerShot > 1` gauge-divisor probe (U28) — CLOSED,
+forced by the already-settled FB gauge-lock rule, not a new claim.** `modernia`'s burst grants
+`fullBurstExtend: 5`, extending the team's Full Burst to 15s to exactly match her own 15s Destroy
+Mode window — so Destroy Mode is coincident with (fully contained inside) Full Burst. The
+standing verified fact (CLAUDE.md: "nothing generates gauge during the burst chain or during
+Full Burst") means her whole Destroy Mode window sits inside the gauge lock, never inside the
+FB-end→chain-start generating window. A bar recording during Destroy Mode would read
+flat/locked throughout and cannot pin the divisor. The `hitsPerShot` divisor question stays
+open; its live candidate is `anis-star` (rider fires on normal weapon shots, outside FB — her
+footage was handed to another session the same day for the parallel U28 divisor read).
+
+**Recorded in:** `docs/handoffs/QUEUE.md` (burst-generation thread, recording-asks list);
+`docs/open-questions.md` U28 (Gate paragraph corrected); `docs/handoffs/2026-08-16-burst-gen-autonomous-audit.md`
+(candidate list items 2/3).
