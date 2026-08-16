@@ -631,9 +631,13 @@ UNVERIFIED for `hitsPerShot > 1`; every unit where the divisor actually bites (`
 carrier at 10) rides extrapolation. Note also the measured rider sub-step reads 3.45% vs the modeled
 3.64%, a small unexplained residual on the exact constant the whole path is anchored to.
 
-**Gate:** a `hitsPerShot > 1` gauge-bar read to pin the divisor — `modernia` Destroy Mode is still the
-natural probe (MG hit rates make per-hit generation obvious), though note her rider now generates
-entirely inside the gauge lock, so the probe must read the BAR, not infer from her rotation. Until
+**Gate:** a `hitsPerShot > 1` gauge-bar read to pin the divisor. ~~`modernia` Destroy Mode is the
+natural probe~~ **CLOSED 2026-08-16 — structurally dead, not just unmeasured:** her Destroy Mode
+window is coincident with her own `fullBurstExtend`-extended (15s) Full Burst, so it sits entirely
+inside the FB gauge lock (CLAUDE.md verified facts: nothing generates during the chain or Full
+Burst), never inside the FB-end→chain-start generating window — a bar recording there reads
+flat/locked throughout and teaches nothing about the divisor. The live candidate is `anis-star`
+(rider fires on normal weapon shots, outside FB — see the recording ask in QUEUE.md). Until
 then: do NOT author a true-flavored rider (the flavor half of the asymmetry is unchanged). The
 "do not re-encode a unit between the two primitives" rule is LIFTED for gauge as of 2026-08-13.
 **2026-08-14 (gauge-source census, investigation-plan item 2):** an EXISTING labeled fixture already

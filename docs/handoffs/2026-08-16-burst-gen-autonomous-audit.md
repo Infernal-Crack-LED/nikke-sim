@@ -100,16 +100,21 @@ Ranked by how much autonomous work can still be done:
    - Implementation plan exists: add `gaugeHits` field, fire `skillGauge` that many times
      without expanding damage instances.
 
-2. **`anis-star` / `modernia` `skillGauge` divisor (U28 residual, footage-gated).**
+2. **`anis-star` `skillGauge` divisor (U28 residual, footage-gated).**
    - The 2026-08-15 solo re-read returned CANNOT-MEASURE at n≥8.
    - If the rider credited full `targetPerTrigger` instead of `÷hitsPerShot`, T5 would gain
      ~58.8 gauge over the fight (~12% of its cycle gap).
-   - Needs a clean ≥60 s solo `anis-star` re-record.
+   - Needs a clean ≥60 s solo `anis-star` re-record — HANDED OFF 2026-08-16 to another session.
+   - The `modernia` half is CLOSED 2026-08-16: her Destroy Mode window sits entirely inside the
+     FB gauge lock (coincident with her own `fullBurstExtend`-extended Full Burst), so it can
+     never fall inside the FB-end→chain-start generating window — a bar recording there is
+     structurally uninformative, not just unmeasured.
 
-3. **Team-context charge / fire cadence differs from solo (footage-gated).**
-   - Iron sweep has no buffs to explain this, so the cadence would have to be an intrinsic
-     team-context behavior (auto-play, camera focus, release latency).
-   - A team-seated bar read of an already-solo-validated unit would test this directly.
+3. ~~Team-context charge / fire cadence differs from solo (footage-gated).~~ **CLOSED 2026-08-16,
+   owner ruling (method not stated): no game mechanism grants extra burst-gauge credit for being
+   in a team** — the known ×2.5 focus-charge bonus is the only context-dependent credit term and
+   it is already modeled. H-A is struck as a candidate. The iron-sweep excess (no cadence buffs,
+   ~1.6× shortfall) stays UNEXPLAINED — this rules out one candidate class, not the excess itself.
 
 4. **Non-damage skill applications generate gauge in refill windows (unmeasured).**
    - The `_trick_` note is the only supporting evidence; no committed measurement confirms
