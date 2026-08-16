@@ -4303,13 +4303,13 @@ export function runSim(
     const isMg = u.char.weapon === 'MG' && !u.swap;
     const sgFalloff =
       consolidating && consol ? consol.pelletFraction : bandSg.dmg;
-    const hitFraction = isSgSpray(u)
-      ? consolidating && consol
-        ? consol.pelletFraction
-        : SG_GAUGE_TRIGGER
+    const hitFraction = consolidating
+      ? consol!.pelletFraction
+      : isSgSpray(u)
+        ? SG_GAUGE_TRIGGER
           ? 1 // item-4 A/B arm: per-TRIGGER crediting — the full datamine per-trigger value regardless of landing
           : bandSg.gauge
-      : 1;
+        : 1;
     // The PARENT instance of this pull. Its final damage is recorded on the unit (below) so the
     // per-pull block dispatch further down can hand it to a `hitRepeat` rider — the dispatch
     // runs after this line, which is what makes "X% of the damage dealt by self" expressible.

@@ -263,7 +263,9 @@ const ironSweepNoImm = runIronSweep({
         'liberalio charFixes.statImmunities lacks chargeSpeedPct — fixture is stale'
       );
     }
-    delete ov.charFixes.statImmunities;
+    ov.charFixes.statImmunities = ov.charFixes.statImmunities.filter(
+      (s: string) => s !== 'chargeSpeedPct'
+    );
   }),
 });
 
@@ -487,6 +489,13 @@ describe('liberalio — kit spec', () => {
       expect(own.length).toBeGreaterThan(0);
       expect([...new Set(own.map((b) => b.targetIdx))]).toEqual([HELM]);
       expect([...new Set(own.map((b) => b.value))]).toEqual([12.74]);
+    });
+
+    it('L7c: the unmodified iron-sweep comp never grants liberalio chargeSpeedPct', () => {
+      const csToLib = buffs(ironSweepBase.events).filter(
+        (b) => b.stat === 'chargeSpeedPct' && b.targetSlug === 'liberalio'
+      );
+      expect(csToLib).toHaveLength(0);
     });
 
     it('L7c: in the iron-sweep comp, a maxwell-style bundled grant to liberalio leaves her fire cycle untouched', () => {

@@ -161,12 +161,12 @@ describe('per-frame gauge-credit schedule — SG comp', () => {
     expect(r.checks.truncatedOk).toBe(true);
   });
 
-  it('SG shot credits use hitFraction < 1 for at least some pulls', () => {
+  it('SG shot credits vary with hitFraction (not a flat full-trigger credit)', () => {
     const sgShots = r.credits.filter(
       (c) => c.kind === 'shot' && c.slug === 'noir'
     );
     expect(sgShots.length).toBeGreaterThan(0);
-    const amounts = [...new Set(sgShots.map((c) => c.amount))];
-    expect(amounts.some((a) => a < amounts[0])).toBe(true);
+    const amounts = sgShots.map((c) => c.amount);
+    expect(Math.min(...amounts)).toBeLessThan(Math.max(...amounts));
   });
 });

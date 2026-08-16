@@ -92,8 +92,8 @@ describe('SG shot event hitFraction', () => {
     const fractions = [...new Set(shots.map((s) => s.hitFraction))];
     expect(fractions.length).toBeGreaterThan(1);
     expect(fractions.some((f) => f < 1)).toBe(true);
-    // At scope-lock bands the expected landed fraction is in 0.6–0.9; it is
-    // always ≤ 1 and never 0.
+    // At scope-lock bands the observed landed fraction is in 0.6–0.9; the
+    // assertion only enforces the structural bounds (0, 1] plus variability.
     expect(Math.min(...fractions)).toBeGreaterThan(0);
     expect(Math.max(...fractions)).toBeLessThanOrEqual(1);
   });

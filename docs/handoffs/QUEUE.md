@@ -142,9 +142,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    - ~~`docs/STATE.md` reader-table rows for the new instruments
      (`offCurve`/`--reflag`/`--diag`/`opening`/`classify`)~~ **DONE 2026-08-15** — added to §7 and
      preop packets archived to `closed/`.
-   - **Owner-gated engine touch (packet step 1c):** SG landed-pellet gauge fraction onto the
-     event tap — unblocks the misc B3s sim arm and later N2/N3/N5/`soda-twinkling-bunny` credit
-     analyses.
+   - ~~**Owner-gated engine touch (packet step 1c):** SG landed-pellet gauge fraction onto the
+     event tap~~ **DONE 2026-08-15** — landed in `src/engine/sim.ts` (`hitFraction` on the `shot`
+     event), `scripts/battery/fb-count-matrix.ts` credit reconstruction, and regression tests
+     (`sg-pull-vs-pellet`, `credit-schedule`). Cross-family code-review gate (Fable) returned
+     `ACCEPT`; post-review fixes committed.
    - **Judge-named next measurements (classification thread, ranked):** (1) same-regime C4 re-run
      — quiet-noise floor on offCurve-reflagged/between-shot spans; decides whether iron sweep's
      H-C candidate re-stamps (single cheapest resolver); (2) a pre-registered noise-corrected
