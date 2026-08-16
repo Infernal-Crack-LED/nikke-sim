@@ -132,18 +132,22 @@ describe('focus-column audit (investigation-plan item 3)', () => {
     // covers even LESS of it than before (22.4% → 19.4%), strengthening the finding rather
     // than threatening it. Re-derived by running the instrument
     // (`npx tsx scripts/battery/fb-count-matrix.ts --focus-columns --json`), not hand-edited.
-    // Cause: DECISIONS 2026-08-14. T5 below is untouched — no Charge Speed source seated there.
+    // Cause: DECISIONS 2026-08-14.
     const iron = byName('iron sweep (run G)');
     expect(iron.focusPer60).toBeCloseTo(7.954, 3);
     expect(iron.maxAltUpsideGaugePerSec).toBeCloseTo(3.182, 3);
     expect(iron.shortfallRateGaugePerSec).toBeCloseTo(16.383, 2);
     expect(iron.maxAltUpsideCoverPct).toBeCloseTo(19.4, 0);
 
+    // T5's focused unit IS anis-star (middle slot): her skill impacts credit the full
+    // datamined 2.8 gauge (hitsPerShot 1), which raises her whole-unit focused rate and
+    // narrows the comp's measured shortfall. The ceiling still covers only ~19% of it.
+    // Values from the instrument's --json.
     const t5 = byName('T5 wind-weak');
-    expect(t5.focusPer60).toBeCloseTo(8.186, 3);
-    expect(t5.maxAltUpsideGaugePerSec).toBeCloseTo(3.274, 3);
-    expect(t5.shortfallRateGaugePerSec).toBeCloseTo(26.032, 2);
-    expect(t5.maxAltUpsideCoverPct).toBeCloseTo(12.6, 0);
+    expect(t5.focusPer60).toBeCloseTo(10.917, 3);
+    expect(t5.maxAltUpsideGaugePerSec).toBeCloseTo(4.367, 3);
+    expect(t5.shortfallRateGaugePerSec).toBeCloseTo(22.681, 2);
+    expect(t5.maxAltUpsideCoverPct).toBeCloseTo(19.3, 0);
 
     // the unfilmed comps carry no shortfall figure
     expect(byName('T1 wind-weak').maxAltUpsideCoverPct).toBeNull();

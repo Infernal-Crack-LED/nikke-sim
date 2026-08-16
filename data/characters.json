@@ -5772,7 +5772,7 @@
       "reloadFrames": 141,
       "chargeFrames": 60,
       "chargeMultiplier": 250,
-      "hitsPerShot": 2,
+      "hitsPerShot": 1,
       "rl3": 53.424,
       "releaseDate": "2026-04-23",
       "burstGaugePerShot": 1.4,
