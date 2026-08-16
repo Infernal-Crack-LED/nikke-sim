@@ -159,17 +159,28 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      descriptive-only, no stamp moved. Record: `scientific-method-harness.md` 2026-08-16;
      resolver folded into the `anis-star` re-record ask below — ~45–75 more quiet bins clear
      BOTH the floor and the Wilson clause in one pass, and any new packet must power-check its
-     floor against the guard spec first). Still open, re-ranked: (2) a pre-registered
-     noise-corrected ceiling test (subtract falseRate × quietBins); (3) source-hunt the excess
+     floor against the guard spec first). **Noise-floor input NOW AVAILABLE from the solo #2
+     measurement (492 primary / 597 pooled quiet bins, zero false events, Wilson 0.55%/0.45%)
+     — the C4 deficit is resolved at 3.3× margin.** Still open, re-ranked: (2) a pre-registered
+     noise-corrected ceiling test (subtract falseRate × quietBins — the falseRate input is now
+     measured; this needs its OWN pre-op); (3) source-hunt the excess
      event instants (clustered-at-visual-cause supports H-C, scattered refutes); (4) a third comp
      with a non-vacuous ceiling (T5's was cap-saturated — the H-C detector was effectively n=1);
      (5) a symmetric-E_min statistic as its OWN pre-op (T5's O/S were structurally
      uninterpretable with the one-sided threshold).
-   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — HANDED OFF
-     2026-08-16 to another session for processing (not yet landed) — serves DOUBLE duty: the
-     divisor read (n≥8 + a second count-to-fill; her bar zeroes at 21.73s so a longer file
-     contains a second clean window free) AND the same-regime noise floor (the 2026-08-16 C4
-     re-run missed its basis floor by ~45 quiet bins; same footage resolves both).
+   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — **LANDED
+     2026-08-16** (2-of-2 ACCEPT HIGH, driver + blind kimi-code/k3). Question A:
+     **INCONCLUSIVE-LOG** — the ≥2-window counting rule cannot fire (anomalous-magnitude
+     credits violate the steady premise on W2/W4; W3 is doubly-consistent per R1; W1 separate
+     corroborates H-elevated but does not enter the rule). The magnitude half is recorded but
+     unresolved — no hypothesis is discriminated. Three anomalous credits (+15.2–16.0%, each
+     montage-confirmed single ammo decrement) filed descriptively. Question B: **MEASURED** —
+     492 primary / 597 pooled quiet bins (3.3× both floors), zero false events, Wilson 0.55%
+     primary / 0.45% pooled. The C4 basis deficit is resolved. This is the input the
+     classification thread's ranked item (2) (noise-corrected ceiling test) needs — feed it
+     there (that item needs its OWN pre-op). Record:
+     `scientific-method-harness.md` 2026-08-16 (second entry);
+     `docs/handoffs/2026-08-16-anis-star-session-handoff.md` (Thread B) closes.
      ~~`modernia` Destroy-Mode bar read (U28's named probe)~~ **CLOSED 2026-08-16 — forced dead
      by the already-settled FB gauge-lock rule** (CLAUDE.md verified facts: nothing generates
      during the chain or Full Burst): her Destroy Mode window is coincident with her own
@@ -298,3 +309,24 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    bridges before the `model` injection. Surfaced as a FOLLOW-UP by the round-4 code review of the
    U28 branch (`scratchpad/gates/2026-08-13-u28-gauge/result-r4.json`); filed rather than made
    because it was outside that diff's intent and the bridges are shared by every gate skill.
+
+8. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
+   ⚠ FIRST: the cadence landing itself is not finished shipping — branch `nbo-swap-cadence`
+   (`4aa50dfe`) is committed + `verify.sh` green but UNREVIEWED and UNPUSHED; its `/code-review`
+   result was never read. Resume from
+   `docs/handoffs/2026-08-16-nbo-swap-cadence-landing.md` on that worktree before anything below.
+   The cadence half landed 2026-08-16 (DECISIONS): her burst weapon fires at its datamined 1.5
+   shots/s, not her MG wind-up ladder, and the engine's `swapLeavesMgLadder` gate makes a swap
+   cadence readable on an MG-base unit at all. What that exposed is the open part: at 1.5 shots/s a
+   lone 33%-of-final-ATK shot is LESS throughput than simply holding her MG, so her burst currently
+   COSTS her damage — implausible for a burst skill, and pinned in that direction on purpose by
+   `scripts/tests/units/neon-blue-ocean.test.ts` (N3) so a fix has to flip it deliberately. Likely
+   resolution: the swapped weapon fires several hits per pull (90 rpm is exactly the SG class rate,
+   and an SG-shaped 10-pellet reading lands her near her own base-MG throughput). NOT enactable
+   from the tree — shot `1001402`'s spec does not ship in `characters.json`, so `weapon: 'SG'` /
+   `pelletCount` would be a second inference on top of the first. Corroborating signal that
+   something is still missing in the "too weak" direction: after the cadence landing the community
+   comparison reads Δ **+5 / +7** (sim ranks her slightly BELOW the community lists), where it read
+   −47 / −50 before. **RECIPE:** one isolated nbo-solo scope-lock recording — count rounds fired
+   inside a single 7s burst window and watch the ammo counter. That settles cadence, hits-per-pull
+   and belt size in one go. Sizing arm: `npx tsx scripts/battery/nbo-swap-cadence-ab.ts`.

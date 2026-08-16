@@ -3169,6 +3169,230 @@ export function noiseSoloRun(opts: {
 }
 
 // ---------------------------------------------------------------------------
+// noise-solo2 — the same §D quiet-noise construction over the SECOND anis-star
+// (Anis: Star) solo recording (pre-op packet
+// docs/handoffs/2026-08-16-anis-star-solo2-gauge-preop-packet.md). Everything
+// recomputes from the committed artifact: the 30fps series (stored changes-only,
+// expanded losslessly), the window spans/exclusions and the per-pull guard
+// anchors with per-fire widened flags. MEASUREMENT ONLY — no verdict.
+// Replayed by scripts/tests/probe/noise-solo2.test.ts.
+// ---------------------------------------------------------------------------
+export const NS2_ARTIFACT = 'docs/probe-data/anis-star-solo2-gauge.json';
+
+export interface Solo2Fire {
+  pull: string;
+  fireSec: number;
+  fireField: string;
+  widened: boolean;
+}
+export interface Solo2Window {
+  id: string;
+  span: [number, number];
+  exclusions: [number, number][];
+  fires: Solo2Fire[];
+}
+export interface Solo2ChangesOnly {
+  fps: number;
+  frameCount: number;
+  changes: [number, string, number | null][];
+}
+interface Solo2Artifact {
+  noiseInput: {
+    windows: Solo2Window[];
+    oldBasis: { source: string; quietBins: number; falseEventBins: number };
+  };
+  perPullTable: { before: number | null; after: number | null }[];
+  series30fpsChangesOnly: Solo2ChangesOnly;
+}
+
+/**
+ * Lossless expansion of a changes-only solo series back to per-frame reads: the reader emits
+ * every frame, and a change row exists wherever consecutive frames differ, so holding the last
+ * change reproduces the full series byte-for-byte (t = round(i/fps, 2), the reader's rounding;
+ * no frame index lands on a .005 rounding boundary at fps 30).
+ */
+export function expandChangesOnly(c: Solo2ChangesOnly): SoloSeries {
+  const reads: SoloRead[] = [];
+  let k = -1;
+  let state = 'unknown';
+  let fillRaw: number | null = null;
+  for (let i = 0; i < c.frameCount; i += 1) {
+    if (k + 1 < c.changes.length && c.changes[k + 1][0] === i) {
+      k += 1;
+      [, state, fillRaw] = c.changes[k];
+    }
+    reads.push({ t: Math.round((i / c.fps) * 100) / 100, state, fillRaw });
+  }
+  return { fps: c.fps, reads };
+}
+
+export interface Solo2GuardBand {
+  pull: string;
+  fireSec: number;
+  fireField: string;
+  widened: boolean;
+  lo: number;
+  hi: number;
+}
+
+/** The §D-2 guard geometry with per-fire widened flags (solo2 artifact form). */
+export function solo2Guards(
+  fires: Solo2Fire[],
+  framesFps: number,
+  scale = 1
+): Solo2GuardBand[] {
+  return fires.map((f) => {
+    const mult = (f.widened ? 2 : 1) * scale;
+    const leftHw = (NS_GUARD_PRE_FRAMES / framesFps) * mult;
+    const rightHw =
+      (NS_GUARD_LATENCY_SEC + NS_GUARD_POST_FRAMES / framesFps) * mult;
+    return {
+      pull: f.pull,
+      fireSec: f.fireSec,
+      fireField: f.fireField,
+      widened: f.widened,
+      lo: round(f.fireSec - leftHw, 4),
+      hi: round(f.fireSec + rightHw, 4),
+    };
+  });
+}
+
+/**
+ * The full deterministic solo2 run: per-window and pooled quiet statistics over the refill
+ * windows, the C-iii ×1.5 guard control, the 60fps-frame-unit sensitivity, and the joint pool
+ * with the old A3 basis (bins and false events added; Wilson recomputed on the pooled counts).
+ */
+export function noiseSolo2Run(
+  opts: { artifactPath?: string } = {}
+): Record<string, unknown> {
+  const path = opts.artifactPath ?? NS2_ARTIFACT;
+  const art = JSON.parse(readFileSync(path, 'utf8')) as Solo2Artifact;
+  const series = expandChangesOnly(art.series30fpsChangesOnly);
+  const flags = flagOffCurveSolo(series);
+  const plateaus = [
+    ...new Set(
+      art.perPullTable.flatMap((p) =>
+        [p.before, p.after].filter((x): x is number => x !== null && x < 100)
+      )
+    ),
+  ].sort((a, b) => a - b);
+  const windows = art.noiseInput.windows;
+  const build = (framesFps: number, scale: number) =>
+    windows.map((w) => {
+      const guards = solo2Guards(w.fires, framesFps, scale);
+      const cuts: [number, number][] = [
+        ...w.exclusions,
+        ...guards.map((g) => [g.lo, g.hi] as [number, number]),
+      ];
+      return { w, guards, cuts, spans: subtractIntervals(w.span, cuts) };
+    });
+  const pooledOf = (
+    name: string,
+    parts: ReturnType<typeof build>
+  ): SoloNoiseStats =>
+    soloQuietNoise(
+      name,
+      series,
+      parts.flatMap((x) => x.spans),
+      flags,
+      plateaus,
+      parts.flatMap((x) => x.cuts)
+    );
+  const baseParts = build(series.fps, 1);
+  const pooled = pooledOf(
+    'anis-star solo #2 pooled W2+W3+W4 (30fps)',
+    baseParts
+  );
+  const perWindow = baseParts.map(({ w, guards, cuts, spans }) => ({
+    id: w.id,
+    span: w.span,
+    exclusions: w.exclusions,
+    guards,
+    stats: soloQuietNoise(
+      `anis-star solo #2 ${w.id}`,
+      series,
+      spans,
+      flags,
+      plateaus,
+      cuts
+    ),
+  }));
+  const guard15 = pooledOf(
+    'anis-star solo #2 — C-iii guards ×1.5',
+    build(series.fps, 1.5)
+  );
+  const unit60 = pooledOf(
+    'anis-star solo #2 — sensitivity: guard frame margins read as 60fps frames',
+    build(60, 1)
+  );
+  const old = art.noiseInput.oldBasis;
+  const jointBins = pooled.quietBins + old.quietBins;
+  const jointPooledWithOldBasis = {
+    source: old.source,
+    oldQuietBins: old.quietBins,
+    oldFalseEventBins: old.falseEventBins,
+    jointQuietBins: jointBins,
+    byThreshold: pooled.byThreshold.map((t) => {
+      const k = t.falseEventBins + old.falseEventBins;
+      return {
+        threshold: t.threshold,
+        falseEventBins: k,
+        falseEventBinRate: round(k / Math.max(1, jointBins), 4),
+        wilsonUpper95OneSided: round(wilsonUpper(k, jointBins), 4),
+      };
+    }),
+  };
+  const floors = {
+    primaryQuietBins: pooled.quietBins,
+    primaryFloor: NS_BQ1_PRIMARY_MIN_BINS,
+    primaryMeetsFloor: pooled.quietBins >= NS_BQ1_PRIMARY_MIN_BINS,
+    jointPooledQuietBins: jointBins,
+    jointPooledFloor: NS_BQ1_POOLED_MIN_BINS,
+    jointPooledMeetsFloor: jointBins >= NS_BQ1_POOLED_MIN_BINS,
+  };
+  return {
+    params: {
+      binSec: round(CLS_BIN_SEC, 6),
+      maxEventGapFrames: CLS_MAX_EVENT_GAP_FRAMES,
+      thresholds: [...NS_THRESHOLDS],
+      bindingThreshold: NS_BINDING_THRESHOLD,
+      offCurveTolerance: NS_OFFCURVE_TOL,
+      wilsonZ: NS_WILSON_Z,
+      guard: {
+        preFrames: NS_GUARD_PRE_FRAMES,
+        latencySec: NS_GUARD_LATENCY_SEC,
+        postFrames: NS_GUARD_POST_FRAMES,
+        widenedPulls: windows.flatMap((w) =>
+          w.fires.filter((f) => f.widened).map((f) => f.pull)
+        ),
+        frameUnit:
+          'trace-frames at the series fps (30); the 60fps-frame reading is ' +
+          'reported as a sensitivity',
+      },
+      windows: windows.map((w) => ({
+        id: w.id,
+        span: w.span,
+        exclusions: w.exclusions,
+      })),
+    },
+    offCurveFlags: {
+      count: flags.length,
+      insideWindows: flags.filter((f) =>
+        windows.some((w) => f.t >= w.span[0] - 1e-9 && f.t <= w.span[1] + 1e-9)
+      ),
+    },
+    perWindow,
+    pooled,
+    controls: {
+      cIiiGuards15: guard15,
+      sensitivityGuard60fpsFrames: unit60,
+    },
+    jointPooledWithOldBasis,
+    floors,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
 function arg(name: string): string | undefined {
@@ -3599,10 +3823,27 @@ function noiseSoloCli(): void {
   process.stdout.write(`${JSON.stringify(result, null, 1)}\n`);
 }
 
+/**
+ * noise-solo2: recompute the solo2 quiet-noise result and write it back into the artifact's
+ * `result` field, leaving every other artifact field (the raw measurement record) untouched.
+ */
+function noiseSolo2Cli(): void {
+  const path = arg('artifact') ?? NS2_ARTIFACT;
+  const result = noiseSolo2Run({ artifactPath: path });
+  const doc = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
+  doc.result = result;
+  writeFileSync(path, `${JSON.stringify(doc, null, 1)}\n`);
+  process.stdout.write(`wrote ${path}\n`);
+}
+
 function main(): void {
   const mode = process.argv[2];
   if (mode === 'noise-solo') {
     noiseSoloCli();
+    return;
+  }
+  if (mode === 'noise-solo2') {
+    noiseSolo2Cli();
     return;
   }
   if (mode === 'classify') {

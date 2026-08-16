@@ -7876,3 +7876,34 @@ duty — roughly 45–75 additional quiet bins let the same pre-registered const
 the basis floor and the decision rule's Wilson-bound clause in one pass (zero false bins clears
 it at 115 quiet bins; this run had 105). Full record: `docs/handoffs/scientific-method-harness.md`
 2026-08-16 entry; machine artifact `docs/probe-data/c4-noise-floor-rerun-2026-08-16.json`.
+
+---
+
+## 2026-08-16 — Anis: Star solo #2 gauge magnitude + same-regime noise floor (independent recording)
+
+Plan of record: `docs/handoffs/2026-08-16-anis-star-solo2-gauge-preop-packet.md` (approved with
+revisions R1–R5). Recording: `docs/probes/solo/anis-star-solo.mov` (85.06s, 60fps, second
+independent solo recording — breaks the same-footage dependence of the A3 read). Artifacts:
+`docs/probe-data/anis-star-solo2-gauge.json` (verdict-free); work deliverable
+`docs/handoffs/2026-08-16-anis-star-solo2-gauge-work-deliverable.md`.
+
+**Question A — per-pull gauge magnitude: INCONCLUSIVE-LOG.** 2-of-2 ACCEPT HIGH (driver +
+blind kimi-code/k3). The pre-committed ≥2-window counting rule cannot fire: W2 K=9 but fill
+enabled by anomalous +15.3 credit (counterfactual at steady 11.25 → ~97, not full); W3 K=10
+DOUBLY-CONSISTENT (H-model 10.39 and H-elevated up to ~11.69 both yield K=10 with opener); W4
+K=9 but steady-premise violated (two +15–16 anomalous credits). W1 (separate, opening) K=9
+excludes H-legacy and H-model, consistent with H-elevated from ~11.05+. No window counts
+cleanly toward exactly-ONE hypothesis. Three anomalous-magnitude credits (+15.2–16.0%, each
+montage-confirmed single ammo decrement) observed across W2 and W4 — not predicted by any
+hypothesis, not present on A3 footage, filed descriptively.
+
+**Question B — same-regime noise floor: MEASURED.** 492 primary quiet bins (3.3× floor of
+150), 597 joint-pooled (3.3× floor of 180). Zero false-event bins at all thresholds
+(1.41/1.5/1.596). Wilson 95% upper: 0.55% primary, 0.45% pooled. The C4 basis deficit is
+resolved at ~4.7× margin. Regime coverage (317/492 in 60–80% fill range) closes the C4 gap.
+This is INPUT to the classification thread's ranked item (2) — stamps nothing about H-C.
+
+**Pre-registration map defect:** the 1fps montage map lagged the 30fps trace by 2.2–4.9s on
+all three refill-window opens; three independent instruments (countdown digits, ammo montage,
+cycle length) corroborate the trace. R2 tolerance was sized for same-instrument disagreement,
+not systematic map lag — harness lesson recorded.

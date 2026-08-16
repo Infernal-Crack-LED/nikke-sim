@@ -42,11 +42,16 @@
 //       two equal 20.2 lines REFRESH one instance per the §11 rule; 1.7096 (the naive 60.96
 //       co-stack) must NEVER appear.
 //   N3  burstCast → self → weaponSwap damagePct 33 durationSec 7. The prose states only per-shot
-//       damage + duration — kit-silent cadence/ammo = BASE MG wind-up cadence + full-belt refill
-//       (moran precedent: an unlabeled datamine swap integer was board-refuted there and NOT
-//       enacted here; ⚑1 measurement-gated). Observable: normal-bucket shots at ×33 strictly
-//       inside [cast, cast+7s]; the belt refill + MG ladder make the per-window counts vary
-//       (175–420), so the pins are containment + multiplier identity, not per-window counts.
+//       damage + duration. Observable: normal-bucket shots at ×33 strictly inside [cast, cast+7s],
+//       replacing the base multiplier there.
+//   N3b the swapped weapon's cadence is kit-silent and modeled at its DATAMINED 1.5 shots/s
+//       (skill_value_data[1] = 90 rpm ÷ 60; ⚑1 on the override carries the derivation and its
+//       tier) — NOT her base MG wind-up ladder. Observable: ~11 shots per window on a dead-flat
+//       40-frame grid (no ladder ⇒ no acceleration), and the 300-round belt never binds. The
+//       discriminator is the counterfactual that drops `pullsPerSec`: it hands the swap back to
+//       the ladder and multiplies the shot count ~30x. That arm is ALSO the pin on the engine's
+//       `swapLeavesMgLadder` gate — before it, the MG branch discarded the field and the two runs
+//       were identical.
 //   N4  burstCast → self → extraHitDamagePct 11 durationSec 7, bossElementGate 'Fire'. A
 //       per-pull function rider live ONLY inside the burst-weapon window AND ONLY vs a Fire boss
 //       (helm-aquamarine Bb gate precedent). Function flavor: crits at sheet rate, never cores,
@@ -145,6 +150,23 @@ const swap3s = withPatchedOverride(SLUG, (ov) => {
   }
   e.durationSec = 3;
 });
+/**
+ * N3b counterfactual: `pullsPerSec` dropped from the swap, so the swapped gun inherits her BASE
+ * MG wind-up ladder — the pre-2026-08-16 model, and the arm that proves the engine reads the field
+ * at all (before `swapLeavesMgLadder`, the MG branch discarded it and this arm was IDENTICAL to
+ * base).
+ */
+const swapNoCadence = withPatchedOverride(SLUG, (ov) => {
+  const e = ov.burst
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.kind === 'weaponSwap');
+  if (e?.pullsPerSec == null) {
+    throw new Error(
+      'nbo burst weaponSwap pullsPerSec missing — fixture is stale'
+    );
+  }
+  delete e.pullsPerSec;
+});
 /** N4 counterfactual: the Fire Code gate dropped (the rider fires vs ANY boss). */
 const riderUngated = withPatchedOverride(SLUG, (ov) => {
   const b = ov.burst.find((x: any) => x.bossElementGate === 'Fire');
@@ -164,6 +186,7 @@ const s2CastKeyed = run({ [SLUG]: s2BurstCast });
 const s2FbKeyed = run({ [SLUG]: s2FbEnter });
 const swapRemoved = run({ [SLUG]: noSwap });
 const swapShort = run({ [SLUG]: swap3s });
+const swapLadder = run({ [SLUG]: swapNoCadence });
 const iron = run({}, 'Iron');
 const ironUngated = run({ [SLUG]: riderUngated }, 'Iron');
 
@@ -362,9 +385,14 @@ describe('neon-blue-ocean (Neon: Blue Ocean) — kit spec', () => {
       expect(baseInWin.length).toBeLessThanOrEqual(casts.length);
     });
 
-    it('DISCRIMINATING: removing the swap erases the 33% shots and drops her total', () => {
+    it('DISCRIMINATING: removing the swap erases the 33% shots — and RAISES her total (⚑3)', () => {
       expect(swapShots(swapRemoved.events).length).toBe(0);
-      expect(swapRemoved.totals[SLUG]).toBeLessThan(base.totals[SLUG]);
+      // ⚑3, OPEN and deliberately pinned in the direction the model actually produces: 33% at
+      // 1.5 shots/s is LESS throughput than 5.57% on the MG wind-up ladder, so her burst weapon
+      // currently costs her damage. That is implausible for a burst skill, and it is the stated
+      // reason ⚑3 (does the swapped weapon fire several hits per pull?) is still open. A future
+      // ⚑3 landing has to flip this assertion on purpose rather than drift past it.
+      expect(swapRemoved.totals[SLUG]).toBeGreaterThan(base.totals[SLUG]);
     });
 
     it('DISCRIMINATING: a 3s window leaves the 3–7s band back on the base multiplier', () => {
@@ -380,6 +408,52 @@ describe('neon-blue-ocean (Neon: Blue Ocean) — kit spec', () => {
         )
       );
       expect(tailBase.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('N3b — the swapped weapon fires at ITS OWN 1.5 shots/s, not her MG wind-up ladder', () => {
+    it('every window holds ~10 shots on a flat 40-frame grid — never the ladder', () => {
+      for (const c of nboCasts(base.events)) {
+        const shots = swapShots(base.events)
+          .filter(
+            (d) => d.frame >= c.frame && d.frame <= c.frame + WINDOW_FRAMES
+          )
+          .map((d) => d.frame)
+          .sort((a, b) => a - b);
+        // 7s at 1.5/s = 10 or 11 depending on where the cast lands relative to the accumulator,
+        // one fewer in a window a boss-unhittable hold interrupts
+        expect(shots.length).toBeGreaterThanOrEqual(9);
+        expect(shots.length).toBeLessThanOrEqual(11);
+        const gaps = shots.slice(1).map((f, i) => f - shots[i]);
+        // FPS/1.5 = 40 frames. A gap may be LONGER (the boss goes unhittable mid-window and
+        // firing holds) but never shorter — the MG ladder's own gaps are 1–23 frames, so this
+        // bound alone separates the two models.
+        expect(Math.min(...gaps)).toBeGreaterThanOrEqual(40);
+        expect(gaps.filter((g) => g === 40).length).toBeGreaterThanOrEqual(
+          gaps.length - 1
+        );
+      }
+    });
+
+    it('DISCRIMINATING: dropping pullsPerSec hands the swap back to the MG ladder — ~30x the shots', () => {
+      // Before the swapLeavesMgLadder gate the MG branch never read the field, so this arm and
+      // `base` were the SAME run. That it now diverges is the pin on the engine change.
+      expect(swapShots(swapLadder.events).length).toBeGreaterThan(
+        20 * swapShots(base.events).length
+      );
+      expect(swapLadder.totals[SLUG]).toBeGreaterThan(2 * base.totals[SLUG]);
+    });
+
+    it('the belt never binds at 1.5/s: no reload interrupts a swap window', () => {
+      // 300 rounds vs ~11 shots — every window's shots are contiguous on the 40-frame grid,
+      // which the flat-spacing pin above already asserts; here: she never runs the belt dry.
+      const shotsPerWindow = nboCasts(base.events).map(
+        (c) =>
+          swapShots(base.events).filter(
+            (d) => d.frame >= c.frame && d.frame <= c.frame + WINDOW_FRAMES
+          ).length
+      );
+      expect(Math.max(...shotsPerWindow)).toBeLessThan(300);
     });
   });
 
