@@ -5815,3 +5815,35 @@ cite this entry instead of re-fencing the observable.
 2026-08-14 entry stays as the measurement record; the harness-log fencing language
 ("promotion requires a pre-registered replication on NEW footage or an owner ruling") is
 satisfied by this ruling, not overturned.
+
+## Owner rulings: non-damage enemy-debuff APPLICATIONS generate burst gauge, and so do their RE-APPLICATIONS/refreshes (2026-08-16)
+
+Two in-game observations by the owner in the Union shooting range (no recording; owner-ruling
+tier), running the test recipe filed by the 2026-08-16 gauge research pass ("watch the bar at a
+debuff re-application instant while not firing"):
+
+1. **A periodic debuff RE-APPLICATION onto the target generates burst gauge** — while holding
+   fire, the bar ticks up at the instant the debuff re-applies. This ANSWERS the half every
+   external source was silent on (the research pass had filed it CANNOT-DETERMINE) and makes
+   the refresh channel a REAL candidate source for the iron-sweep generation excess (steady
+   refill windows with zero fresh applications but recurring refreshes). The filed recipe named
+   `emma-tactical-upgrade`'s Environment Setup 30s cadence as the test vehicle; the owner's
+   report did not record the exact unit used.
+2. **Standalone enemy-targeted debuff skills generate — confirmed for `jackal` S1**, promoting
+   the research pass's [MEDIUM] external reading (note.com/_trick_, nikke.gg, nikke-synergy) to
+   owner-confirmed for the generating cases. The per-skill-exception structure STANDS — the
+   arena counterexamples (Noah's taunt, `snow-white-heavy-arms`' damage-taken ▲ generating
+   nothing) are not touched by this ruling, so "generates" remains a per-skill property, not a
+   universal rule.
+
+**What changes: docs only — NOTHING is enacted.** The engine's `skillGauge()` still credits only
+skill-damage hits and DoT ticks; non-damage applications/refreshes remain unmodeled. Enactment
+is a separate gated pass because two inputs are missing: (a) the per-application/per-refresh
+gauge AMOUNT is unmeasured (external sources suggest the caster's flat base per-trigger value —
+the same flat credit as skill-damage hits — but no owned measurement pins it), and (b) the
+per-skill exceptions mean a blanket "debuffs generate" enactment is known-wrong at roster scale.
+Follow-up (magnitude measurement + per-skill scoping, then the engine pass) filed in
+`docs/handoffs/QUEUE.md`.
+
+**Recorded in:** `docs/data/burst-gauge.md` §5 (rewritten bullet). Related: the 2026-08-14
+per-hit crediting rulings above; the iron-sweep thread in `docs/handoffs/QUEUE.md`.

@@ -176,11 +176,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      with zero cadence buffs, so any cadence explanation must be intrinsic team-context
      behavior). **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
      U28 addendum; the pass's U41 filing was CLOSED same day as a duplicate — per-unit focus
-     multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — enemy-targeted standalone YES with
-     per-skill exceptions [MEDIUM], ally/self buffs/heals likely NO [MEDIUM], on-bullet riders
-     add nothing (anti-double-count), **buff REFRESHES: every source silent, CANNOT-DETERMINE —
-     still the live unknown for iron sweep**; owner-testable in the Union shooting range without
-     any recording (watch the bar at a debuff re-application instant while not firing). (2)
+     multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — **OWNER-CONFIRMED 2026-08-16
+     (shooting-range test, DECISIONS entry): enemy-targeted standalone debuffs generate
+     (`jackal` S1 confirmed; per-skill exceptions stand — Noah taunt / `snow-white-heavy-arms`
+     counterexamples untouched), and debuff RE-APPLICATIONS/refreshes ALSO generate (bar ticks
+     at re-apply while not firing) — the iron-sweep refresh channel is a REAL generation
+     source.** Ally/self buffs/heals likely NO [MEDIUM], on-bullet riders add nothing
+     (anti-double-count). **Enactable follow-up (gated, not started): per-application/refresh
+     gauge MAGNITUDE is unmeasured (external sources suggest the caster's flat base per-trigger
+     value, same credit as skill-damage hits) and scope is per-skill — needs a magnitude
+     measurement + per-skill scoping pass before any `skillGauge()` engine change; then re-test
+     the iron-sweep excess against the modeled refresh channel.** (2)
      per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
      the engine's divisor is CORROBORATED for genuine multi-muzzle units, and `anis-star`'s bite
      is a synthetic carve-out hack (`weapon-fields.ts`) absorbing her burst-DoT over-emission →
