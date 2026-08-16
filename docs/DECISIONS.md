@@ -5847,3 +5847,49 @@ Follow-up (magnitude measurement + per-skill scoping, then the engine pass) file
 
 **Recorded in:** `docs/data/burst-gauge.md` §5 (rewritten bullet). Related: the 2026-08-14
 per-hit crediting rulings above; the iron-sweep thread in `docs/handoffs/QUEUE.md`.
+
+## ENACTED: non-damage enemy-debuff applications/refreshes credit the caster's datamined per-trigger gauge value (2026-08-16, owner-authorized)
+
+**Enacts the owner rulings recorded in the previous 2026-08-16 entry.** The owner supplied the two
+missing inputs the same day: (1) the test unit for the re-application observation was confirmed as
+`emma-tactical-upgrade` (Environment Setup), and (2) the MAGNITUDE is ruled: **the amount is the
+unit's weapon per-trigger burst generation from the datamine** (`data/gauge-per-shot.json`
+`targetPerTrigger`), with explicit authorization to enact without the `/scientific-method`
+pipeline — the answered-question path (owner ruling → encode + `/code-review`, 2026-08-11
+convention).
+
+**Engine** (`src/engine/sim.ts`): `applicationGauge()` credits the FULL `targetPerTrigger` (no
+per-hit/SG-pellet division — an application is one discrete event; every current qualifying caster
+is a hitsPerShot-1 weapon so the division would be a no-op today) once per qualifying application
+event, at the top of `applyBlockEffects()` so `delaySec`-deferred blocks credit at their resolve
+frame. `isGeneratingApplication()` gates it: enemy-targeted; PURE non-damage (buff/`targetStatus`
+effects only — a block also carrying `flatDamage`/`dot` already generates through its impacts, and
+crediting both would double-count); trigger in the include set
+{`interval`,`attacked`,`passive`,`battleStart`,`burstCast`,`fullBurstEnter`,`fullBurstEnd`} — the
+anti-double-count rule excludes bullet-delivered/coincident triggers
+(`shotFired`,`lastBullet`,`hitCount`,`chargeCounter`,`teamAmmo`), and anything NOT in the include
+set stays non-crediting by default so a future trigger kind must be classified deliberately; some
+effect with finite `durationSec` < 900 (no-duration = permanent aura, 999 = the permanent-status
+sentinel, e.g. `mast`'s Sea Breeze — neither is an application event); caster not in
+`APPLICATION_NONGEN` = {`noah`, `snow-white-heavy-arms`} (the nikke-synergy arena counterexamples —
+defensive documentation: neither has a qualifying block in today's overrides). Interval re-fires
+credit each time — the refresh ruling. The standard `addGauge` guard scopes all of it to the
+FB-end → chain-start generating window.
+
+**Spec:** `scripts/tests/engine/application-gauge.test.ts` (7 tests: interval application +
+refresh magnitude pinned to the datamined row; `emma-tactical-upgrade`'s real-kit 2-credits-in-40s;
+`jackal` S1 via the `manualAttacks` hook scaling per activation; negatives for bullet-delivered
+triggers, permanent auras/999 sentinel, damage-block no-double-credit, and the non-generator set).
+
+**Blast radius:** the roster audit (committed overrides, the predicate above) finds LIVE credits
+only for `emma-tactical-upgrade` (0.1 gauge-%/application — passive@0 + interval:30) and
+`rosanna`'s battle-start `targetStatus` (one modal-fallback credit at t=0); `jackal`'s S1 is
+kit-faithfully encoded but inert in production BY MECHANISM (the v1 sim has no incoming-damage
+model — `attacked` triggers fire only via the `manualAttacks` test hook); `ether`'s interval
+debuff is double-dead (its `fbGate: inFb` fails outside Full Burst, and inside it `addGauge` is
+locked); every `burstCast`/`fullBurstEnter` qualifier is chain/FB-locked to zero by the same
+guard. **Graded/control exposure: zero BY MECHANISM — no pinned comp in `scripts/regression.ts` /
+`scripts/control-regression.ts` seats any of the four units above (grep-verified), and the full
+`verify.sh` suite passed with both snapshots byte-identical (no `--update`).** The un-modeled
+remainder — kits whose in-game periodic re-applies are encoded as permanent passives or
+chain-locked triggers — is the open iron-sweep question, tracked in `docs/handoffs/QUEUE.md`.

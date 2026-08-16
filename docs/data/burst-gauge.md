@@ -231,16 +231,26 @@ both `fullChargeBonus` 250, the modal value across the roster.
   gauge (his example: Noise's charged-shot taunt). **Debuff RE-APPLICATIONS / refreshes
   of an already-active effect GENERATE — owner ruling (shooting-range observation,
   2026-08-16): while holding fire, the bar ticks up at the instant a periodic debuff
-  re-applies to the target** (the test recipe filed 2026-08-16 named
-  `emma-tactical-upgrade`'s Environment Setup 30s cadence; the owner's report did not
-  record the exact unit used). Every external source was silent on this half; it is the
+  re-applies to the target** (test unit: `emma-tactical-upgrade`'s Environment Setup,
+  owner-confirmed 2026-08-16). Every external source was silent on this half; it is the
   candidate source for the iron-sweep generation excess (a steady refill window with
-  zero fresh applications but recurring refreshes). **None of this is engine-modeled:
-  the per-application/per-refresh gauge AMOUNT is unmeasured (external sources suggest
-  the caster's flat base per-trigger value, the same flat credit as skill-damage hits,
-  but no owned measurement pins it), and the per-skill exceptions mean a blanket
-  enactment is wrong — enactment is a separate gated pass** (DECISIONS 2026-08-16;
-  follow-up in `docs/handoffs/QUEUE.md`).
+  zero fresh applications but recurring refreshes). **ENGINE-MODELED (2026-08-16, owner
+  magnitude ruling: the amount is the caster's datamined per-trigger weapon value):**
+  `applicationGauge()` + `isGeneratingApplication()` in `src/engine/sim.ts` credit the
+  full `targetPerTrigger` once per qualifying application event — enemy-targeted, pure
+  non-damage (buff/`targetStatus` only; a block that also deals damage is already
+  credited through its impacts), non-bullet trigger (the anti-double-count rule
+  excludes `shotFired`/`lastBullet`/`hitCount`/`chargeCounter`/`teamAmmo`), opening a
+  discrete window (some finite `durationSec` < 900 — permanent auras and the 999
+  sentinel are not application events), caster not in the `APPLICATION_NONGEN` set
+  (`noah`, `snow-white-heavy-arms` — the arena counterexamples above). Interval
+  re-fires credit each time (the refresh ruling); the standard `addGauge` lock scopes
+  everything to the FB-end → chain-start window, so chain/FB-triggered debuffs
+  (`burstCast`/`fullBurstEnter`) credit nothing in practice. Spec:
+  `scripts/tests/engine/application-gauge.test.ts`. Live board footprint at landing:
+  `emma-tactical-upgrade` (0.1/application) and `rosanna`'s battle-start status only;
+  `jackal`'s S1 is kit-faithfully encoded but inert in production runs (the v1 sim has
+  no incoming-attack model).
 - **Discrete "Fills Burst Gauge X%" effects** (a flat instant grant, distinct from the
   per-shot/per-tick paths above — e.g. little-mermaid's S1 "each time total ally ammo
   reaches 400 → Fills Burst Gauge 37%", or cinderella-crystal-wave's S1 "each time total

@@ -182,11 +182,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      counterexamples untouched), and debuff RE-APPLICATIONS/refreshes ALSO generate (bar ticks
      at re-apply while not firing) — the iron-sweep refresh channel is a REAL generation
      source.** Ally/self buffs/heals likely NO [MEDIUM], on-bullet riders add nothing
-     (anti-double-count). **Enactable follow-up (gated, not started): per-application/refresh
-     gauge MAGNITUDE is unmeasured (external sources suggest the caster's flat base per-trigger
-     value, same credit as skill-damage hits) and scope is per-skill — needs a magnitude
-     measurement + per-skill scoping pass before any `skillGauge()` engine change; then re-test
-     the iron-sweep excess against the modeled refresh channel.** (2)
+     (anti-double-count). **ENACTED 2026-08-16 (owner magnitude ruling: amount = the caster's
+     datamined weapon per-trigger; DECISIONS enactment entry): `applicationGauge()` credits
+     qualifying non-damage enemy-debuff applications AND interval refreshes; spec
+     `scripts/tests/engine/application-gauge.test.ts`; graded exposure zero by mechanism (no
+     pinned comp seats a live qualifier). REMAINING iron-sweep half (findings-only): the
+     modeled refresh channel is tiny (`emma-tactical-upgrade` 0.1/application) — if iron
+     sweep's excess is refresh-driven, the missing generation sits in kits whose in-game
+     periodic re-applies are ENCODED as permanent passives or chain-locked triggers (e.g.
+     continuous damage-taken auras); auditing the iron-sweep comp's kits for
+     re-apply-encoded-as-passive shapes is the next discriminator, BEFORE any re-model.** (2)
      per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
      the engine's divisor is CORROBORATED for genuine multi-muzzle units, and `anis-star`'s bite
      is a synthetic carve-out hack (`weapon-fields.ts`) absorbing her burst-DoT over-emission →

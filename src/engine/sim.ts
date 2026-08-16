@@ -1564,6 +1564,65 @@ export function runSim(
       per / (u.char.weapon === 'SG' ? 10 : u.char.hitsPerShot || 1)
     );
   };
+  // Non-damage enemy-debuff APPLICATIONS (and interval re-applications/refreshes) generate the
+  // caster's datamined per-trigger weapon value — owner rulings 2026-08-16 (Union shooting-range
+  // observations: emma-tactical-upgrade's Environment Setup re-apply ticks the bar while not
+  // firing; jackal S1 generates; amount = the unit's weapon per-trigger burst gen from the
+  // datamine). Credited ONCE per application event, at the FULL per-trigger value (no per-hit /
+  // SG-pellet division — an application is one discrete event, not a spray; today's qualifying
+  // casters are all hitsPerShot-1 weapons so the division would be a no-op anyway). addGauge's
+  // own guard scopes this to the FB-end → chain-start generating window like everything else.
+  const applicationGauge = (u: UnitState, frame: number) => {
+    const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[
+      u.char.slug
+    ];
+    const per =
+      (entry?.targetPerTrigger ?? GAUGE_MODAL_BY_WEAPON[u.char.weapon] ?? 40) /
+      100;
+    addGauge(u, frame, per);
+  };
+  // Known non-generating debuff applications (nikke-synergy arena counterexamples recorded in
+  // docs/data/burst-gauge.md §5 — generation is a PER-SKILL property, not universal). Neither
+  // unit has a qualifying enemy-targeted discrete block in today's overrides (noah's taunt is
+  // unmodeled, snow-white-heavy-arms' damage-taken ▲ is a permanent passive aura with no
+  // application events), so this set is defensive documentation: it keeps a future re-model of
+  // either kit from silently generating.
+  const APPLICATION_NONGEN = new Set(['noah', 'snow-white-heavy-arms']);
+  // Bullet-delivered triggers are EXCLUDED by the anti-double-count rule (an effect riding a
+  // bullet hit adds nothing beyond the bullet's own gauge — note.com/_trick_, Noise's
+  // charged-shot taunt): shotFired, lastBullet, hitCount, chargeCounter, teamAmmo. Everything
+  // not in this include set stays non-crediting by default (unrecognised input must be quiet
+  // here, loud nowhere — a new trigger kind should be classified deliberately, not credited
+  // by fallthrough).
+  const APPLICATION_GEN_TRIGGERS = new Set([
+    'interval',
+    'attacked',
+    'passive',
+    'battleStart',
+    'burstCast',
+    'fullBurstEnter',
+    'fullBurstEnd',
+  ]);
+  // A qualifying application: enemy-targeted, PURE non-damage (buff/targetStatus only — a block
+  // carrying flatDamage/dot already generates through its damage impacts via skillGauge), from a
+  // non-bullet trigger, opening a DISCRETE window (some finite durationSec < 900 — no
+  // durationSec = permanent aura like snow-white-heavy-arms'/takina's passives, and 999 is the
+  // permanent-status sentinel, e.g. mast's Sea Breeze; neither is a re-applying event).
+  const isGeneratingApplication = (u: UnitState, block: Block): boolean =>
+    block.target.kind === 'enemy' &&
+    APPLICATION_GEN_TRIGGERS.has(block.trigger.kind) &&
+    block.effects.length > 0 &&
+    block.effects.every(
+      (e) => e.kind === 'buff' || e.kind === 'targetStatus'
+    ) &&
+    block.effects.some(
+      (e) =>
+        'durationSec' in e &&
+        typeof e.durationSec === 'number' &&
+        e.durationSec > 0 &&
+        e.durationSec < 900
+    ) &&
+    !APPLICATION_NONGEN.has(u.char.slug);
 
   const transitionFrames = rangeScript
     .slice(1)
@@ -2506,6 +2565,14 @@ export function runSim(
     phase: number | undefined,
     frame: number
   ) {
+    // Owner rulings 2026-08-16: a qualifying non-damage enemy-debuff application credits the
+    // caster's per-trigger gauge value once per application event — including interval
+    // RE-applications/refreshes (delaySec-deferred blocks credit here at their resolve frame,
+    // the application instant). Independent of whether the engine consumes the debuff itself
+    // (an enemy ATK ▼ we don't model still generated in-game when it applied).
+    if (isGeneratingApplication(units[ownerIdx], block)) {
+      applicationGauge(units[ownerIdx], frame);
+    }
     if (phase !== undefined) {
       applyEffect(
         ownerIdx,
