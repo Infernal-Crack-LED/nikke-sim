@@ -54,6 +54,14 @@ Primary sources:
   ~3s post-FB chain-open delay — see the next bullet). Bar-reading note for future
   analysis: the bar's FULL-RESTING render occupies 83.5% of its pixel width (confirmed
   on a 9-second wait-at-full stretch); readings ≥96% are the pre-chain glow pulse.
+- **Nothing banks while the spent Full-Burst bar is still draining/holding the widget slot;
+  filling starts from ZERO at the moment the charging bar first paints** (owner ruling
+  2026-08-16, promoting the 2026-08-14 opening-window observable — banked-at-paint medians
+  5.3–8.1% vs the 42–81% that drain-empty banking would predict, dark track under the drain
+  bar on 36/36 windows, `docs/probe-runs.md` 2026-08-14 entry). Consequence for
+  measurement: the charging bar's first paint IS the true opening of the generating window
+  (it trails the exact FB end by only the 0.13–0.22 s render latency), so bar-paint
+  anchoring of refill-window statistics is ruled ground truth, not an inference.
 - **There is NO post-Full-Burst chain-open lock** (owner ruling 2026-08-04). The chain
   opens the moment the refilled gauge is full. The earlier "chain glow at FB-end +3.0s"
   MEASURED read that motivated a fixed 150f block is OVERTURNED: that gap was natural

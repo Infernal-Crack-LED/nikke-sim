@@ -5791,3 +5791,27 @@ by owner ruling — the 10s window and the latency term are how the column is DE
 the reader acts on. `latencyFrames` still feeds the Shots/FB numbers, and two table-share assertions
 that had been reading it off the SUBTITLE now assert the arithmetic instead, which is what had to be
 right either way.
+
+## Owner ruling: nothing banks during the Full-Burst drain hold — the generating window opens at the charging bar's first paint (2026-08-16)
+
+**Ruling (owner, 2026-08-16):** while the spent Full-Burst bar is still draining/holding the
+widget slot, NOTHING banks into the next cycle's gauge; filling starts from zero at the moment
+the charging bar first paints. This promotes the 2026-08-14 opening-window observable from
+hypothesis-tier to owner-ruled: the observable (banked-at-paint medians 5.3–8.1% vs the 42–81%
+drain-empty banking would predict; a dark track under the drain bar on 36/36 windows —
+`docs/probe-runs.md` 2026-08-14 entry) had been fenced as non-promotable without new footage or
+a ruling; the ruling is now the promotion path taken.
+
+**What changes:** nothing in the engine — generation was already modeled as opening at FB end
+(the FB-end → chain-start window, CLAUDE.md verified facts). What hardens is the MEASUREMENT
+chain: bar-paint anchoring of refill-window statistics (the fill-trace/classification
+instrument family, `scripts/probe/fill-trace-compare.ts`) is now ruled ground truth rather than
+a corroborated inference — the charging bar's first paint IS the window opening, trailing the
+exact FB end only by the 0.13–0.22 s render latency (n=36, probe-runs 2026-08-14). The
+2026-08-15 classification packet's anchor premise (Pc) and every future fill-trace pre-op can
+cite this entry instead of re-fencing the observable.
+
+**Recorded in:** `docs/data/burst-gauge.md` §1 (new core-rules bullet). The probe-runs
+2026-08-14 entry stays as the measurement record; the harness-log fencing language
+("promotion requires a pre-registered replication on NEW footage or an owner ruling") is
+satisfied by this ruling, not overturned.

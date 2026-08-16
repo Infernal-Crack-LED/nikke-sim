@@ -124,8 +124,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
        `takina`'s is item 4 below and is still open.
    - **Held primitives, logged not built** (F11 discipline — one carrier each): `moran` S1
      DEF ▲/stack, `maxwell` `byFinalAtk`, `helm`'s held tag. Leave held; the log is the point.
-   - **Encode-consistency candidates**: `anis` and `mica` both keep an `attacked`-N line unmodeled
-     on "nothing feeds the trigger" grounds. Same call, so decide them together, not one at a time.
+   - ~~**Encode-consistency candidates**: `anis` and `mica` `attacked`-N lines~~ **STALE —
+     verified against the overrides 2026-08-16: BOTH are already encoded** on the `attacked`
+     trigger under the 2026-08-13 encode-consistency ruling (`anis` via the 2026-08-04
+     kit-autonomy gauntlet — dormant by mechanism, pinned in her spec; `mica` likewise, empty
+     `unmodeled` arrays). Nothing to decide.
 
 2. **Burst-generation thread — steps 1a/1b/2/3 of the 2026-08-14 pickup packet LANDED 2026-08-15**
    (packet CLOSED → `closed/`; records: `scientific-method-harness.md` 2026-08-15 entries ×2, the
@@ -136,9 +139,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    reading survives only as a candidate — struck by the blind gate on the closure clause + noise
    power); the `anis-star` divisor read returned CANNOT-MEASURE at n≥8, with a pixel-free
    counting bound excluding BOTH candidate encodings (shipped 8.90 AND un-halved 10.39 %/pull) and
-   sub-steps permanently unresolvable at 60fps on that footage; the opening-window observable
-   shows ~0 banked during the drain hold (hypothesis-tier — promotion needs NEW footage or an
-   owner ruling); the team reader's flag-taxonomy leak is CLOSED (`offCurve`). Open items:
+   sub-steps permanently unresolvable at 60fps on that footage; ~~the opening-window observable
+   shows ~0 banked during the drain hold (hypothesis-tier)~~ **PROMOTED BY OWNER RULING
+   2026-08-16** (nothing banks during the drain hold; window opens at charging-bar first paint —
+   DECISIONS 2026-08-16, burst-gauge.md §1); the team reader's flag-taxonomy leak is CLOSED
+   (`offCurve`). Open items:
    - ~~`docs/STATE.md` reader-table rows for the new instruments
      (`offCurve`/`--reflag`/`--diag`/`opening`/`classify`)~~ **DONE 2026-08-15** — added to §7 and
      preop packets archived to `closed/`.
@@ -165,12 +170,22 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      file contains a second clean window free) AND the same-regime noise floor (the 2026-08-16
      C4 re-run missed its basis floor by ~45 quiet bins; same footage resolves both);
      `modernia` Destroy-Mode bar read (U28's named probe — independent unit AND the separate
-     `extraHitDamagePct` site); T1 wind-weak video (screenshot only).
+     `extraHitDamagePct` site); T1 wind-weak video (screenshot only); a TEAM-seated bar read of
+     an already-solo-validated unit (the classification's named H-A discriminator: separates
+     "credits are bigger in team" from "credits are more frequent" — iron sweep's excess persists
+     with zero cadence buffs, so any cadence explanation must be intrinsic team-context
+     behavior). **Owner-knowledge substitutes offered 2026-08-16, owner unsure — research passes
+     launched instead** on the two rulable candidates: (1) non-damage skill applications / buff
+     REFRESHES generating gauge (the note.com/_trick_ claim — refreshes are the half that could
+     explain iron sweep); (2) per-HIT vs per-TRIGGER credit on hitsPerShot>1 units (the U28
+     divisor — SG-per-landed-pellet and the `snow-white-heavy-arms` per-sub-hit measurement both
+     point per-hit; a settled rule replaces the `anis-star` divisor-read and `modernia`
+     Destroy-Mode footage asks).
    - **Residue ledger (findings-only):** ~~`snow-white-heavy-arms` U11c~~ **MEASURED 2026-08-15,
      PROMOTED TO ITEM 8** (volley generates per HIT; per-sub-hit gauge enactment planned there).
      `ein` U8 0.7× team residual (N2); stage1→2 real 33f/32f vs modeled 30f (runs AGAINST the gap).
-   - Liberalio patch-note draft awaiting owner approval (prior session's approval was
-     chat-ephemeral, never recorded — not published).
+   - ~~Liberalio patch-note draft~~ **DROPPED by owner 2026-08-16** ("it doesn't matter") —
+     never published, no draft file existed; do not resurrect.
 3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
    Recipe (unchanged, but the qualifying set is now exact): popup-read a qualifying all-enemies
    burst nuke cast INSIDE vs OUTSIDE a `trina` Spread Roots window and compare against
@@ -178,8 +193,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    `mica` / `noir` / `phantom` / `privaty` / `quency-escape-queen` / `scarlet` /
    `soda-twinkling-bunny` gives it; `cinderella` is NOT a candidate. If the test unit is `novel` or
    another granularity-split unit the same measurement settles amp granularity for free (amped ⇒
-   skill-level, unamped ⇒ block-level). Footage-gated; carried out of the now-archived burst-amp
-   handoff.
+   skill-level, unamped ⇒ block-level). The MAGNITUDE half is genuinely footage-gated (only
+   popups produce a number); the GRANULARITY half is separately rulable if the owner ever knows
+   whether a split-kit unit like `novel` gets both halves amped (offered 2026-08-16, not yet
+   answered). Carried out of the now-archived burst-amp handoff.
 
 4. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
    economy landing (DECISIONS) made her colder, not warmer: the faithful custom weapon fires 12
@@ -191,6 +208,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    already written in her override caveats: read the real skill2 cooldown + pulse shape from a
    focused `takina` recording and rescale. She has ONE recorded fight (PG iron sweep), so this needs
    footage before anything is changed — evidence-proportionality, not a re-fit.
+   **Cheaper substitute (offered to owner 2026-08-16, not yet answered): a cooldown is
+   config-independent, so the owner observing her skill-2 pulse rhythm in ANY casual play — no
+   scope lock, no recording — replaces the footage ask for the CD value itself** (the pulse
+   SHAPE would still benefit from footage, but the CD is the load-bearing number).
    _(Body restored 2026-08-13: nine lines were dropped from this item by the archive commit
    `80c9f041`; recovered verbatim from `d3314ca3`.)_
 
