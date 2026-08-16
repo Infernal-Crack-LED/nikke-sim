@@ -205,6 +205,12 @@ export type SimEvent =
       /** Rounds left after this pull (unchanged when the shot was unlimited-ammo). */
       ammoAfter: number;
       unlimitedAmmo: boolean;
+      /**
+       * Fraction of a full trigger's gauge this pull generated. Always 1 for non-SG
+       * weapons; for SG spray it is the landed/base fraction used by shotGauge (so
+       * per-landed-pellet crediting can be reconstructed from the event tap).
+       */
+      hitFraction: number;
     })
   /** One damage instance, at the single choke point every source passes through. */
   | (SimEventBase & {

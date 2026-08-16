@@ -4303,12 +4303,13 @@ export function runSim(
     const isMg = u.char.weapon === 'MG' && !u.swap;
     const sgFalloff =
       consolidating && consol ? consol.pelletFraction : bandSg.dmg;
-    const sgGaugeFrac =
-      consolidating && consol
+    const hitFraction = isSgSpray(u)
+      ? consolidating && consol
         ? consol.pelletFraction
         : SG_GAUGE_TRIGGER
           ? 1 // item-4 A/B arm: per-TRIGGER crediting — the full datamine per-trigger value regardless of landing
-          : bandSg.gauge;
+          : bandSg.gauge
+      : 1;
     // The PARENT instance of this pull. Its final damage is recorded on the unit (below) so the
     // per-pull block dispatch further down can hand it to a `hitRepeat` rider — the dispatch
     // runs after this line, which is what makes "X% of the damage dealt by self" expressible.
@@ -4359,7 +4360,7 @@ export function runSim(
     // "Missed pellets generate nothing" is OWNER-RULED 2026-08-14 (U40, DECISIONS) — the
     // per-landed crediting is confirmed; `SGGAUGE=trigger` (see its declaration) is the
     // refuted-reading A/B revert, which the item-4 audit sized at zero Full-Burst movement.
-    shotGauge(u, frame, sgGaugeFrac);
+    shotGauge(u, frame, hitFraction);
 
     const extraPerHit = stat(u, 'extraHitDamagePct', frame);
     if (extraPerHit > 0) {
@@ -4596,6 +4597,7 @@ export function runSim(
         magIndex: u.magIndex,
         ammoAfter: u.ammo,
         unlimitedAmmo: unlimited,
+        hitFraction,
       });
     }
   }

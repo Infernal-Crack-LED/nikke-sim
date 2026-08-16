@@ -13,6 +13,7 @@ const OTHER = 'crown';
 const FPS = 60;
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
+type Shot = Extract<SimEvent, { kind: 'shot' }>;
 
 function runPerPull(perPull: boolean) {
   const events: SimEvent[] = [];
@@ -41,6 +42,19 @@ function runPerPull(perPull: boolean) {
   );
 }
 
+function runSgShots() {
+  const events: SimEvent[] = [];
+  runComp({
+    slugs: [SG, OTHER],
+    bossElement: 'Iron',
+    focusSlug: SG,
+    cfg: { disableBursts: true, onEvent: (e) => events.push(e) },
+  });
+  return events.filter(
+    (e): e is Shot => e.kind === 'shot' && e.slug === SG
+  );
+}
+
 describe('hitCount.perPull SG lever', () => {
   it('pull reading fires once every `count` shots, pellet reading fires ~hitsPerShot× more often', () => {
     const pullProcs = runPerPull(true);
@@ -59,5 +73,28 @@ describe('hitCount.perPull SG lever', () => {
       (procs[procs.length - 1].frame - first) / (procs.length - 1);
     expect(medianGap).toBeGreaterThanOrEqual(5 * FPS);
     expect(medianGap).toBeLessThanOrEqual(10 * FPS);
+  });
+});
+
+describe('SG shot event hitFraction', () => {
+  it('emits hitFraction on every shot event', () => {
+    const shots = runSgShots();
+    expect(shots.length).toBeGreaterThan(0);
+    for (const s of shots) {
+      expect(typeof s.hitFraction).toBe('number');
+      expect(s.hitFraction).toBeGreaterThan(0);
+      expect(s.hitFraction).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('hitFraction equals the landed/base gauge fraction (not always 1)', () => {
+    const shots = runSgShots();
+    const fractions = [...new Set(shots.map((s) => s.hitFraction))];
+    expect(fractions.length).toBeGreaterThan(1);
+    expect(fractions.some((f) => f < 1)).toBe(true);
+    // At scope-lock bands the expected landed fraction is in 0.6–0.9; it is
+    // always ≤ 1 and never 0.
+    expect(Math.min(...fractions)).toBeGreaterThan(0);
+    expect(Math.max(...fractions)).toBeLessThanOrEqual(1);
   });
 });

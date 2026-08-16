@@ -129,3 +129,44 @@ describe('per-frame gauge-credit schedule', () => {
     }
   });
 });
+
+describe('per-frame gauge-credit schedule — SG comp', () => {
+  // `misc B3s (run I order)` seats `noir` (SG), so this exercises the hitFraction path that
+  // was previously flagged as unreconstructed.
+  const r = creditScheduleFor('misc B3s (run I order)', { exactSamples: 2 });
+
+  it('reconstructs every credit path on this comp (nothing flagged inexact)', () => {
+    expect(r.unreconstructed).toEqual([]);
+  });
+
+  it('CHECK (a): every unit’s schedule sums to the engine’s gaugeGenerated', () => {
+    expect(r.checks.endpointOk).toBe(true);
+    for (const e of r.checks.endpoint) {
+      expect(e.scheduled).toBeCloseTo(e.engine, 9);
+    }
+  });
+
+  it('CHECK (b): every DBG_GAUGE line the engine printed is matched', () => {
+    expect(r.checks.dbgGauge.lines).toBeGreaterThan(0);
+    expect(r.checks.dbgGauge.unmatchedEngine).toEqual([]);
+    expect(r.checks.dbgGauge.unmatchedSchedule).toEqual([]);
+    expect(r.checks.dbgGauge.ok).toBe(true);
+  });
+
+  it('CHECK (c): sampled truncated-run steps equal the scheduled amounts', () => {
+    expect(r.checks.truncated.length).toBeGreaterThan(0);
+    for (const t of r.checks.truncated) {
+      expect(t.engineStep).toBeCloseTo(t.scheduled, 9);
+    }
+    expect(r.checks.truncatedOk).toBe(true);
+  });
+
+  it('SG shot credits use hitFraction < 1 for at least some pulls', () => {
+    const sgShots = r.credits.filter(
+      (c) => c.kind === 'shot' && c.slug === 'noir'
+    );
+    expect(sgShots.length).toBeGreaterThan(0);
+    const amounts = [...new Set(sgShots.map((c) => c.amount))];
+    expect(amounts.some((a) => a < amounts[0])).toBe(true);
+  });
+});

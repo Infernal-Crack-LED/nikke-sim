@@ -2412,17 +2412,6 @@ export function creditScheduleFor(
     return per * (idx === focusIdx ? focusMult : 1.0) + flat;
   };
 
-  // SG spray is the one shot channel whose hit fraction is NOT on the tap (it is a per-band
-  // landed-pellet fraction resolved inside firePull). Neither scheduled comp seats one; say so
-  // rather than crediting a full trigger and letting the endpoint check argue about it.
-  for (const s of slugs) {
-    if (data.characters[s].weapon === 'SG') {
-      warn(
-        `${s}: SG spray — the per-band LANDED-pellet gauge fraction is resolved inside firePull ` +
-          'and is not on the event tap, so its shot credits are approximated at a full trigger'
-      );
-    }
-  }
   for (const s of slugs) {
     for (const b of activeRawBlocksAll(s, comp.modes?.[s])) {
       for (const e of b.effects) {
@@ -2478,7 +2467,9 @@ export function creditScheduleFor(
       if (!(sw && !sw.sameWeapon)) {
         const rounds = c.weapon === 'MG' ? c.hitsPerShot : 1;
         const energy =
-          gaugePerShot(ev.slug, ev.unitIdx, sw !== undefined) * rounds;
+          gaugePerShot(ev.slug, ev.unitIdx, sw !== undefined) *
+          rounds *
+          ev.hitFraction;
         push(
           ev.frame,
           ev.slug,
