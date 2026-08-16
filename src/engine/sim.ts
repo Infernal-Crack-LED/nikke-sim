@@ -1606,9 +1606,11 @@ export function runSim(
   // addGauge's own guard scopes this to the FB-end → chain-start generating window.
   // ⚑ Units with no data/gauge-per-shot.json row fall back to the class modal (same convention
   // as gaugePerShot/skillGauge) — for those the credit is an ESTIMATE, not the ruling's
-  // datamined value. Currently-affected live-credit slugs: eunhwa, ludmilla, sakura-suzuhara,
-  // signal (no row; jackal too, but her trigger has no production firing path), and the
-  // rosanna / brid-silent-track rows are themselves class-modal-sourced.
+  // datamined value. Currently-affected live-credit slugs: sakura-suzuhara, signal (no row,
+  // but both match the SMG class-modal 20 = their datamined 20, so the fallback IS their
+  // value); jackal too, but her trigger has no production firing path. The rosanna /
+  // brid-silent-track rows are themselves class-modal-sourced. eunhwa/ludmilla were here
+  // until 2026-08-16 (datamine re-pull: SR 580 ≠ modal 560, SMG 30 ≠ modal 20).
   const applicationGauge = (u: UnitState, frame: number) => {
     const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[
       u.char.slug

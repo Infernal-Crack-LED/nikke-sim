@@ -140,7 +140,6 @@ const noCdr = withPatchedOverride('anis-star', (ov) => {
     throw new Error('anis-star S1 noB1 burstCdr block missing — fixture stale');
   }
 });
-
 /** G1/G2 counterfactual: her Shooting Stars burst dot removed entirely. */
 const noDot = withPatchedOverride('anis-star', (ov) => {
   let removed = 0;
@@ -496,6 +495,32 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
 
     it('G4 — skillGauge per-impact credit is the full 2.8 target-base (divisor 1)', () => {
       expect(skillImpactGauge('anis-star')).toBeCloseTo(2.8, 6);
+    });
+
+    it('G5 — engine-level per-impact gauge credit is exactly 2.8 through gaugeGenerated (stall delta)', () => {
+      // G4 pins the FORMULA MIRROR (skillImpactGauge in fb-count-matrix.ts). This spec
+      // reads the ENGINE'S actual gauge accumulation through gaugeGenerated — catches any
+      // drift between the engine's skillGauge/addGauge path and the mirror formula.
+      // The mirror stays green if the engine's divisor changes underneath; this test
+      // trips because gaugeGenerated accumulates through the ENGINE, not the mirror.
+      //
+      // Method: G2's stall fixture gives a clean per-impact credit — exactly one dot tick
+      // escapes the chain lock per cast, and the delta between the base and no-dot runs
+      // isolates that single tick's gauge credit. The engine's skillGauge formula:
+      //   per = targetPerTrigger / 100 / hitsPerShot = 280 / 100 / 1 = 2.8
+      // multiplied by burstGenMult (1 + burstGenPct 6% / 100 = 1.06 from her S1 aura,
+      // passive trigger baked into init). If the engine's divisor changes (e.g. the
+      // pre-carve-out halved reading), this delta moves proportionally.
+      const casts = anisBursts(stallBase.events).length;
+      expect(casts).toBeGreaterThan(0);
+      const delta =
+        unitOf(stallBase.res, 'anis-star').gaugeGenerated -
+        unitOf(stallNoDot.res, 'anis-star').gaugeGenerated;
+      const perImpact = delta / casts;
+      // Engine formula: 2.8 × 1.06 = 2.968. Tight tolerance: the delta is EXACT (one
+      // tick per cast, no boundary imprecision). If this trips, the engine's skillGauge
+      // divisor or hitsPerShot handling has drifted from the gauge-per-shot.json row.
+      expect(perImpact).toBeCloseTo(2.8 * 1.06, 6);
     });
   });
 });
