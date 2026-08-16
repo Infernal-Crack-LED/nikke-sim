@@ -5942,3 +5942,41 @@ snapshots byte-identical.** Cross-family code review (kimi-code/k3, sighted, pac
 under `scratchpad/gates/2026-08-16-application-gauge/`): **CLEAN** — two NOTEs (modal-fallback
 ⚑ comment at `applicationGauge`, jackal-test magnitude-unpinned comment) and one FOLLOW-UP (an
 inFb-gated interval-debuff zero-credit test) all applied same session; 9 spec tests green.
+
+## takina S2 re-modeled: 15s-cooldown pulse (owner-confirmed CD), retiring the uptime-average permanents (2026-08-16)
+
+**Owner ruling:** "the 15s cd is correct, which means that modeling it as always on is incorrect."
+Upgrades the S2 cooldown from Prydwen-community ⚑ (which the shipped uptime-average encoding
+hedged on) to owner-confirmed; it also matches datamined `skillCooldownsSec.skill2 = 15`
+(`data/characters.json`). Enacted through `/kit-tdd` (tests written RED first, 6 failing
+assertions against the shipped average model, then the override).
+
+**Model:** both S2 blocks become `interval:15` at the prose's raw magnitudes and durations —
+enemies Damage Taken ▲10.09% for 5 s, allies True Damage ▲140.49% for 10 s — replacing the
+frame-0 permanents 3.36 / 93.66 (= 10.09 × 5/15, 140.49 × 10/15). First fire t=15 s (interval
+first-fire convention; ⚑ phase unpinned, S2 has no battle-start clause — caveat carries the
+recipe). The enemy pulse is a non-damage enemy-debuff application, so each application (refresh
+re-applications included) credits her datamined 560 per-trigger (5.6 bar-%) through
+`applicationGauge` — the first LIVE consumer of the refresh ruling above with a non-trivial
+magnitude. Spec: `scripts/tests/units/takina.test.ts` T4/T4b/T5 rewritten to pin the pulse shape,
+cadence (900 f), durations, gauge credit, and the retired-average as the discriminated
+nearest-wrong; T7's swap-flavor assertions re-derived for pulsed True Damage (probed dmgUp tiers
+1.0 / 1.6292 / 2.4049 / 3.0341 = combinations of T3 35.05, pulse 140.49, and a flavor-independent
+27.87). 29/29 green.
+
+**Board A/B (the honest half):**
+
+- `takina` graded reading (PG iron sweep, her only datapoint): **0.580 → 0.552 COLD** — the
+  faithful pulse removes the always-on True Damage the retired average granted her swap shots in
+  non-overlapped windows (dmgUp floor 1.0 now exists). Fit-exposure, direction faithful > fit; her
+  coldness thread deepens and stays open (override caveat updated).
+- **The iron-sweep FB shortfall does NOT close: sim still reads 11 full bursts (measured 13–14),
+  100% of 25 seeds.** Her ~11 pulse applications per fight credit 5.6 each, but only the ~2–3
+  landing inside FB-end → chain-start generating windows count — roughly a sixth of one bar,
+  nowhere near two extra bursts. The `iron sweep (run G)` regression comp STAYS disabled; the
+  burst-generation shortfall remains the open thread (QUEUE.md item updated — the
+  re-apply-encoded-as-passive audit of the remaining roster is still worth running, but takina's
+  S2, the largest single candidate, is now enacted and insufficient alone).
+
+**Graded/pinned exposure:** zero beyond her own comp — she seats only the DISABLED iron-sweep
+regression comp; `verify.sh` green.

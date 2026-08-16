@@ -179,14 +179,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — settled + enacted (owner
      rulings, DECISIONS 2026-08-16 ×3: application/refresh generation, per-trigger magnitude,
      generate-by-default scope; engine `applicationGauge()`, spec
-     `scripts/tests/engine/application-gauge.test.ts`). **OPEN residue — the iron-sweep
-     discriminator:** the PG iron sweep roster (`d-killer-wife`/`takina`/`milk-blooming-bunny`/
-     `maxwell`/`liberalio`) seats ZERO live-credit blocks — its debuffs are encoded as
-     permanent passives or mixed damage blocks. Sharpest candidate: `takina` S2 damage-taken ▲
-     is modeled as a permanent aura; if the real kit re-applies it periodically, each re-apply
-     would credit her 560 per-trigger (5.6%/event — iron-sweep-excess scale). Audit the comp's
-     kit text for re-apply-encoded-as-passive shapes FIRST; a kit-text cadence found there is
-     an encoding fix (kit-literal path), not a new mechanic. Also open: ⚑ four live-credit
+     `scripts/tests/engine/application-gauge.test.ts`). **OPEN residue — the iron-sweep FB
+     shortfall (sim 11 vs measured 13–14) is NOT closed:** `takina` S2 — the largest single
+     candidate — was re-modeled 2026-08-16 as the owner-confirmed 15s pulse (DECISIONS entry;
+     each application credits her 5.6 bar-%), and the comp still reads 11 FBs on 100% of seeds
+     (only ~2–3 of her ~11 applications land inside generating windows ≈ a sixth of one bar).
+     The `iron sweep (run G)` regression comp stays disabled. Remaining leads: audit the other
+     four kits (`d-killer-wife`/`milk-blooming-bunny`/`maxwell`/`liberalio`) for
+     re-apply-encoded-as-passive or mixed-block shapes whose applications should credit; then
+     the team-context bar-read ask above (H-A discriminator) remains the measurement route. Also open: ⚑ four live-credit
      units carry class-modal (not datamined) gauge rows — `eunhwa`/`ludmilla`/
      `sakura-suzuhara`/`signal` (see the `applicationGauge` ⚑ comment) — worth a datamine
      re-pull if any of them ever seats a graded comp. (2)
