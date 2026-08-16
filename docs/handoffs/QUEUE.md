@@ -217,10 +217,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      re-apply-encoded-as-passive or mixed-block shapes whose applications should credit (the
      H-A team-context route was CLOSED by owner ruling 2026-08-16 — no team-scaling credit
      mechanism exists — so encoding audits and the anis-star U28 divisor read are what remain).
-     Also open: ⚑ four live-credit
+     Also open: ~~⚑ four live-credit
      units carry class-modal (not datamined) gauge rows — `eunhwa`/`ludmilla`/
-     `sakura-suzuhara`/`signal` (see the `applicationGauge` ⚑ comment) — worth a datamine
-     re-pull if any of them ever seats a graded comp. (2)
+     `sakura-suzuhara`/`signal`~~ **RESOLVED 2026-08-16:** datamine re-pull found `eunhwa`
+     (SR 580 ≠ modal 560) and `ludmilla` (SMG 30 ≠ modal 20) needed real rows — added to
+     `data/gauge-per-shot.json`; `sakura-suzuhara` and `signal` both match SMG modal
+     (20 = 20) — no row needed. `sim.ts` ⚑ comment updated. (2)
      per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
      the engine's divisor is CORROBORATED for genuine multi-muzzle units. ~~The bundled
      `anis-star` carve-out removal~~ **ENACTED 2026-08-16** via `/scientific-method` (2-of-2
@@ -228,18 +230,25 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      enabled measured FB pin byte-identical, T5 moves 11/12→12 toward its measured 13. The
      noise-floor half of the `anis-star` re-record ask STANDS (and the solo magnitude residual
      now reads 10.39 vs the ≥ ~10.96 exclusion bound — same footage ask resolves it).
-     **NEW follow-up (fit-exposure re-tune):** PA MiKa's supports were fit to the old
-     halved-gauge burst timing and got hotter on the board (`mint` → 1.067, `prika` 1.074 →
-     1.112, `alice` 1.099 → 1.114, `red-hood` +2.7%) while `anis-star`/`cinderella` improved —
-     re-tune those overrides against the corrected rotation timing per the rotation-fix
-     doctrine (never re-fudge the divisor).
-     **NEW follow-up (implementation-review FOLLOW-UP 6):** the rider channel that drives every
+     ~~**NEW follow-up (fit-exposure re-tune):** PA MiKa's supports were fit to the old
+     halved-gauge burst timing and got hotter on the board~~ **INVESTIGATED 2026-08-16,
+     NOTHING TO RE-TUNE:** all four PA MiKa support overrides (`mint`, `prika`, `alice`,
+     `red-hood`) are kit-exact — every damage-relevant parameter is datamined or kit-literal,
+     with zero hand-fitted values. The ratio shifts are the correct output of faithful
+     overrides running on the corrected rotation timing; the old (colder) readings were the
+     ones distorted by the halved gauge. Per the rotation-fix doctrine: faithful > fit, and
+     the divisor is never re-fudged. The prika duet-window ⚑s (Encore 9999 vs 10s) are
+     structural owner-rulings, independent of the divisor fix.
+     ~~**NEW follow-up (implementation-review FOLLOW-UP 6):** the rider channel that drives every
      board delta (`anis-star`'s unlocked `shotFired` flatDamage credit, now 2.8/impact) is
      pinned only via `skillImpactGauge()` — a MIRROR of the sim.ts formula, so it stays green
      if the engine's divisor changed underneath. Add an engine-level G5 spec reading the
      per-pull generation off `gaugeGenerated` through the engine in a fixture whose unlocked
-     windows are controlled (the naive `gaugeGenerated / pulls` conflates locked pulls — needs
-     a window-aware shape; that subtlety is why it was filed, not rushed).
+     windows are controlled~~ **ENACTED 2026-08-16:** G5 spec test added to
+     `scripts/tests/units/anis-star.test.ts` — reads the engine's `gaugeGenerated` accumulator
+     through the G2 stall fixture's counterfactual delta (one dot tick per cast isolates the
+     exact 2.8×1.06 per-impact credit at the `addGauge` level). Catches any drift between the
+     engine's `skillGauge` path and the `skillImpactGauge()` mirror formula that G4 pins.
    - **Residue ledger (findings-only):** ~~`snow-white-heavy-arms` U11c~~ **MEASURED 2026-08-15,
      PROMOTED TO ITEM 8** (volley generates per HIT; per-sub-hit gauge enactment planned there).
      `ein` U8 0.7× team residual (N2); stage1→2 real 33f/32f vs modeled 30f (runs AGAINST the gap).
