@@ -876,3 +876,68 @@ false-event rate is ≲1%, "H-C mass present" re-stamps on iron; the single chea
 (clustered-at-visual-cause supports H-C; scattered refutes). (4) A third comp with a
 non-vacuous ceiling (T5's was cap-saturated, so the H-C detector was effectively n=1).
 (5) The symmetric-E_min variant as its own pre-op.
+
+## 2026-08-16 — C4 same-regime noise-floor re-run → LOG (driver ACCEPT HIGH + blind post-op ACCEPT HIGH; disposition CANNOT-MEASURE)
+
+**Outcome: LOG, disposition CANNOT-MEASURE (basis broken).** 2-of-2 ACCEPT, both HIGH — but what
+both gates accept is a NULL: the pre-registered quiet-span construction on the primary basis
+(`anis-star` solo committed series) yields **105 quiet bins**, below the packet's own pre-committed
+BQ1 floors (primary ≥150, pooled ≥180) under EVERY computed guard variant (105 trace-frame /
+139 60fps-frame / 48 ×1.5-sensitivity). No R-clause is reached. The struck "H-C mass present"
+stamp does NOT re-issue; H-C is NOT shelved either (a basis failure is never "effect
+absent/present"); iron sweep (run G)'s classification stays MIXED/INCONCLUSIVE, residual 0.2579
+standing. The disposition is over-determined: even absent BQ1, the Wilson one-sided 95% upper
+bound at n=105 with zero false-event bins is 2.51% > the 2.304% re-stamp cutoff — R1 could not
+have fired on this basis size no matter the data.
+
+**The accepted claim (blind judge's words, condensed):** on the pre-registered construction the
+surviving same-regime quiet basis is too small to measure the filling-regime false-event rate to
+the required precision; within that too-small basis the reader produced **literally zero positive
+deltas** (f = 0 at all three thresholds 1.41/1.5/1.596 raw; the positive-Δ set is EMPTY across
+99 pairs) and the P-B magnitude discriminator's 5–7 team-event band is empty — recorded as
+descriptive findings consistent with H1's direction, **carrying no stamp**. STRUCK from
+acceptance: any re-issue of "H-C mass present"; any reading of f = 0 as "noise is low"; any
+citation of the `snow-white-heavy-arms` descriptives in stamp text (it never qualified for the
+pooled statistic — pull instants pixel-free-pinned but credit clusters bar-derived, and no span
+table was pre-registered for it); any promotion of the bridged-adjusted MAR figure (4.3251/s)
+beyond descriptive context.
+
+**Why the basis broke (a PLAN defect, not a work defect):** the BQ1 floor (150) was calibrated
+against the premise-verifier's ~210–250-bin estimate, but that estimate predated the packet's own
+×2 guard widening on the three cadence-interpolated pulls — whose guards merge into one 2.67 s
+exclusion deleting two whole plateaus. Floor and guard spec were mutually incompatible from the
+moment the packet was committed, discoverable by pure arithmetic before any measurement ran.
+
+**Harness lessons:**
+
+1. **A basis-floor clause must be checked for SATISFIABILITY against the pre-registered
+   construction itself at pre-op time** — compute the quiet-bin yield the guard spec actually
+   implies (including guard merges) before committing the floor, exactly as a power analysis. A
+   floor derived from an estimate that predates the guard spec can be dead on arrival, converting
+   a well-executed measurement into a guaranteed CANNOT-MEASURE.
+2. **Pre-register the secondary basis's span construction too, or declare it descriptive-only up
+   front.** This run avoided a mid-run rule invention only because the work agent refused to
+   improvise a `snow-white-heavy-arms` span table that the packet never specified.
+3. Controls that replay committed artifacts to exact equality (C-i here, byte-for-byte on the
+   drain-hold C4 figures) remain cheap and decisive instrument-continuity anchors — keep them.
+
+**Named next measurement (blind judge, power-geometry made explicit):** more same-regime quiet
+footage on the primary basis — a longer `anis-star` solo recording (or a second slow-cadence solo
+clip with long inter-pull plateaus) sized so the PRE-REGISTERED construction yields ≥150 primary /
+≥180 pooled quiet bins, with the yield pre-computed from the guard spec before committing the
+floor. Zero false bins clears R1's Wilson clause at n ≥ 115 — this run's 105 missed by ~10 bins,
+so **~45–75 additional quiet bins resolve both clauses in one pass**. Secondarily: a quiet basis
+whose fill-level distribution covers iron's 70–80 fill-% mode (this basis had zero bins there —
+a carried regime-coverage caveat on any future pass). This folds INTO the existing ≥60 s solo
+`anis-star` scope-lock re-record ask (QUEUE item 2): the same footage serves the divisor read AND
+the noise floor.
+
+**Artifacts (all committed):** plan of record
+`docs/handoffs/closed/2026-08-16-c4-noise-floor-preop-packet.md` (pre-op APPROVED-WITH-REVISIONS,
+5 revisions executed pre-registration); machine deliverable
+`docs/probe-data/c4-noise-floor-rerun-2026-08-16.json` (verdict-free); the `noise-solo`
+subcommand on `scripts/probe/fill-trace-compare.ts` (ports the `offCurve` dominant-chain pass to
+solo series); replay pin `scripts/tests/probe/noise-solo.test.ts` (6 tests, byte-for-byte);
+regenerated `snow-white-heavy-arms` solo trace WITH full invocation
+`docs/probe-data/swha-solo-30fps-c4-trace.json` (closes the undocumented-invocation gap flagged
+by the step-0 premise verifier). Work commit `6311cc2d`; packet pre-registration `22460e2a`.

@@ -132,8 +132,13 @@ Ranked by how much autonomous work can still be done:
 2. **Re-run the H-A/H-B/H-C classification with a symmetric-E_min statistic** as its own
    pre-registered pass. T5's O/S were structurally uninterpretable under the one-sided
    threshold; a symmetric statistic would let both comps speak.
-3. **C4 noise-floor re-run** on offCurve-reflagged quiet spans — the cheapest resolver for
-   whether iron sweep's H-C candidate re-stamps.
+3. ~~**C4 noise-floor re-run**~~ **RUN 2026-08-16 → CANNOT-MEASURE** (full `/scientific-method`
+   pass, 2-of-2 ACCEPT HIGH on the null: the pre-registered guard construction left 105 quiet
+   bins vs the packet's 150/180 floors; zero false events on the basis that existed —
+   descriptive-only, no stamp moved). The resolver is now footage-gated: the ≥60s solo
+   `anis-star` re-record clears both the basis floor and the Wilson clause in one pass. Records:
+   `docs/handoffs/scientific-method-harness.md` + `docs/probe-runs.md` 2026-08-16 entries;
+   instrument `noise-solo` on `scripts/probe/fill-trace-compare.ts` (committed, replay-pinned).
 4. **Source-hunt the excess event instants** in the iron-sweep fill trace: clustered events
    at visual causes support H-C; scattered events refute it.
 5. ~~**Update the gauge-source census**~~ **DONE 2026-08-16** — `GAUGE_KIND_CENSUS.flatDamage`

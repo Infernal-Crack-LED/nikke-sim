@@ -147,20 +147,25 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      event), `scripts/battery/fb-count-matrix.ts` credit reconstruction, and regression tests
      (`sg-pull-vs-pellet`, `credit-schedule`). Cross-family code-review gate (Fable) returned
      `ACCEPT`; post-review fixes committed.
-   - **Judge-named next measurements (classification thread, ranked):** (1) same-regime C4 re-run
-     — quiet-noise floor on offCurve-reflagged/between-shot spans; decides whether iron sweep's
-     H-C candidate re-stamps (single cheapest resolver); (2) a pre-registered noise-corrected
-     ceiling test (subtract falseRate × quietBins); (3) source-hunt the excess event instants
-     (clustered-at-visual-cause supports H-C, scattered refutes); (4) a third comp with a
-     non-vacuous ceiling (T5's was cap-saturated — the H-C detector was effectively n=1); (5) a
-     symmetric-E_min statistic as its OWN pre-op (T5's O/S were structurally uninterpretable with
-     the one-sided threshold).
-   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record (her bar zeroes at
-     21.73s — a longer file contains a second clean window free; targets n≥8 + a second
-     count-to-fill); `modernia` Destroy-Mode bar read (U28's named probe — independent unit AND
-     the separate `extraHitDamagePct` site); ~~one solo MG or SMG gauge-bar read~~ **DELIVERED +
-     READ 2026-08-15** (`docs/probes/solo/ccw-solo.mov` + `nayuta-solo.mov` — BOTH families
-     bar-validated, probe-runs 2026-08-15 solo-reads entry); T1 wind-weak video (screenshot only).
+   - **Judge-named next measurements (classification thread, ranked):** ~~(1) same-regime C4
+     re-run~~ **RUN 2026-08-16 → CANNOT-MEASURE** (2-of-2 ACCEPT HIGH on the null: the
+     pre-registered guard construction yields 105 quiet bins vs the packet's own 150/180 floors —
+     a floor/guard satisfiability defect; zero false events observed on the basis that existed,
+     descriptive-only, no stamp moved. Record: `scientific-method-harness.md` 2026-08-16;
+     resolver folded into the `anis-star` re-record ask below — ~45–75 more quiet bins clear
+     BOTH the floor and the Wilson clause in one pass, and any new packet must power-check its
+     floor against the guard spec first). Still open, re-ranked: (2) a pre-registered
+     noise-corrected ceiling test (subtract falseRate × quietBins); (3) source-hunt the excess
+     event instants (clustered-at-visual-cause supports H-C, scattered refutes); (4) a third comp
+     with a non-vacuous ceiling (T5's was cap-saturated — the H-C detector was effectively n=1);
+     (5) a symmetric-E_min statistic as its OWN pre-op (T5's O/S were structurally
+     uninterpretable with the one-sided threshold).
+   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — now serves DOUBLE
+     duty: the divisor read (n≥8 + a second count-to-fill; her bar zeroes at 21.73s so a longer
+     file contains a second clean window free) AND the same-regime noise floor (the 2026-08-16
+     C4 re-run missed its basis floor by ~45 quiet bins; same footage resolves both);
+     `modernia` Destroy-Mode bar read (U28's named probe — independent unit AND the separate
+     `extraHitDamagePct` site); T1 wind-weak video (screenshot only).
    - **Residue ledger (findings-only):** ~~`snow-white-heavy-arms` U11c~~ **MEASURED 2026-08-15,
      PROMOTED TO ITEM 8** (volley generates per HIT; per-sub-hit gauge enactment planned there).
      `ein` U8 0.7× team residual (N2); stage1→2 real 33f/32f vs modeled 30f (runs AGAINST the gap).
@@ -242,5 +247,3 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    bridges before the `model` injection. Surfaced as a FOLLOW-UP by the round-4 code review of the
    U28 branch (`scratchpad/gates/2026-08-13-u28-gauge/result-r4.json`); filed rather than made
    because it was outside that diff's intent and the bridges are shared by every gate skill.
-
-

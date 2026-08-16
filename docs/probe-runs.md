@@ -7841,3 +7841,38 @@ and owner-gated.
 Evidence tier: calibrated CV reader with an explicit, frame-verified bar lock; every conclusion
 above rests on arithmetic closure (step grid, proc-snap round counting, whole-clip totals), not on
 eyeballing frames. Reader output is raw; the ×1.064 anchor bias is stated, not applied.
+
+## 2026-08-16 — Same-regime noise-floor re-run for the team gauge reader: CANNOT-MEASURE (quiet basis too small), with zero false events observed on the basis that existed
+
+Follow-up to the 2026-08-15 classification run, whose blind judge struck the iron sweep (run G)
+"unmodeled-source mass present" stamp partly because the reader's false-event rate had only been
+measured on drain-hold frames — a different render regime from the refill windows the statistic
+reads. This run measured the false-event rate in the SAME regime (bar painted, filling, between
+credit instants), on ground-truth-quiet spans of the committed Anis: Star (`anis-star`) solo
+series — her pull instants are pinned pixel-free by ammo counting, and no modeled gauge source
+fires between her pulls in a solo formation.
+
+**Result: the run cannot measure the rate to the pre-committed precision.** The pre-registered
+guard bands around her nine pull instants (doubled around the three pulls whose instants are
+cadence-interpolated rather than frame-pinned) merge into one continuous exclusion that deletes
+two whole between-pull plateaus, leaving 105 quiet bins against a pre-committed floor of 150 —
+a plan-arithmetic defect (the floor was set from an estimate that predated the guard widths),
+not a footage or instrument defect. Within the 105 bins that did qualify, the reader produced
+**zero positive deltas of any size across 99 consecutive-read pairs** — the quiet spans are
+byte-flat — recorded as a descriptive observation only, carrying no verdict. Both known
+one-column render-noise events in this footage happen to fall inside guard bands, so the
+observed flatness is partly construction-luck.
+
+Instrument continuity: the original drain-hold noise check replayed from committed artifacts to
+byte-for-byte equality (iron sweep 6.93%, T5 wind-weak 3.20%, misc B3s 2.83%, pooled 4.22%).
+The Snow White: Heavy Arms (`snow-white-heavy-arms`) solo clip was regenerated into a committed
+trace with its full reader invocation (`docs/probe-data/swha-solo-30fps-c4-trace.json`),
+reproducing the 2026-08-15 read (single fill cycle, 0.20-second-spaced volley steps, one
+~+15.2 weapon-shot step); it stayed descriptive-only — its per-volley credit timings are only
+bar-derived, and the run's rules excluded such a basis from the pooled statistic.
+
+**What resolves this:** the already-queued ≥60-second solo Anis: Star re-record serves double
+duty — roughly 45–75 additional quiet bins let the same pre-registered construction clear both
+the basis floor and the decision rule's Wilson-bound clause in one pass (zero false bins clears
+it at 115 quiet bins; this run had 105). Full record: `docs/handoffs/scientific-method-harness.md`
+2026-08-16 entry; machine artifact `docs/probe-data/c4-noise-floor-rerun-2026-08-16.json`.
