@@ -14,22 +14,6 @@ DECISIONS leaves the stale question here reading as live — always move it.
 
 ## UNANSWERED
 
-### U41 — Is the focused-charge gauge multiplier the unit's CHARGE CAP, not a flat ×2.5? (opened 2026-08-16, research pass)
-
-The engine's `FOCUS_CHARGE_GEN = 2.5` is MEASURED — but only on 250%-charge-cap units
-(`maiden-ice-rose` anchor family). Two independent external sources state the multiplier is the
-charge ratio itself, not a constant: the note.com/_trick_ verification (2025-03-14) computes
-`alice` (SR, 350% cap) at base × 3.50 and 250%-class units at × 2.50, with half-charge =
-(max% − 100)/2 + 100; the nikke-einkk datamine-driven simulator implements
-`focusBonus = 1 + 1.5 × charge%` (≡ ×2.5 at exactly full 250% charge). Every measurement we own
-is consistent with BOTH readings because every measured focused unit caps at 250% — the two
-models diverge only on a focused non-250% unit. `alice` (350%) seats a graded comp
-(`scripts/regression.ts` — with `anis-star`/`mint`/`prika`/`red-hood`) but is not the focused
-slot there, so the constant's current board exposure is zero; it goes live the moment any
-recording focuses a 350%-cap unit. Resolution: a focused `alice` (or other non-250%-cap) solo
-bar read — predicted ×3.5 under the charge-cap reading vs ×2.5 under the flat constant, a 40%
-separation, trivially discriminable. Until then the flat 2.5 stays (measured, unexposed).
-
 ### U39 — `snow-white-heavy-arms` Fully Active: is the volley delivered by USES or by TIME? (opened 2026-08-11, re-filed)
 
 Her burst "Seven Dwarves Fully Active" is modeled as a weapon swap carrying the same 69.04% shot at
@@ -647,9 +631,13 @@ UNVERIFIED for `hitsPerShot > 1`; every unit where the divisor actually bites (`
 carrier at 10) rides extrapolation. Note also the measured rider sub-step reads 3.45% vs the modeled
 3.64%, a small unexplained residual on the exact constant the whole path is anchored to.
 
-**Gate:** a `hitsPerShot > 1` gauge-bar read to pin the divisor — `modernia` Destroy Mode is still the
-natural probe (MG hit rates make per-hit generation obvious), though note her rider now generates
-entirely inside the gauge lock, so the probe must read the BAR, not infer from her rotation. Until
+**Gate:** a `hitsPerShot > 1` gauge-bar read to pin the divisor. ~~`modernia` Destroy Mode is the
+natural probe~~ **CLOSED 2026-08-16 — structurally dead, not just unmeasured:** her Destroy Mode
+window is coincident with her own `fullBurstExtend`-extended (15s) Full Burst, so it sits entirely
+inside the FB gauge lock (CLAUDE.md verified facts: nothing generates during the chain or Full
+Burst), never inside the FB-end→chain-start generating window — a bar recording there reads
+flat/locked throughout and teaches nothing about the divisor. The live candidate is `anis-star`
+(rider fires on normal weapon shots, outside FB — see the recording ask in QUEUE.md). Until
 then: do NOT author a true-flavored rider (the flavor half of the asymmetry is unchanged). The
 "do not re-encode a unit between the two primitives" rule is LIFTED for gauge as of 2026-08-13.
 **2026-08-14 (gauge-source census, investigation-plan item 2):** an EXISTING labeled fixture already

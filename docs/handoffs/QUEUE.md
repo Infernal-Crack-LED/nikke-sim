@@ -165,21 +165,39 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      with a non-vacuous ceiling (T5's was cap-saturated — the H-C detector was effectively n=1);
      (5) a symmetric-E_min statistic as its OWN pre-op (T5's O/S were structurally
      uninterpretable with the one-sided threshold).
-   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — now serves DOUBLE
-     duty: the divisor read (n≥8 + a second count-to-fill; her bar zeroes at 21.73s so a longer
-     file contains a second clean window free) AND the same-regime noise floor (the 2026-08-16
-     C4 re-run missed its basis floor by ~45 quiet bins; same footage resolves both);
-     `modernia` Destroy-Mode bar read (U28's named probe — independent unit AND the separate
-     `extraHitDamagePct` site); T1 wind-weak video (screenshot only); a TEAM-seated bar read of
-     an already-solo-validated unit (the classification's named H-A discriminator: separates
-     "credits are bigger in team" from "credits are more frequent" — iron sweep's excess persists
-     with zero cadence buffs, so any cadence explanation must be intrinsic team-context
-     behavior). **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
-     U28 addendum, new U41): (1) non-damage applications — enemy-targeted standalone YES with
-     per-skill exceptions [MEDIUM], ally/self buffs/heals likely NO [MEDIUM], on-bullet riders
-     add nothing (anti-double-count), **buff REFRESHES: every source silent, CANNOT-DETERMINE —
-     still the live unknown for iron sweep**; owner-testable in the Union shooting range without
-     any recording (watch the bar at a debuff re-application instant while not firing). (2)
+   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — HANDED OFF
+     2026-08-16 to another session for processing (not yet landed) — serves DOUBLE duty: the
+     divisor read (n≥8 + a second count-to-fill; her bar zeroes at 21.73s so a longer file
+     contains a second clean window free) AND the same-regime noise floor (the 2026-08-16 C4
+     re-run missed its basis floor by ~45 quiet bins; same footage resolves both).
+     ~~`modernia` Destroy-Mode bar read (U28's named probe)~~ **CLOSED 2026-08-16 — forced dead
+     by the already-settled FB gauge-lock rule** (CLAUDE.md verified facts: nothing generates
+     during the chain or Full Burst): her Destroy Mode window is coincident with her own
+     `fullBurstExtend`-extended (15s) Full Burst, so it sits entirely inside the locked period,
+     never inside the FB-end→chain-start generating window — a bar recording there reads
+     flat/locked throughout and cannot pin the `hitsPerShot` divisor. That question stays open;
+     its live candidate is `anis-star` (rider fires on normal weapon shots, outside FB) — see
+     above. ~~T1 wind-weak video (screenshot only)~~ **RECEIVED 2026-08-16** —
+     `docs/probes/misc/t1 wind weak v2.jpg` + `.mov`, queued for `/probe-processing`.
+     ~~a TEAM-seated bar read of an already-solo-validated unit (the classification's named H-A
+     discriminator...)~~ **CLOSED 2026-08-16, owner ruling (method not stated): no game
+     mechanism grants extra burst-gauge credit for being in a team** — the known ×2.5
+     focus-charge bonus is the only context-dependent credit term and it is already modeled.
+     H-A is struck from the classification's candidate list; the iron-sweep excess (no cadence
+     buffs, ~1.6× shortfall) stays UNEXPLAINED — this rules out one candidate class, not the
+     excess itself. **Research passes RUN 2026-08-16** (findings landed: `burst-gauge.md` §5 rewrite,
+     U28 addendum; the pass's U41 filing was CLOSED same day as a duplicate — per-unit focus
+     multiplier already measured + enacted 2026-07-29, see answered-questions U41): (1) non-damage applications — **OWNER-CONFIRMED 2026-08-16
+     (shooting-range test, DECISIONS entry): enemy-targeted standalone debuffs generate
+     (`jackal` S1 confirmed; per-skill exceptions stand — Noah taunt / `snow-white-heavy-arms`
+     counterexamples untouched), and debuff RE-APPLICATIONS/refreshes ALSO generate (bar ticks
+     at re-apply while not firing) — the iron-sweep refresh channel is a REAL generation
+     source.** Ally/self buffs/heals likely NO [MEDIUM], on-bullet riders add nothing
+     (anti-double-count). **Enactable follow-up (gated, not started): per-application/refresh
+     gauge MAGNITUDE is unmeasured (external sources suggest the caster's flat base per-trigger
+     value, same credit as skill-damage hits) and scope is per-skill — needs a magnitude
+     measurement + per-skill scoping pass before any `skillGauge()` engine change; then re-test
+     the iron-sweep excess against the modeled refresh channel.** (2)
      per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
      the engine's divisor is CORROBORATED for genuine multi-muzzle units, and `anis-star`'s bite
      is a synthetic carve-out hack (`weapon-fields.ts`) absorbing her burst-DoT over-emission →

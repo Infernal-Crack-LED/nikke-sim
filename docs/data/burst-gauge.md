@@ -209,16 +209,18 @@ both `fullChargeBonus` 250, the modal value across the roster.
   sub-hit while keeping the damage instance aggregated.
 - **DoT ticks** generate per tick (wiki3 measured Haran's S1 DoT at 290/tick ≈ her SR
   base). Engine: `skillGauge()` on dot ticks.
-- **Non-damage skill applications — scoped by the 2026-08-16 research pass (external
-  sources, not modeled):** the note.com/_trick_ verification (2025-03-14) claims
-  ENEMY-targeted standalone applications generate the caster's per-application amount —
-  named cases Folkwain's taunt and "Rosanna's" debuff-removal (JP ロザンナ, variant
-  unresolved by the source; "appears to", hedged, not his own controlled counting) —
-  and the community record adds Jackal S1 (nikke.gg, measured) and Raven's per-stack
-  applications (nikke-synergy, arena). It is NOT
-  universal: nikke-synergy's arena data has hard counterexamples (Noah's taunt,
-  `snow-white-heavy-arms`' damage-taken ▲ generate nothing), so it is a per-skill
-  property [MEDIUM]. **Ally/self-targeted pure buffs/heals/shields: no source anywhere
+- **Non-damage skill applications (scoped by the 2026-08-16 research pass; the two
+  load-bearing halves owner-confirmed in the Union shooting range 2026-08-16 — not
+  modeled):** ENEMY-targeted standalone debuff applications generate —
+  **owner-confirmed for `jackal` S1** (shooting-range observation, 2026-08-16),
+  agreeing with the external record: the note.com/_trick_ verification (2025-03-14,
+  named cases Folkwain's taunt and "Rosanna's" debuff-removal — JP ロザンナ, variant
+  unresolved by the source), nikke.gg's Jackal S1 measurement, and Raven's per-stack
+  applications (nikke-synergy, arena). It is still NOT universal: nikke-synergy's
+  arena data has hard counterexamples (Noah's taunt, `snow-white-heavy-arms`'
+  damage-taken ▲ generate nothing), so the per-skill-property reading stands — the
+  owner confirmation certifies the generating cases exist, not that every debuff
+  generates. **Ally/self-targeted pure buffs/heals/shields: no source anywhere
   claims they generate; Prydwen explicitly states self-procs "such as Emma and Maiden"
   generate nothing (the source names no variant — ⚠ it CANNOT mean `maiden-ice-rose`'s
   damage rider, which is our own measured-generating anchor at 364; read it as the
@@ -226,10 +228,19 @@ both `fullChargeBonus` 250, the modal value across the roster.
   nikke-synergy's generation formula counts only enemy-affecting
   events [MEDIUM they do NOT generate].** **Anti-double-count rule (_trick_):** an
   effect delivered as a rider ON a bullet hit generates nothing beyond the bullet's own
-  gauge (his example: Noise's charged-shot taunt). **Buff REFRESHES / re-applications of
-  an already-active effect: every source is silent — CANNOT-DETERMINE** (the half that
-  could bear on the iron-sweep generation excess; the closest precedent, Raven's
-  repeated stack applications each generating, is arena-context and enemy-targeted).
+  gauge (his example: Noise's charged-shot taunt). **Debuff RE-APPLICATIONS / refreshes
+  of an already-active effect GENERATE — owner ruling (shooting-range observation,
+  2026-08-16): while holding fire, the bar ticks up at the instant a periodic debuff
+  re-applies to the target** (the test recipe filed 2026-08-16 named
+  `emma-tactical-upgrade`'s Environment Setup 30s cadence; the owner's report did not
+  record the exact unit used). Every external source was silent on this half; it is the
+  candidate source for the iron-sweep generation excess (a steady refill window with
+  zero fresh applications but recurring refreshes). **None of this is engine-modeled:
+  the per-application/per-refresh gauge AMOUNT is unmeasured (external sources suggest
+  the caster's flat base per-trigger value, the same flat credit as skill-damage hits,
+  but no owned measurement pins it), and the per-skill exceptions mean a blanket
+  enactment is wrong — enactment is a separate gated pass** (DECISIONS 2026-08-16;
+  follow-up in `docs/handoffs/QUEUE.md`).
 - **Discrete "Fills Burst Gauge X%" effects** (a flat instant grant, distinct from the
   per-shot/per-tick paths above — e.g. little-mermaid's S1 "each time total ally ammo
   reaches 400 → Fills Burst Gauge 37%", or cinderella-crystal-wave's S1 "each time total
