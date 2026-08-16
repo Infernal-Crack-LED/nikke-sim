@@ -208,6 +208,65 @@ const extHelm = run({ liter: extSource(TO_HELM) });
 /** L7: the same buff cast at the WHOLE team in one go (per-target strip). */
 const extAll = run({ liter: extSource({ kind: 'allies' }) });
 
+// ---- L7c fixtures: iron-sweep comp context (maxwell-style bundled grant to liberalio) --------
+// The real iron-sweep roster has maxwell targeting the top-2 static-ATK allies, which currently
+// does NOT include liberalio, so the immunity is not exercised there. This fixture injects a
+// maxwell-style bundled chargeSpeedPct+atkPct buff aimed at the one Wind ally (liberalio alone)
+// so the receiving-side strip is tested inside the real comp's rotation.
+const IRON_SWEEP = [
+  'd-killer-wife',
+  'milk-blooming-bunny',
+  'maxwell',
+  'takina',
+  'liberalio',
+] as const;
+function runIronSweep(overrides: Record<string, any> = {}) {
+  const events: SimEvent[] = [];
+  const res = runComp({
+    slugs: [...IRON_SWEEP],
+    bossElement: 'Electric',
+    focusSlug: 'maxwell',
+    overrides,
+    cfg: { onEvent: (e) => events.push(e) },
+  });
+  return { events, totals: totals(res) };
+}
+const ironSweepBase = runIronSweep();
+const ironSweepImm = runIronSweep({
+  maxwell: withPatchedOverride('maxwell', (ov) => {
+    ov.skill1.push({
+      slot: 'skill1',
+      trigger: { kind: 'passive' },
+      target: { kind: 'alliesOfElement', element: 'Wind' },
+      effects: [
+        { kind: 'buff', stat: 'chargeSpeedPct', value: 50, durationSec: 10 },
+        { kind: 'buff', stat: 'atkPct', value: 10, durationSec: 10 },
+      ],
+    });
+  }),
+});
+const ironSweepNoImm = runIronSweep({
+  maxwell: withPatchedOverride('maxwell', (ov) => {
+    ov.skill1.push({
+      slot: 'skill1',
+      trigger: { kind: 'passive' },
+      target: { kind: 'alliesOfElement', element: 'Wind' },
+      effects: [
+        { kind: 'buff', stat: 'chargeSpeedPct', value: 50, durationSec: 10 },
+        { kind: 'buff', stat: 'atkPct', value: 10, durationSec: 10 },
+      ],
+    });
+  }),
+  liberalio: withPatchedOverride('liberalio', (ov) => {
+    if (!ov.charFixes?.statImmunities?.includes('chargeSpeedPct')) {
+      throw new Error(
+        'liberalio charFixes.statImmunities lacks chargeSpeedPct — fixture is stale'
+      );
+    }
+    delete ov.charFixes.statImmunities;
+  }),
+});
+
 // ---- readers ----------------------------------------------------------------------------------
 const dmg = (evs: SimEvent[]) =>
   evs.filter((e): e is Damage => e.kind === 'damage');
@@ -428,6 +487,46 @@ describe('liberalio — kit spec', () => {
       expect(own.length).toBeGreaterThan(0);
       expect([...new Set(own.map((b) => b.targetIdx))]).toEqual([HELM]);
       expect([...new Set(own.map((b) => b.value))]).toEqual([12.74]);
+    });
+
+    it('L7c: in the iron-sweep comp, a maxwell-style bundled grant to liberalio leaves her fire cycle untouched', () => {
+      // Wind is unique to liberalio in this roster, so the injected buff targets her alone.
+      expect(shotsOf(ironSweepImm.events, 'liberalio')).toBe(
+        shotsOf(ironSweepBase.events, 'liberalio')
+      );
+      expect(
+        libShots(ironSweepImm.events)
+          .map((s) => s.frame)
+          .join(',')
+      ).toBe(
+        libShots(ironSweepBase.events)
+          .map((s) => s.frame)
+          .join(',')
+      );
+      const csToLib = buffs(ironSweepImm.events).filter(
+        (b) => b.stat === 'chargeSpeedPct' && b.value === 50 && b.targetSlug === 'liberalio'
+      );
+      expect(csToLib).toHaveLength(0);
+    });
+
+    it('L7c: the bundled atkPct still lands on her in the iron-sweep comp', () => {
+      const bundled = buffs(ironSweepImm.events).filter(
+        (b) => b.stat === 'atkPct' && b.value === 10
+      );
+      expect(bundled.length).toBeGreaterThan(0);
+      expect([...new Set(bundled.map((b) => b.targetSlug))]).toEqual([
+        'liberalio',
+      ]);
+    });
+
+    it('L7c: without the immunity the same bundled grant speeds her up', () => {
+      const csToLib = buffs(ironSweepNoImm.events).filter(
+        (b) => b.stat === 'chargeSpeedPct' && b.value === 50 && b.targetSlug === 'liberalio'
+      );
+      expect(csToLib.length).toBeGreaterThan(0);
+      expect(shotsOf(ironSweepNoImm.events, 'liberalio')).toBeGreaterThan(
+        shotsOf(ironSweepBase.events, 'liberalio')
+      );
     });
   });
 
