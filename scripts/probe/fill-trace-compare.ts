@@ -2235,6 +2235,940 @@ export function applyDecisionRule(
 }
 
 // ---------------------------------------------------------------------------
+// NOISE-SOLO — C4 same-regime noise-floor re-run on solo quiet bases
+// (pre-op packet docs/handoffs/2026-08-16-c4-noise-floor-preop-packet.md §D;
+// every constant below is pre-registered there and may not be changed by a run).
+//
+// Measures the reader's false-event rate at the classification statistic's event
+// definition (1/30s bins, max gap CLS_MAX_EVENT_GAP_FRAMES trace-frames, positive
+// delta above threshold) on ground-truth-quiet spans of a SOLO fill series in the
+// same render regime as the classification's clean reads (bar painted, `filling`
+// state, between credit events). MEASUREMENT ONLY — no verdict; the decision-rule
+// application belongs to the /scientific-method driver.
+// ---------------------------------------------------------------------------
+/** §C confound C-c: raw-vs-true bracket. 1.41 raw (≡1.5 true) is the binding one. */
+export const NS_THRESHOLDS = [1.41, 1.5, 1.596] as const;
+export const NS_BINDING_THRESHOLD = 1.41;
+/** offCurve pass tolerance — gauge-fill.py's TEAM_NOISE_PCT, ported verbatim. */
+export const NS_OFFCURVE_TOL = 1.5;
+/** §D-2 guard band around a pinned fire instant: [fire − 2 frames, fire + 0.30s + 8 frames]. */
+export const NS_GUARD_PRE_FRAMES = 2;
+export const NS_GUARD_LATENCY_SEC = 0.3;
+export const NS_GUARD_POST_FRAMES = 8;
+/** §D-2: pulls whose guards double their half-widths (bar-derived/cadence-interpolated pins). */
+export const NS_WIDENED_PULLS: readonly number[] = [3, 4, 6];
+/** §D-2 primary-basis quiet region and its pre-registered exclusion (the screen-tint span). */
+export const NS_PRIMARY_WINDOW: [number, number] = [7.7, 19.37];
+export const NS_PRIMARY_EXCLUSIONS: [number, number][] = [[16, 17.97]];
+/** Revision 1 (pre-committed): R1-blocking magnitude for a quiet-span false-event bin. */
+export const NS_BIG_DELTA_RAW = 4.7;
+/** §E P-B: iron's team event-bin deltas sit at median ~6; the discriminating band. */
+export const NS_TEAM_EVENT_BAND: [number, number] = [5, 7];
+/** One-sided 95% Wilson score upper limit. */
+export const NS_WILSON_Z = 1.645;
+/** BQ1 floors (packet §F). */
+export const NS_BQ1_PRIMARY_MIN_BINS = 150;
+export const NS_BQ1_POOLED_MIN_BINS = 180;
+
+/** One-sided upper Wilson score bound on a binomial proportion k/n. */
+export function wilsonUpper(k: number, n: number, z = NS_WILSON_Z): number {
+  if (n <= 0) {
+    return NaN;
+  }
+  const p = k / n;
+  const z2 = z * z;
+  return (
+    (p + z2 / (2 * n) + z * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n))) /
+    (1 + z2 / n)
+  );
+}
+
+export interface SoloRead {
+  t: number;
+  state: string;
+  fillRaw: number | null;
+}
+export interface SoloSeries {
+  fps: number;
+  reads: SoloRead[];
+}
+
+/**
+ * Port of gauge-fill.py `_dominant_chain` (verbatim semantics): indices of the LARGEST subset of
+ * `vals` consistent with one non-decreasing fill curve, judged against the chain's RUNNING MAX
+ * within `tol`. Exact DP over a Pareto frontier of (length, runningMax); ties prefer the lower
+ * curve. Deterministic.
+ */
+export function dominantChain(vals: number[], tol: number): Set<number> {
+  const n = vals.length;
+  const chain = new Set<number>();
+  if (n === 0) {
+    return chain;
+  }
+  // frontiers[j] = [(length, runningMax, prevIndex, prevFrontierSlot), ...]
+  const frontiers: [number, number, number, number][][] = [];
+  for (let j = 0; j < n; j += 1) {
+    const cand: [number, number, number, number][] = [[1, vals[j], -1, -1]];
+    for (let i = 0; i < j; i += 1) {
+      for (let k = 0; k < frontiers[i].length; k += 1) {
+        const [ln, m] = frontiers[i][k];
+        if (vals[j] >= m - tol) {
+          cand.push([ln + 1, Math.max(m, vals[j]), i, k]);
+        }
+      }
+    }
+    cand.sort((a, b) => (a[0] === b[0] ? a[1] - b[1] : b[0] - a[0]));
+    const front: [number, number, number, number][] = [];
+    let bestM: number | null = null;
+    for (const c of cand) {
+      if (bestM === null || c[1] < bestM) {
+        front.push(c);
+        bestM = c[1];
+      }
+    }
+    frontiers.push(front);
+  }
+  let bj = 0;
+  let bk = 0;
+  let best: [number, number] = [0, 0];
+  for (let j = 0; j < n; j += 1) {
+    for (let k = 0; k < frontiers[j].length; k += 1) {
+      const [ln, m] = frontiers[j][k];
+      if (ln > best[0] || (ln === best[0] && -m > best[1])) {
+        best = [ln, -m];
+        bj = j;
+        bk = k;
+      }
+    }
+  }
+  while (bj !== -1) {
+    chain.add(bj);
+    const [, , pj, pk] = frontiers[bj][bk];
+    bj = pj;
+    bk = pk;
+  }
+  return chain;
+}
+
+export interface OffCurveFlag {
+  index: number;
+  t: number;
+  fillRaw: number | null;
+  run: number;
+}
+
+/**
+ * Port of gauge-fill.py `flag_off_curve` for a SOLO series (which carries no flags array): the
+ * same run segmentation (`filling` reads with a value accumulate; any non-`flash` other state
+ * ends the run), the same dominant-curve judgement at NS_OFFCURVE_TOL. Solo reads carry no
+ * `spike` flags, so every read of a run is chain-eligible (the python filters spikes first).
+ * Returns the flagged reads; callers exclude them from quiet statistics.
+ */
+export function flagOffCurveSolo(
+  series: SoloSeries,
+  tol = NS_OFFCURVE_TOL
+): OffCurveFlag[] {
+  const flags: OffCurveFlag[] = [];
+  const runs: { index: number; read: SoloRead }[][] = [];
+  let cur: { index: number; read: SoloRead }[] = [];
+  series.reads.forEach((r, index) => {
+    if (r.state === 'filling' && r.fillRaw !== null) {
+      cur.push({ index, read: r });
+    } else if (r.state !== 'flash') {
+      if (cur.length) {
+        runs.push(cur);
+      }
+      cur = [];
+    }
+  });
+  if (cur.length) {
+    runs.push(cur);
+  }
+  runs.forEach((run, runIdx) => {
+    const chain = dominantChain(
+      run.map((x) => x.read.fillRaw!),
+      tol
+    );
+    run.forEach((x, k) => {
+      if (!chain.has(k)) {
+        flags.push({
+          index: x.index,
+          t: x.read.t,
+          fillRaw: x.read.fillRaw,
+          run: runIdx,
+        });
+      }
+    });
+  });
+  return flags;
+}
+
+export interface GuardBand {
+  pull: number;
+  fireSec: number;
+  fireField: string;
+  widened: boolean;
+  lo: number;
+  hi: number;
+}
+
+/**
+ * §D-2 guard construction. `framesFps` is the frame unit of the "2 frames"/"8 frames" margins
+ * (the packet's other frame unit for this series is trace-frames, i.e. the series fps).
+ * `widened` pulls double each half-width around the same fire anchor; `scale` is control C-iii.
+ */
+export function soloGuards(
+  fires: { pull: number; fireSec: number; fireField: string }[],
+  framesFps: number,
+  scale = 1
+): GuardBand[] {
+  return fires.map((f) => {
+    const widened = NS_WIDENED_PULLS.includes(f.pull);
+    const mult = (widened ? 2 : 1) * scale;
+    const leftHw = (NS_GUARD_PRE_FRAMES / framesFps) * mult;
+    const rightHw =
+      (NS_GUARD_LATENCY_SEC + NS_GUARD_POST_FRAMES / framesFps) * mult;
+    return {
+      pull: f.pull,
+      fireSec: f.fireSec,
+      fireField: f.fireField,
+      widened,
+      lo: round(f.fireSec - leftHw, 4),
+      hi: round(f.fireSec + rightHw, 4),
+    };
+  });
+}
+
+/** Subtract closed cut intervals from a closed window; returns the surviving open gaps. */
+export function subtractIntervals(
+  window: [number, number],
+  cuts: [number, number][]
+): [number, number][] {
+  let spans: [number, number][] = [window];
+  for (const [clo, chi] of [...cuts].sort((a, b) => a[0] - b[0])) {
+    const next: [number, number][] = [];
+    for (const [lo, hi] of spans) {
+      if (chi <= lo || clo >= hi) {
+        next.push([lo, hi]);
+        continue;
+      }
+      if (clo > lo) {
+        next.push([lo, round(clo, 4)]);
+      }
+      if (chi < hi) {
+        next.push([round(chi, 4), hi]);
+      }
+    }
+    spans = next;
+  }
+  return spans.filter(([lo, hi]) => hi - lo > 1e-9);
+}
+
+export interface NoiseSpanRow {
+  span: [number, number];
+  sec: number;
+  /** median fill of the span's quiet reads — the plateau level */
+  level: number;
+  /** nearest plateau value from the artifact's per-pull table, for the §D-2 cross-check */
+  nearestPlateau: number | null;
+  reads: number;
+  bins: number;
+  pairs: number;
+  positiveDeltas: number;
+  falseEventBinsBinding: number;
+  dropped: boolean;
+  droppedFlags?: OffCurveFlag[];
+}
+
+export interface SoloNoiseStats {
+  name: string;
+  quietReads: number;
+  pairs: number;
+  quietBins: number;
+  byThreshold: {
+    threshold: number;
+    falseEventBins: number;
+    falseEventBinRate: number;
+    wilsonUpper95OneSided: number;
+  }[];
+  p95PositiveDelta: number;
+  maxDelta: number;
+  positiveDeltas: number[];
+  /** value (rounded 0.1) -> count over all positive quiet-span pair deltas */
+  positiveDeltaHistogram: Record<string, number>;
+  /** binding-threshold false-event bins with summed bin delta >= NS_BIG_DELTA_RAW */
+  bigDeltaBins: number;
+  /** binding-threshold false-event bins with summed bin delta inside NS_TEAM_EVENT_BAND */
+  teamBandBins: number;
+  /** summed per-bin deltas of the binding-threshold false-event bins */
+  falseEventBinDeltasBinding: number[];
+  fillLevels: {
+    n: number;
+    min: number;
+    p25: number;
+    p50: number;
+    p75: number;
+    max: number;
+    mean: number;
+    decileCounts: number[];
+  };
+  spans: NoiseSpanRow[];
+  droppedSpans: number;
+}
+
+function fillLevelStats(fills: number[]): SoloNoiseStats['fillLevels'] {
+  const s = [...fills].sort((a, b) => a - b);
+  const deciles = new Array(10).fill(0) as number[];
+  for (const f of s) {
+    deciles[Math.min(9, Math.floor(f / 10))] += 1;
+  }
+  return {
+    n: s.length,
+    min: round(s[0] ?? NaN, 2),
+    p25: round(quantile(s, 0.25), 2),
+    p50: round(quantile(s, 0.5), 2),
+    p75: round(quantile(s, 0.75), 2),
+    max: round(s[s.length - 1] ?? NaN, 2),
+    mean: round(s.reduce((a, b) => a + b, 0) / Math.max(1, s.length), 2),
+    decileCounts: deciles,
+  };
+}
+
+/**
+ * The quiet-span false-event statistic over one solo series (§D-1). A read is quiet when it is
+ * a `filling` read with a value inside a surviving span and not offCurve-flagged; a span
+ * containing ANY flagged read is DROPPED whole (§D-4 C-v) and reported. Bins are 1/30s
+ * (CLS_BIN_SEC); the reader stores t rounded to 2 decimals, so the bin index is recovered from
+ * the reconstructed frame index round(t·fps) — at 30fps one trace-frame IS one bin. Pairs obey
+ * the classification event definition: consecutive quiet reads <= CLS_MAX_EVENT_GAP_FRAMES
+ * trace-frames apart; per-bin deltas accumulate like classifyArm's eventByBin.
+ */
+export function soloQuietNoise(
+  name: string,
+  series: SoloSeries,
+  spans: [number, number][],
+  flags: OffCurveFlag[],
+  plateaus: number[] = [],
+  cuts: [number, number][] = []
+): SoloNoiseStats {
+  const eps = 1e-9;
+  const inCut = (t: number): boolean =>
+    cuts.some(([clo, chi]) => t >= clo - eps && t <= chi + eps);
+  const flaggedIdx = new Set(flags.map((f) => f.index));
+  const rows: NoiseSpanRow[] = [];
+  const allPos: number[] = [];
+  let maxDelta = -Infinity;
+  let quietReads = 0;
+  let pairs = 0;
+  const binSet = new Set<number>();
+  const falseByThr = new Map<number, Set<number>>();
+  for (const thr of NS_THRESHOLDS) {
+    falseByThr.set(thr, new Set());
+  }
+  const bindingBinDeltas = new Map<number, number>();
+  const fills: number[] = [];
+  let dropped = 0;
+  for (const [lo, hi] of spans) {
+    const inSpan = series.reads
+      .map((r, index) => ({ r, index }))
+      .filter(
+        ({ r }) =>
+          r.t >= lo - eps &&
+          r.t <= hi + eps &&
+          !inCut(r.t) &&
+          r.state === 'filling' &&
+          r.fillRaw !== null
+      );
+    const spanFlags = flags.filter((f) =>
+      inSpan.some(({ index }) => index === f.index)
+    );
+    const levels = inSpan.map(({ r }) => r.fillRaw!);
+    const levelMedian = levels.length ? median(levels) : NaN;
+    const row: NoiseSpanRow = {
+      span: [round(lo, 4), round(hi, 4)],
+      sec: round(hi - lo, 4),
+      level: round(levelMedian, 2),
+      nearestPlateau:
+        plateaus.length && levels.length
+          ? plateaus.reduce((a, b) =>
+              Math.abs(b - levelMedian) < Math.abs(a - levelMedian) ? b : a
+            )
+          : null,
+      reads: inSpan.length,
+      bins: 0,
+      pairs: 0,
+      positiveDeltas: 0,
+      falseEventBinsBinding: 0,
+      dropped: spanFlags.length > 0,
+    };
+    if (spanFlags.length > 0) {
+      row.droppedFlags = spanFlags;
+      dropped += 1;
+      rows.push(row);
+      continue;
+    }
+    const quiet = inSpan.filter(({ index }) => !flaggedIdx.has(index));
+    quietReads += quiet.length;
+    const spanBins = new Set<number>();
+    for (const { r } of quiet) {
+      const frame = Math.round(r.t * series.fps);
+      const bin = Math.floor(frame / series.fps / CLS_BIN_SEC + 1e-6);
+      spanBins.add(bin);
+      binSet.add(bin);
+      fills.push(r.fillRaw!);
+    }
+    row.bins = spanBins.size;
+    for (let k = 1; k < quiet.length; k += 1) {
+      const a = quiet[k - 1].r;
+      const b = quiet[k].r;
+      const gapFrames =
+        Math.round(b.t * series.fps) - Math.round(a.t * series.fps);
+      if (gapFrames > CLS_MAX_EVENT_GAP_FRAMES) {
+        continue;
+      }
+      pairs += 1;
+      row.pairs += 1;
+      const delta = b.fillRaw! - a.fillRaw!;
+      maxDelta = Math.max(maxDelta, delta);
+      if (delta > 0) {
+        allPos.push(round(delta, 2));
+        row.positiveDeltas += 1;
+      }
+      const frame = Math.round(b.t * series.fps);
+      const bin = Math.floor(frame / series.fps / CLS_BIN_SEC + 1e-6);
+      for (const thr of NS_THRESHOLDS) {
+        if (delta > thr) {
+          falseByThr.get(thr)!.add(bin);
+        }
+      }
+      if (delta > NS_BINDING_THRESHOLD) {
+        bindingBinDeltas.set(bin, (bindingBinDeltas.get(bin) ?? 0) + delta);
+      }
+    }
+    row.falseEventBinsBinding = [
+      ...falseByThr.get(NS_BINDING_THRESHOLD)!,
+    ].filter((b) => spanBins.has(b)).length;
+    rows.push(row);
+  }
+  allPos.sort((a, b) => a - b);
+  const hist: Record<string, number> = {};
+  for (const d of allPos) {
+    const key = (Math.round(d * 10) / 10).toFixed(1);
+    hist[key] = (hist[key] ?? 0) + 1;
+  }
+  const bindingDeltas = [...bindingBinDeltas.values()].map((d) => round(d, 2));
+  return {
+    name,
+    quietReads,
+    pairs,
+    quietBins: binSet.size,
+    byThreshold: NS_THRESHOLDS.map((thr) => {
+      const k = falseByThr.get(thr)!.size;
+      return {
+        threshold: thr,
+        falseEventBins: k,
+        falseEventBinRate: round(k / Math.max(1, binSet.size), 4),
+        wilsonUpper95OneSided: round(wilsonUpper(k, binSet.size), 4),
+      };
+    }),
+    p95PositiveDelta: round(quantile(allPos, 0.95), 3),
+    maxDelta: round(maxDelta, 3),
+    positiveDeltas: allPos,
+    positiveDeltaHistogram: hist,
+    bigDeltaBins: bindingDeltas.filter((d) => d >= NS_BIG_DELTA_RAW).length,
+    teamBandBins: bindingDeltas.filter(
+      (d) => d >= NS_TEAM_EVENT_BAND[0] && d <= NS_TEAM_EVENT_BAND[1]
+    ).length,
+    falseEventBinDeltasBinding: bindingDeltas.sort((a, b) => a - b),
+    fillLevels: fillLevelStats(fills),
+    spans: rows,
+    droppedSpans: dropped,
+  };
+}
+
+// ---- iron fill-level regime comparison (revision 4) ------------------------
+export interface IronFillLevels {
+  bundle: string;
+  usableWindowIds: number[];
+  perWindowReproduced: {
+    id: number;
+    cleanBins: { got: number; committed: number };
+    usableCleanBins: { got: number; committed: number };
+    eventBins: { got: number; committed: number };
+    saturatedBins: { got: number; committed: number };
+    match: boolean;
+  }[];
+  allMatch: boolean;
+  fillLevels: SoloNoiseStats['fillLevels'];
+}
+
+/**
+ * The fill levels of iron's usable clean bins (one value per non-saturated clean bin: the mean
+ * of its clean reads), reconstructed from the committed replay bundle + the classification
+ * artifact's recorded `--reflag` offCurve additions, replicating classifyArm's window/bin logic.
+ * Self-validating: the per-window (cleanBins, usableCleanBins, eventBins, saturatedBins) must
+ * reproduce the committed artifact's values, else the extraction is disowned.
+ */
+export function ironUsableCleanBinFills(
+  bundlePath: string,
+  offCurveIndices: number[],
+  fixturePath: string,
+  committedWindows: {
+    id: number;
+    usable: boolean;
+    cleanBins: number;
+    usableCleanBins: number;
+    eventBins: number;
+    saturatedBins: number;
+  }[],
+  eMin: number
+): IronFillLevels {
+  const bundle = JSON.parse(readFileSync(bundlePath, 'utf8')) as {
+    trace: FillTrace;
+  };
+  const trace = bundle.trace;
+  for (const i of offCurveIndices) {
+    if (!trace.reads[i].flags.includes('offCurve')) {
+      trace.reads[i].flags.push('offCurve');
+    }
+  }
+  const fx = JSON.parse(readFileSync(fixturePath, 'utf8')) as TempoFixture;
+  const usable = committedWindows.filter((w) => w.usable);
+  const perWindowReproduced: IronFillLevels['perWindowReproduced'] = [];
+  const fills: number[] = [];
+  for (const rw of refillWindows(fx)) {
+    const committed = usable.find((w) => w.id === rw.id);
+    if (!committed) {
+      continue;
+    }
+    const inWin = trace.reads.filter(
+      (r) => r.t >= rw.fbEnd && r.t <= rw.stage1
+    );
+    const full = inWin.find((r) => r.state === 'full');
+    const firstFilling = inWin.find((r) => r.state === 'filling');
+    if (!full || !firstFilling) {
+      continue;
+    }
+    const barPaint = firstFilling.t;
+    const dur = full.t - barPaint;
+    const nBins = Math.ceil(dur / CLS_BIN_SEC - 1e-9);
+    const binOf = (t: number): number =>
+      Math.min(
+        nBins - 1,
+        Math.max(0, Math.floor((t - barPaint) / CLS_BIN_SEC))
+      );
+    const winReads = inWin.filter((r) => r.t >= barPaint && r.t < full.t);
+    const clean = winReads.filter(isClean);
+    const cleanBinSet = new Set<number>();
+    const satBinSet = new Set<number>();
+    const byBin = new Map<number, number[]>();
+    for (const r of clean) {
+      const b = binOf(r.t);
+      cleanBinSet.add(b);
+      if (r.fillRaw! > CLS_SAT_PCT) {
+        satBinSet.add(b);
+      }
+      if (!byBin.has(b)) {
+        byBin.set(b, []);
+      }
+      byBin.get(b)!.push(r.fillRaw!);
+    }
+    const eventByBin = new Map<number, number>();
+    for (let k = 1; k < clean.length; k += 1) {
+      const a = clean[k - 1];
+      const b = clean[k];
+      const delta = b.fillRaw! - a.fillRaw!;
+      const gapFrames = Math.round((b.t - a.t) * trace.fps);
+      if (gapFrames > CLS_MAX_EVENT_GAP_FRAMES) {
+        continue;
+      }
+      const bin = binOf(b.t);
+      if (delta > eMin && !satBinSet.has(bin)) {
+        eventByBin.set(bin, (eventByBin.get(bin) ?? 0) + delta);
+      }
+    }
+    const row = {
+      id: rw.id,
+      cleanBins: { got: cleanBinSet.size, committed: committed.cleanBins },
+      usableCleanBins: {
+        got: cleanBinSet.size - satBinSet.size,
+        committed: committed.usableCleanBins,
+      },
+      eventBins: { got: eventByBin.size, committed: committed.eventBins },
+      saturatedBins: {
+        got: satBinSet.size,
+        committed: committed.saturatedBins,
+      },
+      match: false,
+    };
+    row.match =
+      row.cleanBins.got === row.cleanBins.committed &&
+      row.usableCleanBins.got === row.usableCleanBins.committed &&
+      row.eventBins.got === row.eventBins.committed &&
+      row.saturatedBins.got === row.saturatedBins.committed;
+    perWindowReproduced.push(row);
+    for (const [b, vals] of byBin) {
+      if (!satBinSet.has(b)) {
+        fills.push(vals.reduce((a, v) => a + v, 0) / vals.length);
+      }
+    }
+  }
+  return {
+    bundle: bundlePath,
+    usableWindowIds: usable.map((w) => w.id),
+    perWindowReproduced,
+    allMatch:
+      perWindowReproduced.length === usable.length &&
+      perWindowReproduced.every((w) => w.match),
+    fillLevels: fillLevelStats(fills),
+  };
+}
+
+// ---- swha descriptives (secondary basis, §D-3) -----------------------------
+export interface SwhaDescriptives {
+  windowStartSec: number;
+  firstPartialFill: { t: number; fillRaw: number } | null;
+  firstFullInstant: number | null;
+  steps: { t: number; from: number; to: number; delta: number }[];
+  stepGapsSec: number[];
+  /** offCurve pass over the WINDOWED (t >= windowStart) sub-series — feeds the step table */
+  offCurveFlags: OffCurveFlag[];
+  /**
+   * offCurve pass over the FULL series, reported as an observation: the pre-window ~7.8s of
+   * unflagged "filling 100.0" render garbage forms a longer plateau than the genuine one-cycle
+   * climb, so the full-series dominant chain condemns the real fill cycle instead. The packet's
+   * §D-3 window (t >= 7.83) is what makes the pass meaningful on this clip.
+   */
+  offCurveFlagsFullSeries: { count: number; flaggedGenuineCycleReads: number };
+  positiveDeltasAll: number[];
+}
+
+/** Descriptive-only read of the swha solo trace inside t >= windowStart (packet §D-3). */
+export function swhaDescriptives(
+  series: SoloSeries,
+  windowStart = 7.83
+): SwhaDescriptives {
+  const fullFlags = flagOffCurveSolo(series);
+  const win0 = series.reads.filter((r) => r.t >= windowStart - 1e-9);
+  const winSeries: SoloSeries = { fps: series.fps, reads: win0 };
+  const flags = flagOffCurveSolo(winSeries);
+  const flaggedIdx = new Set(flags.map((f) => f.index));
+  const win = winSeries.reads.map((r, index) => ({ r, index }));
+  const firstPartial =
+    win.find(
+      ({ r }) =>
+        r.state === 'filling' &&
+        r.fillRaw !== null &&
+        r.fillRaw > 0 &&
+        r.fillRaw < 100
+    ) ?? null;
+  const firstFull = win.find(({ r }) => r.state === 'full') ?? null;
+  const steps: SwhaDescriptives['steps'] = [];
+  const pos: number[] = [];
+  const clean = win.filter(
+    ({ r, index }) =>
+      r.state === 'filling' && r.fillRaw !== null && !flaggedIdx.has(index)
+  );
+  for (let k = 1; k < clean.length; k += 1) {
+    const a = clean[k - 1].r;
+    const b = clean[k].r;
+    const gapFrames =
+      Math.round(b.t * series.fps) - Math.round(a.t * series.fps);
+    if (gapFrames > CLS_MAX_EVENT_GAP_FRAMES) {
+      continue;
+    }
+    const delta = b.fillRaw! - a.fillRaw!;
+    if (delta > 0) {
+      pos.push(round(delta, 2));
+    }
+    if (delta > NS_BINDING_THRESHOLD) {
+      steps.push({
+        t: b.t,
+        from: a.fillRaw!,
+        to: b.fillRaw!,
+        delta: round(delta, 2),
+      });
+    }
+  }
+  return {
+    windowStartSec: windowStart,
+    firstPartialFill: firstPartial
+      ? { t: firstPartial.r.t, fillRaw: firstPartial.r.fillRaw! }
+      : null,
+    firstFullInstant: firstFull ? firstFull.r.t : null,
+    steps,
+    stepGapsSec: steps.slice(1).map((s, i) => round(s.t - steps[i].t, 2)),
+    offCurveFlags: flags,
+    offCurveFlagsFullSeries: {
+      count: fullFlags.length,
+      flaggedGenuineCycleReads: fullFlags.filter(
+        (f) => f.t >= windowStart - 1e-9
+      ).length,
+    },
+    positiveDeltasAll: pos.sort((a, b) => a - b),
+  };
+}
+
+// ---- the full deterministic run (pinned by scripts/tests/probe/noise-solo.test.ts) ----
+export const NS_ANIS_ARTIFACT =
+  'docs/probe-data/anis-star-solo-a3-gauge-reread.json';
+export const NS_CLASSIFICATION_ARTIFACT =
+  'docs/probe-data/fill-trace-habc-classification.json';
+export const NS_OPENING_ARTIFACTS = [
+  'docs/probe-data/fill-trace-opening-u8-g-iron-sweep.json',
+  'docs/probe-data/fill-trace-opening-probe-u7-t5-wind-weak.json',
+  'docs/probe-data/fill-trace-opening-u8-i-misc-b3s.json',
+];
+
+interface AnisArtifact {
+  perPullTable: {
+    pull: number;
+    firedAtSec: number;
+    before: number | null;
+    after: number | null;
+  }[];
+  series30fps: { fps: number; reads: SoloRead[] };
+}
+
+interface ClassificationArtifact {
+  params: { eMinFinal: number };
+  controls: { c4NoiseFloor: QuietNoiseResult };
+  reflag: Record<
+    string,
+    { bundle?: string; newOffCurveReadIndices?: number[] }
+  >;
+  arms: Record<
+    string,
+    {
+      fixture: string;
+      windows: {
+        id: number;
+        usable: boolean;
+        cleanBins: number;
+        usableCleanBins: number;
+        eventBins: number;
+        saturatedBins: number;
+      }[];
+      pooled: {
+        eventBins: number;
+        usableCleanBins: number;
+        sumRealDurationSec: number;
+        realEventBinsPerSec: number;
+        bridgedMassTotal: number;
+        medianEventBinDelta: number;
+        eventBinDeltaQuantiles: Record<string, number>;
+      };
+      branch: { ceilingBinsPerSec: number; ceilingThreshold: number };
+    }
+  >;
+}
+
+/**
+ * The complete deterministic §D run: primary-basis quiet statistics (base guards, C-iii ×1.5,
+ * and the 60fps-frame-unit sensitivity), swha descriptives, the iron fill-level regime
+ * comparison (revision 4), the MAR quantification (revision 2), and the C-i replay of the
+ * original drain-hold C4 from the committed opening artifacts. Everything here recomputes from
+ * committed inputs; nothing is hand-derived.
+ */
+export function noiseSoloRun(opts: {
+  anisPath?: string;
+  classificationPath?: string;
+  openingPaths?: string[];
+  swhaTracePath?: string;
+}): Record<string, unknown> {
+  const anisPath = opts.anisPath ?? NS_ANIS_ARTIFACT;
+  const clsPath = opts.classificationPath ?? NS_CLASSIFICATION_ARTIFACT;
+  const anis = JSON.parse(readFileSync(anisPath, 'utf8')) as AnisArtifact;
+  const cls = JSON.parse(
+    readFileSync(clsPath, 'utf8')
+  ) as ClassificationArtifact;
+
+  // ---- primary basis: anis-star series30fps ----
+  const series: SoloSeries = {
+    fps: anis.series30fps.fps,
+    reads: anis.series30fps.reads,
+  };
+  const fires = anis.perPullTable.map((p) => ({
+    pull: p.pull,
+    fireSec: p.firedAtSec,
+    fireField: `perPullTable[pull=${p.pull}].firedAtSec`,
+  }));
+  const plateaus = [
+    ...new Set(
+      anis.perPullTable.flatMap((p) =>
+        [p.before, p.after].filter((x): x is number => x !== null && x < 100)
+      )
+    ),
+  ].sort((a, b) => a - b);
+  const flags = flagOffCurveSolo(series);
+  const buildCuts = (framesFps: number, scale: number): [number, number][] => [
+    ...NS_PRIMARY_EXCLUSIONS,
+    ...soloGuards(fires, framesFps, scale).map(
+      (g) => [g.lo, g.hi] as [number, number]
+    ),
+  ];
+  const runVariant = (
+    name: string,
+    framesFps: number,
+    scale: number
+  ): SoloNoiseStats => {
+    const cuts = buildCuts(framesFps, scale);
+    return soloQuietNoise(
+      name,
+      series,
+      subtractIntervals(NS_PRIMARY_WINDOW, cuts),
+      flags,
+      plateaus,
+      cuts
+    );
+  };
+  const anisBase = runVariant(
+    'anis-star solo (A3 reread, 30fps)',
+    series.fps,
+    1
+  );
+  const anisGuard15 = runVariant(
+    'anis-star solo — C-iii guards ×1.5',
+    series.fps,
+    1.5
+  );
+  const anis60fUnit = runVariant(
+    'anis-star solo — sensitivity: guard frame margins read as 60fps frames',
+    60,
+    1
+  );
+
+  // ---- secondary basis: swha descriptives ----
+  let swha: SwhaDescriptives | null = null;
+  if (opts.swhaTracePath) {
+    const doc = JSON.parse(readFileSync(opts.swhaTracePath, 'utf8')) as
+      | { trace: { fps: number; reads: SoloRead[] } }
+      | { fps: number; reads: SoloRead[] };
+    const tr = 'trace' in doc ? doc.trace : doc;
+    swha = swhaDescriptives({ fps: tr.fps, reads: tr.reads });
+  }
+
+  // ---- C-i: exact replay of the original drain-hold C4 ----
+  const openingPaths = opts.openingPaths ?? NS_OPENING_ARTIFACTS;
+  const sources = openingPaths.map((p) => {
+    const doc = JSON.parse(readFileSync(p, 'utf8')) as {
+      result: { comp: string };
+      diagHold: { window: number; reads: DiagRead[] }[];
+    };
+    return { name: doc.result.comp, diagHold: doc.diagHold };
+  });
+  const cIrecomputed = quietNoiseCheck(sources, cls.params.eMinFinal);
+  const cIcommitted = cls.controls.c4NoiseFloor;
+  const cIexact = JSON.stringify(cIrecomputed) === JSON.stringify(cIcommitted);
+
+  // ---- iron fill-level regime comparison (revision 4) ----
+  const ironArm = cls.arms['iron sweep (run G)'];
+  const iron = ironUsableCleanBinFills(
+    cls.reflag.iron.bundle!,
+    cls.reflag.iron.newOffCurveReadIndices!,
+    ironArm.fixture,
+    ironArm.windows,
+    cls.params.eMinFinal
+  );
+
+  // ---- MAR quantification (revision 2) ----
+  const p = ironArm.pooled;
+  const cleanBinTimeSec = round(p.usableCleanBins * CLS_BIN_SEC, 4);
+  const bridgedEvents = round(p.bridgedMassTotal / p.medianEventBinDelta, 2);
+  const mar = {
+    eventBins: p.eventBins,
+    usableCleanBins: p.usableCleanBins,
+    cleanBinTimeSec,
+    fullWindowDurationSec: p.sumRealDurationSec,
+    ratePerSecCleanBinTime: round(p.eventBins / cleanBinTimeSec, 4),
+    ratePerSecFullDuration: round(p.eventBins / p.sumRealDurationSec, 4),
+    ceilingBinsPerSec: ironArm.branch.ceilingBinsPerSec,
+    ceilingThreshold: ironArm.branch.ceilingThreshold,
+    bridgedMassTotal: p.bridgedMassTotal,
+    medianTeamEventBinDelta: p.medianEventBinDelta,
+    bridgedMassDerivedEventEstimate: bridgedEvents,
+    bridgedEventRateOverFullDuration: round(
+      bridgedEvents / p.sumRealDurationSec,
+      4
+    ),
+    ratePerSecFullDurationPlusBridgedEstimate: round(
+      (p.eventBins + bridgedEvents) / p.sumRealDurationSec,
+      4
+    ),
+  };
+
+  // ---- BQ floors, mechanically ----
+  const pooledQuietBins = anisBase.quietBins; // swha is descriptive-only: no pooled contribution
+  const bq = {
+    bq1: {
+      primaryQuietBins: anisBase.quietBins,
+      primaryFloor: NS_BQ1_PRIMARY_MIN_BINS,
+      primaryMeetsFloor: anisBase.quietBins >= NS_BQ1_PRIMARY_MIN_BINS,
+      pooledQuietBins,
+      pooledFloor: NS_BQ1_POOLED_MIN_BINS,
+      pooledMeetsFloor: pooledQuietBins >= NS_BQ1_POOLED_MIN_BINS,
+    },
+    bq2: { cIexactReplay: cIexact },
+    bq4: {
+      qualifyingBasesEnteringPooledF: 1,
+      note: 'BQ4 needs two qualifying bases above 50 quiet bins; only the primary basis enters pooled f, so the clause has nothing to compare.',
+    },
+  };
+
+  return {
+    params: {
+      binSec: round(CLS_BIN_SEC, 6),
+      maxEventGapFrames: CLS_MAX_EVENT_GAP_FRAMES,
+      thresholds: [...NS_THRESHOLDS],
+      bindingThreshold: NS_BINDING_THRESHOLD,
+      offCurveTolerance: NS_OFFCURVE_TOL,
+      wilsonZ: NS_WILSON_Z,
+      guard: {
+        preFrames: NS_GUARD_PRE_FRAMES,
+        latencySec: NS_GUARD_LATENCY_SEC,
+        postFrames: NS_GUARD_POST_FRAMES,
+        widenedPulls: [...NS_WIDENED_PULLS],
+        frameUnit:
+          "trace-frames at the series fps (30) — the packet's frame unit for this series " +
+          '(§D-1 "max gap 2 trace-frames"); the 60fps-frame reading is reported as a sensitivity',
+      },
+      primaryWindow: NS_PRIMARY_WINDOW,
+      primaryExclusions: NS_PRIMARY_EXCLUSIONS,
+      fireInstants: soloGuards(fires, series.fps, 1),
+      bigDeltaRaw: NS_BIG_DELTA_RAW,
+      teamEventBand: NS_TEAM_EVENT_BAND,
+    },
+    offCurveFlags: {
+      count: flags.length,
+      insidePrimaryWindow: flags.filter(
+        (f) =>
+          f.t >= NS_PRIMARY_WINDOW[0] - 1e-9 &&
+          f.t <= NS_PRIMARY_WINDOW[1] + 1e-9
+      ),
+      all: flags,
+    },
+    primary: anisBase,
+    controls: {
+      cI: {
+        recomputed: cIrecomputed,
+        committed: cIcommitted,
+        exactMatch: cIexact,
+      },
+      cIiiGuards15: anisGuard15,
+      sensitivityGuard60fpsFrames: anis60fUnit,
+    },
+    swha,
+    ironFillLevelComparison: iron,
+    mar,
+    basisClauses: bq,
+    teamEventSizeProfile: {
+      source: 'iron sweep (run G) pooled eventBinDeltaQuantiles (committed)',
+      quantiles: p.eventBinDeltaQuantiles,
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
 function arg(name: string): string | undefined {
@@ -2626,8 +3560,51 @@ function classifyCli(): void {
   process.stdout.write(`${JSON.stringify(res, null, 1)}\n`);
 }
 
+function noiseSoloCli(): void {
+  const result = noiseSoloRun({
+    anisPath: arg('anis'),
+    classificationPath: arg('classification'),
+    openingPaths: arg('opening')?.split(','),
+    swhaTracePath: arg('swha'),
+  });
+  const artifact = arg('artifact');
+  if (artifact) {
+    const doc = {
+      _note:
+        'C4 same-regime noise-floor re-run (pre-op packet ' +
+        'docs/handoffs/2026-08-16-c4-noise-floor-preop-packet.md): the reader false-event rate ' +
+        'at the classification event definition, measured on ground-truth-quiet spans of the ' +
+        'committed anis-star (Anis: Star) solo series, with the swha ' +
+        '(snow-white-heavy-arms) solo trace as the descriptive-only secondary basis. ' +
+        'MEASUREMENT ONLY — parameters, per-span tables, per-source + pooled statistics, ' +
+        'control results, distributions. No verdict; decision-rule application belongs to the ' +
+        '/scientific-method driver. Replayed by scripts/tests/probe/noise-solo.test.ts.',
+      packet: 'docs/handoffs/2026-08-16-c4-noise-floor-preop-packet.md',
+      commands: {
+        run:
+          'npx tsx scripts/probe/fill-trace-compare.ts noise-solo ' +
+          `--swha ${arg('swha') ?? '<swha trace>'} --artifact <this file>`,
+        swhaFrames:
+          'ffmpeg -v error -i "docs/probes/solo/swha-solo.mov" -vf fps=30 <dir>/%05d.png',
+        swhaReader:
+          'scripts/probe/.venv/bin/python scripts/probe/gauge-fill.py --frames <dir> --fps 30 ' +
+          '--bar 489:501:2474:2612 --out <trace>',
+      },
+      swhaPinning: arg('swha-note') ?? null,
+      result,
+    };
+    writeFileSync(artifact, `${JSON.stringify(doc, null, 1)}\n`);
+    process.stdout.write(`wrote ${artifact}\n`);
+  }
+  process.stdout.write(`${JSON.stringify(result, null, 1)}\n`);
+}
+
 function main(): void {
   const mode = process.argv[2];
+  if (mode === 'noise-solo') {
+    noiseSoloCli();
+    return;
+  }
   if (mode === 'classify') {
     classifyCli();
     return;
