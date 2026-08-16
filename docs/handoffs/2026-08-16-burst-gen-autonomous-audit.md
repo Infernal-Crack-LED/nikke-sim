@@ -121,9 +121,14 @@ Ranked by how much autonomous work can still be done:
 
 ## Recommended next unblocked actions
 
-1. **Land the per-sub-hit `gaugeHits` enactment** if/when owner approval is given. It is the
-   only candidate with a measured premise, a bounded blast radius (3 units), and a clear
-   verification gate (N5 FB count 11 → 12).
+1. ~~**Land the per-sub-hit `gaugeHits` enactment**~~ **LANDED 2026-08-15/16** (branch
+   `engine/per-subhit-gauge`, merged to local main; cross-family review fixes in `4c823fd5`).
+   **Post-landing matrix (2026-08-16 re-run): N5 snowwhite-HA fire now reads sim 13 vs
+   measured 12 — the predicted 11 → 12 OVERSHOT by one.** The 13th Full Burst opens at
+   179.1s, 0.9s before the buzzer, so this is a buzzer-margin case (a slightly slower real
+   fill loses that FB entirely), not clear evidence of over-credit — but it is the board's
+   only sim-ABOVE-measured FB count and worth watching in any later `snow-white-heavy-arms`
+   re-tune (QUEUE item 5). N2 modernia wind moved sim 8 → 9 (still under measured ≥10).
 2. **Re-run the H-A/H-B/H-C classification with a symmetric-E_min statistic** as its own
    pre-registered pass. T5's O/S were structurally uninterpretable under the one-sided
    threshold; a symmetric statistic would let both comps speak.
@@ -131,9 +136,9 @@ Ranked by how much autonomous work can still be done:
    whether iron sweep's H-C candidate re-stamps.
 4. **Source-hunt the excess event instants** in the iron-sweep fill trace: clustered events
    at visual causes support H-C; scattered events refute it.
-5. **Update the gauge-source census** if the per-sub-hit enactment lands — the census should
-   explicitly note that `flatDamage` emission can be `skillGauge-per-sub-hit` when `gaugeHits`
-   is present.
+5. ~~**Update the gauge-source census**~~ **DONE 2026-08-16** — `GAUGE_KIND_CENSUS.flatDamage`
+   (`scripts/battery/fb-count-matrix.ts`) now states the `gaugeHits: N` per-sub-hit credit +
+   carriers; all census sim.ts line anchors re-verified post-landing.
 
 ## What was NOT done (requires owner input or new footage)
 

@@ -784,14 +784,14 @@ export interface KindCensusRow {
 }
 
 // Exhaustive over EffectDef['kind'] — a new kind in types.ts breaks this literal at
-// typecheck (the LOUD half of the census). Line numbers verified 2026-08-14.
+// typecheck (the LOUD half of the census). Line numbers verified 2026-08-16.
 export const GAUGE_KIND_CENSUS: Record<EffectDef['kind'], KindCensusRow> = {
   flatDamage: {
     impact: true,
     emission: 'skillGauge-per-impact',
     ruling: 'measured',
     basis:
-      'sim.ts:2693 (instant) + sim.ts:4008 (delaySec landing); maiden-ice-rose rider anchor — 12.55%/pull = 910 weapon + 364 flat rider (burst-gauge.md §6); owner D4 2026-08-10',
+      'sim.ts:2761 (instant) + sim.ts:4079 (delaySec landing); when `gaugeHits: N` is present the effect credits skillGauge N times per impact — per-SUB-HIT credit for sequential volleys while damage stays one aggregated instance (measured swha-solo.mov, ENACTED 2026-08-15; carriers snow-white-heavy-arms 5/10, eve 3, little-mermaid 10); maiden-ice-rose rider anchor — 12.55%/pull = 910 weapon + 364 flat rider (burst-gauge.md §6); owner D4 2026-08-10',
   },
   hitRepeat: {
     impact: true,
