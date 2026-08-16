@@ -55,7 +55,15 @@
 // liter as a second Burst I. Deterministic (no seed); event-log over totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import { deriveWeaponFields } from '../../../src/data/weapon-fields.js';
+import { skillImpactGauge } from '../../battery/fb-count-matrix.js';
+import {
+  data,
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const WINDOW = 10 * FPS; // 10 sec buff/dot windows
@@ -81,7 +89,7 @@ function run(slugs: readonly string[], overrides: Record<string, any> = {}) {
     overrides,
     cfg: { onEvent: (e) => events.push(e) },
   });
-  return { events, totals: totals(res) };
+  return { events, totals: totals(res), res };
 }
 
 // ---- counterfactual patches (nearest-wrong model each PIN must discriminate against) ----------
@@ -133,6 +141,19 @@ const noCdr = withPatchedOverride('anis-star', (ov) => {
   }
 });
 
+/** G1/G2 counterfactual: her Shooting Stars burst dot removed entirely. */
+const noDot = withPatchedOverride('anis-star', (ov) => {
+  let removed = 0;
+  for (const b of ov.burst) {
+    const before = b.effects.length;
+    b.effects = b.effects.filter((x: any) => x.kind !== 'dot');
+    removed += before - b.effects.length;
+  }
+  if (removed === 0) {
+    throw new Error('anis-star burst dot block missing — fixture stale');
+  }
+});
+
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run(NOB1);
 const noMOS = run(NOB1, { 'anis-star': noMyOwnStar });
@@ -140,6 +161,17 @@ const dblCaster = run(NOB1, { 'anis-star': doubleCaster });
 const halfDotRun = run(NOB1, { 'anis-star': halfDot });
 const noCdrRun = run(NOB1, { 'anis-star': noCdr });
 const hasB1 = run(HASB1);
+const noDotRun = run(NOB1, { 'anis-star': noDot });
+/**
+ * G2 stage-2-stall fixture: NO Burst II unit (anis-star B1 / ada B3 / helm B3), so every
+ * chain her Burst-I cast opens stalls at stage 2 for the full CHAIN_TIMEOUT (600f) and
+ * collapses without a Full Burst. Her 10s dot (40 ticks × 15f) spans exactly that window:
+ * ticks 1-39 land under the chain lock, and ONLY the 40th (cast + 600f) lands after the
+ * collapse — one escaped tick per cast, whose credit G2 pins.
+ */
+const STALL = ['anis-star', 'ada', 'helm'] as const;
+const stallBase = run(STALL);
+const stallNoDot = run(STALL, { 'anis-star': noDot });
 
 // ---- readers ----------------------------------------------------------------------------------
 const dmg = (evs: SimEvent[]) =>
@@ -403,6 +435,67 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
             .length
         ).toBeGreaterThan(0);
       }
+    });
+  });
+
+  describe('G — burst-DoT gauge emission (280 target-base/impact, divisor 1, lock-swallowed)', () => {
+    // Her gauge model is the engine's GENERAL one: each Shooting Stars dot tick calls
+    // skillGauge at her full target-base credit (280 energy = 2.8 gauge — gauge-per-shot.json's
+    // ⚑ battery-3-measured value, which reconciles byte-exactly with the raw shot row's
+    // target_burst_energy_pershot 28000 ÷ 100), and the addGauge chain/FB lock swallows the
+    // ticks wherever the game's own lock would. The DATAMINED input here is hitsPerShot =
+    // shot_count × muzzle_count = 1, so the skillGauge divisor leaves the credit whole.
+
+    it('G1 — dot ticks are gauge-INERT in a bursting comp: the lock swallows all 40 (delta exactly 0)', () => {
+      // Removing the dot is LIVE (her damage drops) yet her generated gauge is unchanged
+      // to the last bit: in the NOB1 comp every tick of her 10s dot lands inside her own
+      // cast's chain + Full Burst, where addGauge is locked.
+      expect(base.totals['anis-star']).toBeGreaterThan(
+        noDotRun.totals['anis-star']
+      );
+      expect(unitOf(base.res, 'anis-star').gaugeGenerated).toBe(
+        unitOf(noDotRun.res, 'anis-star').gaugeGenerated
+      );
+    });
+
+    it('G2 — stage-2 stall: exactly ONE escaped tick per cast, credited 2.8 × 1.06 (her own aura)', () => {
+      // The lock coverage of the 40th tick (cast + 600f) rests on the numerical coincidence
+      // dot-duration (10s) == CHAIN_TIMEOUT (600f). This fixture makes the coincidence
+      // load-bearing and observable: with no Burst II the chain stalls at stage 2 for the
+      // full timeout, so per cast exactly one tick (the 40th) lands unlocked. Its credit is
+      // pinned at the full per-impact value — 2.8 gauge × 1.06 burstGenPct (her S1 aura).
+      // If a timing change breaks the coincidence, the escaped-tick count moves and this
+      // trips instead of silently leaking.
+      const casts = anisBursts(stallBase.events).length;
+      expect(casts).toBeGreaterThan(0);
+      expect(stallBase.res.fullBursts).toBe(0); // the stall is real: no FB ever fires
+      const delta =
+        unitOf(stallBase.res, 'anis-star').gaugeGenerated -
+        unitOf(stallNoDot.res, 'anis-star').gaugeGenerated;
+      expect(delta).toBeCloseTo(casts * 2.8 * 1.06, 6);
+    });
+
+    it('G3 — characters.json row is the deterministic deriveWeaponFields output (R1: sync-stable)', () => {
+      const c = data.characters['anis-star'] as any;
+      const derived = deriveWeaponFields(
+        'anis-star',
+        c.role.weapon.shot_detail
+      );
+      expect(derived.hitsPerShot).toBe(1); // shot_count 1 × muzzle_count 1 — no carve-out
+      expect(derived.burstGaugePerShot).toBeCloseTo(1.4, 6); // (14000/10000) × shot_count 1
+      expect(c.hitsPerShot).toBe(derived.hitsPerShot);
+      expect(c.burstGaugePerShot).toBeCloseTo(derived.burstGaugePerShot, 6);
+      expect(c.normalAttackMultiplier).toBeCloseTo(
+        derived.normalAttackMultiplier,
+        6
+      );
+      expect(c.ammo).toBe(derived.ammo);
+      expect(c.chargeFrames).toBe(derived.chargeFrames);
+      expect(c.chargeMultiplier).toBeCloseTo(derived.chargeMultiplier, 6);
+    });
+
+    it('G4 — skillGauge per-impact credit is the full 2.8 target-base (divisor 1)', () => {
+      expect(skillImpactGauge('anis-star')).toBeCloseTo(2.8, 6);
     });
   });
 });

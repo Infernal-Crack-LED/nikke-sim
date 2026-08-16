@@ -45,9 +45,9 @@ affects only the first three and still does **not** move the two filmed shortfal
 - `hitRepeat` has one carrier (`emilia`) and is gated to weapon-hit frames; she seats no
   off-count comp.
 - `extraHitDamagePct` carriers (`modernia`, `nayuta`, `neon-blue-ocean`, `neon-vision-eye`)
-  already emit `skillGauge` per pull (U28 landed 2026-08-13). The U28 residual — whether the
-  `skillGauge` divisor should be 1 for `hitsPerShot > 1` — remains open on `anis-star` and
-  `modernia`.
+  already emit `skillGauge` per pull (U28 landed 2026-08-13). The U28 divisor residual is
+  ENACTED for `anis-star` (2026-08-16, DECISIONS: carve-out removed, hitsPerShot 1, credit
+  2.8/impact) and remains open only for genuine multi-hit units (`modernia` MG ÷2, SG ÷10).
 - The gauge-source census (`GAUGE_KIND_CENSUS`) is exhaustive at the effect-kind level.
   The gap is not a missing _kind_; it is missing _credit multiplicity within_ `flatDamage`
   (the SWHA finding) or an entirely unmodeled source class.
@@ -100,15 +100,17 @@ Ranked by how much autonomous work can still be done:
    - Implementation plan exists: add `gaugeHits` field, fire `skillGauge` that many times
      without expanding damage instances.
 
-2. **`anis-star` `skillGauge` divisor (U28 residual, footage-gated).**
-   - The 2026-08-15 solo re-read returned CANNOT-MEASURE at n≥8.
-   - If the rider credited full `targetPerTrigger` instead of `÷hitsPerShot`, T5 would gain
-     ~58.8 gauge over the fight (~12% of its cycle gap).
-   - Needs a clean ≥60 s solo `anis-star` re-record — HANDED OFF 2026-08-16 to another session.
-   - The `modernia` half is CLOSED 2026-08-16: her Destroy Mode window sits entirely inside the
-     FB gauge lock (coincident with her own `fullBurstExtend`-extended Full Burst), so it can
-     never fall inside the FB-end→chain-start generating window — a bar recording there is
-     structurally uninformative, not just unmeasured.
+2. ~~**`anis-star` / `modernia` `skillGauge` divisor (U28 residual)**~~ — both halves resolved
+   2026-08-16:
+   - **`anis-star` half ENACTED** (DECISIONS 2026-08-16): carve-out removed, rider credits full
+     280, T5 gained ~58.8 gauge/fight (11/12-mix → 12×100%, shortfall 26.0 → 22.7 gauge/s —
+     narrowed, open). Solo #2 re-record (2026-08-16, 2-of-2 ACCEPT HIGH) returned
+     INCONCLUSIVE-LOG on the magnitude question: the ≥2-window counting rule cannot fire
+     (anomalous-magnitude credits violate the steady premise; W3 doubly-consistent). No
+     hypothesis discriminated. Three anomalous credits (+15.2–16.0%) filed descriptively.
+   - **`modernia` half CLOSED 2026-08-16**: her Destroy Mode window sits entirely inside the
+     FB gauge lock (coincident with her own `fullBurstExtend`-extended Full Burst), so a bar
+     recording there is structurally uninformative.
 
 3. ~~Team-context charge / fire cadence differs from solo (footage-gated).~~ **CLOSED 2026-08-16,
    owner ruling (method not stated): no game mechanism grants extra burst-gauge credit for being

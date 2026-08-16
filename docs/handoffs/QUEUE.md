@@ -216,12 +216,24 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `sakura-suzuhara`/`signal` (see the `applicationGauge` ⚑ comment) — worth a datamine
      re-pull if any of them ever seats a graded comp. (2)
      per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
-     the engine's divisor is CORROBORATED for genuine multi-muzzle units, and `anis-star`'s bite
-     is a synthetic carve-out hack (`weapon-fields.ts`) absorbing her burst-DoT over-emission →
-     **the enactable is a BUNDLED `anis-star` burst-DoT-gauge re-model + carve-out removal
-     (gated: pipeline or owner mechanic ruling + code-review), verified on PA MiKa's pinned 11 FB
-     AND T5** — this replaces the divisor half of the `anis-star`/`modernia` footage asks; the
-     noise-floor half of the `anis-star` re-record ask stands.
+     the engine's divisor is CORROBORATED for genuine multi-muzzle units. ~~The bundled
+     `anis-star` carve-out removal~~ **ENACTED 2026-08-16** via `/scientific-method` (2-of-2
+     ACCEPT HIGH; DECISIONS 2026-08-16, branch `anis-star-gauge-divisor`, PR pending): every
+     enabled measured FB pin byte-identical, T5 moves 11/12→12 toward its measured 13. The
+     noise-floor half of the `anis-star` re-record ask STANDS (and the solo magnitude residual
+     now reads 10.39 vs the ≥ ~10.96 exclusion bound — same footage ask resolves it).
+     **NEW follow-up (fit-exposure re-tune):** PA MiKa's supports were fit to the old
+     halved-gauge burst timing and got hotter on the board (`mint` → 1.067, `prika` 1.074 →
+     1.112, `alice` 1.099 → 1.114, `red-hood` +2.7%) while `anis-star`/`cinderella` improved —
+     re-tune those overrides against the corrected rotation timing per the rotation-fix
+     doctrine (never re-fudge the divisor).
+     **NEW follow-up (implementation-review FOLLOW-UP 6):** the rider channel that drives every
+     board delta (`anis-star`'s unlocked `shotFired` flatDamage credit, now 2.8/impact) is
+     pinned only via `skillImpactGauge()` — a MIRROR of the sim.ts formula, so it stays green
+     if the engine's divisor changed underneath. Add an engine-level G5 spec reading the
+     per-pull generation off `gaugeGenerated` through the engine in a fixture whose unlocked
+     windows are controlled (the naive `gaugeGenerated / pulls` conflates locked pulls — needs
+     a window-aware shape; that subtlety is why it was filed, not rushed).
    - **Residue ledger (findings-only):** ~~`snow-white-heavy-arms` U11c~~ **MEASURED 2026-08-15,
      PROMOTED TO ITEM 8** (volley generates per HIT; per-sub-hit gauge enactment planned there).
      `ein` U8 0.7× team residual (N2); stage1→2 real 33f/32f vs modeled 30f (runs AGAINST the gap).

@@ -25,13 +25,12 @@
 //     rapi-red-hood (storedHit, N1), whose releases are FB-locked by construction — her 7 unlocked
 //     skill impacts are her flatDamage ATTACH rider, not releases. stackedNuke's sole carrier
 //     (maiden-ice-rose) and hitRepeat's (emilia) seat none of the nine.
-//   * DIVISOR EXPOSURE (the U28-residual magnitude question): anis-star (RL, hitsPerShot 2) on
-//     four comps and modernia (MG, hitsPerShot 2) on N2 are the ONLY carriers with unlocked skill
-//     impacts — every SG carrier's skill hits land exclusively inside the lock (zero exposure).
-//     anis-star's existing labeled fixture — battery 3 A3 solo, ~10.7–11.3%/pull (probe-runs.md) —
-//     EXCLUDES the shipped halved reading (8.9%/pull = 700 shot + 140 rider, ×1.06 aura); its own
-//     decomposition (proc = full 280) is compatible. The mechanism (divisor 1 vs two impacts per
-//     pull) stays footage-gated; nothing enacted here.
+//   * DIVISOR EXPOSURE: modernia (MG, hitsPerShot 2, the one real double-hit carve-out) on N2 is
+//     the ONLY carrier whose unlocked skill impacts see a divisor > 1 — every SG carrier's skill
+//     hits land exclusively inside the lock (zero exposure). anis-star is datamined 1×1
+//     (hitsPerShot 1), so her dot/rider impacts credit the full 280 (2.8 gauge) undivided; her
+//     solo magnitude question (the 2026-08-15 exclusion bound vs the model's 10.39%/pull) stays
+//     open under U28's magnitude half, footage-gated.
 //   * NON-DAMAGE SKILL APPLICATIONS (burst-gauge.md §5, _trick_ MEDIUM-confidence rule, unmodeled)
 //     cannot be the shortfall source on the filmed comps: FRESH applications inside the steady
 //     refill windows are 0 on iron sweep and T5 (kit activations cluster on burstCast /
@@ -164,16 +163,17 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
         // Re-derived from the instrument's own `--gauge-sources --json`; cause: DECISIONS
         // 2026-08-14. Every other comp's split is unchanged — none seats a Charge Speed source.
         'iron sweep (run G)': [26, 107],
-        'T5 wind-weak': [73, 732],
-        'T1 wind-weak': [90, 781],
+        // T5 / T1 / misc B3s / N5 seat anis-star: her full 2.8-gauge impact credit (hitsPerShot 1,
+        // no divisor) re-phases those comps' bursts, moving impacts across the unlocked/locked
+        // boundary. Values from the instrument's own `--gauge-sources --json` output.
+        'T5 wind-weak': [77, 754],
+        'T1 wind-weak': [86, 782],
         'N3 scarlet/liberalio iron': [35, 284],
-        'misc B3s (run I order)': [78, 831],
+        'misc B3s (run I order)': [76, 834],
         'N1 rapi/quency wind': [49, 269],
         'soda-tb control (neutral)': [17, 345],
         'N2 modernia wind': [1370, 7597],
-        // N5 RE-PINNED 2026-08-15: per-sub-hit gauge credit on snow-white-heavy-arms's volley
-        // adds unlocked skill impacts (they land outside the chain/FB lock) and re-phases bursts.
-        'N5 snowwhite-HA fire': [74, 911],
+        'N5 snowwhite-HA fire': [74, 912],
       };
       for (const [comp, [unlocked, locked]] of Object.entries(pinned)) {
         expect(byName(comp).unlockedImpacts).toBe(unlocked);
@@ -200,36 +200,34 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
       }
     });
 
-    it('pins the divisor exposure rows (the U28-residual magnitude question, sized)', () => {
-      const rows: [string, string, number, number, number][] = [
-        // comp, slug, unlockedImpacts, gaugeShipped, gaugeIfDivisorOne
-        ['T5 wind-weak', 'anis-star', 42, 58.8, 117.6],
-        ['T1 wind-weak', 'anis-star', 41, 57.4, 114.8],
-        ['misc B3s (run I order)', 'anis-star', 30, 42.0, 84.0],
-        // N5 RE-PINNED 2026-08-15: swha's per-sub-hit gauge credit re-phases the comp's Full
-        // Bursts, moving anis-star's unlocked skill impacts across the window boundary.
-        ['N5 snowwhite-HA fire', 'anis-star', 15, 21.0, 42.0],
-        ['N2 modernia wind', 'modernia', 1330, 66.5, 133.0],
-      ];
-      for (const [comp, slug, n, shipped, ifOne] of rows) {
-        const r = byName(comp);
-        expect(r.divisor).toHaveLength(1); // no other hps>1 unit lands unlocked skill impacts
-        const d = r.divisor.find((x) => x.slug === slug)!;
-        expect(d.divisor).toBe(2);
-        expect(d.unlockedImpacts).toBe(n);
-        expect(d.gaugeShipped).toBeCloseTo(shipped, 3);
-        expect(d.gaugeIfDivisorOne).toBeCloseTo(ifOne, 3);
+    it('pins the divisor exposure rows: modernia (the one real double-hit) is the sole carrier', () => {
+      // modernia is the only hitsPerShot-2 unit (genuine double-hit MG carve-out), so N2 is the
+      // only comp with a divisor row. anis-star is datamined 1×1 — her impacts carry no divisor,
+      // so the comps seating her have NONE. Values from `--gauge-sources --json`.
+      const d = byName('N2 modernia wind').divisor;
+      expect(d).toHaveLength(1);
+      expect(d[0].slug).toBe('modernia');
+      expect(d[0].divisor).toBe(2);
+      expect(d[0].unlockedImpacts).toBe(1330);
+      expect(d[0].gaugeShipped).toBeCloseTo(66.5, 3);
+      expect(d[0].gaugeIfDivisorOne).toBeCloseTo(133.0, 3);
+      for (const comp of [
+        'T5 wind-weak',
+        'T1 wind-weak',
+        'misc B3s (run I order)',
+        'N5 snowwhite-HA fire',
+      ]) {
+        expect(byName(comp).divisor).toEqual([]);
       }
     });
 
-    it('the shipped anis-star divisor reading her labeled solo fixture EXCLUDES', () => {
-      // Battery 3 A3 (probe-runs.md): measured ~10.7–11.3%/pull, decomposed as 280×2.5 focused
-      // shot + 280 proc skill-gen, ×1.06 aura. The shipped model generates (700 + 140) × 1.06 =
-      // 890 energy = 8.9%/pull — BELOW the band, because skillGauge halves her rider by
-      // hitsPerShot 2. The fixture's own decomposition (proc = full 280) is compatible instead.
-      // This pin holds the shipped reading; the resolution is footage-gated (U28 residual), not
-      // something this census enacts.
-      expect(skillImpactGauge('anis-star')).toBeCloseTo(1.4, 6);
+    it('anis-star skill impacts credit the full datamined 280 (2.8 gauge, divisor 1)', () => {
+      // Her per-impact skillGauge value: targetPerTrigger 280 (gauge-per-shot.json) ÷
+      // hitsPerShot 1 (datamined shot_count 1 × muzzle_count 1). Solo decomposition:
+      // (700 shot + 280 rider) × 1.06 aura = 10.39%/pull; her labeled solo fixture's
+      // 2026-08-15 exclusion bound (steady per-pull ≥ ~10.96, < ~12.7) sits above it —
+      // that magnitude question stays open under U28, footage-gated, not resolved here.
+      expect(skillImpactGauge('anis-star')).toBeCloseTo(2.8, 6);
     });
 
     it('non-damage skill applications: ZERO fresh applications in the filmed comps\u2019 steady windows', () => {
@@ -260,9 +258,12 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
       const iron = byName('iron sweep (run G)');
       expect(iron.shortfallRateGaugePerSec).toBeCloseTo(16.38, 1);
       expect(iron.shortfallPerCycleGauge).toBeCloseTo(40.76, 1);
+      // T5 seats anis-star: her full 2.8-gauge impact credit (hitsPerShot 1) raises the comp's
+      // sim generation, narrowing the sim-vs-filmed shortfall the pin holds — the shortfall
+      // itself stays open (T5 remains a disabled comp). Values from `--gauge-sources --json`.
       const t5 = byName('T5 wind-weak');
-      expect(t5.shortfallRateGaugePerSec).toBeCloseTo(26.03, 1);
-      expect(t5.shortfallPerCycleGauge).toBeCloseTo(49.67, 1);
+      expect(t5.shortfallRateGaugePerSec).toBeCloseTo(22.68, 1);
+      expect(t5.shortfallPerCycleGauge).toBeCloseTo(43.28, 1);
     });
   });
 });

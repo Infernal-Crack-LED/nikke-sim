@@ -289,7 +289,7 @@ async function main() {
         Math.round((a.reloadSeconds ?? 2) * 60 + 21),
       chargeFrames: wf?.chargeFrames ?? api?.charge_time ?? 0,
       chargeMultiplier: wf?.chargeMultiplier ?? api?.charge_multiplier ?? 0,
-      // hitsPerShot = datamined shot_count × muzzle_count, with modernia/anis-star carve-outs
+      // hitsPerShot = datamined shot_count × muzzle_count, with the modernia carve-out
       // (C.1 review, 2026-07-17 — role-object-audit). Synergy is fallback only. Byte-identical to
       // the prior synergy value on every unit except the 4 corrected (helm/cinderella/laplace/
       // maiden-ice-rose 2→1, stale synergy value with no muzzle/shot backing).

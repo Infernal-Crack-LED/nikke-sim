@@ -5864,6 +5864,74 @@ cite this entry instead of re-fencing the observable.
 ("promotion requires a pre-registered replication on NEW footage or an owner ruling") is
 satisfied by this ruling, not overturned.
 
+## `anis-star` hitsPerShot carve-out REMOVED — her burst-DoT gauge models via the general lock; rider credits the full 280 target-base undivided (2026-08-16)
+
+**Change (branch `anis-star-gauge-divisor`, commit `145d8df6`):** removed the `'anis-star': 2`
+entry from `HITS_PER_SHOT_CARVEOUTS` (`src/data/weapon-fields.ts`; `modernia: 2` stays — her
+double-hit is genuine) and applied the deterministic derivation delta to
+`data/characters.json` (`hitsPerShot` 2→1 = shot_count 1 × muzzle_count 1; `burstGaugePerShot`
+untouched at 1.4 — its formula never involves hitsPerShot). Anis: Star's skill/DoT/rider
+impacts now credit the full 280 target-base (2.8%/impact) instead of a halved 140. Provenance:
+the DATAMINED part of this change is the divisor input `hitsPerShot 1` (shot_count 1 ×
+muzzle_count 1, byte-verified); the 280 itself is `data/gauge-per-shot.json`'s ⚑
+battery-3-measured value (its own source label; `sim.ts` names her the battery-estimate row),
+which reconciles byte-exactly with the raw shot row's `target_burst_energy_pershot` 28000 ÷ 100
+— it stays ⚑ (a refit candidate) and is NOT promoted by this landing.
+
+**Why (procedure: `/scientific-method`, packet
+`docs/handoffs/2026-08-16-anis-star-carveout-preop-packet.md`, pre-op APPROVED-WITH-REVISIONS,
+driver ACCEPT HIGH + blind post-op ACCEPT HIGH):** the 2 was a documented calibration hack
+(role-object audit C.1, 2026-07-17) halving her 40-tick burst-DoT's then-over-emitted
+`skillGauge`, with removal gated on "her dot gauge properly re-modeled." That re-model has
+since happened _systemically_: the gauge-lock rulings (2026-08-04 / 2026-08-13 — nothing
+generates during chain stages 1–3 or Full Burst) swallow ALL 40 of her Shooting Stars ticks in
+every committed comp (she is Burst I; 39/40 ticks are lock-covered by mechanism, the 40th by
+the dot-duration == CHAIN_TIMEOUT coincidence — both now pinned by committed specs G1/G2 in
+`scripts/tests/units/anis-star.test.ts`, replacing the /tmp probes). The carve-out's own
+recorded justification ("at 1, PA MiKa makes 12 FBs vs measured 11") was verified STALE at
+HEAD: with the carve-out removed, **every enabled measured FB pin is byte-identical**
+(PA MiKa 11×25, T2 elec-weak 12×25, N5 12×21/13×4, misc B3s 12×25 — its `simFullBursts: 12`
+divergence pin STANDS), and all snapshot movement is confined to the six comps seating her
+(exact-zero on 74 rows across the 15 comps that do NOT seat her — the true negative control;
+the other 10 unmoved rows are the two DISABLED comps T5/T1 wind-weak, which DO seat her and
+are frozen by the gate, not verified-zero — their live FB counts did move). Disabled shortfall
+comps move TOWARD their
+measured 13 without closing (T5 wind-weak 11/12-mix → 12×100%, shortfall narrows 49.7→43.3
+gauge/cycle and stays open; T1 12-share 28%→40%) — consistent with H1 but carrying NO
+confirmation weight (equally predicted under the compensating-error rival; the discriminator
+was PA MiKa holding 11, and it held).
+
+**Solo residual (wording per the blind judge):** her solo per-pull decomposition moves
+8.90 → 10.39 %/pull — TOWARD the 2026-08-15 count-to-fill exclusion bound (steady ≥ ~10.96)
+but **still excluded**. U28's magnitude half stays open and footage-gated; the n=1 solo band
+remains an exclusion, never a value. Also NOT established: whether the game's rider is 1×280
+or 2×140 (gauge- and damage-equivalent in the engine; popup-gated), and the `/hitsPerShot`
+divisor as a game rule for genuine hitsPerShot > 1 units (U28 keeps its own evidence;
+anis-star now sits at 1 where the divisor is a no-op).
+
+**Board effect (fit-exposure, filed for re-tune — NOT held against the change):** graded FB
+counts preserved everywhere; per-unit totals in her comps move via burst-cast TIMING only
+(no damage-path code touched — the only live `hitsPerShot` read for an RL unit is the
+`skillGauge` divisor). Board bands move 10/15/25/20 → 9/15/23/22 (±3/±5/±8/worse): PA MiKa's
+supports get hotter (mint → 1.067, prika 1.074 → 1.112, alice 1.099 → 1.114, red-hood +2.7%),
+while `anis-star` (0.882 → 0.889) and `cinderella` (0.885 → 0.902) improve; `trina`'s moved
+datapoint is tb2 test 2 (anis-star · trina · cinderella — seats her). Per the rotation-fix
+doctrine these ratio shifts are overrides fit to the old (halved-gauge) burst timing —
+re-tune the exposed units separately, never re-fudge the divisor. Follow-up filed in QUEUE.
+
+**Side-effects recorded:** the `SGGAUGE=trigger` counterfactual arm's recorded sizing ("zero
+Full-Burst movement anywhere", U40/CLAUDE.md) is stale on the new basis — the arm now moves
+misc B3s 12→13 (the shipped base arm stays 12); CLAUDE.md annotated. Her census
+unlocked-impact counts re-phased non-uniformly with the new rotation timing (T5 42→43,
+T1 41→36, misc B3s 30→28) — net credit up everywhere, rotation re-phasing, not a defect.
+One new diagnostic reading: cinderella-crystal-wave on T5 shows 2 reload-bound window-first
+hits (was 0; threshold still passes) — observation only.
+
+**Instruments/pins updated from their own output:** `gauge-source-census.test.ts` (divisor
+rows gone; `skillImpactGauge('anis-star')` 2.8), `focus-columns.test.ts`,
+`multihit-crediting.test.ts`, `refill-starvation.test.ts`, snapshot regen in the same commit;
+G1–G4 specs added. Work record: `docs/handoffs/2026-08-16-anis-star-carveout-work-deliverable.md`.
+
 ## Owner rulings: non-damage enemy-debuff APPLICATIONS generate burst gauge, and so do their RE-APPLICATIONS/refreshes (2026-08-16)
 
 Two in-game observations by the owner in the Union shooting range (no recording; owner-ruling

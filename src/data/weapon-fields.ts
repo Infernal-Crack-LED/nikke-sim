@@ -51,15 +51,11 @@ export interface DerivedWeaponFields {
 // e.g. quency-escape-queen SMG 1×2, zwei SG 5×2). This matches the synergy value byte-for-byte on
 // every unit EXCEPT the C.1-reviewed set (role-object-audit 2026-07-17), where synergy carried a
 // stale 2 with no muzzle/shot backing — helm/cinderella/laplace/maiden-ice-rose corrected to 1.
-// Two carve-outs KEEP 2 (their double-hit is real but NOT captured by shot_count×muzzle):
+// One carve-out KEEPS 2 (the double-hit is real but NOT captured by shot_count×muzzle):
 //   • modernia — genuine double-hit MG; at 1 her normal damage doubles (60 vs 30 pulls/s) → ~1.76 HOT
 //     (measured COLD 0.88 at 2). Also fires her per-HIT S1 rider + burst Destroy-Mode extraHit.
-//   • anis-star — LOAD-BEARING gauge-calibration hack (halves her 40-tick burst dot's over-emitted
-//     skillGauge); at 1 comp "PA MiKa" makes 12 FBs vs measured 11. Remove ONLY after her dot gauge
-//     is properly re-modeled (deferred owner action item, C.1).
 const HITS_PER_SHOT_CARVEOUTS: Record<string, number> = {
   modernia: 2,
-  'anis-star': 2,
 };
 
 // Kill float dust from the /100 and /10000 divisions so the JSON serialises identically to the

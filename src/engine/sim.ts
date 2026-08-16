@@ -1344,8 +1344,9 @@ export function runSim(
   // it forces the FULL per-trigger value on every SG spray pull — gauge ONLY: damage keeps the landed
   // fraction, and `bandSg` is still drawn with the same rng sequence, so default/off runs stay
   // byte-identical. The sizing measured +27–48% carrier generation (team +7–17% on all five SG-seated
-  // off-count comps) and ZERO Full-Burst movement anywhere — the refuted reading buys no burst
-  // boundary, so the arm survives only as the refuted-reading A/B revert (the `ROTMODEL=floor`
+  // off-count comps); on the post-2026-08-16 basis (anis-star carve-out removal) the ARM tips
+  // misc B3s 12→13 while the shipped base arm stays 12 — the refuted reading still buys no burst
+  // boundary on the shipped engine, so the arm survives only as the refuted-reading A/B revert (the `ROTMODEL=floor`
   // precedent for owner-overturned mechanics). Do not re-open the question without new evidence.
   // Instrument: `scripts/battery/fb-count-matrix.ts --multihit-crediting`; DECISIONS 2026-08-14.
   const SG_GAUGE_TRIGGER = ENV.SGGAUGE === 'trigger';
@@ -4454,7 +4455,7 @@ export function runSim(
     // SG gauge feeds per LANDED pellet (base-capped: +pellets buffs don't pump per-trigger energy).
     // "Missed pellets generate nothing" is OWNER-RULED 2026-08-14 (U40, DECISIONS) — the
     // per-landed crediting is confirmed; `SGGAUGE=trigger` (see its declaration) is the
-    // refuted-reading A/B revert, which the item-4 audit sized at zero Full-Burst movement.
+    // refuted-reading A/B revert (sizing at its declaration; re-sized 2026-08-16).
     shotGauge(u, frame, hitFraction);
 
     const extraPerHit = stat(u, 'extraHitDamagePct', frame);

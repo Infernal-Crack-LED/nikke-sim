@@ -77,17 +77,17 @@ wrong.
 `gauge/60f` = gauge fed **per second of refilling**, not per second of fight. Generation is locked
 during Full Burst and the burst chain, so a wall-clock rate would understate every unit ~3×. Bar = 100. Source: `u.gaugeGenerated` (uncapped, pre-clamp) ÷ `gaugeBuildTimeSec`.
 
-| comp                          | boss     | sim vs measured | roster in slot order (weapon · burst · gauge/60f)                                                                                                               | focus                  | team rate | fill from 0 (proj / obs) | FB length |
-| ----------------------------- | -------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | --------- | ------------------------ | --------- |
-| **iron sweep (run G)**        | Electric | **11 vs 13–14** | `d-killer-wife` SR·I·3.18 · `milk-blooming-bunny` SR·III·3.52 · **`maxwell` SR·III·7.95** · `takina` SR·II·4.55 · `liberalio` SR·III·5.91                       | `maxwell`              | 25.11     | 3.98s / 4.20s            | 10.0s     |
-| **T5 wind-weak**              | Iron     | **12 vs 13**    | `nayuta` SMG·II·4.03 · `cinderella-crystal-wave` MG·III·5.50 · **`anis-star` RL·I·8.19** · `liberalio` SR·III·5.72 · `velvet` SR·II·3.38                        | `anis-star`            | 26.81     | 3.73s / 3.79s            | 10.0s     |
-| **T1 wind-weak**              | Iron     | **11 vs 13**    | `mast-romantic-maid` MG·II·3.43 · `scarlet-black-shadow` RL·III·4.80 · **`anis-star` RL·I·7.51** · `liberalio` SR·III·6.35 · `crown` MG·II·3.30                 | `anis-star`            | 25.40     | 3.94s / 4.18s            | 10.0s     |
-| **N3 scarlet/liberalio iron** | Iron     | **9 vs 10**     | `rouge` SR·I·3.20 · `trina` RL·II·3.40 · **`scarlet-black-shadow` RL·III·5.58** · `liberalio` SR·III·5.59 · `soda-twinkling-bunny` SG·III·7.05                  | `scarlet-black-shadow` | 24.82     | 4.03s / 4.32s            | **15.0s** |
-| **misc B3s (run I order)**    | Water    | **12 vs 13**    | `grave` AR·II·2.76 · `anis-star` RL·I·5.02 · **`jill` AR·III·9.29** · `chisato` SMG·III·4.54 · `noir` SG·III·12.93                                              | `jill`                 | **34.53** | 2.90s / 3.05s            | 10.0s     |
-| **N1 rapi/quency wind**       | Wind     | **12 vs 13**    | `d-killer-wife` SR·I·7.32 · `grave` AR·II·4.93 · **`rapi-red-hood` MG·III·4.14** · `quency-escape-queen` SMG·III·5.56 · `jill` AR·III·9.03                      | `rapi-red-hood`        | 29.98     | 3.34s / 3.52s            | 10.0s     |
-| **soda-tb control**           | neutral  | **9 vs 10**     | `little-mermaid` SMG·I·6.50 · `crown` MG·II·3.26 · **`soda-twinkling-bunny` SG·III·7.65** · `helm` SR·III·11.91                                                 | `soda-twinkling-bunny` | 29.32     | 3.41s / 3.59s            | **15.0s** |
-| **N2 modernia wind**          | Wind     | **9 vs ≥10** ⚑  | `d-killer-wife` SR·I·3.40 · `naga` SG·II·3.07 · **`modernia` MG·III·4.17** · `chisato` SMG·III·3.43 · `ein` SR·III·5.27                                         | `modernia`             | **19.33** | 5.17s / 5.56s            | **15.0s** |
-| **N5 snowwhite-HA fire**      | Fire     | **11 vs 12**    | `anis-star` RL·I·2.91 · `arcana-fortune-mate` SG·II·2.31 · **`privaty` AR·III·3.96** · `snow-white-heavy-arms` SR·III·8.56 · `diesel-winter-sweets` RL·III·1.63 | `privaty`              | **19.37** | 5.16s / 5.44s            | 10.0s     |
+| comp                          | boss     | sim vs measured | roster in slot order (weapon · burst · gauge/60f)                                                                                                                | focus                  | team rate | fill from 0 (proj / obs) | FB length |
+| ----------------------------- | -------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | --------- | ------------------------ | --------- |
+| **iron sweep (run G)**        | Electric | **11 vs 13–14** | `d-killer-wife` SR·I·3.18 · `milk-blooming-bunny` SR·III·3.52 · **`maxwell` SR·III·7.95** · `takina` SR·II·4.55 · `liberalio` SR·III·5.91                        | `maxwell`              | 25.11     | 3.98s / 4.20s            | 10.0s     |
+| **T5 wind-weak**              | Iron     | **12 vs 13**    | `nayuta` SMG·II·4.15 · `cinderella-crystal-wave` MG·III·5.66 · **`anis-star` RL·I·10.92** · `liberalio` SR·III·6.96 · `velvet` SR·II·3.48                        | `anis-star`            | 31.18     | 3.21s / 3.36s            | 10.0s     |
+| **T1 wind-weak**              | Iron     | **11 vs 13**    | `mast-romantic-maid` MG·II·2.67 · `scarlet-black-shadow` RL·III·4.71 · **`anis-star` RL·I·7.72** · `liberalio` SR·III·7.11 · `crown` MG·II·2.37                  | `anis-star`            | 24.58     | 4.07s / 4.11s            | 10.0s     |
+| **N3 scarlet/liberalio iron** | Iron     | **9 vs 10**     | `rouge` SR·I·3.20 · `trina` RL·II·3.40 · **`scarlet-black-shadow` RL·III·5.58** · `liberalio` SR·III·5.59 · `soda-twinkling-bunny` SG·III·7.05                   | `scarlet-black-shadow` | 24.82     | 4.03s / 4.32s            | **15.0s** |
+| **misc B3s (run I order)**    | Water    | **12 vs 13**    | `grave` AR·II·3.12 · `anis-star` RL·I·6.18 · **`jill` AR·III·9.36** · `chisato` SMG·III·4.54 · `noir` SG·III·12.01                                               | `jill`                 | **35.21** | 2.84s / 3.04s            | 10.0s     |
+| **N1 rapi/quency wind**       | Wind     | **12 vs 13**    | `d-killer-wife` SR·I·6.32 · `grave` AR·II·4.93 · **`rapi-red-hood` MG·III·4.14** · `quency-escape-queen` SMG·III·5.56 · `jill` AR·III·9.03                       | `rapi-red-hood`        | 29.98     | 3.34s / 3.52s            | 10.0s     |
+| **soda-tb control**           | neutral  | **9 vs 10**     | `little-mermaid` SMG·I·7.99 · `crown` MG·II·3.20 · **`soda-twinkling-bunny` SG·III·7.97** · `helm` SR·III·12.41                                                  | `soda-twinkling-bunny` | 31.57     | 3.17s / 3.41s            | **15.0s** |
+| **N2 modernia wind**          | Wind     | **9 vs ≥10** ⚑  | `d-killer-wife` SR·I·3.40 · `naga` SG·II·3.07 · **`modernia` MG·III·4.17** · `chisato` SMG·III·3.43 · `ein` SR·III·5.27                                          | `modernia`             | **19.33** | 5.17s / 5.56s            | **15.0s** |
+| **N5 snowwhite-HA fire**      | Fire     | **13 vs 12**    | `anis-star` RL·I·2.65 · `arcana-fortune-mate` SG·II·2.90 · **`privaty` AR·III·3.55** · `snow-white-heavy-arms` SR·III·32.11 · `diesel-winter-sweets` RL·III·0.97 | `privaty`              | **42.17** | 2.37s / 2.57s            | 10.0s     |
 
 `proj` = 100 ÷ team rate. `obs` = mean measured refill from the run's own rotation log
 (`B1 cast − 0.5s pre-B1 gap − previous FB end`). The 0.06–0.39s gap between them is over-cap waste
@@ -131,7 +131,7 @@ mechanical floor (Full Burst + 0.5s pre-B1 + chain span), required rate = one ba
 | comp               | filmed cycle | floor  | real refill | fight needs  | sim feeds    | **sim generates**   |
 | ------------------ | ------------ | ------ | ----------- | ------------ | ------------ | ------------------- |
 | iron sweep (run G) | 14.39s       | 11.90s | 2.49s       | 40.2 gauge/s | 23.8 gauge/s | **59%** of required |
-| T5 wind-weak       | 13.81s       | 11.90s | 1.91s       | 52.4 gauge/s | 26.4 gauge/s | **50%** of required |
+| T5 wind-weak       | 13.81s       | 11.90s | 1.91s       | 52.4 gauge/s | 29.7 gauge/s | **57%** of required |
 
 **Only these two comps can be converted** — the other seven have no filmed cycle, so no generation
 requirement can be derived for them. Nothing here extrapolates onto them.
@@ -193,7 +193,7 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
   next-stage-1 span is indivisible to the instrument, so "gauge generates too slowly", "the chain
   opens late", and "the real Full Burst is shorter than 10s" are still not separated. **One in-window
   candidate has since been EXCLUDED (2026-08-14):** post-Full-Burst reload-state starvation is not the
-  cause — the first 1s after FB end delivers 86.0% (iron sweep) / 140.7% (T5) of the steady-state
+  cause — the first 1s after FB end delivers 86.0% (iron sweep) / 113.0% (T5) of the steady-state
   rate, both clearing the pre-committed ≥80% rule, i.e. the refill window is FLAT-to-FRONT-LOADED,
   never ramping up from a starved boundary (iron sweep's figures were re-derived 2026-08-14 after
   the `liberalio` Charge Speed immunity re-phased that comp — 114.7% pre-fix; the verdict is
@@ -205,17 +205,19 @@ Re-derive before relying on it. The measured side (≥10) is untouched by this.
   missing/mis-scoped non-bullet gauge sources — the field-form census of every impact kind vs the
   emission map is clean (every site measured or owner-ruled), the non-emitting kinds
   (`storedHit` releases, `stackedNuke`) contribute ZERO on all nine comps by construction, and
-  non-damage skill applications land ~nothing fresh inside the refill windows. Its one live lever
-  is the `skillGauge` ÷hitsPerShot divisor for hitsPerShot > 1 (U28 residual): `anis-star`'s
-  labeled battery-3-A3 solo fixture EXCLUDES the shipped halved reading, and resolving it her way
-  closes ~12% of T5's cycle gap — real but not sufficient, and footage-gated. Instrument:
+  non-damage skill applications land ~nothing fresh inside the refill windows. The `anis-star`
+  half of the divisor lever is ENACTED (2026-08-16, DECISIONS): her `hitsPerShot: 2` carve-out is
+  removed, her rider credits the full 280 (2.8/impact), and T5's measured shortfall narrowed
+  26.0 → 22.7 gauge/s — real but not sufficient, exactly as sized. The divisor's remaining
+  surface is genuine multi-hit units only (`modernia` MG ÷2, the SG ÷10), gated on the
+  `modernia` Destroy-Mode bar read (U28). Instrument:
   `npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources`, pinned by
   `scripts/tests/battery/gauge-source-census.test.ts`; the record lives in the same handoff, item 2.
   **A third candidate has since been EXCLUDED (2026-08-14):** a wrong per-unit focus-multiplier
   column — all four focused charge units (`maxwell`, `anis-star` ×2, `scarlet-black-shadow`)
   resolve to MEASURED columns via `characters.json` `chargeMultiplier`, and even the most
   extreme wrong column (350) covers ≤19.4% (iron sweep, re-derived 2026-08-14 — was ≤22.4% before
-  the `liberalio` Charge Speed immunity widened that comp's shortfall) / ≤12.6% (T5) of the measured
+  the `liberalio` Charge Speed immunity widened that comp's shortfall) / ≤19.3% (T5) of the measured
   shortfall. Instrument: `npx tsx scripts/battery/fb-count-matrix.ts --focus-columns`, pinned
   by `scripts/tests/battery/focus-columns.test.ts`; the record lives in the same handoff, item 3.
   **A fourth candidate has since been EXCLUDED (2026-08-14):** multi-hit gauge crediting — the

@@ -168,10 +168,13 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
       }
     }
     // pinned carrier rates (gauge per 60f of refilling), both arms
+    // misc B3s seats anis-star: her full 2.8-gauge skill-impact credit (hitsPerShot 1)
+    // re-phases the comp's refill windows, moving noir's per-window rates. Values from
+    // the instrument's --json.
     const noir = byName('misc B3s (run I order)').carriers[0];
     expect(noir.slug).toBe('noir');
-    expect(noir.basePer60).toBeCloseTo(12.93, 1);
-    expect(noir.trigPer60).toBeCloseTo(16.92, 1);
+    expect(noir.basePer60).toBeCloseTo(12.01, 1);
+    expect(noir.trigPer60).toBeCloseTo(16.55, 1);
     const sodaTb = byName('soda-tb control (neutral)').carriers[0];
     expect(sodaTb.slug).toBe('soda-twinkling-bunny');
     // RE-PINNED 2026-08-15: per-sub-hit gauge credit on little-mermaid's Bubble Barrage
@@ -195,31 +198,34 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
       34.4,
       1
     );
-    expect(byName('misc B3s (run I order)').baseTeamRate).toBeCloseTo(34.53, 1);
-    expect(byName('misc B3s (run I order)').trigTeamRate).toBeCloseTo(37.28, 1);
+    expect(byName('misc B3s (run I order)').baseTeamRate).toBeCloseTo(35.21, 1);
+    expect(byName('misc B3s (run I order)').trigTeamRate).toBeCloseTo(38.86, 1);
   });
 
-  it('THE EXCLUSION: zero Full-Burst movement anywhere — every SG comp stays one short', () => {
+  it('THE EXCLUSION: the per-trigger arm moves no SG comp EXCEPT misc B3s (12→13) and N5 (13→12)', () => {
     for (const r of reports) {
-      // N5 is the one comp whose baseline moved with the 2026-08-15 per-sub-hit gauge enactment
-      // (swha volley); the per-trigger arm pulls it back from 13 to 12. Skip it in the strict
-      // byte-identity check and assert its new values explicitly below.
-      if (r.comp === 'N5 snowwhite-HA fire') {
+      // Two comps' counts differ between arms; both are pinned explicitly below:
+      //   N5 — the per-trigger arm pulls it back from 13 to 12 (per-sub-hit gauge on swha).
+      //   misc B3s — the comp sits near the 13-FB boundary (anis-star's full 2.8-gauge
+      //   skill-impact credit, hitsPerShot 1); the extra SG per-trigger gauge tips it over.
+      if (
+        r.comp === 'N5 snowwhite-HA fire' ||
+        r.comp === 'misc B3s (run I order)'
+      ) {
         continue;
       }
       expect(r.trigFb).toBe(r.baseFb);
     }
-    // each SG-seated off-count comp remains exactly one below its measured count
+    // the SG-seated off-count comps, per arm
     expect(byName('N3 scarlet/liberalio iron').trigFb).toBe(9);
     expect(byName('N3 scarlet/liberalio iron').measured).toBe(10);
-    expect(byName('misc B3s (run I order)').trigFb).toBe(12);
+    expect(byName('misc B3s (run I order)').baseFb).toBe(12);
+    expect(byName('misc B3s (run I order)').trigFb).toBe(13);
     expect(byName('misc B3s (run I order)').measured).toBe(13);
     expect(byName('soda-tb control (neutral)').trigFb).toBe(9);
     expect(byName('soda-tb control (neutral)').measured).toBe(10);
     expect(byName('N2 modernia wind').trigFb).toBe(9);
     expect(byName('N2 modernia wind').measured).toBe(10);
-    // N5 RE-PINNED 2026-08-15: per-sub-hit gauge credit moved base 11→13; the per-trigger arm
-    // reads 12. The SG arm still does not close the measured 12 count from below.
     expect(byName('N5 snowwhite-HA fire').baseFb).toBe(13);
     expect(byName('N5 snowwhite-HA fire').trigFb).toBe(12);
     expect(byName('N5 snowwhite-HA fire').measured).toBe(12);
