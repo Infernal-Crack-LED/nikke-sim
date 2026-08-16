@@ -165,11 +165,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      with a non-vacuous ceiling (T5's was cap-saturated — the H-C detector was effectively n=1);
      (5) a symmetric-E_min statistic as its OWN pre-op (T5's O/S were structurally
      uninterpretable with the one-sided threshold).
-   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — HANDED OFF
-     2026-08-16 to another session for processing (not yet landed) — serves DOUBLE duty: the
-     divisor read (n≥8 + a second count-to-fill; her bar zeroes at 21.73s so a longer file
-     contains a second clean window free) AND the same-regime noise floor (the 2026-08-16 C4
-     re-run missed its basis floor by ~45 quiet bins; same footage resolves both).
+   - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — **RECEIVED +
+     PROCESSED THROUGH THE WORK STEP 2026-08-16, JUDGING PENDING** — pre-op APPROVED-WITH-
+     REVISIONS packet + verdict-free artifact + replay pin are committed; the driver review /
+     blind post-op / 2-of-2 did NOT run (session limit). **Resume from
+     `docs/handoffs/2026-08-16-anis-star-session-handoff.md` (Thread B) — do not cite the
+     artifact's numbers until the 2-of-2 lands.** Serves double duty: the magnitude read
+     (n≥8 + count-to-fill ×3 windows) AND the same-regime noise floor (the 2026-08-16 C4
+     re-run missed its basis floor by ~45 quiet bins).
      ~~`modernia` Destroy-Mode bar read (U28's named probe)~~ **CLOSED 2026-08-16 — forced dead
      by the already-settled FB gauge-lock rule** (CLAUDE.md verified facts: nothing generates
      during the chain or Full Burst): her Destroy Mode window is coincident with her own

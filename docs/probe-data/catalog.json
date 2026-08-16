@@ -235,5 +235,18 @@
       "focusReason": "U11c: does the Seven Dwarves volley generate gauge per hit or per proc"
     },
     "description": "Snow White: Heavy Arms SOLO charge-SR. 2026-08-15 fill read: bar 0->full in 3.2s on ~3 pulls; volley sub-steps +5.8-7.2 raw at exact 0.20s spacing = PER-HIT gauge credit (~560 each); per-effect model refuted by closure (75.6 max < 100). Sim under-credits 4x560 = 22.4% of bar per pull. See docs/probe-runs.md 2026-08-15."
+  },
+  {
+    "video": "docs/probes/solo/anis-star-solo.mov",
+    "focus": "anis-star",
+    "comp": ["anis-star"],
+    "boss": null,
+    "params": {
+      "basis": "owner solo clip (structural scaffold pass; gauge/burst read pre-registered separately, NOT run here)",
+      "durationSec": 85.06,
+      "sourceDims": "1206x2622 (rotation=90 side-data, auto-rotates to 2622x1206 landscape — same as ccw-solo.mov/nayuta-solo.mov/swha-solo.mov)",
+      "focusReason": "solo RL (charge weapon, 6-round magazine, 141f reload) structural prep: t0 anchor, segment map, deterministic scan.ts + read-ammo.ts run"
+    },
+    "description": "Anis: Star SOLO, second solo recording (distinct from docs/probes/burst tests/a2 anis star.MP4). 2026-08-16 structural scaffold pass only: identity confirmed (one character model, ammo counter text-label style 0-006 range, 'Burst Skill / Star Anis' hand-off card seen ~t15s). scan.ts flagged gaugeMissing=true / 0 FB candidates for this crop set; read-ammo.ts returned 0/851 reads (ammo-box-template mismatch — this unit's HUD renders ammo as an 'AMMO / NNN' text label, not the bracketed digit-box other weapon classes use). No gauge/pull values read or interpreted in this pass — the follow-on pre-registered gauge read is docs/probe-data/anis-star-solo2-gauge.json (probe-runs entry lands after the 2-of-2)."
   }
 ]
