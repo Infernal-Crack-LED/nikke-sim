@@ -180,7 +180,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      classification thread's ranked item (2) (noise-corrected ceiling test) needs — feed it
      there (that item needs its OWN pre-op). Record:
      `scientific-method-harness.md` 2026-08-16 (second entry);
-     `docs/handoffs/2026-08-16-anis-star-session-handoff.md` (Thread B) closes.
+     `docs/handoffs/closed/2026-08-16-anis-star-session-handoff.md` (Thread B) CLOSED
+     2026-08-16 (2-of-2 landed; Thread A merged as PR #125). Two tooling follow-ups it carried
+     stay OPEN: (i) `gauge-fill.py` WITHOUT an explicit `--bar` self-calibrates onto a dark
+     terrain edge on solo footage — always pass `--bar` + the maiden fixture gate
+     (/skill-maintenance candidate for the probe-processing reader table); (ii) `read-ammo.ts`
+     reads 0/851 frames on her text-label HUD ("AMMO / NNN", not the boxed digits its template
+     matches) — MISSING READERS: a text-label digit path is needed.
      ~~`modernia` Destroy-Mode bar read (U28's named probe)~~ **CLOSED 2026-08-16 — forced dead
      by the already-settled FB gauge-lock rule** (CLAUDE.md verified facts: nothing generates
      during the chain or Full Burst): her Destroy Mode window is coincident with her own
@@ -323,10 +329,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    because it was outside that diff's intent and the bridges are shared by every gate skill.
 
 8. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
-   ⚠ FIRST: the cadence landing itself is not finished shipping — branch `nbo-swap-cadence`
-   (`4aa50dfe`) is committed + `verify.sh` green but UNREVIEWED and UNPUSHED; its `/code-review`
-   result was never read. Resume from
-   `docs/handoffs/2026-08-16-nbo-swap-cadence-landing.md` on that worktree before anything below.
+   The cadence landing itself is SHIPPED (merged as PR #126, 2026-08-16; cross-family
+   `/code-review` verdict FIX-BEFORE-MERGE → all 3 FIX findings addressed pre-merge; landing
+   record archived to `docs/handoffs/closed/2026-08-16-nbo-swap-cadence-landing.md`).
    The cadence half landed 2026-08-16 (DECISIONS): her burst weapon fires at its datamined 1.5
    shots/s, not her MG wind-up ladder, and the engine's `swapLeavesMgLadder` gate makes a swap
    cadence readable on an MG-base unit at all. What that exposed is the open part: at 1.5 shots/s a

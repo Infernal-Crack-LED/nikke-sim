@@ -7881,11 +7881,11 @@ it at 115 quiet bins; this run had 105). Full record: `docs/handoffs/scientific-
 
 ## 2026-08-16 — Anis: Star solo #2 gauge magnitude + same-regime noise floor (independent recording)
 
-Plan of record: `docs/handoffs/2026-08-16-anis-star-solo2-gauge-preop-packet.md` (approved with
-revisions R1–R5). Recording: `docs/probes/solo/anis-star-solo.mov` (85.06s, 60fps, second
-independent solo recording — breaks the same-footage dependence of the A3 read). Artifacts:
-`docs/probe-data/anis-star-solo2-gauge.json` (verdict-free); work deliverable
-`docs/handoffs/2026-08-16-anis-star-solo2-gauge-work-deliverable.md`.
+Plan of record: `docs/handoffs/closed/2026-08-16-anis-star-solo2-gauge-preop-packet.md`
+(approved with revisions R1–R5). Recording: `docs/probes/solo/anis-star-solo.mov` (85.06s,
+60fps, second independent solo recording — breaks the same-footage dependence of the A3 read).
+Artifacts: `docs/probe-data/anis-star-solo2-gauge.json` (verdict-free); work deliverable
+`docs/handoffs/closed/2026-08-16-anis-star-solo2-gauge-work-deliverable.md`.
 
 **Question A — per-pull gauge magnitude: INCONCLUSIVE-LOG.** 2-of-2 ACCEPT HIGH (driver +
 blind kimi-code/k3). The pre-committed ≥2-window counting rule cannot fire: W2 K=9 but fill
