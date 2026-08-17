@@ -214,7 +214,7 @@ sys.exit(1)
 printf '%s' "$CLEANED" | python3 -c "
 import json, sys
 obj = json.load(sys.stdin)
-obj['model'] = '$MODEL'
+obj['model'] = sys.argv[1]
 obj['bridge'] = 'dispatch-qwen.sh'
 obj['containmentNote'] = ('Qwen has no agent-profile mechanism: write/edit/shell tools are '
                           'absent (repo cannot be mutated) but computer_use/cron/web_fetch are '
@@ -222,7 +222,7 @@ obj['containmentNote'] = ('Qwen has no agent-profile mechanism: write/edit/shell
                           'the Kimi bridge; containment strength slightly weaker.')
 json.dump(obj, sys.stdout, indent=1)
 sys.stdout.write('\n')
-" > "$OUT" || {
+" "$MODEL" > "$OUT" || {
   echo "❌ qwen reply did not parse as JSON" >&2
   printf '%s\n' "$CLEANED" | head -c 1000 >&2
   exit 1

@@ -15,7 +15,9 @@
 // no claim about the game, and neither does the artifact.
 // ============================================================================
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   armPower,
@@ -171,31 +173,60 @@ describe('ceiling screen: which comps can host the H-C detector (2026-08-17)', (
     expect(stderr).not.toContain('discriminates');
   }, 60000);
 
-  it('armPower selects the candidate BY NAME, not positionally, in a multi-comp schedule', () => {
-    // The by-name fix was undiscriminated by any committed input: the N3 schedule is a
-    // single-entry array whose only comp matches, so old `rawCand[0]` and new `find(...)` behaved
-    // identically everywhere. Build the case that separates them — a two-entry list with the
-    // wanted comp SECOND — and assert the wrong one is not silently measured.
+  it('the arm-power CLI selects the candidate BY NAME from a multi-comp schedule', () => {
+    // NOTE ON WHY THIS DRIVES THE CLI. A previous version of this test computed its own inline
+    // `multi.find(...)` on a test-local array and asserted on that — which tested a COPY of the
+    // logic, not the logic. Reverting production to `rawCand[0]` would have left it green. The
+    // selection lives only in the un-exported armPowerCli, so the only way to constrain it is to
+    // run the CLI. Written to FAIL if that revert happened: the decoy is first and its ceiling
+    // differs, so a positional read produces a different number, not an error.
     const n3 = loadSchedule(N3);
-    const decoy = {
+    const decoy: SimSchedule = {
       ...n3,
       comp: 'decoy comp (must not be selected)',
-      credits: n3.credits.slice(0, 4),
+      credits: n3.credits.filter((c) => c.slug === 'liberalio'),
     };
-    const multi = [decoy, n3];
-    const picked = multi.find((c) => c.comp === 'N3 scarlet/liberalio iron');
-    expect(picked).toBeDefined();
-    expect(multi[0].comp).not.toBe('N3 scarlet/liberalio iron');
-    // The positional read would have measured the decoy: prove the two differ, so a regression
-    // back to rawCand[0] cannot pass this test.
-    expect(simCeiling(picked as SimSchedule).ceilingBinsPerSec).toBeCloseTo(
-      5.13,
-      2
-    );
-    expect(
-      simCeiling(multi[0] as SimSchedule).ceilingBinsPerSec
-    ).not.toBeCloseTo(5.13, 2);
-  });
+    const dir = mkdtempSync(join(tmpdir(), 'armpower-'));
+    const schedPath = join(dir, 'multi.json');
+    try {
+      writeFileSync(schedPath, JSON.stringify([decoy, n3]));
+      const out = execFileSync(
+        'npx',
+        [
+          'tsx',
+          'scripts/probe/fill-trace-compare.ts',
+          'arm-power',
+          '--classification',
+          'docs/probe-data/fill-trace-habc-classification.json',
+          '--ref-comp',
+          'iron sweep (run G)',
+          '--ref-full-window-sec',
+          '23.618',
+          '--candidate-schedule',
+          schedPath,
+          '--candidate-comp',
+          'N3 scarlet/liberalio iron',
+          '--shared',
+          'liberalio',
+          '--candidate-sim-refill-sec',
+          '38.1',
+        ],
+        { encoding: 'utf8', stdio: 'pipe' }
+      );
+      const r = JSON.parse(out) as {
+        candidate: { comp: string; ceiling: number };
+        power: { separationSigmas: number };
+      };
+      expect(r.candidate.comp).toBe('N3 scarlet/liberalio iron');
+      // The five-unit ceiling, NOT the decoy's single-unit one — this is the assertion a
+      // positional revert fails.
+      expect(r.candidate.ceiling).toBeCloseTo(5.13, 2);
+      expect(simCeiling(decoy).ceilingBinsPerSec).not.toBeCloseTo(5.13, 2);
+      expect(r.power.separationSigmas).toBeCloseTo(0.9848, 3);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 60000);
 
   it('the artifact reports the same two ceilings it is cited for', () => {
     const nv = Object.fromEntries(
