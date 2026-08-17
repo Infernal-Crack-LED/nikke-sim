@@ -121,15 +121,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    _(Body restored 2026-08-13: nine lines were dropped from this item by the archive commit
    `80c9f041`; recovered verbatim from `d3314ca3`.)_
 
-5. **`snow-white-heavy-arms` is FIT-EXPOSED by the stage-entry correction — re-tune, do not
-   re-fudge.** The 2026-08-13 ruling (DECISIONS) re-times "entering Burst Stage N" to the chain's
-   stage TRANSITION, one step ahead of the stage-N cast. Her S2 ATK ▲73.92%/10s rides exactly that
-   trigger, and her magnitudes were hand-tuned against the old cast-frame timing, so she moved
-   0.954 → 0.946 (n=4) and crossed the ±5% band into ±8% — the board's only band movement from that
-   change. Same class as the 2026-07-21 rotation-fix exposure: the fix is right, the unit's fit was
-   standing on the bug. Re-tune her against her existing recordings; do NOT restore the old timing.
-
-6. **`countScope: 'gated'` migration — 25 gated hitCount blocks across 18 units remain UNMIGRATED.**
+5. **`countScope: 'gated'` migration — 25 gated hitCount blocks across 18 units remain UNMIGRATED.**
    Engine option landed 2026-08-13; default `'always'` keeps the roster byte-identical. 3 of 28
    migrated (`velvet` ×2, `mihara-bonding-chain` ×1). **Triage these 18 units** (one kit-wording
    read each): `asuka-wille`, `brid-silent-track`, `elegg`, `eve`, `guillotine`,
@@ -141,11 +133,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    scope the COUNTING ("landing N normals **during X**") or only the EFFECT ("every N normals,
    [effect] during X")? Only the former takes `'gated'`.
 
-7. **DONE 2026-08-16** — both `dispatch-kimi.sh` and `dispatch-claude.sh` now gate on
+6. **DONE 2026-08-16** — both `dispatch-kimi.sh` and `dispatch-claude.sh` now gate on
    `jq -e 'has("verdict")'` before the model injection, matching the rescue path's shape check.
    On failure the raw + cleaned reply are persisted for rescue, same as the syntax-failure path.
 
-8. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
+7. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
    The cadence landing itself is SHIPPED (merged as PR #126, 2026-08-16; cross-family
    `/code-review` verdict FIX-BEFORE-MERGE → all 3 FIX findings addressed pre-merge; landing
    record archived to `docs/handoffs/closed/2026-08-16-nbo-swap-cadence-landing.md`).
