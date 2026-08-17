@@ -170,12 +170,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      (3%); corrected rate 4.576/s (primary) / 4.601/s (pooled) — both 10.7–11.3% above the
      4.1325 threshold. Robust to falseRate up to 2.3% (4× measured input). Classification
      stays MIXED/INCONCLUSIVE (closure 0.2579 stands).** (3) ~~source-hunt the excess
-     event instants~~ **ANALYZED 2026-08-16 (`scripts/probe/source-hunt.ts`): the excess is a
-     PERVASIVE RATE EXCESS, not clustered at visual causes. 82 events across 10 real windows
-     (~23s total), only 13 sim credits fall within those windows, 76.8% of events >0.5s from
-     any sim credit, 56.1% >2s away. Within-window CV 0.5–1.3 (uniform-to-moderate, ~200–400ms
-     spacing). No burst-cast clustering. REFUTES H-C (distinct hidden source); supports H-A/H-B
-     (general per-hit rate or hit count too low).** (4) ~~a third comp
+     event instants~~ **ANALYZED 2026-08-16 (`scripts/probe/source-hunt.ts`) — INSTRUMENT
+     DEFECT FOUND (2026-08-16 code-review, claude-opus-5): source-hunt compares real event
+     times (video trace clock) against sim credit times (engine clock) without correcting for
+     the per-window offset drift (W1 +7.85s → W10 −8.75s). The headline numbers (76.8% excess,
+     56.1% >2s away) track clock drift, not gauge causality. The H-C refutation previously
+     recorded here is RETRACTED — item re-opened. The script is a useful scaffold but needs
+     within-window phase comparison (map events into paired sim windows via `w.simWindow`)
+     before its gap statistics are meaningful.** (4) ~~a third comp
      with a non-vacuous ceiling~~ **AUDITED 2026-08-16 — STRUCTURALLY IMPOSSIBLE with existing
      footage:** every filmed comp except iron sweep has ≥1 fast-cadence unit (AR/MG/SMG/SG)
      whose minGap is 1–5 frames (rate 12–60/s), saturating the 30/s bin cap. Iron sweep is

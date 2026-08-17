@@ -2,6 +2,13 @@
  * Source-hunt: cross-reference real event-bin timing against sim credit timing
  * using the classification's real window boundaries (barPaint → fullInstant).
  *
+ * ⚠ KNOWN LIMITATION (2026-08-16 code-review, claude-opus-5): real event times
+ * (video trace clock) and sim credit times (engine clock) do NOT share an origin.
+ * Per-window offsets drift from ~+8s (W1) to ~−9s (W10). Gap statistics computed
+ * here (explained/excess) measure clock drift, not gauge causality. To produce
+ * meaningful results, events must be mapped into paired sim windows via
+ * `w.simWindow` using within-window phase before comparing against sim credits.
+ *
  * Usage: npx tsx scripts/probe/source-hunt.ts
  */
 import { readFileSync } from 'node:fs';
@@ -140,12 +147,14 @@ for (const w of clsWindows) {
   // Cross-reference each event with nearest sim credit
   for (const [binIdx, { delta, t }] of eventByBin) {
     let nearestSec = Infinity;
+    let nearestCreditTime = -1;
     let nearestSlug = '';
     let nearestKind = '';
     for (const c of credits) {
       const gap = Math.abs(t - c.sec);
       if (gap < nearestSec) {
         nearestSec = gap;
+        nearestCreditTime = c.sec;
         nearestSlug = c.slug;
         nearestKind = c.kind;
       }
@@ -156,9 +165,9 @@ for (const w of clsWindows) {
       t,
       delta: Math.round(delta * 100) / 100,
       nearestCreditSec:
-        nearestSec === Infinity
+        nearestCreditTime === -1
           ? -1
-          : Math.round((t - (t - nearestSec)) * 1000) / 1000,
+          : Math.round(nearestCreditTime * 1000) / 1000,
       nearestCreditSlug: nearestSlug,
       nearestCreditKind: nearestKind,
       gapToNearestSec:
@@ -207,8 +216,15 @@ console.log(
 console.log(
   `Total event bins detected: ${totalEvents} (classification pooled: ${ironArm.pooled.eventBins})`
 );
+if (totalEvents !== ironArm.pooled.eventBins) {
+  console.log(
+    `⚠ POPULATION MISMATCH: script detected ${totalEvents} events but classification has ${ironArm.pooled.eventBins}. ` +
+      `Gap statistics below analyse a DIFFERENT population than the classification. ` +
+      `Likely cause: boundary rounding on barPaint/fullInstant re-derivation.`
+  );
+}
 console.log(
-  `Sim credit instants (all windows): ${credits.length}, unique frames: ${uniqueSimFrames.length}`
+  `Sim credit instants (all credits in run): ${credits.length}, unique frames: ${uniqueSimFrames.length}`
 );
 console.log(
   `Sim credits within usable real windows: ${simCreditBinsInWindows.length}`
@@ -324,16 +340,18 @@ for (const w of clsWindows) {
   for (let i = 1; i < times.length; i++) {
     interGaps.push(times[i] - times[i - 1]);
   }
-  const meanGap = w.durationSec / winEvents.length;
+  const rateMeanGap = w.durationSec / winEvents.length;
   const cv =
     interGaps.length > 0
-      ? Math.sqrt(
-          interGaps.reduce((s, g) => s + (g - meanGap) ** 2, 0) /
-            interGaps.length
-        ) / meanGap
+      ? (() => {
+          const m = interGaps.reduce((s, g) => s + g, 0) / interGaps.length;
+          const variance =
+            interGaps.reduce((s, g) => s + (g - m) ** 2, 0) / interGaps.length;
+          return m > 0 ? Math.sqrt(variance) / m : 0;
+        })()
       : 0;
   console.log(
-    `  W${w.id}: ${winEvents.length} events, meanGap=${(meanGap * 1000).toFixed(0)}ms, ` +
+    `  W${w.id}: ${winEvents.length} events, meanGap=${(rateMeanGap * 1000).toFixed(0)}ms, ` +
       `CV=${cv.toFixed(2)} (${cv > 1 ? 'clustered' : cv > 0.5 ? 'moderate' : 'uniform'})`
   );
 }
