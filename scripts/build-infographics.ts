@@ -70,6 +70,11 @@ import {
   dollCardHeight,
   DOLL_CARD_W,
   DOLL_TITLE_INK_REGION,
+  buildPullCard,
+  drawPullCard,
+  pullCardHeight,
+  PULL_CARD_W,
+  PULL_TITLE_INK_REGION,
   type ChargeWeaponRow,
   type ResourcesIcons,
   buildBurstGenTable,
@@ -109,6 +114,7 @@ import {
   RESOURCES_TIER_MIN,
   RESOURCES_TIER_MAX,
   DOLL_RARITIES,
+  PULL_PRERENDER_COUNTS,
 } from '../src/infographics/spec.js';
 import {
   buildDollPlan,
@@ -691,6 +697,40 @@ function dollJobs(): Job[] {
   });
 }
 
+// The Pull Calculator card (bot /pull) — the copy odds for a planned number
+// of Advanced Recruit pulls.
+//
+// Pre-rendered for PULL_PRERENDER_COUNTS only (spec.ts): the parameter space
+// runs to 100000, so only the counts a link surface actually defaults to —
+// the /pull page's own presets — belong in every deploy. Every other count
+// renders on demand, the same split dollJobs makes for starting phases.
+function pullJobs(): Job[] {
+  return PULL_PRERENDER_COUNTS.map((pulls) => {
+    const key = `pull/${pulls}`;
+    return {
+      key,
+      render: async (): Promise<Rendered> => {
+        const card = buildPullCard(pulls);
+        card.icon = (await loadSiteIcon()) ?? undefined;
+        const canvas = scaledCanvas(
+          PULL_CARD_W,
+          pullCardHeight(card.rows.length)
+        );
+        drawPullCard(canvas.getContext('2d') as unknown as Canvas2DLike, card);
+        return {
+          key,
+          png: canvas.toBuffer('image/png'),
+          ext: 'png' as const,
+          width: canvas.width,
+          height: canvas.height,
+          canvas,
+          inkRegion: scaledRegion(PULL_TITLE_INK_REGION),
+        };
+      },
+    };
+  });
+}
+
 // The card's icon strip, loaded once and shared by all nine tiers (loadIcon is
 // per-process cached, but the fan-out below is explicit either way).
 let resourcesIconsCache: Promise<ResourcesIcons> | null = null;
@@ -877,7 +917,8 @@ async function main(): Promise<void> {
       ...tableJobs(),
       ...perUnitTableJobs(Object.values(chars.characters)),
       ...resourcesJobs(),
-      ...dollJobs()
+      ...dollJobs(),
+      ...pullJobs()
     );
   }
   if (ONLY) {

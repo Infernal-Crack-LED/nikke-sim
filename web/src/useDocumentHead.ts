@@ -82,6 +82,11 @@ export const META: Record<string, HeadMeta> = {
     description:
       'Expected daily custom module and T9 drops by stage. Supports Kraken and other Anomaly Interception bosses. Plan your daily farming.',
   },
+  pull: {
+    title: 'NIKKE Pull Calculator — Recruit Odds, Copies & MLB Chances',
+    description:
+      'Cumulative Advanced Recruit odds for any number of pulls: expected SSRs, the chance of landing a rate-up or Pilgrim unit, and the odds of enough copies to max limit break.',
+  },
   howto: {
     title: 'How to Use the NIKKE Solo Raid Sim — Quick Start Guide',
     description:

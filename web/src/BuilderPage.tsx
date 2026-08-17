@@ -62,11 +62,19 @@ import { buildUnitCardShare } from './unitCardShare';
 import type { DpsChartData } from '../../src/infographics/core/dpsChart';
 import type { TableCardData } from '../../src/infographics/core/tableCard';
 import type { Canvas2DLike } from '../../src/infographics/core/canvas2d';
-import { ELEMENT_FILTERS } from '../../src/infographics/spec';
+import {
+  ELEMENT_FILTERS,
+  DEFAULT_PULL_COUNT,
+  PULL_COUNT_MAX,
+  PULL_COUNT_MIN,
+  PULL_PRERENDER_COUNTS,
+} from '../../src/infographics/spec';
 import { ensureRoboto, loadPortrait, copyOrDownloadPng } from './teamShare';
 import { CopyFlashButton, type CopyResult } from './components/CopyFlashButton';
 import { buildDpsChartCanvas } from './shareImage';
 import { buildTableCardCanvas } from './tableShare';
+import { buildPullCard } from '../../src/infographics/core/pullCard';
+import { buildPullCardCanvas } from './pullShare';
 import { monteCarloBuild, type McSummary } from '../../src/overload/policy';
 import type { OlProbModel } from '../../src/overload/model';
 import olProbJson from '../../data/ol-probabilities.json';
@@ -103,6 +111,7 @@ const CARD_TYPES: { key: BuilderCardType; label: string }[] = [
   { key: 'ol', label: 'Overload Calculator' },
   { key: 'charge', label: 'Charge Speed' },
   { key: 'ammo', label: 'Max Ammo' },
+  { key: 'pull', label: 'Pull Calculator' },
 ];
 
 const BOARDS: { key: BuilderBoard; label: string; title: string }[] = [
@@ -232,6 +241,7 @@ export function BuilderPage() {
     b1b2DpsBoard: 'c100-eleadv',
     olLines: OL_DEFAULT_LINES,
     olTier: OL_DEFAULT_TIER,
+    pulls: DEFAULT_PULL_COUNT,
     unitVariant: 'discord',
   });
   const [dpsArt, setDpsArt] = useState<DpsArtifact | null>(null);
@@ -511,6 +521,10 @@ export function BuilderPage() {
         }
         return buildTableCardCanvas(table);
       }
+      case 'pull':
+        // Pure arithmetic over the count — no artifact to wait on, so this
+        // case never returns null for missing data.
+        return buildPullCardCanvas(buildPullCard(state.pulls));
     }
   }
 
@@ -921,6 +935,40 @@ export function BuilderPage() {
                 simulation
               </p>
             </>
+          )}
+
+          {s.card === 'pull' && (
+            <div className="field">
+              <label>Pulls</label>
+              <PillGrid>
+                {PULL_PRERENDER_COUNTS.map((n) => (
+                  <button
+                    key={n}
+                    className={s.pulls === n ? 'on' : ''}
+                    onClick={() => setS((cur) => ({ ...cur, pulls: n }))}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </PillGrid>
+              <input
+                className="pull-input"
+                type="number"
+                min={PULL_COUNT_MIN}
+                max={PULL_COUNT_MAX}
+                step={10}
+                value={s.pulls}
+                onChange={(e) =>
+                  setS((cur) => ({
+                    ...cur,
+                    pulls: Math.min(
+                      PULL_COUNT_MAX,
+                      Math.max(PULL_COUNT_MIN, Math.floor(+e.target.value || 1))
+                    ),
+                  }))
+                }
+              />
+            </div>
           )}
         </div>
 

@@ -6,12 +6,42 @@
 //   OUT=/tmp/shots node scripts/ui-shot.mjs
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 process.env.PORT = process.env.PORT || '4319';
-await import('./serve.mjs'); // static server on $PORT (listens on import)
 const base = `http://localhost:${process.env.PORT}`;
 const outDir = process.env.OUT || '/tmp/ui-shots';
 mkdirSync(outDir, { recursive: true });
+
+// serve.mjs binds its port ONLY when run directly (the meta-parity test
+// imports it for TAB_META and must not get a second server), so this spawns it
+// as a child rather than importing it — an import silently yields no server at
+// all, and Playwright then either times out or, worse, screenshots whatever
+// unrelated process happens to hold the port.
+const server = spawn(
+  process.execPath,
+  [fileURLToPath(new URL('./serve.mjs', import.meta.url))],
+  { stdio: ['ignore', 'pipe', 'inherit'], env: process.env }
+);
+const stopServer = () => server.kill();
+process.on('exit', stopServer);
+await new Promise((resolve, reject) => {
+  const timer = setTimeout(
+    () => reject(new Error(`ui-shot: server never bound ${base}`)),
+    15000
+  );
+  server.stdout.on('data', (chunk) => {
+    if (String(chunk).includes('serving')) {
+      clearTimeout(timer);
+      resolve();
+    }
+  });
+  server.on('exit', (code) => {
+    clearTimeout(timer);
+    reject(new Error(`ui-shot: server exited early (${code})`));
+  });
+});
 
 const browser = await chromium.launch();
 const shots = [];
@@ -163,6 +193,30 @@ await shot('teambuilder-profile-badge', {
   },
 });
 
+// The Pull Calculator, at both widths: the two ladder tables carry 7 and 5
+// columns, which is where a narrow viewport squeezes first, and the stat tiles
+// reflow from a 3-across row to a stack.
+await shot('pull-desktop', { path: '/pull', width: 1180 });
+await shot('pull-mobile', { path: '/pull', width: 390 });
+
+// The Card Builder's pull card — the one builder type whose control is a plain
+// number, so the preview has to repaint off the field rather than a pill.
+await shot('builder-pull', {
+  path: '/builder',
+  width: 1180,
+  actions: async (page) => {
+    // scoped to the controls panel — the tools tab bar carries a 'Pull
+    // Calculator' button of its own
+    await page
+      .locator('.builder-controls')
+      .getByRole('button', { name: 'Pull Calculator' })
+      .click();
+    await page.locator('.builder-preview canvas').waitFor({ timeout: 15000 });
+    await page.waitForTimeout(400);
+  },
+});
+
 await browser.close();
+stopServer();
 console.log('wrote:\n' + shots.join('\n'));
 process.exit(0);
