@@ -159,13 +159,13 @@ if (ensnaringTicks.length > 0) {
   );
   const stacks = uniqueAtkPcts.map((v) => (v / 25.08).toFixed(1));
   console.log(`  Implied stacks: ${stacks.join(', ')}`);
-  // Time-weighted average stack count
+  // Per-tick average stack count
   const totalStackSec = ensnaringTicks.reduce(
     (s, e) => s + e.atkPct / 25.08,
     0
   );
   console.log(
-    `  Time-weighted avg stacks: ${(totalStackSec / ensnaringTicks.length).toFixed(2)}`
+    `  Per-tick avg stacks: ${(totalStackSec / ensnaringTicks.length).toFixed(2)}`
   );
 }
 
@@ -190,32 +190,19 @@ console.log(`  Burst casts (mihara):          ${burstCasts.length}`);
 console.log(`  Stage-3 entries (sustDmg%):    ${stage3.length}`);
 
 // Print Restraint dump timing
-const dumps = dmgEvents.filter(
-  (e) => e.srcSlot === 'skill1' && Math.abs(e.atkPct - 500.6) < 0.01
-);
 console.log();
-console.log(`--- Restraint dump timing (${dumps.length} dumps) ---`);
-for (const d of dumps.slice(0, 20)) {
+console.log(`--- Restraint dump timing (${restraintDumps.length} dumps) ---`);
+for (const d of restraintDumps.slice(0, 20)) {
   console.log(
     `  t=${d.sec.toFixed(2)}s  atkPct=${d.atkPct}  amount=${d.amount.toLocaleString()}  inFB=${d.inFullBurst}`
   );
 }
-if (dumps.length > 20) {
-  console.log(`  ... (${dumps.length - 20} more)`);
+if (restraintDumps.length > 20) {
+  console.log(`  ... (${restraintDumps.length - 20} more)`);
 }
 
-// Print Ensnaring resource changes
-const resourceEvents = events.filter(
-  (e): e is Extract<SimEvent, { kind: 'buffApply' }> =>
-    e.kind === 'buffApply' && e.stat === 'resource' && e.targetSlug === FOCUS
-);
+// Ensnaring resource pool — not measurable via events
 console.log();
-console.log(`--- Ensnaring resource changes (${resourceEvents.length}) ---`);
-for (const e of resourceEvents.slice(0, 15)) {
-  console.log(
-    `  t=${(e.frame / 60).toFixed(2)}s  value=${e.value}  refresh=${e.refresh}`
-  );
-}
-if (resourceEvents.length > 15) {
-  console.log(`  ... (${resourceEvents.length - 15} more)`);
-}
+console.log(
+  '--- Ensnaring resource pool: resource changes are not emitted as SimEvents — not measurable via the event log ---'
+);

@@ -135,6 +135,9 @@ const pumNoFbGate = withPatchedOverride(SLUG, (ov) => {
     throw new Error('pum S2b fbGate:inFb block missing — fixture is stale');
   }
   delete b.fbGate;
+  if (b.trigger?.countScope === 'gated') {
+    delete b.trigger.countScope;
+  }
 });
 /** P3 counterfactual: the level-1 ATK-stack magnitude 6.63 instead of the max-level 11.22. */
 const pumS2bLvl1 = withPatchedOverride(SLUG, (ov) => {

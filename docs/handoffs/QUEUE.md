@@ -123,18 +123,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    _(Body restored 2026-08-13: nine lines were dropped from this item by the archive commit
    `80c9f041`; recovered verbatim from `d3314ca3`.)_
 
-5. **DONE 2026-08-16** — `countScope: 'gated'` triage complete. 18 units triaged from code census
-   (117 unmigrated hitCount blocks total). 2 migrated to `'gated'` (`kurumi` S2, `privaty-unkind-maid`
-   S2b); 16 stay at `'always'` (default) — their counting is scoped to a non-FB status (BOOM Install,
-   Hacked, Anti A.T. Field, etc.) or has no FB mention at all. Total migrated: 5 of 28
-   (`velvet` ×2, `mihara-bonding-chain` ×1, `kurumi` ×1, `privaty-unkind-maid` ×1). Zero damage
-   drift on regression.
-
-6. **DONE 2026-08-16** — both `dispatch-kimi.sh` and `dispatch-claude.sh` now gate on
-   `jq -e 'has("verdict")'` before the model injection, matching the rescue path's shape check.
-   On failure the raw + cleaned reply are persisted for rescue, same as the syntax-failure path.
-
-7. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
+5. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
    The cadence landing itself is SHIPPED (merged as PR #126, 2026-08-16; cross-family
    `/code-review` verdict FIX-BEFORE-MERGE → all 3 FIX findings addressed pre-merge; landing
    record archived to `docs/handoffs/closed/2026-08-16-nbo-swap-cadence-landing.md`).

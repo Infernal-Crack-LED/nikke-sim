@@ -60,7 +60,7 @@ None of these is yet evidence — this is a ranked list of where a ~14% over-cre
 | Restraint dumps        | 11   | 9.2        | 1.0%  | 1 passive + 10 FB ends — correct count                       |
 
 **Structural counts:** 10 FB ends, 6 mihara burst casts, 11 stage-3 entries (sustainedDamagePct
-applies), 0 mihara FB starts (she's a B3 — her burst IS the chain's B3 cast).
+applies), 11 Full Burst starts (all units — the marker is global, not per-unit).
 
 **N6 seats 3 B3s** (mihara, maiden-ice-rose, maxwell) — the sole-B3 gate is NOT exact on this
 comp. But the Restraint dump count (11 = 1 + 10 FB ends) is correct regardless: the fullBurstEnd
@@ -132,8 +132,8 @@ way to make the board green again is to invent a new one. Don't.
 ## Related
 
 - QUEUE item 1 (the `mihara-bonding-chain` bullet) points here.
-- QUEUE item 5, `snow-white-heavy-arms`, is the **same class** — a faithful fix exposing a fit that
-  was standing on the bug. Whatever method localizes one may well localize the other; consider doing
-  them in one session.
+- `snow-white-heavy-arms` (closed 2026-08-16, board back to 0.9804) was the **same class** — a
+  faithful fix exposing a fit that was standing on the bug. Whatever method localizes one may well
+  localize the other; consider doing them in one session.
 - DECISIONS 2026-08-13 (the live-pool ruling); `scripts/tests/units/mihara-bonding-chain.test.ts`
   (M2/M3 pin the live pool and the burst cancel, with the flat-301 and static-20 counterfactuals).
