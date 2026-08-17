@@ -134,10 +134,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      It records the arithmetic-closure evidence, the independent 12/12 splash-count corroboration, the
      49-minute FINDINGS-ONLY→enacted gap, and the caveat that only `snow-white-heavy-arms` of the three
      `gaugeHits` carriers is measurement-backed (`eve`/`little-mermaid` are kit-prose only).
-   - **⚑ Protected-path correction pending owner approval:** the comment directly above `skillGauge()`
-     in `src/engine/sim.ts` claims the `maiden-ice-rose` rider "measured exactly her target per-shot
-     value, 364". The cited probe records **3.45%** vs a modeled 3.64% (U28's −5.2% residual).
-     `docs/data/burst-gauge.md` §5/§6 corrected 2026-08-17; the engine comment was not touched.
+   - ~~Protected-path correction pending owner approval: the `skillGauge` comment in
+     `src/engine/sim.ts` claims the `maiden-ice-rose` rider "measured exactly 364".~~ **CLOSED
+     2026-08-17** (owner-approved, comment-only — zero non-comment lines changed). It now states the
+     actual 3.45%-vs-modelled-3.64% measurement, that the flat/un-focused SHAPE is confirmed while the
+     −5.2% magnitude residual is OPEN (U28), that `hitsPerShot` 1 means the anchor does not verify the
+     `hitsPerShot > 1` divisor, and disambiguates `maiden-ice-rose` from the base `maiden`.
+     `docs/data/burst-gauge.md` §5/§6 were corrected the same day.
    - Second, lower priority: settle
      the clean-bin-time vs full-window denominator on a fixture with known ground truth, which would
      turn the standing MAR caveat into a measured bias bound — every detection in this thread is
