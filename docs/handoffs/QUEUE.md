@@ -68,16 +68,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > a mis-set constant; and the run measured the classified-steady credit at **11.32 / 11.15** on two
 > independently-calibrated recordings, both excluding the shipped 10.388.
 >
-> **N1b. ⛔ BLOCKING PREREQUISITE — a render-scale calibration read on `anis-star`'s own solo bar.**
-> This is the one measurement that settles the magnitude question, and until it exists **no further
-> magnitude run is worth starting** (a third would re-fight the same argument). A3's own
-> `series30fps.calibration` block carries `rawOverTrue = 1.064` — a standing instrument-gain claim
-> anchored on `maiden-ice-rose`. Applied, it drags the measured 11.32 down to ~10.64 with a CI that
-> CONTAINS the shipped 10.388, i.e. the whole elevation could be reader gain. The 2026-08-17 run's
-> pre-registered gain test looks for a gain SIGNATURE in the data (absent) and has no leg for a gain
-> CONSTANT already written down elsewhere in the tree. **DO:** apply the `maiden-ice-rose`-anchored
-> calibration method to `docs/probes/solo/anis-star-solo.mov` directly and confirm or refute
-> `rawOverTrue ≈ 1.064` for THIS bar. Footage-free (recording on disk).
+> **N1b. DONE 2026-08-17 — INCONCLUSIVE.** Calibration read landed as a findings-only artifact
+> (`docs/probe-data/n1b-anis-star-calibration-read-2026-08-17.json`). The maiden-ice-rose sub-step
+> method **cannot replicate** on anis-star's bar: the two-sub-step structure (weapon + rider,
+> ~160ms apart) is structurally absent — every steady pull lands in a single 60fps frame. Bar width
+> is identical (138px) so the pixel-to-% basis for a universal gain exists, but the internal
+> calibration anchor is not available. Applied, 1.064 moves solo #2 E2 to 10.64 (CI [10.10, 11.18])
+> which CONTAINS 10.388, but the point estimates imply a higher gain (~1.090) would be needed.
+> **Neither confirmed nor refuted.** The standing claim remains an unvalidated carry. Settling U28
+> now requires (a) a recording with resolvable sub-steps or (b) an independent non-bar measurement.
 >
 > **N1c. Owner ruling wanted (cheap, no work attached).** The 2-of-2 split turned on one question:
 > may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg when the same
@@ -127,15 +126,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > ⚑ `docs/probes/**` is GITIGNORED — a fresh worktree has no media, so run this in the main tree (or
 > symlink the probe dir).
 >
-> **N4. Test hygiene on `scripts/tests/gauge-cycle-decomp.test.ts`.** Retitle its "measured 4.43 /
-> 3.56 / 3.71" bands as SIM DRIFT-GUARDS — four-leg confirmed 2026-08-17 as that instrument's own
-> 2026-08-04 output relabelled "measured" (`git show 2a8b869d`); the real bar-paint tape is 2.342 /
-> 1.75–1.82 / 2.09–2.11s. Also record that its `PI2 < T5` assertion is contradicted by measurement
-> regardless of any arm (real T5 1.75–1.82s < real PI2 2.09–2.11s), and that T1 has NO footage refill
-> measurement at all. ⚑ Do NOT blanket-`--update`: of the 19 reds under the `gaugeHits` arm, ZERO are
-> measured-anchored, 4 are child-process harness artifacts, 15 are genuine arm effects.
+> **N4. DONE 2026-08-17** (`b5211625`). The "measured 4.43 / 3.56 / 3.71" bands are now titled as
+> SIM DRIFT-GUARDS; the PI2 < T5 contradiction and T1's missing footage measurement are documented
+> in the file header. ⚑ Do NOT blanket-`--update`: of the 19 reds under the `gaugeHits` arm, ZERO
+> are measured-anchored, 4 are child-process harness artifacts, 15 are genuine arm effects.
 >
-> **N5. Probe-tooling follow-ups — 2 of 4 DONE 2026-08-17, 2 remain** (all footage-free, detail in
+> **N5. Probe-tooling follow-ups — ALL 4 DONE 2026-08-17** (all footage-free, detail in
 > thread 2 below).
 >
 > - ~~`scan.ts` fixture writer emits fields `TempoFixture` does not declare~~ **DONE** (`b43378cf`):
@@ -147,10 +143,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 >   typo costs a second instead of a full video extraction. ⚑ Reported, NOT changed: `--debug-dir`
 >   (`scan.ts` ~line 184) has the identical bare-flag pattern — left alone because absence there is
 >   genuinely optional rather than a dropped deliverable. Owner call.
-> - **OPEN:** `auditElementControl` / `--element-control` has ZERO vitest coverage and its C1
->   artifact block is never replayed.
-> - **OPEN:** `ceiling-screen.test.ts` hard-codes three literals (23.618, 38.1, `/ 30`) derivable
->   from artifacts it already loads.
+> - ~~`auditElementControl` / `--element-control` has ZERO vitest coverage~~ **DONE** (`93426b0d`):
+>   `scripts/tests/battery/element-control.test.ts` — five assertions pin the C1 invariants on N3
+>   (gauge identical across elements, FB counts identical, damage moves, error on unknown comp).
+> - ~~`ceiling-screen.test.ts` hard-codes three literals (23.618, 38.1, `/ 30`)~~ **DONE**
+>   (`93426b0d`): all three now derived from committed artifacts the test already loads. The
+>   candSimRefillSec shift (38.1 → exact schedule sum 38.2) moves separationSigmas 0.9848 → 0.9861.
 >
 > **N6 (new, from the N3 landing — findings-only, reported not acted on).** The sibling
 > `--refill-starvation` and `--multihit-crediting` folds in `scripts/battery/fb-count-matrix.ts`
