@@ -213,6 +213,21 @@ if ! printf '%s' "$CLEANED" | jq empty 2>/dev/null; then
   exit 1
 fi
 
+# Shape check: must carry a `verdict` key (the rescue path already enforces this — the bridges
+# did not, so a valid-JSON non-verdict reply was written as $OUT with a ✓). Without this, any
+# {"foo":"bar"} that parses clean gets model-stamped and lands indistinguishable from a real verdict.
+if ! printf '%s' "$CLEANED" | jq -e 'has("verdict")' >/dev/null 2>&1; then
+  mkdir -p "$(dirname "$OUT")"
+  printf '%s' "$RESULT_TEXT" > "${OUT%.json}.raw.txt"
+  printf '%s' "$CLEANED" > "${OUT%.json}.cleaned.txt"
+  KEYS="$(printf '%s' "$CLEANED" | jq -r 'keys | join(", ")' 2>/dev/null || echo 'not an object')"
+  echo "❌ model response is valid JSON but has no \`verdict\` field (keys: $KEYS)" >&2
+  echo "   raw reply saved:      ${OUT%.json}.raw.txt" >&2
+  echo "   extracted candidate:  ${OUT%.json}.cleaned.txt" >&2
+  echo "   rescue: python3 scripts/extract-review-json.py ${OUT%.json}.raw.txt $OUT --model $MODEL" >&2
+  exit 1
+fi
+
 # Inject the model provenance field.
 FINAL="$(printf '%s' "$CLEANED" | jq --arg m "$MODEL" '. + {model: $m}')"
 
