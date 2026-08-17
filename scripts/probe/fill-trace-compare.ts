@@ -4134,6 +4134,11 @@ export function soloMagRate(opts: {
   // 100% cap is not a reload boundary: the bar stopped climbing because it was FULL, so its delta
   // is truncated and would drag the per-magazine mean down. Drop capped plateaus outright rather
   // than let them contribute a short final delta.
+  // INTERIOR capped plateau (a window straddling a gauge reset mid-window) is NOT guarded here:
+  // dropping it joins the last pre-cap plateau to the first post-reset one. That cannot produce a
+  // silent over-read — the bar resets DOWNWARD, so the joined delta lands NEGATIVE in perMagRaw and
+  // the spanning cycle inflates cycleSdSec. Unguarded but LOUD: a negative perMagRaw entry means the
+  // window straddles a reset and must be re-cut, not interpreted.
   const saturatedPlateaus = plateaus.filter((p) => p.level >= 100 - columnPct);
   const usablePlateaus = plateaus.filter((p) => p.level < 100 - columnPct);
   if (usablePlateaus.length < 2) {
@@ -4205,7 +4210,10 @@ export function soloMagRate(opts: {
  * would report `discriminates: false` (because `NaN >= 2` is false) and a claim could be withdrawn
  * on a missing flag rather than on evidence.
  */
-function numArg(name: string, opts: { positive?: boolean } = {}): number {
+function numArg(
+  name: string,
+  opts: { positive?: boolean; nonNegative?: boolean } = {}
+): number {
   const raw = arg(name);
   const n = Number(raw);
   if (raw === undefined || !Number.isFinite(n)) {
@@ -4213,6 +4221,9 @@ function numArg(name: string, opts: { positive?: boolean } = {}): number {
   }
   if (opts.positive && n <= 0) {
     throw new Error(`--${name} must be > 0 (got ${n})`);
+  }
+  if (opts.nonNegative && n < 0) {
+    throw new Error(`--${name} must be >= 0 (got ${n})`);
   }
   return n;
 }
@@ -5070,10 +5081,7 @@ export function noiseCorrectedRate(opts: {
   comp: string;
   pooled: Pick<
     ClsPooled,
-    | 'eventBins'
-    | 'usableCleanBins'
-    | 'sumRealDurationSec'
-    | 'realEventBinsPerSec'
+    'eventBins' | 'usableCleanBins' | 'sumRealDurationSec'
   >;
   ceilingBinsPerSec: number;
   falseRates: Record<string, number>;
@@ -5216,10 +5224,12 @@ function fbDurationCli(): void {
       expectSec === undefined
         ? undefined
         : numArg('expect-sec', { positive: true }),
+    // tol-sec 0 is legitimate (an exact-match tolerance), so it is checked as NON-NEGATIVE:
+    // `positive: true` would reject a meaningful value that Number('0') previously accepted.
     tolSec:
       arg('tol-sec') === undefined
         ? undefined
-        : numArg('tol-sec', { positive: true }),
+        : numArg('tol-sec', { nonNegative: true }),
   });
   const artifact = arg('artifact');
   if (artifact) {

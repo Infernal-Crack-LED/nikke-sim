@@ -118,7 +118,7 @@ fi
 # Surface an error envelope explicitly rather than failing later as "no result".
 ERR="$(python3 -c "
 import json, sys
-for line in open('$RAW_OUT'):
+for line in open(sys.argv[1]):
     try:
         m = json.loads(line)
     except Exception:
@@ -126,7 +126,7 @@ for line in open('$RAW_OUT'):
     if isinstance(m, dict) and m.get('is_error'):
         print(json.dumps({k: m.get(k) for k in ('subtype', 'result', 'error') if m.get(k)})[:2000])
         break
-" 2>/dev/null)" || true
+" "$RAW_OUT" 2>/dev/null)" || true
 if [[ -n "$ERR" ]]; then
   echo "❌ qwen reported an error envelope: $ERR" >&2
   exit 1
@@ -135,7 +135,7 @@ fi
 RESULT_TEXT="$(python3 -c "
 import json, sys
 best = None
-for line in open('$RAW_OUT'):
+for line in open(sys.argv[1]):
     line = line.strip()
     if not line:
         continue
@@ -157,18 +157,18 @@ for line in open('$RAW_OUT'):
                     best = blk['text']
 if best:
     sys.stdout.write(best)
-" 2>/dev/null)" || true
+" "$RAW_OUT" 2>/dev/null)" || true
 
 if [[ -z "$RESULT_TEXT" ]]; then
   echo "❌ could not extract a result from the qwen envelope — FULL raw at $RAW_OUT" >&2
   python3 -c "
-import json
+import json, sys
 ts=[]
-for line in open('$RAW_OUT'):
+for line in open(sys.argv[1]):
     try: ts.append(json.loads(line).get('type'))
     except Exception: pass
 print('envelope entry types:', ts[-12:])
-" >&2 2>/dev/null || true
+" "$RAW_OUT" >&2 2>/dev/null || true
   exit 1
 fi
 

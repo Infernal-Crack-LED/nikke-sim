@@ -171,6 +171,32 @@ describe('ceiling screen: which comps can host the H-C detector (2026-08-17)', (
     expect(stderr).not.toContain('discriminates');
   }, 60000);
 
+  it('armPower selects the candidate BY NAME, not positionally, in a multi-comp schedule', () => {
+    // The by-name fix was undiscriminated by any committed input: the N3 schedule is a
+    // single-entry array whose only comp matches, so old `rawCand[0]` and new `find(...)` behaved
+    // identically everywhere. Build the case that separates them — a two-entry list with the
+    // wanted comp SECOND — and assert the wrong one is not silently measured.
+    const n3 = loadSchedule(N3);
+    const decoy = {
+      ...n3,
+      comp: 'decoy comp (must not be selected)',
+      credits: n3.credits.slice(0, 4),
+    };
+    const multi = [decoy, n3];
+    const picked = multi.find((c) => c.comp === 'N3 scarlet/liberalio iron');
+    expect(picked).toBeDefined();
+    expect(multi[0].comp).not.toBe('N3 scarlet/liberalio iron');
+    // The positional read would have measured the decoy: prove the two differ, so a regression
+    // back to rawCand[0] cannot pass this test.
+    expect(simCeiling(picked as SimSchedule).ceilingBinsPerSec).toBeCloseTo(
+      5.13,
+      2
+    );
+    expect(
+      simCeiling(multi[0] as SimSchedule).ceilingBinsPerSec
+    ).not.toBeCloseTo(5.13, 2);
+  });
+
   it('the artifact reports the same two ceilings it is cited for', () => {
     const nv = Object.fromEntries(
       artifact.part2_ceilingScreen.nonVacuous.map((r) => [r.comp, r.ceiling])
