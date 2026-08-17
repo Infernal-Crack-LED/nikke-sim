@@ -1580,8 +1580,16 @@ export function runSim(
     isSgSpray(u)
       ? sgPelletBase(u) + stat(u, 'pelletCountFlat', frame)
       : u.char.hitsPerShot;
-  // one skill-damage impact (flatDamage proc, dot tick) = one target-base hit of gen
-  // (maiden's rider measured exactly her target per-shot value, 364, no focus bonus)
+  // One skill-damage impact (flatDamage proc, dot tick, rider) credits
+  // `targetPerTrigger / hitsPerShot` (SG: /10), with NO focus/charge bonus and excluding
+  // `flatPerTrigger`. Anchor: `maiden-ice-rose`'s rider sub-step (Maiden: Ice Rose, RL/Electric —
+  // NOT the base `maiden`, SG/Electric) measured 3.45% against her modeled 3.64%
+  // (targetPerTrigger 364), docs/probe-runs.md 2026-07-13 "tb2 3 maiden" hand read. The flat,
+  // un-focus-multiplied SHAPE is confirmed (it is not her 910 weapon step, nor her base 182); the
+  // -5.2% MAGNITUDE residual is OPEN — open-questions U28. Do not restate this as "measured
+  // exactly 364" (this comment did until 2026-08-17); the table value and the measurement differ.
+  // Her `hitsPerShot` is 1, so this anchor does NOT verify the divisor for `hitsPerShot > 1`
+  // (also U28 — every unit where the divisor bites rides extrapolation).
   const skillGauge = (u: UnitState, frame: number) => {
     const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[
       u.char.slug

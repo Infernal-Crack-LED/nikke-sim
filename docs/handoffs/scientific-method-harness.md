@@ -1172,3 +1172,100 @@ bridge-vs-activity ratios run OPPOSITE on the two arms, so the estimator's behav
 mechanism. The named next step is the footage-free `liberalio` gauge-credit audit: she is the shared
 unit of both arms, her datamine was once 6× off, and she is the only route at the rival this run
 provably cannot touch.
+
+---
+
+## 2026-08-17 — `liberalio` sub-hit gauge credit (`gaugeHits: 5`) — **LOG** (driver INCONCLUSIVE/HIGH · blind Fable ACCEPT-of-INCONCLUSIVE/HIGH)
+
+The named next step from the entry above, run footage-free. **Nothing enacted; shipped state stands
+(her 202.5 rider carries no `gaugeHits`), the four disabled comps stay disabled, and the stamped
+board-wide charge-B3 verdict is untouched.** Branch `probe/liberalio-gaugehits-2026-08-17`.
+Instruments: `scripts/census-gauge-subhits.ts`, `scripts/battery/liberalio-gaugehits-ab.ts`
+(`--residual` / `--sizing` / `--neutrality` / `--skew`), plus the loader-level arm
+`scripts/battery/liberalio-gaugehits-loader-arm.ts` + `liberalio-gaugehits.vitest.config.ts`
+(`LIB_GAUGEHITS=N`, self-validated: unset ⇒ suite byte-identical to a plain run).
+
+**THE DEFECT IS REAL AND NARROW.** Her kit `skill1` says "Deals 40.5% of final ATK as additional
+damage. **Activates 5 times**"; the override aggregates it to ONE `flatDamage` 202.5 with no
+`gaugeHits`, so the engine credits 1 gauge impact per full charge. Her gauge row (280/560/250) was
+verified field-for-field against her own datamine and is CORRECT — the per-unit-datamine hypothesis
+that opened this thread is refuted at the row level.
+
+**WHAT THE RUN SETTLED — the control was never measured.** Follow-up (i) from the previous entry
+("pin the estimator, not just the tolerance") paid for itself immediately: the literals in
+`scripts/tests/gauge-cycle-decomp.test.ts` titled **"measured 4.43 / 3.56 / 3.71" are not footage
+measurements at all** — they are that instrument's own 2026-08-04 sim `excess` output re-labelled
+"measured" (`git show 2a8b869d`; confirmed on four independent legs). The real bar-paint-anchored
+footage refill is **iron 2.342s / T5 1.75–1.82s / PI2 2.09–2.11s** (2026-08-14 committed fixtures,
+n=10–12 windows), i.e. **the sim refills TOO SLOWLY, not too fast** — including on PI2, which seats no
+`liberalio` and runs ~44% slow. The "two measured observables disagree" framing that sent this to the
+pipeline was an artifact of trusting those titles; both observables actually move the same way.
+
+**RESULT.** Pre-registered rule: `residual = (excess − measured)/measured`, scored against a
+`liberalio`-free control band `R_ctrl ± δ` = [0.292, 0.592] (`R_ctrl` 0.442 from PI2, δ 0.15 justified
+from the ±0.15s estimator bias). Basis pre-check PASSED (all three fixtures recompute to their
+recorded medians). All three controls (PI2, T8 iron-weak, PA MiKa) **byte-identical to the last
+digit** across arms; damage neutrality **bit-exact zero delta** on 30 unit rows under `disableBursts`.
+H1 gives iron **+0.116 (below band)** and T5 **+0.625 (above band)** ⇒ not both inside ⇒ INCONCLUSIVE.
+Both REJECT gates cleared (no undershoot of the tape; no FB count exceeds measured, iron judged at 13
+from the focus-matched arm). Even under H1 every seated comp still undershoots its measured FB count
+(iron 12 vs 13, T5 12 vs 13, N3 9 vs 10) — coherent with the stamped general gap, no closure claimed.
+
+### Harness lessons
+
+1. **A test-file literal labelled "measured" is a CLAIM, not a measurement — date it.** Three weeks of
+   this thread's reasoning, and the audit that opened this run, rested on `4.43/3.56/3.71` because
+   they were adjacent to the word "measured" in a test title. One `git show` on the commit that
+   introduced them showed the commit body calling them instrument output. **Cheapest possible check,
+   highest yield in this thread so far.** Generalisation: pin the estimator AND date the tape.
+2. **A degenerate arithmetic coincidence is not an independent confirmation.** The driver cited
+   `rl3 33.6 = 2 triggers × 6 impacts × 2.8 base` as exact corroboration of a 5-sub-hit count. It is
+   degenerate: `rl3` is one scalar over (window × cadence × per-impact energy × impacts), so both the
+   basis (factor 2) and the pull count are free — 33.6 fits 6, 3, or 12 impacts equally. Related
+   traps found the same pass: the doc's "74 of 101 within ±15%" is prose-only (no committed
+   instrument, actual re-derivation 61/108), and `helm`'s `rl3` changed upstream 59.73 → **8.4** on
+   2026-07-31, so every worked example resting on 59.73 cites a dead value.
+3. **Perfect confounding is not evidence of mechanism, and the tree may already say so.** `liberalio`
+   sits in exactly the four disabled comps and no others, which the driver framed as making a
+   per-unit defect the natural suspect. `docs/fb-count-matrix.md:61-73` already records that NINE
+   comps carry this error class and FIVE seat no `liberalio`, and this log's own entry stamps it
+   "NOT liberalio-specific". **Check whether the inference you are about to draw has already been
+   drawn and rejected here.**
+4. **Robustness must be checked against the MEASURED-VALUE choice, not just the tolerance.** The
+   driver verified the verdict survived any defensible δ; the blind judge found the sharper axis —
+   swapping the midpoint 1.785 for the recomputed ok-window median 1.817 moves T5 to +0.596 against a
+   band top of 0.598, i.e. INSIDE by 0.002. The outcome CLASS is robust across δ, symmetric-median and
+   symmetric-mean pairings; the "opposite-direction split" CAUSAL STORY is knife-edge and is logged as
+   a boundary case, not a diagnosis. **A pre-registered rule can be robust in outcome and fragile in
+   rationale — report which.**
+5. **The scan firewall worked and should stay standard.** Shipped+H1 were scored and the verdict
+   written before the `{2,3,4}` sizing scan ran. That ordering mattered: values 3 and 4 put T5 inside
+   the band, which is exactly the "so let's try 3" reasoning the firewall exists to prevent. No scan
+   value adopted; LOG-only.
+
+### Open items handed forward (owner action)
+
+1. **PREREQUISITE, blocking any future enactment:** the credit-schedule reconstruction
+   (`scripts/battery/fb-count-matrix.ts:2502-2509`) pushes exactly one skill credit per damage event
+   and **never reads `gaugeHits`**, so it under-counts any carrier by (N−1) per impact. Latent only
+   because no comp in `CREDIT_SCHEDULE_COMPS` seats one of the three existing carriers. Extend it
+   before any `gaugeHits` enactment on an iron-sweep or T5 seat, or CHECK (a) is unusable.
+2. **The decidability recipe, pre-committed by the pre-op judge:** a committed fill trace on a SECOND
+   `liberalio`-free comp from the stamped nine, same bar-paint instrument, n≥10 windows — and it
+   should come from a comp with a clean bundle (PI2 is simultaneously the sole control and the only
+   `amountsTrusted: false` bundle). Conversion rule, pre-committed: if two-plus controls cluster
+   within ~δ, a reproduced split THEN converts to affirmative REJECT of full-value crediting; if the
+   controls spread comparably, the proportional-uniformity premise is the refuted thing and H1 stays
+   live.
+3. **The measurement that would actually settle it:** a `maiden-ice-rose`-style hand read of
+   `liberalio`'s per-pull gauge sub-steps (solo or near-solo). The comp-level refill estimator cannot
+   separate H1b's value space from the general gap; a per-pull bar-step read can, and would also feed
+   U28.
+4. **Hygiene:** retitle the `gauge-cycle-decomp.test.ts` "measured" bands as sim drift-guards (four-leg
+   confirmed mislabel), and note that its `PI2 < T5` assertion is contradicted by measurement
+   regardless of any arm (real T5 1.75–1.82s < real PI2 2.09–2.11s).
+5. **Ledger gap, reported by the premise gate:** the 2026-08-15 `snow-white-heavy-arms` per-sub-hit
+   enactment (`4d60a624`) has NO `docs/DECISIONS.md` entry and landed 49 minutes after a probe-runs
+   entry reading "FINDINGS ONLY — nothing enacted. Enactment is an engine touch and owner-gated."
+6. **T5's measured refill is the weakest leg in this run** (n=11, one 4.75s outlier, sd 0.944). Any
+   future citation of "T5 above band" from this entry must carry that caveat.

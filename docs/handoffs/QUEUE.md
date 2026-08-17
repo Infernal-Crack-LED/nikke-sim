@@ -54,6 +54,65 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
+> **NEXT UP — UNBLOCKED AND ORDERED (set 2026-08-17 at owner request).** Every item here is
+> footage-FREE: it runs against footage or fixtures ALREADY on disk, with instruments that already
+> exist. Take them top-down. The numbered threads below (1–5) stay as the reference detail and are
+> mostly footage-gated — do NOT start there.
+>
+> **N1. `anis-star` solo magnitude residual — pre-registered re-run.** NOT footage-gated (the
+> existing recording has four windows; the blocker was hypothesis discrimination, not window count).
+> The 2026-08-17 source hunt narrowed it hard: W4p2 (+16.0), W4p3 (+15.2) and the steady W4p4
+> (+11.6) did the IDENTICAL damage increment 480,330, refuting extra-hits, charge-level
+> (`fullChargeBonus` 250) and crit/core — so the excess is gauge-specific. Artifact:
+> `docs/probe-data/anis-star-anomaly-source-hunt-2026-08-17.json`. **DO:** `/scientific-method` with
+> the candidate DECLARED in the packet — one extra `basePerTrigger` 140 × 2.5 focus × 1.06 aura =
+> 3.71%. ⚑ That figure was fitted AFTER the fact on n=3 and is NOT evidence; declaring it up front is
+> what makes the anomalous windows CLASSIFIABLE instead of premise-violating. Do not let it enter as
+> a conclusion.
+>
+> **N2. A SECOND `liberalio`-free fill trace — this is what decides the `liberalio` question.** Also
+> NOT footage-gated, contrary to how it was first filed: the recording is on disk. **Use `N5
+snowwhite-HA fire`** (`docs/probes/714 noon/5.mp4`; roster `anis-star`, `arcana-fortune-mate`,
+> `privaty`, `snow-white-heavy-arms`, `diesel-winter-sweets`, boss Fire, measured FB 12/12
+> splash-counted 2026-07-14). It is the ideal control: `liberalio`-free, in the stamped nine, with an
+> INDEPENDENT measured FB count, and a clean bundle — PI2 is currently both the sole control and the
+> only `amountsTrusted: false` bundle. **DO:** produce a bar-paint fill trace with the same
+> instruments as the 2026-08-14 set (`scripts/probe/gauge-fill.py --bar …` + `scripts/probe/scan.ts
+--cycle-table`), commit it to `docs/probe-data/`, then apply the ALREADY-PRE-COMMITTED conversion
+> rule: if two-plus `liberalio`-free controls cluster within ~δ (0.15 proportional), a reproduced
+> iron-vs-T5 split converts to an affirmative REJECT of full-value per-sub-hit crediting; if the
+> controls spread comparably, the proportional-uniformity premise is the refuted thing and H1 stays
+> live. ⚑ `docs/probes/**` is GITIGNORED — a fresh worktree has no media, so run this in the main
+> tree (or symlink the probe dir).
+>
+> **N3. Fix the `gaugeHits` blindness in the credit-schedule reconstruction.** `scripts/battery/
+fb-count-matrix.ts` pushes exactly one skill credit per damage event and never reads `gaugeHits`,
+> under-counting a carrier by (N−1) per impact. Latent only because no comp in `CREDIT_SCHEDULE_COMPS`
+> seats one of the three carriers (`snow-white-heavy-arms`, `eve`, `little-mermaid`). **This BLOCKS any
+> future `gaugeHits` enactment on an iron-sweep or T5 seat** — without it, that instrument's CHECK (a)
+> is silently wrong. Pure tooling; gate is `verify.sh` + a fixture pinning a known-good carrier.
+>
+> **N4. Test hygiene on `scripts/tests/gauge-cycle-decomp.test.ts`.** Retitle its "measured 4.43 /
+> 3.56 / 3.71" bands as SIM DRIFT-GUARDS — four-leg confirmed 2026-08-17 as that instrument's own
+> 2026-08-04 output relabelled "measured" (`git show 2a8b869d`); the real bar-paint tape is 2.342 /
+> 1.75–1.82 / 2.09–2.11s. Also record that its `PI2 < T5` assertion is contradicted by measurement
+> regardless of any arm (real T5 1.75–1.82s < real PI2 2.09–2.11s), and that T1 has NO footage refill
+> measurement at all. ⚑ Do NOT blanket-`--update`: of the 19 reds under the `gaugeHits` arm, ZERO are
+> measured-anchored, 4 are child-process harness artifacts, 15 are genuine arm effects.
+>
+> **N5. Probe-tooling follow-ups** (all footage-free, detail in thread 2 below): the `scan.ts` fixture
+> writer emits fields the `TempoFixture` type does not declare (producer/type drift — a rename would
+> only surface at runtime); `auditElementControl` / `--element-control` has ZERO vitest coverage and
+> its C1 artifact block is never replayed; `ceiling-screen.test.ts` hard-codes three literals
+> (23.618, 38.1, `/ 30`) derivable from artifacts it already loads; a bare `--fixture-out` with no
+> value is silently skipped.
+>
+> Also unblocked but lower value: `mihara-bonding-chain`'s fit exposure (thread 1 — localize the
+> over-model, do not restore the 12-stack average); the clean-bin-time vs full-window denominator
+> settlement against a known-ground-truth fixture (turns the standing MAR caveat into a measured bias
+> bound); and the batched `cinderella`/`eve`/`julia` `gaugeHits` census rows — findings-only, and the
+> 2026-08-17 run gives NO support for crediting them at full value.
+
 1. **Faithfulness sweep residue** (batch docs archived 2026-08-13 in
    `docs/handoffs/closed/2026-08-10-faithfulness-batch{1..8}-findings.md`). Most items closed by
    enactment, refutation, or owner ruling (2026-08-11 M-list triage + 2026-08-13 corrections).
@@ -93,12 +152,56 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `basePerTrigger` 140 × 2.5 focus × 1.06 aura = 3.71%. Next step is a gated re-run of the
      counting rule with that hypothesis declared in the packet, so anomalous windows become
      CLASSIFIABLE instead of premise-violating.
-   - **⇒ `liberalio` GAUGE-CREDIT AUDIT — the dominant open item on this thread, and FOOTAGE-FREE.**
-     Named by both the pre-op and blind post-op judges of the 2026-08-17 third-arm run as the only
-     route at the rival that run provably could not touch. She is the SHARED unit of both
-     non-vacuous arms (iron sweep and N3), her burst-gauge datamine was once **6× off**
-     (`c12fcf4e`, 2026-07-26 — the correction that created this entire shortfall thread), and both
-     arms' excess is consistent with a per-unit defect in her model. Second, lower priority: settle
+   - **⇒ `liberalio` GAUGE-CREDIT AUDIT — CLOSED as LOG 2026-08-17. Defect FOUND, magnitude
+     INCONCLUSIVE at 2-of-2. Nothing enacted.**
+     **→ Handoff: [2026-08-17-liberalio-gauge-credit-audit.md](2026-08-17-liberalio-gauge-credit-audit.md)**
+     · decision log: `scientific-method-harness.md` (2026-08-17).
+     Her datamine row is EXACT (refutes the per-unit-datamine hypothesis that opened this thread).
+     The defect: her `skill1` rider says "Activates 5 times" but the aggregated 202.5 `flatDamage`
+     carries no `gaugeHits`, so the engine credits ONE gauge impact per full charge. Crediting all
+     five moves BOTH scored comps' refill TOWARD the measured tape and lifts FB counts without
+     overshooting any measured count, but leaves iron sweep below and T5 above a `liberalio`-free
+     control band ⇒ no single per-sub-hit value reconciles both. Controls byte-identical, damage
+     bit-identical. **`npx tsx scripts/battery/liberalio-gaugehits-ab.ts --residual`** reproduces it;
+     census `npx tsx scripts/census-gauge-subhits.ts`.
+     **Three things this run KILLED — do not rebuild reasoning on them:**
+     (a) the "measured 4.43 / 3.56 / 3.71" refill literals in `gauge-cycle-decomp.test.ts` are
+     relabelled 2026-08-04 SIM output, not footage (4 independent legs); the real bar-paint tape is
+     2.342 / 1.75–1.82 / 2.09–2.11s, so **the sim refills TOO SLOWLY, including on the
+     `liberalio`-free PI2 control (~44% slow)**; (b) `rl3` cannot be decomposed into
+     impacts-per-trigger (degenerate — 33.6 fits 6, 3 or 12 equally), so it never corroborated the
+     5-sub-hit count; (c) her presence in exactly the four disabled comps is MEMBERSHIP, not
+     mechanism — already stamped "NOT liberalio-specific" with 5 of the 9 affected comps seating
+     no `liberalio`.
+     **NEXT, in priority order:** (1) ⚑ PREREQUISITE for any future enactment — the credit-schedule
+     reconstruction (`scripts/battery/fb-count-matrix.ts:2502-2509`) never reads `gaugeHits` and
+     under-counts a carrier by (N−1)/impact; (2) the settling measurement is a
+     `maiden-ice-rose`-style hand read of her per-pull gauge sub-steps (the comp-level estimator
+     structurally cannot separate a reduced per-sub-hit value from the general gap); (3) a second
+     committed fill trace on a `liberalio`-free stamped-class comp — **NEXT UP N2, and NOT
+     footage-gated: `N5 snowwhite-HA fire`'s recording is already on disk** — which converts a
+     reproduced split into an affirmative REJECT.
+   - **Batched `gaugeHits` follow-up (findings-only, small):** `cinderella` (burst, N=10),
+     `eve` (burst, N=6), `julia` (burst, N=5) also aggregate a multi-hit without `gaugeHits`. All
+     once-per-cast, so none can carry the FB shortfall — and the 2026-08-17 run gives no support for
+     crediting them at full value either.
+   - **Test-hygiene follow-up:** retitle `gauge-cycle-decomp.test.ts`'s "measured" bands as sim
+     drift-guards, and note its `PI2 < T5` assert is contradicted by measurement regardless of any
+     arm (real T5 1.75–1.82s < real PI2 2.09–2.11s). Do NOT blanket-`--update`: of 19 reds under the
+     arm, ZERO are measured-anchored, 4 are child-process harness artifacts, 15 genuine.
+   - ~~Ledger gap: the 2026-08-15 `snow-white-heavy-arms` per-sub-hit enactment has no DECISIONS
+     entry.~~ **CLOSED 2026-08-17** — entry backfilled into `docs/DECISIONS.md` → Measured mechanics.
+     It records the arithmetic-closure evidence, the independent 12/12 splash-count corroboration, the
+     49-minute FINDINGS-ONLY→enacted gap, and the caveat that only `snow-white-heavy-arms` of the three
+     `gaugeHits` carriers is measurement-backed (`eve`/`little-mermaid` are kit-prose only).
+   - ~~Protected-path correction pending owner approval: the `skillGauge` comment in
+     `src/engine/sim.ts` claims the `maiden-ice-rose` rider "measured exactly 364".~~ **CLOSED
+     2026-08-17** (owner-approved, comment-only — zero non-comment lines changed). It now states the
+     actual 3.45%-vs-modelled-3.64% measurement, that the flat/un-focused SHAPE is confirmed while the
+     −5.2% magnitude residual is OPEN (U28), that `hitsPerShot` 1 means the anchor does not verify the
+     `hitsPerShot > 1` divisor, and disambiguates `maiden-ice-rose` from the base `maiden`.
+     `docs/data/burst-gauge.md` §5/§6 were corrected the same day.
+   - Second, lower priority: settle
      the clean-bin-time vs full-window denominator on a fixture with known ground truth, which would
      turn the standing MAR caveat into a measured bias bound — every detection in this thread is
      currently estimator-conditional.
