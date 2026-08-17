@@ -87,20 +87,53 @@ export const DIRTY_FLAGS = [
 // ---------------------------------------------------------------------------
 // inputs
 // ---------------------------------------------------------------------------
+// Shape of the committed tempo fixtures (docs/probe-data/tempo-cycle-*.json), written by
+// `scripts/probe/scan.ts --cycle-table --fixture-out <p>`.
+//
+// ⚠ PRODUCER/TYPE DRIFT (closed 2026-08-17). This interface used to declare only a SUBSET of what
+// the writer emits: `_note`, `frameT`, `frameFill`, the `fullWindows` fill columns, and six of the
+// eight `expected` keys were all missing. The drift was invisible at compile time and consumers
+// worked around it with casts — e.g. `fixture as TempoFixture & { frameT: number[] }` in
+// `scripts/tests/probe/n3-third-arm.test.ts`. The practical cost: a rename in the writer would have
+// type-checked clean here and only surfaced at runtime, on a fixture that replays a recording
+// `docs/probes/` no longer has. Every field below was verified present in the committed fixtures on
+// 2026-08-17; anything not universal is optional, and marked with which fixture lacks it.
 export interface TempoFixture {
+  _note?: string;
   source: { video: string; fps: number; command: string };
   fullWindows: {
     start: number;
     end: number;
     durationSec: number;
     partial: boolean;
+    // Fill columns — emitted by the writer for every window; optional so a hand-authored
+    // fixture stays assignable.
+    peakFill?: number;
+    startFill?: number;
+    endFill?: number;
+    last?: number;
+    lastFill?: number;
   }[];
   burstChains: {
     stage1: number | null;
     stage2: number | null;
     stage3: number | null;
   }[];
-  expected?: { fullBursts?: number; steadyStateMean?: number };
+  // Per-frame trace. Absent from the older hand-built
+  // `fill-trace-u8-i-misc-b3s-windows.json` (PI2), present in every scan.ts-written fixture.
+  frameT?: number[];
+  frameFill?: number[];
+  expected?: {
+    fullBursts?: number;
+    steadyStateMean?: number;
+    fbDurationLowerBound?: { bound: number; cycle: number };
+    correctedDurations?: number[];
+    qualifies?: boolean[];
+    tailStitched?: boolean[];
+    nominalDurations?: number[];
+    // Newest field — present only in tempo-cycle-n3-scarlet-liberalio-iron.json so far.
+    guard3aResiduals?: number[];
+  };
 }
 
 export interface FillRead {
