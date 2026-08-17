@@ -279,21 +279,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      bridge-vs-activity ratios run OPPOSITE on the two arms (0.757 vs 1.357), so the estimator's
      behaviour has no mechanism.
    - **Probe tooling follow-ups (achievable without footage):**
-     (i) `gauge-fill.py` without `--bar` self-calibrates onto a dark terrain edge on solo footage
-     — always pass `--bar` + the maiden fixture gate (/skill-maintenance candidate);
+     (i) **CLOSED 2026-08-17** — `gauge-fill.py` now emits a stderr warning when `--bar` is not
+     passed, noting the auto-lock footgun on solo footage. The maiden fixture gate in
+     `scripts/tests/gauge-fill-anchor.test.ts` validates the reader against the labeled anchor.
      (ii) `read-ammo.ts` reads 0/851 frames on text-label HUD ("AMMO / NNN") — needs a text-label
      digit reader path;
-     (iii) **filed 2026-08-17 from the cross-family code review (`qwen3.8-max-preview`)** — the FIX
-     and both FOLLOW-UPs it raised are already fixed; these remain: `scan.ts`'s fixture writer emits
-     fields (`frameT`/`frameFill`, the extended `expected` block) that the `TempoFixture` TYPE does
-     not declare, and both consumers bridge with casts — producer and declared type have drifted, so
-     a rename would only surface at runtime; `auditElementControl` / `--element-control` in
-     `fb-count-matrix.ts` has ZERO vitest coverage and the C1 artifact block it produced is never
-     replayed (the reviewer re-ran it manually and reproduced the recorded result exactly), plus it
-     matches the long `COMPS` name while the classification world uses the short arm label;
-     `ceiling-screen.test.ts` hard-codes three literals (23.618, 38.1, `/ 30`) that are derivable
-     from artifacts it already loads — drift risk, not error; a bare `--fixture-out` with no value
-     is silently skipped in `scan.ts`.
+     (iii) **CLOSED 2026-08-17** — all four items from the cross-family code review
+     (`qwen3.8-max-preview`): `TempoFixture` type updated to declare all writer-emitted fields
+     (closed in `fill-trace-compare.ts`); `auditElementControl` test coverage added
+     (`scripts/tests/battery/element-control.test.ts`); `ceiling-screen.test.ts` literals derived
+     from artifacts; bare `--fixture-out` guard added in `scan.ts`.
    - **T1 wind-weak v2 PROCESSED 2026-08-16** — 13 FBs confirmed (scan.ts, 2nd detector
      corroborated), per-unit totals from Battle Records screenshot. Result:
      `docs/probes/misc/t1-wind-weak-v2-result.md`. Confirms the existing "windweak t257 13fb"

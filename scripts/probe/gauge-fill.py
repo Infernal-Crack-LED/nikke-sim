@@ -769,6 +769,17 @@ def team_main(args):
         diag = {'source': 'explicit --bar'}
         gate_team_width(band, extent, '--bar')
     else:
+        # ⚠ AUTO-LOCK FOOTGUN (2026-08-17): team_lock can self-calibrate onto a dark terrain edge
+        # on solo footage (no team burst widget present). The width gate catches egregious misses,
+        # but a terrain edge in the right pixel range passes silently. For reliable reads, always
+        # pass --bar with the known bar coordinates. The maiden fixture gate in
+        # scripts/tests/gauge-fill-anchor.test.ts validates the reader against the labeled anchor.
+        print(
+            'WARNING: auto-locking the bar region (no --bar passed). On solo footage this can '
+            'lock onto a dark terrain edge instead of the gauge bar. Pass --bar y0:y1:x0:x1 for '
+            'reliable reads.',
+            file=sys.stderr,
+        )
         band, extent, diag = team_lock(lock_files)
 
     spans = parse_spans(args.spans) if args.spans else None
