@@ -40,6 +40,8 @@
 // ============================================================================
 import { readFileSync, writeFileSync } from 'node:fs';
 
+import { buildCycleTable } from './cycle-table.js';
+
 // ---------------------------------------------------------------------------
 // pre-committed constants
 // ---------------------------------------------------------------------------
@@ -4398,6 +4400,858 @@ export function armPower(opts: {
   };
 }
 
+// ---------------------------------------------------------------------------
+// CLOSURE DIAGNOSTIC — §E.3 of docs/handoffs/2026-08-17-n3-third-arm-preop-packet.md
+//
+// Recomputes an arm's closure residual EXACTLY as `classifyArm` does, then recomputes it with
+// `bridgedMass` excluded from `sumRealDelta`. Bridged increments (a clean-read gap wider than
+// CLS_MAX_EVENT_GAP_FRAMES) are dropped from the EVENT census but still ride inside the telescoped
+// `sumRealDelta`, so they inflate `massCorrReal` and therefore the residual.
+//
+// "Excluding bridged mass" is AMBIGUOUS — `rho` also divides by `sumRealDelta` — so BOTH readings
+// are computed and reported side by side, and neither is preferred here:
+//   variantA — rho held at its as-specified value; only massCorrReal is corrected.
+//   variantB — rho recomputed from the corrected sumRealDelta as well.
+//
+// DIAGNOSTIC ONLY. It applies no branch, stamps nothing, and does not alter the statistic.
+// ---------------------------------------------------------------------------
+export interface ClosureVariant {
+  label: string;
+  sumRealDelta: number;
+  massCorrReal: number;
+  oEff: number;
+  rho: number;
+  closureResidual: number;
+  belowThreshold: boolean;
+}
+
+export interface ClosureDiagResult {
+  comp: string;
+  threshold: number;
+  usableWindows: number;
+  eventMass: number;
+  bridgedMassTotal: number;
+  /** invariants held fixed across all three readings (sim side + event census + timing) */
+  held: {
+    oTime: number;
+    massCorrSim: number;
+    S: number;
+    simRatePerSec: number;
+  };
+  asSpecified: ClosureVariant;
+  variantA: ClosureVariant;
+  variantB: ClosureVariant;
+  /** self-check: as-specified recompute vs the arm's own stored closureResidual */
+  reproduces: {
+    storedClosureResidual: number;
+    recomputedClosureResidual: number;
+    matches: boolean;
+    storedRho: number;
+    recomputedRho: number;
+    storedS: number;
+    recomputedS: number;
+  };
+}
+
+export function closureDiagnostic(arm: {
+  comp: string;
+  windows: ClsWindow[];
+  pooled: ClsPooled | null;
+  sim: SimComponents | null;
+}): ClosureDiagResult {
+  if (!arm.pooled || !arm.sim) {
+    throw new Error(
+      `closureDiagnostic: arm "${arm.comp}" has no pooled/sim block (real-only or CANNOT-MEASURE arm)`
+    );
+  }
+  const usable = arm.windows.filter((w) => w.usable);
+  const sum = (f: (w: ClsWindow) => number): number =>
+    usable.reduce((a, w) => a + f(w), 0);
+  const sumRealDelta = sum((w) => w.sumRealDelta);
+  const sumRealDur = sum((w) => w.durationSec);
+  const sumSimGauge = sum((w) => w.simGauge);
+  const sumSimDur = sum((w) => w.simDurationSec);
+  const eventBins = sum((w) => w.eventBins);
+  const eventMass = sum((w) => w.eventMass);
+  const bridgedMassTotal = sum((w) => w.bridgedMass);
+  const simRate = sumSimGauge / sumSimDur;
+
+  const oTime =
+    eventBins / sumRealDur / (arm.sim.creditBins / arm.sim.totalDurationSec);
+  const massCorrSim =
+    arm.sim.totalGauge /
+    Math.max(1e-9, arm.sim.binAmountQuantiles.mean * arm.sim.creditBins);
+  const allDeltas = usable
+    .flatMap((w) => w.eventBinDeltas)
+    .sort((a, b) => a - b);
+  const S = quantile(allDeltas, 0.5) / arm.sim.binAmountQuantiles.p50;
+
+  const mk = (
+    label: string,
+    massBase: number,
+    rhoBase: number
+  ): ClosureVariant => {
+    const massCorrReal = massBase / Math.max(1e-9, eventMass);
+    const oEff = (oTime * massCorrReal) / massCorrSim;
+    const rho = rhoBase / sumRealDur / simRate;
+    const residual = Math.abs(oEff * S - rho) / rho;
+    return {
+      label,
+      sumRealDelta: round(massBase, 2),
+      massCorrReal: round(massCorrReal),
+      oEff: round(oEff),
+      rho: round(rho),
+      closureResidual: round(residual),
+      belowThreshold: residual < CLS_MAX_CLOSURE_RESIDUAL,
+    };
+  };
+  const corrected = sumRealDelta - bridgedMassTotal;
+  const asSpecified = mk('as-specified', sumRealDelta, sumRealDelta);
+  return {
+    comp: arm.comp,
+    threshold: CLS_MAX_CLOSURE_RESIDUAL,
+    usableWindows: usable.length,
+    eventMass: round(eventMass, 2),
+    bridgedMassTotal: round(bridgedMassTotal, 2),
+    held: {
+      oTime: round(oTime),
+      massCorrSim: round(massCorrSim),
+      S: round(S),
+      simRatePerSec: round(simRate),
+    },
+    asSpecified,
+    variantA: mk(
+      'bridged mass excluded from massCorrReal only; rho held as-specified',
+      corrected,
+      sumRealDelta
+    ),
+    variantB: mk(
+      'bridged mass excluded from massCorrReal AND from rho',
+      corrected,
+      corrected
+    ),
+    reproduces: {
+      storedClosureResidual: arm.pooled.closureResidual,
+      recomputedClosureResidual: asSpecified.closureResidual,
+      matches:
+        Math.abs(asSpecified.closureResidual - arm.pooled.closureResidual) <
+        5e-4,
+      storedRho: arm.pooled.rho,
+      recomputedRho: asSpecified.rho,
+      storedS: arm.pooled.S,
+      recomputedS: round(S),
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// MAR DIAGNOSTIC — control C7 of the same packet. DESCRIPTIVE; no verdict attaches.
+//
+// The clean-bin-time denominator is what the event-rate detector divides by, so a reader that
+// preferentially loses lock DURING fast fills would bias that estimator upward. This reports, per
+// usable window: the bridged-increment count/mass, the dropped-bin fraction (bins with no clean
+// read), and the co-occurrence test — mean SIM credit rate inside the fraction-mapped bridged
+// spans vs outside them.
+//
+// Self-validating: it re-walks the clean reads with `classifyArm`'s own increment rule and asserts
+// its per-window bridged count and mass reproduce the arm's stored values.
+// ---------------------------------------------------------------------------
+export interface MarWindowDiag {
+  id: number;
+  durationSec: number;
+  totalBins: number;
+  cleanBins: number;
+  cleanBinCoverage: number;
+  droppedBinFraction: number;
+  bridgedCount: number;
+  bridgedMass: number;
+  bridgedRealSec: number;
+  bridgedRealFraction: number;
+  simGaugeInsideBridged: number;
+  simSecInsideBridged: number;
+  simGaugeOutsideBridged: number;
+  simSecOutsideBridged: number;
+  simRateInsideBridged: number;
+  simRateOutsideBridged: number;
+  bridgedCountMatches: boolean;
+  bridgedMassMatches: boolean;
+}
+
+export interface MarDiagResult {
+  comp: string;
+  eMin: number;
+  usableWindows: number;
+  windows: MarWindowDiag[];
+  pooled: {
+    bridgedCount: number;
+    bridgedMass: number;
+    bridgedMassShareOfSumRealDelta: number;
+    bridgedRealSec: number;
+    bridgedRealFraction: number;
+    droppedBinFractionMean: number;
+    simGaugeInsideBridged: number;
+    simSecInsideBridged: number;
+    simGaugeOutsideBridged: number;
+    simSecOutsideBridged: number;
+    simRateInsideBridged: number;
+    simRateOutsideBridged: number;
+    /** > 1 means bridge episodes sit on FASTER-than-average modeled fill (upward-bias direction) */
+    insideOverOutsideRateRatio: number;
+  };
+  selfCheck: { allWindowsReproduce: boolean };
+}
+
+export function marDiagnostic(
+  fx: TempoFixture,
+  trace: FillTrace,
+  sched: SimSchedule,
+  opts: { eMin?: number; simComp: SimComponents; ceiling: Ceiling }
+): MarDiagResult {
+  const arm = classifyArm(fx, trace, sched, {
+    eMin: opts.eMin,
+    simComp: opts.simComp,
+    ceiling: opts.ceiling,
+  });
+  const simRefills = sched.windows
+    .filter((w) => w.kind === 'refill')
+    .sort((a, b) => a.index - b.index);
+  const rws = refillWindows(fx);
+  const rows: MarWindowDiag[] = [];
+  for (const w of arm.windows) {
+    if (!w.usable || w.barPaint === null || w.fullInstant === null) {
+      continue;
+    }
+    const rw = rws.find((r) => r.id === w.id)!;
+    const simWin = simRefills[w.id - 1];
+    const clean = trace.reads
+      .filter(
+        (r) =>
+          r.t >= rw.fbEnd &&
+          r.t <= rw.stage1 &&
+          r.t >= w.barPaint! &&
+          r.t < w.fullInstant! &&
+          isClean(r)
+      )
+      .sort((a, b) => a.t - b.t);
+    // the bridged spans, by classifyArm's own rule
+    const spans: { t0: number; t1: number; delta: number }[] = [];
+    for (let k = 1; k < clean.length; k += 1) {
+      const a = clean[k - 1];
+      const b = clean[k];
+      if (Math.round((b.t - a.t) * trace.fps) > CLS_MAX_EVENT_GAP_FRAMES) {
+        spans.push({ t0: a.t, t1: b.t, delta: b.fillRaw! - a.fillRaw! });
+      }
+    }
+    const bridgedMass = spans.reduce((s, x) => s + x.delta, 0);
+    const bridgedRealSec = spans.reduce((s, x) => s + (x.t1 - x.t0), 0);
+    // fraction-map each bridged span onto the paired sim window (the only common axis)
+    const simDur = simWin.endSec - simWin.startSec;
+    const map = (t: number): number =>
+      simWin.startSec + ((t - w.barPaint!) / w.durationSec) * simDur;
+    let inGauge = 0;
+    let inSec = 0;
+    for (const s of spans) {
+      const a = map(s.t0);
+      const b = map(s.t1);
+      inSec += b - a;
+      for (const c of sched.credits) {
+        if (c.sec > a && c.sec <= b) {
+          inGauge += c.amount;
+        }
+      }
+    }
+    let allGauge = 0;
+    for (const c of sched.credits) {
+      if (c.sec > simWin.startSec && c.sec <= simWin.endSec) {
+        allGauge += c.amount;
+      }
+    }
+    const outGauge = allGauge - inGauge;
+    const outSec = simDur - inSec;
+    rows.push({
+      id: w.id,
+      durationSec: w.durationSec,
+      totalBins: w.totalBins,
+      cleanBins: w.cleanBins,
+      cleanBinCoverage: w.cleanBinCoverage,
+      droppedBinFraction: round(1 - w.cleanBinCoverage),
+      bridgedCount: spans.length,
+      bridgedMass: round(bridgedMass, 2),
+      bridgedRealSec: round(bridgedRealSec),
+      bridgedRealFraction: round(bridgedRealSec / w.durationSec),
+      simGaugeInsideBridged: round(inGauge, 2),
+      simSecInsideBridged: round(inSec),
+      simGaugeOutsideBridged: round(outGauge, 2),
+      simSecOutsideBridged: round(outSec),
+      simRateInsideBridged: inSec > 1e-9 ? round(inGauge / inSec) : NaN,
+      simRateOutsideBridged: outSec > 1e-9 ? round(outGauge / outSec) : NaN,
+      bridgedCountMatches: spans.length === w.bridgedCount,
+      bridgedMassMatches:
+        Math.abs(round(bridgedMass, 2) - w.bridgedMass) < 0.02,
+    });
+  }
+  const t = (f: (r: MarWindowDiag) => number): number =>
+    rows.reduce((a, r) => a + f(r), 0);
+  const inG = t((r) => r.simGaugeInsideBridged);
+  const inS = t((r) => r.simSecInsideBridged);
+  const outG = t((r) => r.simGaugeOutsideBridged);
+  const outS = t((r) => r.simSecOutsideBridged);
+  const inRate = inS > 1e-9 ? inG / inS : NaN;
+  const outRate = outS > 1e-9 ? outG / outS : NaN;
+  const sumRealDelta = arm.windows
+    .filter((w) => w.usable)
+    .reduce((a, w) => a + w.sumRealDelta, 0);
+  return {
+    comp: arm.comp,
+    eMin: arm.eMin,
+    usableWindows: rows.length,
+    windows: rows,
+    pooled: {
+      bridgedCount: t((r) => r.bridgedCount),
+      bridgedMass: round(
+        t((r) => r.bridgedMass),
+        2
+      ),
+      bridgedMassShareOfSumRealDelta: round(
+        t((r) => r.bridgedMass) / Math.max(1e-9, sumRealDelta)
+      ),
+      bridgedRealSec: round(t((r) => r.bridgedRealSec)),
+      bridgedRealFraction: round(
+        t((r) => r.bridgedRealSec) /
+          Math.max(
+            1e-9,
+            t((r) => r.durationSec)
+          )
+      ),
+      droppedBinFractionMean: round(
+        t((r) => r.droppedBinFraction) / Math.max(1, rows.length)
+      ),
+      simGaugeInsideBridged: round(inG, 2),
+      simSecInsideBridged: round(inS),
+      simGaugeOutsideBridged: round(outG, 2),
+      simSecOutsideBridged: round(outS),
+      simRateInsideBridged: round(inRate),
+      simRateOutsideBridged: round(outRate),
+      insideOverOutsideRateRatio: round(inRate / outRate),
+    },
+    selfCheck: {
+      allWindowsReproduce: rows.every(
+        (r) => r.bridgedCountMatches && r.bridgedMassMatches
+      ),
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// FULL-BURST DURATION — control C2 of the 2026-08-17 N3 third-arm packet.
+//
+// The drain-bar renderer UNDER-RENDERS: its last stretch is too narrow to register a column, so a
+// nominal 10s Full Burst reads ~8.7s on the two committed 10s fixtures. A raw `fullWindows[]`
+// duration is therefore a LOWER bound on the real Full Burst, never a measurement of it. The
+// charging bar's first paint (`barPaint`, from the classification arm) is the matching UPPER bound:
+// the widget cannot paint the charging bar until the Full Burst is over.
+//
+//   correctedRendered <= TRUE Full Burst duration <= correctedPaint
+//
+// Both bounds are corrected for guard 3A's late start (`guard3aResidual` > 0 means the drain-bar
+// detector fired that many seconds AFTER the true Full Burst start, shortening both bounds).
+//
+// With `--calib-*` the same two bounds are measured on an arm whose Full Burst duration is KNOWN,
+// and the two offsets are carried onto the target as point estimates. The calibration arm is an
+// already-committed labeled artifact, so this is an independent method, not a re-derivation.
+// ---------------------------------------------------------------------------
+export interface FbDurationCycle {
+  id: number;
+  fbStart: number;
+  guard3aResidual: number | null;
+  qualifies: boolean;
+  tailStitched: boolean;
+  renderedEnd: number;
+  renderedDuration: number;
+  correctedRendered: number;
+  barPaint: number | null;
+  paintDuration: number | null;
+  correctedPaint: number | null;
+  /** does the pre-registered expectation lie inside [correctedRendered, correctedPaint]? */
+  expectInBracket: boolean | null;
+}
+
+export interface FbDurationResult {
+  fixture: string;
+  cycles: FbDurationCycle[];
+  medians: {
+    correctedRendered: number;
+    correctedPaint: number;
+    correctedRenderedQualifyingOnly: number;
+    correctedPaintQualifyingOnly: number;
+  };
+  calibration: {
+    comp: string;
+    knownFbSec: number;
+    medianCorrectedRendered: number;
+    medianCorrectedPaint: number;
+    /** knownFbSec - medianCorrectedRendered: how much the render under-reads */
+    renderDeficitSec: number;
+    /** medianCorrectedPaint - knownFbSec: how long after FB end the charging bar paints */
+    paintExcessSec: number;
+  } | null;
+  estimates: {
+    fromRendered: number;
+    fromPaint: number;
+    midpoint: number;
+  } | null;
+  test: {
+    expectSec: number;
+    tolSec: number;
+    band: [number, number];
+    perCycleBracketContainsExpect: boolean[];
+    cyclesWhereBracketExcludesExpect: number[];
+    /** the literal reading: the raw rendered duration against the band */
+    perCycleRenderedInBand: boolean[];
+    /** the calibrated point estimate per cycle (rendered + calibration deficit) */
+    perCycleCalibratedRendered: number[] | null;
+    perCycleCalibratedInBand: boolean[] | null;
+    /** the calibrated point estimate per cycle (paint - calibration excess) */
+    perCycleCalibratedPaint: number[] | null;
+    perCycleCalibratedPaintInBand: boolean[] | null;
+  } | null;
+}
+
+function fbDurationOne(
+  fx: TempoFixture,
+  arm: { windows: ClsWindow[] }
+): {
+  cycles: FbDurationCycle[];
+  medians: FbDurationResult['medians'];
+} {
+  const fxAny = fx as TempoFixture & {
+    frameT?: number[];
+    frameFill?: number[];
+  };
+  const frames = (fxAny.frameT ?? []).map((t, i) => ({
+    videoT: t,
+    fill: (fxAny.frameFill ?? [])[i],
+  }));
+  const rows = buildCycleTable({
+    windows: fx.fullWindows,
+    chains: fx.burstChains,
+    frames,
+  });
+  const byId = new Map(arm.windows.map((w) => [w.id, w]));
+  const cycles: FbDurationCycle[] = fx.fullWindows.map((w, i) => {
+    const row = rows[i];
+    const late = Math.max(0, row?.guard3aResidual ?? 0);
+    const paint = byId.get(i + 1)?.barPaint ?? null;
+    const correctedRendered = round(w.durationSec + late, 4);
+    const correctedPaint =
+      paint === null ? null : round(paint - w.start + late, 4);
+    return {
+      id: i + 1,
+      fbStart: w.start,
+      guard3aResidual: row?.guard3aResidual ?? null,
+      qualifies: row?.qualifies ?? false,
+      tailStitched: row?.tailStitched ?? false,
+      renderedEnd: w.end,
+      renderedDuration: w.durationSec,
+      correctedRendered,
+      barPaint: paint,
+      paintDuration: paint === null ? null : round(paint - w.start, 4),
+      correctedPaint,
+      expectInBracket: null,
+    };
+  });
+  const med = (xs: (number | null)[]): number =>
+    median(xs.filter((x): x is number => x !== null && Number.isFinite(x)));
+  const paired = cycles.filter((c) => c.correctedPaint !== null);
+  const q = paired.filter((c) => c.qualifies);
+  return {
+    cycles,
+    medians: {
+      correctedRendered: round(med(paired.map((c) => c.correctedRendered))),
+      correctedPaint: round(med(paired.map((c) => c.correctedPaint))),
+      correctedRenderedQualifyingOnly: round(
+        med(q.map((c) => c.correctedRendered))
+      ),
+      correctedPaintQualifyingOnly: round(med(q.map((c) => c.correctedPaint))),
+    },
+  };
+}
+
+export function fbDuration(opts: {
+  fx: TempoFixture;
+  fixturePath: string;
+  arm: { windows: ClsWindow[] };
+  calib?: {
+    comp: string;
+    fx: TempoFixture;
+    arm: { windows: ClsWindow[] };
+    knownFbSec: number;
+  };
+  expectSec?: number;
+  tolSec?: number;
+}): FbDurationResult {
+  const { cycles, medians } = fbDurationOne(opts.fx, opts.arm);
+  let calibration: FbDurationResult['calibration'] = null;
+  let estimates: FbDurationResult['estimates'] = null;
+  if (opts.calib) {
+    const c = fbDurationOne(opts.calib.fx, opts.calib.arm);
+    calibration = {
+      comp: opts.calib.comp,
+      knownFbSec: opts.calib.knownFbSec,
+      medianCorrectedRendered: c.medians.correctedRendered,
+      medianCorrectedPaint: c.medians.correctedPaint,
+      renderDeficitSec: round(
+        opts.calib.knownFbSec - c.medians.correctedRendered
+      ),
+      paintExcessSec: round(c.medians.correctedPaint - opts.calib.knownFbSec),
+    };
+    estimates = {
+      fromRendered: round(
+        medians.correctedRendered + calibration.renderDeficitSec
+      ),
+      fromPaint: round(medians.correctedPaint - calibration.paintExcessSec),
+      midpoint: round(
+        (medians.correctedRendered +
+          calibration.renderDeficitSec +
+          (medians.correctedPaint - calibration.paintExcessSec)) /
+          2
+      ),
+    };
+  }
+  let test: FbDurationResult['test'] = null;
+  if (opts.expectSec !== undefined) {
+    const tol = opts.tolSec ?? 0.5;
+    const lo = opts.expectSec - tol;
+    const hi = opts.expectSec + tol;
+    const paired = cycles.filter((c) => c.correctedPaint !== null);
+    for (const c of paired) {
+      c.expectInBracket =
+        opts.expectSec >= c.correctedRendered &&
+        opts.expectSec <= c.correctedPaint!;
+    }
+    const calRendered = calibration
+      ? paired.map((c) =>
+          round(c.correctedRendered + calibration!.renderDeficitSec)
+        )
+      : null;
+    const calPaint = calibration
+      ? paired.map((c) =>
+          round(c.correctedPaint! - calibration!.paintExcessSec)
+        )
+      : null;
+    test = {
+      expectSec: opts.expectSec,
+      tolSec: tol,
+      band: [round(lo), round(hi)],
+      perCycleBracketContainsExpect: paired.map((c) => c.expectInBracket!),
+      cyclesWhereBracketExcludesExpect: paired
+        .filter((c) => !c.expectInBracket)
+        .map((c) => c.id),
+      perCycleRenderedInBand: paired.map(
+        (c) => c.correctedRendered >= lo && c.correctedRendered <= hi
+      ),
+      perCycleCalibratedRendered: calRendered,
+      perCycleCalibratedInBand: calRendered
+        ? calRendered.map((x) => x >= lo && x <= hi)
+        : null,
+      perCycleCalibratedPaint: calPaint,
+      perCycleCalibratedPaintInBand: calPaint
+        ? calPaint.map((x) => x >= lo && x <= hi)
+        : null,
+    };
+  }
+  return {
+    fixture: opts.fixturePath,
+    cycles,
+    medians,
+    calibration,
+    estimates,
+    test,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// NOISE-CORRECTED CEILING RATE — control C6, the 2026-08-16 statistic, verbatim:
+//
+//   rate_corrected = (E - f * Q) / T
+//     E = pooled event bins, Q = quiet bins = usableCleanBins - E,
+//     T = clean-bin time = usableCleanBins * CLS_BIN_SEC,
+//     f = the Wilson 95% one-sided upper false-event-bin rate.
+//
+// Reproduces `docs/probe-data/noise-corrected-ceiling-iron-sweep-2026-08-16.json` exactly from
+// that arm's committed pooled block (pinned in scripts/tests/probe/), so applying it to a second
+// arm is a replay of a gated statistic rather than a fresh derivation. The MAR-alternative
+// full-window denominator is reported alongside, per that run's load-bearing caveat.
+// ---------------------------------------------------------------------------
+export interface NoiseCorrectedRate {
+  comp: string;
+  inputs: {
+    eventBins: number;
+    usableCleanBins: number;
+    quietBins: number;
+    cleanBinTimeSec: number;
+    fullWindowDurationSec: number;
+    ceilingBinsPerSec: number;
+    ceilingFactor: number;
+    thresholdBinsPerSec: number;
+  };
+  raw: { rate: number; vsThresholdPct: number; vsCeilingPct: number };
+  corrected: Record<
+    string,
+    {
+      falseRate: number;
+      correctionBins: number;
+      rate: number;
+      vsThresholdPct: number;
+      vsCeilingPct: number;
+      aboveThreshold: boolean;
+      aboveCeiling: boolean;
+    }
+  >;
+  indifferencePoints: {
+    /** f at which the corrected rate equals the 1.15x threshold */
+    thresholdCutoff: number;
+    /** f at which the corrected rate equals the raw ceiling */
+    ceilingCutoff: number;
+  };
+  marAlternativeDenominator: {
+    fullWindowDurationSec: number;
+    rawRate: number;
+    vsCeilingPct: number;
+    aboveCeiling: boolean;
+  };
+}
+
+export function noiseCorrectedRate(opts: {
+  comp: string;
+  pooled: Pick<
+    ClsPooled,
+    | 'eventBins'
+    | 'usableCleanBins'
+    | 'sumRealDurationSec'
+    | 'realEventBinsPerSec'
+  >;
+  ceilingBinsPerSec: number;
+  falseRates: Record<string, number>;
+}): NoiseCorrectedRate {
+  const E = opts.pooled.eventBins;
+  const U = opts.pooled.usableCleanBins;
+  const Q = U - E;
+  const T = U * CLS_BIN_SEC;
+  const C = opts.ceilingBinsPerSec;
+  const thr = CLS_CEILING_FACTOR * C;
+  const pct = (r: number, base: number): number =>
+    round(((r - base) / base) * 100, 1);
+  const corrected: NoiseCorrectedRate['corrected'] = {};
+  for (const [label, f] of Object.entries(opts.falseRates)) {
+    const r = (E - f * Q) / T;
+    corrected[label] = {
+      falseRate: f,
+      correctionBins: round(f * Q, 4),
+      rate: round(r),
+      vsThresholdPct: pct(r, thr),
+      vsCeilingPct: pct(r, C),
+      aboveThreshold: r > thr,
+      aboveCeiling: r > C,
+    };
+  }
+  const rawRate = E / T;
+  const fullRate = E / opts.pooled.sumRealDurationSec;
+  return {
+    comp: opts.comp,
+    inputs: {
+      eventBins: E,
+      usableCleanBins: U,
+      quietBins: Q,
+      cleanBinTimeSec: round(T),
+      fullWindowDurationSec: round(opts.pooled.sumRealDurationSec, 3),
+      ceilingBinsPerSec: round(C),
+      ceilingFactor: CLS_CEILING_FACTOR,
+      thresholdBinsPerSec: round(thr),
+    },
+    raw: {
+      rate: round(rawRate),
+      vsThresholdPct: pct(rawRate, thr),
+      vsCeilingPct: pct(rawRate, C),
+    },
+    corrected,
+    indifferencePoints: {
+      thresholdCutoff: round((E - thr * T) / Q, 5),
+      ceilingCutoff: round((E - C * T) / Q, 5),
+    },
+    marAlternativeDenominator: {
+      fullWindowDurationSec: round(opts.pooled.sumRealDurationSec, 3),
+      rawRate: round(fullRate),
+      vsCeilingPct: pct(fullRate, C),
+      aboveCeiling: fullRate > C,
+    },
+  };
+}
+
+function noiseCorrectCli(): void {
+  const armPath = arg('arm');
+  if (!armPath) {
+    throw new Error(
+      'usage: fill-trace-compare.ts noise-correct --arm <arm artifact | classification json> ' +
+        '[--comp "<name>"] [--false-rates 0.0055,0.0045] [--artifact <out>]'
+    );
+  }
+  const arm = loadArm(armPath, arg('comp')) as ClsArm;
+  if (!arm.pooled || !arm.ceiling) {
+    throw new Error('noise-correct: arm has no pooled/ceiling block');
+  }
+  const rates = (arg('false-rates') ?? '0.0055,0.0045')
+    .split(',')
+    .map((x) => Number(x));
+  const res = noiseCorrectedRate({
+    comp: arm.comp,
+    pooled: arm.pooled,
+    ceilingBinsPerSec: arm.ceiling.ceilingBinsPerSec,
+    falseRates: Object.fromEntries(
+      rates.map((f) => [`corrected@${(f * 100).toFixed(2)}%`, f])
+    ),
+  });
+  const artifact = arg('artifact');
+  if (artifact) {
+    writeFileSync(artifact, `${JSON.stringify(res, null, 1)}\n`);
+    process.stdout.write(`wrote ${artifact}\n`);
+  }
+  process.stdout.write(`${JSON.stringify(res, null, 1)}\n`);
+}
+
+function loadArm(
+  path: string,
+  comp?: string
+): { windows: ClsWindow[]; comp: string } {
+  const doc = JSON.parse(readFileSync(path, 'utf8')) as
+    ClsArm | { arms: Record<string, ClsArm> };
+  if ('arms' in doc) {
+    if (!comp || !doc.arms[comp]) {
+      throw new Error(
+        `${path} holds several arms — pass the comp name (have: ${Object.keys(doc.arms).join(', ')})`
+      );
+    }
+    return doc.arms[comp];
+  }
+  return doc;
+}
+
+function fbDurationCli(): void {
+  const fixture = arg('fixture');
+  const armPath = arg('arm');
+  if (!fixture || !armPath) {
+    throw new Error(
+      'usage: fill-trace-compare.ts fb-duration --fixture <tempo fixture> --arm <arm artifact> ' +
+        '[--comp "<name>"] [--calib-fixture <fx> --calib-arm <artifact> --calib-comp "<name>" ' +
+        '--calib-fb-sec 10] [--expect-sec 15 --tol-sec 0.5] [--artifact <out>]'
+    );
+  }
+  const fx = JSON.parse(readFileSync(fixture, 'utf8')) as TempoFixture;
+  const arm = loadArm(armPath, arg('comp'));
+  const calibFx = arg('calib-fixture');
+  const calibArm = arg('calib-arm');
+  const calibComp = arg('calib-comp');
+  const expectSec = arg('expect-sec');
+  const res = fbDuration({
+    fx,
+    fixturePath: fixture,
+    arm,
+    calib:
+      calibFx && calibArm && calibComp
+        ? {
+            comp: calibComp,
+            fx: JSON.parse(readFileSync(calibFx, 'utf8')) as TempoFixture,
+            arm: loadArm(calibArm, calibComp),
+            knownFbSec: Number(arg('calib-fb-sec') ?? FB_SEC),
+          }
+        : undefined,
+    expectSec: expectSec === undefined ? undefined : Number(expectSec),
+    tolSec: arg('tol-sec') === undefined ? undefined : Number(arg('tol-sec')),
+  });
+  const artifact = arg('artifact');
+  if (artifact) {
+    writeFileSync(artifact, `${JSON.stringify(res, null, 1)}\n`);
+    process.stdout.write(`wrote ${artifact}\n`);
+  }
+  process.stdout.write(`${JSON.stringify(res, null, 1)}\n`);
+}
+
+function closureDiagCli(): void {
+  const armPath = arg('arm');
+  const compName = arg('comp');
+  if (!armPath) {
+    throw new Error(
+      'usage: fill-trace-compare.ts closure-diag --arm <arm artifact | habc classification json> ' +
+        '[--comp "<name>"] [--artifact <out>]'
+    );
+  }
+  const doc = JSON.parse(readFileSync(armPath, 'utf8')) as
+    ClsArm | { arms: Record<string, ClsArm> };
+  let arm: ClsArm;
+  if ('arms' in doc) {
+    if (!compName) {
+      throw new Error(
+        `closure-diag: ${armPath} holds several arms — pass --comp "<name>" (have: ${Object.keys(
+          doc.arms
+        ).join(', ')})`
+      );
+    }
+    const found = doc.arms[compName];
+    if (!found) {
+      throw new Error(
+        `closure-diag: no arm "${compName}" — have: ${Object.keys(doc.arms).join(', ')}`
+      );
+    }
+    arm = found;
+  } else {
+    arm = doc;
+  }
+  const res = closureDiagnostic(arm);
+  const artifact = arg('artifact');
+  if (artifact) {
+    writeFileSync(artifact, `${JSON.stringify(res, null, 1)}\n`);
+    process.stdout.write(`wrote ${artifact}\n`);
+  }
+  process.stdout.write(`${JSON.stringify(res, null, 1)}\n`);
+}
+
+function marDiagCli(): void {
+  const schedPath = arg('schedule');
+  const compName = arg('comp');
+  const fixture = arg('fixture');
+  const tracePath = arg('trace');
+  if (!schedPath || !compName || !fixture || !tracePath) {
+    throw new Error(
+      'usage: fill-trace-compare.ts mar-diag --schedule <credit-schedule json> --comp "<name>" ' +
+        '--fixture <windows json> --trace <reflagged trace/bundle> [--e-min 1.5] [--artifact <out>]'
+    );
+  }
+  const rawScheds = JSON.parse(readFileSync(schedPath, 'utf8')) as
+    SimSchedule | SimSchedule[];
+  const scheds = Array.isArray(rawScheds) ? rawScheds : [rawScheds];
+  const sched = scheds.find((s) => s.comp === compName);
+  if (!sched) {
+    throw new Error(
+      `no comp "${compName}" in ${schedPath} — have: ${scheds.map((s) => s.comp).join(', ')}`
+    );
+  }
+  const fx = JSON.parse(readFileSync(fixture, 'utf8')) as TempoFixture;
+  const traceDoc = JSON.parse(readFileSync(tracePath, 'utf8')) as
+    FillTrace | { trace: FillTrace };
+  const trace = 'reads' in traceDoc ? traceDoc : traceDoc.trace;
+  const res = marDiagnostic(fx, trace, sched, {
+    eMin: Number(arg('e-min') ?? CLS_E_MIN),
+    simComp: simComponents(sched),
+    ceiling: simCeiling(sched),
+  });
+  const artifact = arg('artifact');
+  if (artifact) {
+    writeFileSync(artifact, `${JSON.stringify(res, null, 1)}\n`);
+    process.stdout.write(`wrote ${artifact}\n`);
+  }
+  process.stdout.write(`${JSON.stringify(res, null, 1)}\n`);
+}
+
 function armPowerCli(): void {
   const clsPath = arg('classification');
   const candPath = arg('candidate-schedule');
@@ -4469,6 +5323,22 @@ function main(): void {
   }
   if (mode === 'arm-power') {
     armPowerCli();
+    return;
+  }
+  if (mode === 'closure-diag') {
+    closureDiagCli();
+    return;
+  }
+  if (mode === 'mar-diag') {
+    marDiagCli();
+    return;
+  }
+  if (mode === 'fb-duration') {
+    fbDurationCli();
+    return;
+  }
+  if (mode === 'noise-correct') {
+    noiseCorrectCli();
     return;
   }
   if (mode === 'noise-solo') {

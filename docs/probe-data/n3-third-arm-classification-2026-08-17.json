@@ -1,0 +1,2422 @@
+{
+  "_note": "Third classification arm \u2014 N3 scarlet/liberalio iron. Executes the APPROVED pre-op packet docs/handoffs/2026-08-17-n3-third-arm-preop-packet.md exactly as written (sections D/E/F/G/I); every threshold, constant, band and decision clause is pre-registered there and none was changed by this run. VERDICT-FREE MEASUREMENT: the `branch` fields report which pre-committed rule fired, mechanically. No engine constant, default, override or snapshot changes on any outcome \u2014 this run is LOG-class at every branch (packet section H).",
+  "packet": "docs/handoffs/2026-08-17-n3-third-arm-preop-packet.md",
+  "runDate": "2026-08-17",
+  "class": "LOG (enacts nothing)",
+  "recording": {
+    "video": "docs/probes/714 noon/3.mp4",
+    "slugs": [
+      "rouge",
+      "trina",
+      "scarlet-black-shadow",
+      "liberalio",
+      "soda-twinkling-bunny"
+    ],
+    "focusSlug": "scarlet-black-shadow",
+    "declaredBossElement": "Iron",
+    "declaredBossElementProvenance": "prose on the comp record (scripts/experiment.ts); NOT recording-verified (packet P1 narrowing 1) \u2014 neutralised by control C1",
+    "comp": "N3 scarlet/liberalio iron"
+  },
+  "commands": {
+    "frames": "ffmpeg -v error -i \"docs/probes/714 noon/3.mp4\" -vf \"fps=60,crop=280:70:2342:465\" fine/f_%05d.png   (and fps=5 into lock/)",
+    "tempoFixture": "npx tsx scripts/probe/scan.ts \"docs/probes/714 noon/3.mp4\" --fps 60 --cycle-table --fixture-out docs/probe-data/tempo-cycle-n3-scarlet-liberalio-iron.json",
+    "spans": "npx tsx scripts/probe/fill-trace-compare.ts spans --fixture docs/probe-data/tempo-cycle-n3-scarlet-liberalio-iron.json",
+    "trace": "scripts/probe/.venv/bin/python scripts/probe/gauge-fill.py --team --frames fine --fps 60 --lock-frames lock --crop 280:70:2342:465 --spans \"<spans>\" --out <trace>",
+    "bundle": "npx tsx scripts/probe/fill-trace-compare.ts analyze --fixture <fx> --real <trace> --schedule docs/probe-data/credit-schedule-n3-scarlet-liberalio-iron.json --comp \"N3 scarlet/liberalio iron\" --bundle docs/probe-data/fill-trace-n3-scarlet-liberalio-iron.json",
+    "reflag": "scripts/probe/.venv/bin/python scripts/probe/gauge-fill.py --reflag docs/probe-data/fill-trace-n3-scarlet-liberalio-iron.json --out <reflagged>",
+    "simOnly": "npx tsx scripts/probe/fill-trace-compare.ts classify --schedule docs/probe-data/credit-schedule-n3-scarlet-liberalio-iron.json --comp \"N3 scarlet/liberalio iron\" --sim-only",
+    "arm": "npx tsx scripts/probe/fill-trace-compare.ts classify --schedule docs/probe-data/credit-schedule-n3-scarlet-liberalio-iron.json --comp \"N3 scarlet/liberalio iron\" --fixture docs/probe-data/tempo-cycle-n3-scarlet-liberalio-iron.json --trace <reflagged> --e-min 1.5 --o-shift 0.0303 --s-shift 0 --artifact <out>",
+    "closureDiag": "npx tsx scripts/probe/fill-trace-compare.ts closure-diag --arm <arm | classification json> [--comp \"<name>\"]",
+    "marDiag": "npx tsx scripts/probe/fill-trace-compare.ts mar-diag --schedule <sched> --comp \"<name>\" --fixture <fx> --trace <reflagged> --e-min 1.5",
+    "fbDuration": "npx tsx scripts/probe/fill-trace-compare.ts fb-duration --fixture <fx> --arm <arm> --calib-fixture docs/probe-data/tempo-cycle-u8-g-iron-sweep.json --calib-arm docs/probe-data/fill-trace-habc-classification.json --calib-comp \"iron sweep (run G)\" --calib-fb-sec 10 --expect-sec 15 --tol-sec 0.5",
+    "noiseCorrect": "npx tsx scripts/probe/fill-trace-compare.ts noise-correct --arm <arm> --false-rates 0.0055,0.0045",
+    "elementControl": "npx tsx scripts/battery/fb-count-matrix.ts --element-control --comp=\"N3 scarlet/liberalio iron (boss Iron)\" --json",
+    "armPower": "npx tsx scripts/probe/fill-trace-compare.ts arm-power --classification docs/probe-data/fill-trace-habc-classification.json --ref-comp \"iron sweep (run G)\" --ref-full-window-sec 23.618 --candidate-schedule docs/probe-data/credit-schedule-n3-scarlet-liberalio-iron.json --candidate-comp \"N3 scarlet/liberalio iron\" --shared liberalio --candidate-sim-refill-sec 38.1"
+  },
+  "committedInputs": {
+    "tempoFixture": "docs/probe-data/tempo-cycle-n3-scarlet-liberalio-iron.json",
+    "traceBundle": "docs/probe-data/fill-trace-n3-scarlet-liberalio-iron.json",
+    "creditSchedule": "docs/probe-data/credit-schedule-n3-scarlet-liberalio-iron.json",
+    "calibrationArm": "docs/probe-data/fill-trace-habc-classification.json (iron sweep (run G)) + docs/probe-data/tempo-cycle-u8-g-iron-sweep.json",
+    "replayPin": "scripts/tests/probe/n3-third-arm.test.ts"
+  },
+  "preRegisteredConstants": {
+    "eMin": 1.5,
+    "binSec": 0.03333333333333333,
+    "saturationPct": 90,
+    "minUsableWindows": 4,
+    "minCleanBinCoverage": 0.6,
+    "maxRhoDispersion": 0.6,
+    "maxClosureResidual": 0.25,
+    "ceilingFactor": 1.15,
+    "maxEventGapFrames": 2,
+    "c3ShiftLimit": 0.1,
+    "thresholdBinsPerSec": 5.8996,
+    "thresholdDerivation": "1.15 x 5.1301",
+    "replicationBandOnRawShare": [0.11895, 0.4758],
+    "replicationBandDerivation": "iron raw hcShareOfRate 0.2379, within x2 either way",
+    "fbDurationExpectSec": 15.0,
+    "fbDurationTolSec": 0.5,
+    "falseRatePrimary": 0.0055,
+    "falseRatePooled": 0.0045
+  },
+  "rateConventionPin_E4": {
+    "branchEvaluation": "corrected@0.55% (primary Wilson 95% one-sided upper, 2026-08-16 solo #2)",
+    "e2ShareComparison": "RAW vs RAW (the instrument computes hcShareOfRate from the raw pooled rate)",
+    "e2bPredictionComparison": "RAW (predictions derive from iron's raw 4.7151/s)",
+    "note": "every rate below carries an explicit `raw` / `corrected@0.55%` / `corrected@0.45%` label"
+  },
+  "armPowerInput_D0": {
+    "sharedSlug": "liberalio",
+    "reference": {
+      "comp": "iron sweep (run G)",
+      "ceiling": 3.5935,
+      "rate": 4.7151,
+      "excess": 1.1216,
+      "sharedUnitRate": 0.6667,
+      "sharedUnitCeilingShare": 0.1855
+    },
+    "candidate": {
+      "comp": "N3 scarlet/liberalio iron",
+      "ceiling": 5.1301,
+      "sharedUnitRate": 0.6667,
+      "sharedUnitCeilingShare": 0.13,
+      "estimatedCleanBinTimeSec": 27.3702
+    },
+    "predictions": {
+      "scalesWithCeiling": {
+        "ratio": 1.4276,
+        "rate": 6.7313,
+        "share": 0.2379,
+        "sdShare": 0.0561
+      },
+      "scalesWithSharedUnit": {
+        "ratio": 1,
+        "rate": 6.2517,
+        "share": 0.1794,
+        "sdShare": 0.0627
+      }
+    },
+    "power": {
+      "rateSeparation": 0.4796,
+      "rateSeparationPctOfRate": 7.3881,
+      "expectedEventBins": 178,
+      "oneSigmaRate": 0.487,
+      "separationSigmas": 0.9848,
+      "eventBinsFor2Sigma": 733,
+      "shortfallFactor": 4.1245,
+      "discriminates": false
+    }
+  },
+  "controls": {
+    "C1_bossElement": {
+      "preRegistered": "boss element must not be able to reach the statistic; if it can, the run STOPS pending an owner ruling",
+      "a_codeAudit": {
+        "bossElementReadSites": [
+          "src/engine/sim.ts:1811-1813 `advantaged(u)` \u2014 cfg.bossElement vs BEATS[u.char.element] / u.advantageVs",
+          "src/engine/sim.ts:2498 `block.bossElementGate` \u2014 a kit-line gate primitive",
+          "src/engine/sim.ts:3380-3381 `trigger.kind === 'bossElement'` \u2014 an element-conditional passive primitive"
+        ],
+        "advantagedConsumers": [
+          "src/engine/sim.ts:1971 \u2014 the ELEMENT damage multiplier (1.1 + elementDamagePct + elemAdvantageDamagePct)",
+          "src/engine/sim.ts:2044 \u2014 the legacy ENV.ELEMADV='damageup' additive placement",
+          "src/engine/sim.ts:4715 \u2014 reported result field only"
+        ],
+        "finding": "`advantaged()` is consumed ONLY by the damage multiplier and a reported field \u2014 no gauge, cadence, rotation or trigger path. The other two sites are GENERAL primitives that COULD reach gauge, so the packet's 'element enters ONLY the elem multiplier' wording is not literally true of the engine; it is true of THIS ROSTER. Verified per unit: none of rouge / trina / scarlet-black-shadow / liberalio / soda-twinkling-bunny carries a bossElementGate or a bossElement trigger. trina's `alliesOfElementWeapon: Electric AR` targets the ALLY's element, not the boss's, and is element-invariant."
+      },
+      "b_empiricalSwap": {
+        "comp": "N3 scarlet/liberalio iron (boss Iron)",
+        "slugs": [
+          "rouge",
+          "trina",
+          "scarlet-black-shadow",
+          "liberalio",
+          "soda-twinkling-bunny"
+        ],
+        "declaredElement": "Iron",
+        "arms": [
+          {
+            "element": "Electric",
+            "fullBursts": 9,
+            "gaugeGenerated": [
+              121.79999999999995, 129.60000000000002, 212.5, 212.79999999999987,
+              268.2100944
+            ],
+            "totalDamage": [
+              53221477.312549785, 48406070.373731025, 401981690.19823116,
+              456077820.13087165, 119622194.62715349
+            ],
+            "advantaged": [false, false, false, false, true]
+          },
+          {
+            "element": "Iron",
+            "fullBursts": 9,
+            "gaugeGenerated": [
+              121.79999999999995, 129.60000000000002, 212.5, 212.79999999999987,
+              268.2100944
+            ],
+            "totalDamage": [
+              53221477.312549785, 48406070.373731025, 442179859.2180544,
+              501685602.14395887, 108747449.66104867
+            ],
+            "advantaged": [false, false, true, true, false]
+          },
+          {
+            "element": "Wind",
+            "fullBursts": 9,
+            "gaugeGenerated": [
+              121.79999999999995, 129.60000000000002, 212.5, 212.79999999999987,
+              268.2100944
+            ],
+            "totalDamage": [
+              53221477.312549785, 48406070.373731025, 401981690.19823116,
+              456077820.13087165, 108747449.66104867
+            ],
+            "advantaged": [false, false, false, false, false]
+          },
+          {
+            "element": "Fire",
+            "fullBursts": 9,
+            "gaugeGenerated": [
+              121.79999999999995, 129.60000000000002, 212.5, 212.79999999999987,
+              268.2100944
+            ],
+            "totalDamage": [
+              53221477.312549785, 48406070.373731025, 401981690.19823116,
+              456077820.13087165, 108747449.66104867
+            ],
+            "advantaged": [false, false, false, false, false]
+          },
+          {
+            "element": "Water",
+            "fullBursts": 9,
+            "gaugeGenerated": [
+              121.79999999999995, 129.60000000000002, 212.5, 212.79999999999987,
+              268.2100944
+            ],
+            "totalDamage": [
+              58543625.04380481, 53246677.411104135, 401981690.19823116,
+              456077820.13087165, 108747449.66104867
+            ],
+            "advantaged": [true, true, false, false, false]
+          },
+          {
+            "element": null,
+            "fullBursts": 9,
+            "gaugeGenerated": [
+              121.79999999999995, 129.60000000000002, 212.5, 212.79999999999987,
+              268.2100944
+            ],
+            "totalDamage": [
+              53221477.312549785, 48406070.373731025, 401981690.19823116,
+              456077820.13087165, 108747449.66104867
+            ],
+            "advantaged": [false, false, false, false, false]
+          }
+        ],
+        "gaugeIdenticalAcrossElements": true,
+        "fullBurstsIdenticalAcrossElements": true,
+        "damageMovesAcrossElements": true,
+        "maxGaugeDeltaVsDeclared": 0
+      },
+      "result": "PASS",
+      "resultDetail": "per-unit gaugeGenerated and the full-burst count are byte-identical across all five boss elements AND forced-neutral (max |delta| 0, FB count 9 in every arm); totalDamage DOES move across arms (positive control that the arms genuinely differ)."
+    },
+    "C2_fullBurstDuration": {
+      "preRegistered": "every cycle must read 15.0 +/- 0.5s; >2 cycles outside => BASIS-BROKEN (C2 binds over B3 per packet section G)",
+      "instrumentCaveat": "The drain-bar renderer UNDER-RENDERS: on the two committed 10.0s-Full-Burst fixtures a true 10.0s window reads a median 8.69s (u8-g-iron-sweep) / 8.755s (probe-u7-t5-wind-weak). A raw fullWindows[] duration is therefore a LOWER bound on the Full Burst, never a measurement of it. The charging bar's first paint (barPaint) is the matching UPPER bound. Both bounds are corrected for guard 3A's late start. Four readings are reported; the pre-registered rule is applied to each, and no reading is preferred here.",
+      "guard3bUnusableOnThisArm": "cycle-table.ts DEFAULTS.searchCapSec = 11s, so guard 3B's corrected duration SATURATES at 11.000s on 9 of 10 N3 cycles and every cycle is flagged tailStitched. Raising the cap to 18s was tried and REJECTED: it re-admits stitched tails on the calibration fixtures (iron cycle 4 8.683 -> 14.100s, T5 cycle 5 8.350 -> 16.133s), so the default is kept and guard-3B corrected durations are treated as unavailable for this arm.",
+      "perCycle": [
+        {
+          "id": 1,
+          "fbStart": 13.5167,
+          "guard3aResidual": 0.4,
+          "qualifies": false,
+          "tailStitched": true,
+          "renderedEnd": 26.8667,
+          "renderedDuration": 13.35,
+          "correctedRendered": 13.75,
+          "barPaint": 28.35,
+          "paintDuration": 14.8333,
+          "correctedPaint": 15.2333,
+          "expectInBracket": true
+        },
+        {
+          "id": 2,
+          "fbStart": 31.8667,
+          "guard3aResidual": 0.4,
+          "qualifies": false,
+          "tailStitched": true,
+          "renderedEnd": 44.3667,
+          "renderedDuration": 12.5,
+          "correctedRendered": 12.9,
+          "barPaint": 46.733,
+          "paintDuration": 14.8663,
+          "correctedPaint": 15.2663,
+          "expectInBracket": true
+        },
+        {
+          "id": 3,
+          "fbStart": 50.5833,
+          "guard3aResidual": -0.0167,
+          "qualifies": true,
+          "tailStitched": true,
+          "renderedEnd": 63.4333,
+          "renderedDuration": 12.85,
+          "correctedRendered": 12.85,
+          "barPaint": 65.833,
+          "paintDuration": 15.2497,
+          "correctedPaint": 15.2497,
+          "expectInBracket": true
+        },
+        {
+          "id": 4,
+          "fbStart": 69.1667,
+          "guard3aResidual": 0.4,
+          "qualifies": false,
+          "tailStitched": true,
+          "renderedEnd": 81.6833,
+          "renderedDuration": 12.52,
+          "correctedRendered": 12.92,
+          "barPaint": 84,
+          "paintDuration": 14.8333,
+          "correctedPaint": 15.2333,
+          "expectInBracket": true
+        },
+        {
+          "id": 5,
+          "fbStart": 89.45,
+          "guard3aResidual": 0.4,
+          "qualifies": false,
+          "tailStitched": true,
+          "renderedEnd": 101.9667,
+          "renderedDuration": 12.52,
+          "correctedRendered": 12.92,
+          "barPaint": 104.283,
+          "paintDuration": 14.833,
+          "correctedPaint": 15.233,
+          "expectInBracket": true
+        },
+        {
+          "id": 6,
+          "fbStart": 108.0833,
+          "guard3aResidual": 0.3999,
+          "qualifies": false,
+          "tailStitched": true,
+          "renderedEnd": 120.5667,
+          "renderedDuration": 12.48,
+          "correctedRendered": 12.8799,
+          "barPaint": 122.917,
+          "paintDuration": 14.8337,
+          "correctedPaint": 15.2336,
+          "expectInBracket": true
+        },
+        {
+          "id": 7,
+          "fbStart": 126.5667,
+          "guard3aResidual": 0.4,
+          "qualifies": false,
+          "tailStitched": true,
+          "renderedEnd": 138.95,
+          "renderedDuration": 12.38,
+          "correctedRendered": 12.78,
+          "barPaint": 141.4,
+          "paintDuration": 14.8333,
+          "correctedPaint": 15.2333,
+          "expectInBracket": true
+        },
+        {
+          "id": 8,
+          "fbStart": 145.05,
+          "guard3aResidual": -0.0167,
+          "qualifies": true,
+          "tailStitched": true,
+          "renderedEnd": 157.9667,
+          "renderedDuration": 12.92,
+          "correctedRendered": 12.92,
+          "barPaint": 160.3,
+          "paintDuration": 15.25,
+          "correctedPaint": 15.25,
+          "expectInBracket": true
+        },
+        {
+          "id": 9,
+          "fbStart": 164.3833,
+          "guard3aResidual": 0.3999,
+          "qualifies": false,
+          "tailStitched": true,
+          "renderedEnd": 176.85,
+          "renderedDuration": 12.47,
+          "correctedRendered": 12.8699,
+          "barPaint": 179.233,
+          "paintDuration": 14.8497,
+          "correctedPaint": 15.2496,
+          "expectInBracket": true
+        },
+        {
+          "id": 10,
+          "fbStart": 182.8667,
+          "guard3aResidual": -0.0167,
+          "qualifies": true,
+          "tailStitched": false,
+          "renderedEnd": 189.6167,
+          "renderedDuration": 6.75,
+          "correctedRendered": 6.75,
+          "barPaint": null,
+          "paintDuration": null,
+          "correctedPaint": null,
+          "expectInBracket": null
+        }
+      ],
+      "calibration": {
+        "comp": "iron sweep (run G)",
+        "knownFbSec": 10,
+        "medianCorrectedRendered": 8.69,
+        "medianCorrectedPaint": 10.3166,
+        "renderDeficitSec": 1.31,
+        "paintExcessSec": 0.3166
+      },
+      "calibrationDispersion": {
+        "ironCorrectedPaintPerCycle": [
+          10.3163, 10.333, 10.3333, 10.3163, 10.3166, 10.317, 10.3167, 10.3163,
+          10.317, 10.3163, 10.3163, 10.317
+        ],
+        "ironCorrectedPaintMean": 10.3193,
+        "ironCorrectedPaintSd": 0.0062,
+        "ironCorrectedRenderedPerCycle": [
+          8.8, 8.65, 9.4, 8.68, 8.6299, 8.7, 8.65, 8.7, 8.73, 9.35, 8.65, 8.62
+        ],
+        "ironCorrectedRenderedSd": 0.2631,
+        "n3CorrectedPaintMean": 15.2425,
+        "n3CorrectedPaintSd": 0.0113
+      },
+      "estimates": {
+        "fromRendered": 14.21,
+        "fromPaint": 14.917,
+        "midpoint": 14.5635
+      },
+      "readings": [
+        {
+          "id": "C2-i",
+          "label": "bracket: does 15.0s lie inside [correctedRendered, correctedPaint] per cycle (no calibration assumption)",
+          "perCycle": [true, true, true, true, true, true, true, true, true],
+          "cyclesFailing": 0,
+          "cyclesFailingIds": [],
+          "verdict": "PASS",
+          "note": "10.0s lies BELOW every cycle's lower bound (min correctedRendered 12.78s), so the fixture excludes a 10s Full Burst on this recording."
+        },
+        {
+          "id": "C2-ii",
+          "label": "paint-calibrated point estimate (correctedPaint - iron paintExcess 0.3166s) vs 15.0 +/- 0.5",
+          "perCycleValues": [
+            14.9167, 14.9497, 14.9331, 14.9167, 14.9164, 14.917, 14.9167,
+            14.9334, 14.933
+          ],
+          "perCycle": [true, true, true, true, true, true, true, true, true],
+          "cyclesFailing": 0,
+          "verdict": "PASS"
+        },
+        {
+          "id": "C2-iii",
+          "label": "render-calibrated point estimate (correctedRendered + iron renderDeficit 1.31s) vs 15.0 +/- 0.5",
+          "perCycleValues": [
+            15.06, 14.21, 14.16, 14.23, 14.23, 14.1899, 14.09, 14.23, 14.1799
+          ],
+          "perCycle": [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "cyclesFailing": 8,
+          "verdict": "BASIS-BROKEN"
+        },
+        {
+          "id": "C2-iv",
+          "label": "literal uncalibrated rendered duration vs 15.0 +/- 0.5 (known-biased low by ~1.3s)",
+          "perCycle": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "cyclesFailing": 9,
+          "verdict": "BASIS-BROKEN"
+        }
+      ],
+      "usableCyclesRemaining_B3": 9
+    },
+    "C3_measuredFullBurstCount": {
+      "preRegistered": "the trace must yield 10 full bursts, matching the 2026-07-14 yellow-splash scan",
+      "measured": 10,
+      "detectors": {
+        "drain": 10,
+        "splash": 10,
+        "hexStage3": 10,
+        "corroborated": "10/10 by a 2nd detector"
+      },
+      "gapsSec": [18.4, 18.7, 18.6, 20.3, 18.6, 18.5, 18.5, 19.3, 18.5],
+      "simFullBursts": 9,
+      "result": "PASS",
+      "note": "sim reads 9 (packet P2 scope correction, re-confirmed here by the C1 element-control run: 9 in every arm). The -1 gap is carried, not resolved."
+    },
+    "C3_bandWideningShifts": {
+      "oComponentMaxAlignedShift": 0.0303,
+      "sComponentMaxAlignedShift": 0,
+      "shiftLimit": 0.1,
+      "widened": false,
+      "finalBands": {
+        "noExcess": [0.85, 1.15],
+        "haO": [0.75, 1.25],
+        "haSMin": 1.35,
+        "hbOMin": 1.4,
+        "hbS": [0.7, 1.3]
+      }
+    },
+    "C4_ceilingReplay": {
+      "preRegistered": "simCeiling over the committed schedule must return 5.13/s",
+      "recomputed": 5.1301,
+      "perUnit": [
+        {
+          "slug": "liberalio",
+          "creditInstants": 19,
+          "minGapFrames": 90,
+          "maxRatePerSec": 0.6667
+        },
+        {
+          "slug": "rouge",
+          "creditInstants": 21,
+          "minGapFrames": 82,
+          "maxRatePerSec": 0.7317
+        },
+        {
+          "slug": "scarlet-black-shadow",
+          "creditInstants": 46,
+          "minGapFrames": 40,
+          "maxRatePerSec": 1.5
+        },
+        {
+          "slug": "soda-twinkling-bunny",
+          "creditInstants": 41,
+          "minGapFrames": 40,
+          "maxRatePerSec": 1.5
+        },
+        {
+          "slug": "trina",
+          "creditInstants": 18,
+          "minGapFrames": 82,
+          "maxRatePerSec": 0.7317
+        }
+      ],
+      "result": "PASS",
+      "note": "recomputed here, not quoted; matches scripts/tests/probe/ceiling-screen.test.ts"
+    },
+    "C5_instrumentSelfChecks": {
+      "preRegistered": "all three CreditScheduleChecks true with `unreconstructed` empty; any failure VOIDS the arm",
+      "scheduleChecks": {
+        "endpointOk": true,
+        "dbgGaugeOk": true,
+        "truncatedOk": true,
+        "unreconstructed": []
+      },
+      "result": "PASS"
+    },
+    "C6_noiseCorrection": {
+      "preRegistered": "apply the 2026-08-16 same-regime falseRate (0.55% primary / 0.45% pooled) exactly as that run did for iron; report corrected AND raw",
+      "statistic": "rate_corrected = (E - f*Q) / T,  Q = usableCleanBins - E,  T = usableCleanBins * (1/30)",
+      "instrumentSelfValidation": "the same committed subcommand reproduces the 2026-08-16 iron artifact exactly (4.5761 / 4.6013, indifference points 0.02304 / 0.04436, MAR 3.3872) \u2014 an independent labeled artifact, so this is a replay of a gated statistic, not a fresh derivation",
+      "n3": {
+        "comp": "N3 scarlet/liberalio iron",
+        "inputs": {
+          "eventBins": 69,
+          "usableCleanBins": 308,
+          "quietBins": 239,
+          "cleanBinTimeSec": 10.2667,
+          "fullWindowDurationSec": 15.118,
+          "ceilingBinsPerSec": 5.1301,
+          "ceilingFactor": 1.15,
+          "thresholdBinsPerSec": 5.8996
+        },
+        "raw": {
+          "rate": 6.7208,
+          "vsThresholdPct": 13.9,
+          "vsCeilingPct": 31
+        },
+        "corrected": {
+          "corrected@0.55%": {
+            "falseRate": 0.0055,
+            "correctionBins": 1.3145,
+            "rate": 6.5927,
+            "vsThresholdPct": 11.7,
+            "vsCeilingPct": 28.5,
+            "aboveThreshold": true,
+            "aboveCeiling": true
+          },
+          "corrected@0.45%": {
+            "falseRate": 0.0045,
+            "correctionBins": 1.0755,
+            "rate": 6.616,
+            "vsThresholdPct": 12.1,
+            "vsCeilingPct": 29,
+            "aboveThreshold": true,
+            "aboveCeiling": true
+          }
+        },
+        "indifferencePoints": {
+          "thresholdCutoff": 0.03527,
+          "ceilingCutoff": 0.06833
+        },
+        "marAlternativeDenominator": {
+          "fullWindowDurationSec": 15.118,
+          "rawRate": 4.5641,
+          "vsCeilingPct": -11,
+          "aboveCeiling": false
+        }
+      },
+      "ironReplayCheck": {
+        "comp": "iron sweep (run G)",
+        "inputs": {
+          "eventBins": 80,
+          "usableCleanBins": 509,
+          "quietBins": 429,
+          "cleanBinTimeSec": 16.9667,
+          "fullWindowDurationSec": 23.618,
+          "ceilingBinsPerSec": 3.5935,
+          "ceilingFactor": 1.15,
+          "thresholdBinsPerSec": 4.1325
+        },
+        "raw": {
+          "rate": 4.7151,
+          "vsThresholdPct": 14.1,
+          "vsCeilingPct": 31.2
+        },
+        "corrected": {
+          "corrected@0.55%": {
+            "falseRate": 0.0055,
+            "correctionBins": 2.3595,
+            "rate": 4.5761,
+            "vsThresholdPct": 10.7,
+            "vsCeilingPct": 27.3,
+            "aboveThreshold": true,
+            "aboveCeiling": true
+          },
+          "corrected@0.45%": {
+            "falseRate": 0.0045,
+            "correctionBins": 1.9305,
+            "rate": 4.6013,
+            "vsThresholdPct": 11.3,
+            "vsCeilingPct": 28,
+            "aboveThreshold": true,
+            "aboveCeiling": true
+          }
+        },
+        "indifferencePoints": {
+          "thresholdCutoff": 0.02304,
+          "ceilingCutoff": 0.04436
+        },
+        "marAlternativeDenominator": {
+          "fullWindowDurationSec": 23.618,
+          "rawRate": 3.3872,
+          "vsCeilingPct": -5.7,
+          "aboveCeiling": false
+        }
+      },
+      "result": "PASS",
+      "statedLimitation": "f was measured on SOLO footage; it bounds team noise conservatively but was not measured on this arm."
+    },
+    "C7_marSanityDiagnostic": {
+      "preRegistered": "DESCRIPTIVE, no verdict attaches: per-window bridged count/mass, dropped-bin fraction, and whether bridge episodes co-occur with high fill activity",
+      "coOccurrenceTest": "mean SIM credit rate inside the fraction-mapped bridged spans vs outside",
+      "n3": {
+        "comp": "N3 scarlet/liberalio iron",
+        "eMin": 1.5,
+        "usableWindows": 7,
+        "windows": [
+          {
+            "id": 1,
+            "durationSec": 1.667,
+            "totalBins": 51,
+            "cleanBins": 45,
+            "cleanBinCoverage": 0.8824,
+            "droppedBinFraction": 0.1176,
+            "bridgedCount": 1,
+            "bridgedMass": 0,
+            "bridgedRealSec": 0.1,
+            "bridgedRealFraction": 0.06,
+            "simGaugeInsideBridged": 6.41,
+            "simSecInsideBridged": 0.2579,
+            "simGaugeOutsideBridged": 103.42,
+            "simSecOutsideBridged": 4.0421,
+            "simRateInsideBridged": 24.859,
+            "simRateOutsideBridged": 25.587,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 2,
+            "durationSec": 2.417,
+            "totalBins": 73,
+            "cleanBins": 62,
+            "cleanBinCoverage": 0.8493,
+            "droppedBinFraction": 0.1507,
+            "bridgedCount": 0,
+            "bridgedMass": 0,
+            "bridgedRealSec": 0,
+            "bridgedRealFraction": 0,
+            "simGaugeInsideBridged": 0,
+            "simSecInsideBridged": 0,
+            "simGaugeOutsideBridged": 105.18,
+            "simSecOutsideBridged": 5.05,
+            "simRateInsideBridged": null,
+            "simRateOutsideBridged": 20.8277,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 3,
+            "durationSec": 1.484,
+            "totalBins": 45,
+            "cleanBins": 41,
+            "cleanBinCoverage": 0.9111,
+            "droppedBinFraction": 0.0889,
+            "bridgedCount": 1,
+            "bridgedMass": 6.7,
+            "bridgedRealSec": 0.05,
+            "bridgedRealFraction": 0.0337,
+            "simGaugeInsideBridged": 5.8,
+            "simSecInsideBridged": 0.1657,
+            "simGaugeOutsideBridged": 99.63,
+            "simSecOutsideBridged": 4.751,
+            "simRateInsideBridged": 35.0123,
+            "simRateOutsideBridged": 20.9703,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 4,
+            "durationSec": 3.6,
+            "totalBins": 108,
+            "cleanBins": 66,
+            "cleanBinCoverage": 0.6111,
+            "droppedBinFraction": 0.3889,
+            "bridgedCount": 4,
+            "bridgedMass": 21.7,
+            "bridgedRealSec": 0.55,
+            "bridgedRealFraction": 0.1528,
+            "simGaugeInsideBridged": 5.46,
+            "simSecInsideBridged": 0.5118,
+            "simGaugeOutsideBridged": 93.99,
+            "simSecOutsideBridged": 2.8382,
+            "simRateInsideBridged": 10.6693,
+            "simRateOutsideBridged": 33.117,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 5,
+            "durationSec": 1.95,
+            "totalBins": 59,
+            "cleanBins": 50,
+            "cleanBinCoverage": 0.8475,
+            "droppedBinFraction": 0.1525,
+            "bridgedCount": 2,
+            "bridgedMass": 10.5,
+            "bridgedRealSec": 0.334,
+            "bridgedRealFraction": 0.1713,
+            "simGaugeInsideBridged": 17.96,
+            "simSecInsideBridged": 0.688,
+            "simGaugeOutsideBridged": 83.29,
+            "simSecOutsideBridged": 3.3287,
+            "simRateInsideBridged": 26.1069,
+            "simRateOutsideBridged": 25.0231,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 6,
+            "durationSec": 1.8,
+            "totalBins": 54,
+            "cleanBins": 47,
+            "cleanBinCoverage": 0.8704,
+            "droppedBinFraction": 0.1296,
+            "bridgedCount": 1,
+            "bridgedMass": 8.2,
+            "bridgedRealSec": 0.2,
+            "bridgedRealFraction": 0.1111,
+            "simGaugeInsideBridged": 11.2,
+            "simSecInsideBridged": 0.5185,
+            "simGaugeOutsideBridged": 90.98,
+            "simSecOutsideBridged": 4.1481,
+            "simRateInsideBridged": 21.6,
+            "simRateOutsideBridged": 21.9335,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 7,
+            "durationSec": 2.2,
+            "totalBins": 66,
+            "cleanBins": 47,
+            "cleanBinCoverage": 0.7121,
+            "droppedBinFraction": 0.2879,
+            "bridgedCount": 1,
+            "bridgedMass": 17.9,
+            "bridgedRealSec": 0.2,
+            "bridgedRealFraction": 0.0909,
+            "simGaugeInsideBridged": 0,
+            "simSecInsideBridged": 0.4636,
+            "simGaugeOutsideBridged": 107.11,
+            "simSecOutsideBridged": 4.6364,
+            "simRateInsideBridged": 0,
+            "simRateOutsideBridged": 23.1022,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          }
+        ],
+        "pooled": {
+          "bridgedCount": 10,
+          "bridgedMass": 65,
+          "bridgedMassShareOfSumRealDelta": 0.0957,
+          "bridgedRealSec": 1.434,
+          "bridgedRealFraction": 0.0949,
+          "droppedBinFractionMean": 0.188,
+          "simGaugeInsideBridged": 46.83,
+          "simSecInsideBridged": 2.6055,
+          "simGaugeOutsideBridged": 683.6,
+          "simSecOutsideBridged": 28.7945,
+          "simRateInsideBridged": 17.9735,
+          "simRateOutsideBridged": 23.7406,
+          "insideOverOutsideRateRatio": 0.7571
+        },
+        "selfCheck": {
+          "allWindowsReproduce": true
+        }
+      },
+      "ironSweepRunG": {
+        "comp": "iron sweep (run G)",
+        "eMin": 1.5,
+        "usableWindows": 10,
+        "windows": [
+          {
+            "id": 1,
+            "durationSec": 2.034,
+            "totalBins": 62,
+            "cleanBins": 43,
+            "cleanBinCoverage": 0.6935,
+            "droppedBinFraction": 0.3065,
+            "bridgedCount": 3,
+            "bridgedMass": 36.6,
+            "bridgedRealSec": 0.451,
+            "bridgedRealFraction": 0.2217,
+            "simGaugeInsideBridged": 11.2,
+            "simSecInsideBridged": 0.7539,
+            "simGaugeOutsideBridged": 95.2,
+            "simSecOutsideBridged": 2.6461,
+            "simRateInsideBridged": 14.8564,
+            "simRateOutsideBridged": 35.9773,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 2,
+            "durationSec": 2.2,
+            "totalBins": 66,
+            "cleanBins": 47,
+            "cleanBinCoverage": 0.7121,
+            "droppedBinFraction": 0.2879,
+            "bridgedCount": 0,
+            "bridgedMass": 0,
+            "bridgedRealSec": 0,
+            "bridgedRealFraction": 0,
+            "simGaugeInsideBridged": 0,
+            "simSecInsideBridged": 0,
+            "simGaugeOutsideBridged": 100.8,
+            "simSecOutsideBridged": 5.4333,
+            "simRateInsideBridged": null,
+            "simRateOutsideBridged": 18.5521,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 3,
+            "durationSec": 2.483,
+            "totalBins": 75,
+            "cleanBins": 49,
+            "cleanBinCoverage": 0.6533,
+            "droppedBinFraction": 0.3467,
+            "bridgedCount": 1,
+            "bridgedMass": 27.6,
+            "bridgedRealSec": 0.2,
+            "bridgedRealFraction": 0.0805,
+            "simGaugeInsideBridged": 5.6,
+            "simSecInsideBridged": 0.3088,
+            "simGaugeOutsideBridged": 114.8,
+            "simSecOutsideBridged": 3.5246,
+            "simRateInsideBridged": 18.1367,
+            "simRateOutsideBridged": 32.5714,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 4,
+            "durationSec": 2.3,
+            "totalBins": 69,
+            "cleanBins": 62,
+            "cleanBinCoverage": 0.8986,
+            "droppedBinFraction": 0.1014,
+            "bridgedCount": 1,
+            "bridgedMass": 6,
+            "bridgedRealSec": 0.067,
+            "bridgedRealFraction": 0.0291,
+            "simGaugeInsideBridged": 0,
+            "simSecInsideBridged": 0.1233,
+            "simGaugeOutsideBridged": 100.8,
+            "simSecOutsideBridged": 4.11,
+            "simRateInsideBridged": 0,
+            "simRateOutsideBridged": 24.5255,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 5,
+            "durationSec": 2.467,
+            "totalBins": 75,
+            "cleanBins": 60,
+            "cleanBinCoverage": 0.8,
+            "droppedBinFraction": 0.2,
+            "bridgedCount": 2,
+            "bridgedMass": 5.2,
+            "bridgedRealSec": 0.433,
+            "bridgedRealFraction": 0.1755,
+            "simGaugeInsideBridged": 25.2,
+            "simSecInsideBridged": 0.6465,
+            "simGaugeOutsideBridged": 78.4,
+            "simSecOutsideBridged": 3.0368,
+            "simRateInsideBridged": 38.9799,
+            "simRateOutsideBridged": 25.8163,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 6,
+            "durationSec": 3.583,
+            "totalBins": 108,
+            "cleanBins": 100,
+            "cleanBinCoverage": 0.9259,
+            "droppedBinFraction": 0.0741,
+            "bridgedCount": 0,
+            "bridgedMass": 0,
+            "bridgedRealSec": 0,
+            "bridgedRealFraction": 0,
+            "simGaugeInsideBridged": 0,
+            "simSecInsideBridged": 0,
+            "simGaugeOutsideBridged": 100.8,
+            "simSecOutsideBridged": 4.2333,
+            "simRateInsideBridged": null,
+            "simRateOutsideBridged": 23.811,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 7,
+            "durationSec": 1.633,
+            "totalBins": 49,
+            "cleanBins": 42,
+            "cleanBinCoverage": 0.8571,
+            "droppedBinFraction": 0.1429,
+            "bridgedCount": 0,
+            "bridgedMass": 0,
+            "bridgedRealSec": 0,
+            "bridgedRealFraction": 0,
+            "simGaugeInsideBridged": 0,
+            "simSecInsideBridged": 0,
+            "simGaugeOutsideBridged": 100.8,
+            "simSecOutsideBridged": 3.4833,
+            "simRateInsideBridged": null,
+            "simRateOutsideBridged": 28.9378,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 8,
+            "durationSec": 2.484,
+            "totalBins": 75,
+            "cleanBins": 49,
+            "cleanBinCoverage": 0.6533,
+            "droppedBinFraction": 0.3467,
+            "bridgedCount": 2,
+            "bridgedMass": 30.6,
+            "bridgedRealSec": 0.583,
+            "bridgedRealFraction": 0.2347,
+            "simGaugeInsideBridged": 30.8,
+            "simSecInsideBridged": 1.1618,
+            "simGaugeOutsideBridged": 70,
+            "simSecOutsideBridged": 3.7882,
+            "simRateInsideBridged": 26.5111,
+            "simRateOutsideBridged": 18.4783,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 9,
+            "durationSec": 2.05,
+            "totalBins": 62,
+            "cleanBins": 57,
+            "cleanBinCoverage": 0.9194,
+            "droppedBinFraction": 0.0806,
+            "bridgedCount": 1,
+            "bridgedMass": 6,
+            "bridgedRealSec": 0.1,
+            "bridgedRealFraction": 0.0488,
+            "simGaugeInsideBridged": 19.6,
+            "simSecInsideBridged": 0.2033,
+            "simGaugeOutsideBridged": 84,
+            "simSecOutsideBridged": 3.9634,
+            "simRateInsideBridged": 96.432,
+            "simRateOutsideBridged": 21.1938,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          },
+          {
+            "id": 10,
+            "durationSec": 2.384,
+            "totalBins": 72,
+            "cleanBins": 61,
+            "cleanBinCoverage": 0.8472,
+            "droppedBinFraction": 0.1528,
+            "bridgedCount": 2,
+            "bridgedMass": 20.9,
+            "bridgedRealSec": 0.4,
+            "bridgedRealFraction": 0.1678,
+            "simGaugeInsideBridged": 36.4,
+            "simSecInsideBridged": 0.7718,
+            "simGaugeOutsideBridged": 64.4,
+            "simSecOutsideBridged": 3.8282,
+            "simRateInsideBridged": 47.1617,
+            "simRateOutsideBridged": 16.8226,
+            "bridgedCountMatches": true,
+            "bridgedMassMatches": true
+          }
+        ],
+        "pooled": {
+          "bridgedCount": 12,
+          "bridgedMass": 132.9,
+          "bridgedMassShareOfSumRealDelta": 0.1405,
+          "bridgedRealSec": 2.234,
+          "bridgedRealFraction": 0.0946,
+          "droppedBinFractionMean": 0.204,
+          "simGaugeInsideBridged": 128.8,
+          "simSecInsideBridged": 3.9694,
+          "simGaugeOutsideBridged": 910,
+          "simSecOutsideBridged": 38.0472,
+          "simRateInsideBridged": 32.4482,
+          "simRateOutsideBridged": 23.9177,
+          "insideOverOutsideRateRatio": 1.3567
+        },
+        "selfCheck": {
+          "allWindowsReproduce": true
+        }
+      },
+      "readingDirection": "ratio > 1 means bridge episodes sit on FASTER-than-average modeled fill, the direction that would bias the clean-bin estimator UPWARD",
+      "n3Ratio": 0.7571,
+      "ironRatio": 1.3567,
+      "selfCheck": "per-window bridged count and mass re-derived independently and matched classifyArm's stored values on every window, both arms",
+      "result": "REPORTED (descriptive)"
+    },
+    "C8_manualStepWitness": {
+      "preRegistered": "the artifact MUST record the full --sim-only output, the --o-shift/--s-shift actually passed, and the e-min actually used",
+      "simOnlyOutput": {
+        "comp": "N3 scarlet/liberalio iron",
+        "scheduleChecks": {
+          "endpointOk": true,
+          "dbgGaugeOk": true,
+          "truncatedOk": true,
+          "unreconstructed": []
+        },
+        "components": {
+          "base": {
+            "comp": "N3 scarlet/liberalio iron",
+            "binSec": 0.033333,
+            "jitterFrames": 0,
+            "phaseSec": 0,
+            "windowsUsed": [1, 2, 3, 4, 5, 6, 7, 8],
+            "totalBins": 1044,
+            "saturatedBins": 21,
+            "usableBins": 1023,
+            "creditBins": 98,
+            "creditBinFraction": 0.0958,
+            "binAmountQuantiles": {
+              "n": 98,
+              "min": 3.75,
+              "p25": 5.461,
+              "p50": 6.25,
+              "p75": 7.32,
+              "max": 18.52,
+              "mean": 7.025
+            },
+            "totalGauge": 843.198,
+            "totalDurationSec": 34.7333,
+            "ratePerSec": 24.2763
+          },
+          "jitterPlus1": {
+            "comp": "N3 scarlet/liberalio iron",
+            "binSec": 0.033333,
+            "jitterFrames": 1,
+            "phaseSec": 0,
+            "windowsUsed": [1, 2, 3, 4, 5, 6, 7, 8],
+            "totalBins": 1044,
+            "saturatedBins": 19,
+            "usableBins": 1025,
+            "creditBins": 100,
+            "creditBinFraction": 0.0976,
+            "binAmountQuantiles": {
+              "n": 100,
+              "min": 3.75,
+              "p25": 5.461,
+              "p50": 6.25,
+              "p75": 7.32,
+              "max": 18.52,
+              "mean": 6.885
+            },
+            "totalGauge": 843.198,
+            "totalDurationSec": 34.7333,
+            "ratePerSec": 24.2763
+          },
+          "jitterMinus1": {
+            "comp": "N3 scarlet/liberalio iron",
+            "binSec": 0.033333,
+            "jitterFrames": -1,
+            "phaseSec": 0,
+            "windowsUsed": [1, 2, 3, 4, 5, 6, 7, 8],
+            "totalBins": 1044,
+            "saturatedBins": 21,
+            "usableBins": 1023,
+            "creditBins": 99,
+            "creditBinFraction": 0.0968,
+            "binAmountQuantiles": {
+              "n": 99,
+              "min": 3.75,
+              "p25": 5.461,
+              "p50": 6.25,
+              "p75": 7.32,
+              "max": 18.52,
+              "mean": 6.954
+            },
+            "totalGauge": 843.198,
+            "totalDurationSec": 34.7333,
+            "ratePerSec": 24.2763
+          },
+          "phaseHalfBin": {
+            "comp": "N3 scarlet/liberalio iron",
+            "binSec": 0.033333,
+            "jitterFrames": 0,
+            "phaseSec": 0.016667,
+            "windowsUsed": [1, 2, 3, 4, 5, 6, 7, 8],
+            "totalBins": 1044,
+            "saturatedBins": 21,
+            "usableBins": 1023,
+            "creditBins": 101,
+            "creditBinFraction": 0.0987,
+            "binAmountQuantiles": {
+              "n": 101,
+              "min": 3.75,
+              "p25": 5.461,
+              "p50": 6.25,
+              "p75": 7.32,
+              "max": 18.52,
+              "mean": 6.816
+            },
+            "totalGauge": 843.198,
+            "totalDurationSec": 34.7333,
+            "ratePerSec": 24.2763
+          },
+          "scale60fps": {
+            "comp": "N3 scarlet/liberalio iron",
+            "binSec": 0.016667,
+            "jitterFrames": 0,
+            "phaseSec": 0,
+            "windowsUsed": [1, 2, 3, 4, 5, 6, 7, 8],
+            "totalBins": 2084,
+            "saturatedBins": 21,
+            "usableBins": 2063,
+            "creditBins": 103,
+            "creditBinFraction": 0.0499,
+            "binAmountQuantiles": {
+              "n": 103,
+              "min": 3.75,
+              "p25": 5.461,
+              "p50": 6.25,
+              "p75": 7.26,
+              "max": 18.52,
+              "mean": 6.684
+            },
+            "totalGauge": 843.198,
+            "totalDurationSec": 34.7333,
+            "ratePerSec": 24.2763
+          }
+        },
+        "c3": {
+          "oComponentMaxAlignedShift": 0.0303,
+          "sComponentMaxAlignedShift": 0,
+          "shiftLimit": 0.1,
+          "widened": false,
+          "finalBands": {
+            "noExcess": [0.85, 1.15],
+            "haO": [0.75, 1.25],
+            "haSMin": 1.35,
+            "hbOMin": 1.4,
+            "hbS": [0.7, 1.3]
+          }
+        },
+        "ceiling": {
+          "perUnit": [
+            {
+              "slug": "liberalio",
+              "creditInstants": 19,
+              "minGapFrames": 90,
+              "maxRatePerSec": 0.6667
+            },
+            {
+              "slug": "rouge",
+              "creditInstants": 21,
+              "minGapFrames": 82,
+              "maxRatePerSec": 0.7317
+            },
+            {
+              "slug": "scarlet-black-shadow",
+              "creditInstants": 46,
+              "minGapFrames": 40,
+              "maxRatePerSec": 1.5
+            },
+            {
+              "slug": "soda-twinkling-bunny",
+              "creditInstants": 41,
+              "minGapFrames": 40,
+              "maxRatePerSec": 1.5
+            },
+            {
+              "slug": "trina",
+              "creditInstants": 18,
+              "minGapFrames": 82,
+              "maxRatePerSec": 0.7317
+            }
+          ],
+          "sumRatePerSec": 5.1301,
+          "ceilingBinsPerSec": 5.1301,
+          "binRateCap": 30
+        }
+      },
+      "oShiftPassed": 0.0303,
+      "sShiftPassed": 0,
+      "eMinUsed": 1.5,
+      "bandsActuallyUsed": {
+        "noExcess": [0.85, 1.15],
+        "haO": [0.75, 1.25],
+        "haSMin": 1.35,
+        "hbOMin": 1.4,
+        "hbS": [0.7, 1.3]
+      },
+      "bandsEqualBaseBands": true,
+      "reflagWitness": {
+        "command": "scripts/probe/.venv/bin/python scripts/probe/gauge-fill.py --reflag docs/probe-data/fill-trace-n3-scarlet-liberalio-iron.json --out <reflagged>",
+        "newOffCurveReadIndices": [],
+        "log": "docs/probe-data/fill-trace-n3-scarlet-liberalio-iron.json: 9 windows, 0 reads newly flagged offCurve\nwin  span(s)              clean  viol/worst  ->  clean  viol/worst  offCurve(new)\n  1    28.350-  30.000     88    0/0.0    ->     88    0/0.0      2 (0 were clean)\n  2    46.733-  49.133    118    0/0.0    ->    118    0/0.0      2 (0 were clean)\n  3    65.833-  67.300     79    0/0.0    ->     78    0/0.0      2 (1 were clean)\n  4    84.000-  87.583    128    0/0.0    ->    126    0/0.0     16 (2 were clean)\n  5   104.283- 106.217    101   16/22.4   ->     98    0/0.0      4 (3 were clean)\n  6   122.917- 124.700    101   26/18.7   ->     92    0/0.0     13 (9 were clean)\n  7   141.400- 143.583     91   26/35.1   ->     89    0/0.0     10 (2 were clean)\n  8   160.300- 162.517     83   65/52.3   ->     73    0/0.0     14 (10 were clean)\n  9   179.233- 181.400     91    4/8.9    ->     88    0/0.0      5 (3 were clean)\nwrote /tmp/n3-reflagged.json\n",
+        "note": "0 reads newly flagged (gauge-fill.py already applies the offCurve pass in the main --team run, unlike the 2026-08-14 traces the 2026-08-15 run reflagged). The reflagged trace is byte-identical to the committed bundle's `trace`, verified read-by-read; post-reflag clean-set monotonicity violations are 0 on every window."
+      },
+      "result": "PASS"
+    }
+  },
+  "arm": {
+    "comp": "N3 scarlet/liberalio iron",
+    "eMin": 1.5,
+    "bands": {
+      "noExcess": [0.85, 1.15],
+      "haO": [0.75, 1.25],
+      "haSMin": 1.35,
+      "hbOMin": 1.4,
+      "hbS": [0.7, 1.3]
+    },
+    "windows": [
+      {
+        "id": 1,
+        "usable": true,
+        "barPaint": 28.35,
+        "fullInstant": 30.017,
+        "durationSec": 1.667,
+        "totalBins": 51,
+        "cleanBins": 45,
+        "cleanBinCoverage": 0.8824,
+        "saturatedBins": 3,
+        "usableCleanBins": 42,
+        "eventBins": 11,
+        "eventBinDeltas": [4.4, 9, 5.2, 7.4, 9, 14.9, 3.7, 8.2, 6, 8.2, 3.8],
+        "eventMass": 79.8,
+        "bankedAtPaintMass": 9,
+        "bankedAtPaintSec": 0.067,
+        "bridgedCount": 1,
+        "bridgedMass": 0,
+        "residualMass": 6.7,
+        "sumRealDelta": 95.5,
+        "lastCleanT": 29.983,
+        "lastCleanFill": 95.5,
+        "simWindow": 1,
+        "simDurationSec": 4.3,
+        "simGauge": 109.836,
+        "rho": 2.2428
+      },
+      {
+        "id": 2,
+        "usable": true,
+        "barPaint": 46.733,
+        "fullInstant": 49.15,
+        "durationSec": 2.417,
+        "totalBins": 73,
+        "cleanBins": 62,
+        "cleanBinCoverage": 0.8493,
+        "saturatedBins": 9,
+        "usableCleanBins": 53,
+        "eventBins": 11,
+        "eventBinDeltas": [3, 3, 11.2, 3.8, 6.7, 12.7, 9.7, 6, 6.7, 7.4, 6],
+        "eventMass": 76.2,
+        "bankedAtPaintMass": 8.2,
+        "bankedAtPaintSec": 0.35,
+        "bridgedCount": 0,
+        "bridgedMass": 0,
+        "residualMass": 7.4,
+        "sumRealDelta": 91.8,
+        "lastCleanT": 49.117,
+        "lastCleanFill": 91.8,
+        "simWindow": 2,
+        "simDurationSec": 5.05,
+        "simGauge": 105.18,
+        "rho": 1.8236
+      },
+      {
+        "id": 3,
+        "usable": true,
+        "barPaint": 65.833,
+        "fullInstant": 67.317,
+        "durationSec": 1.484,
+        "totalBins": 45,
+        "cleanBins": 41,
+        "cleanBinCoverage": 0.9111,
+        "saturatedBins": 6,
+        "usableCleanBins": 35,
+        "eventBins": 8,
+        "eventBinDeltas": [3, 6, 5.2, 7.4, 11.2, 6, 4.5, 10.5],
+        "eventMass": 53.8,
+        "bankedAtPaintMass": 26.1,
+        "bankedAtPaintSec": 0.1,
+        "bridgedCount": 1,
+        "bridgedMass": 6.7,
+        "residualMass": 12.7,
+        "sumRealDelta": 99.3,
+        "lastCleanT": 67.267,
+        "lastCleanFill": 99.3,
+        "simWindow": 3,
+        "simDurationSec": 4.9167,
+        "simGauge": 105.43,
+        "rho": 3.1205
+      },
+      {
+        "id": 4,
+        "usable": true,
+        "barPaint": 84,
+        "fullInstant": 87.6,
+        "durationSec": 3.6,
+        "totalBins": 108,
+        "cleanBins": 66,
+        "cleanBinCoverage": 0.6111,
+        "saturatedBins": 18,
+        "usableCleanBins": 48,
+        "eventBins": 8,
+        "eventBinDeltas": [3.7, 7.5, 6.7, 6, 11.9, 7.5, 6, 3.8],
+        "eventMass": 53.1,
+        "bankedAtPaintMass": 9,
+        "bankedAtPaintSec": 0.983,
+        "bridgedCount": 4,
+        "bridgedMass": 21.7,
+        "residualMass": 15.5,
+        "sumRealDelta": 99.3,
+        "lastCleanT": 87.567,
+        "lastCleanFill": 99.3,
+        "simWindow": 4,
+        "simDurationSec": 3.35,
+        "simGauge": 103.203,
+        "rho": 0.8954
+      },
+      {
+        "id": 5,
+        "usable": true,
+        "barPaint": 104.283,
+        "fullInstant": 106.233,
+        "durationSec": 1.95,
+        "totalBins": 59,
+        "cleanBins": 50,
+        "cleanBinCoverage": 0.8475,
+        "saturatedBins": 7,
+        "usableCleanBins": 43,
+        "eventBins": 11,
+        "eventBinDeltas": [6.7, 3.7, 2.2, 5.2, 2.3, 8.9, 5.9, 5.9, 3.8, 6, 5.9],
+        "eventMass": 56.5,
+        "bankedAtPaintMass": 14.2,
+        "bankedAtPaintSec": 0,
+        "bridgedCount": 2,
+        "bridgedMass": 10.5,
+        "residualMass": 18.1,
+        "sumRealDelta": 99.3,
+        "lastCleanT": 106.2,
+        "lastCleanFill": 99.3,
+        "simWindow": 5,
+        "simDurationSec": 4.0167,
+        "simGauge": 101.255,
+        "rho": 2.0201
+      },
+      {
+        "id": 6,
+        "usable": true,
+        "barPaint": 122.917,
+        "fullInstant": 124.717,
+        "durationSec": 1.8,
+        "totalBins": 54,
+        "cleanBins": 47,
+        "cleanBinCoverage": 0.8704,
+        "saturatedBins": 1,
+        "usableCleanBins": 46,
+        "eventBins": 10,
+        "eventBinDeltas": [6.7, 5.3, 6, 7.4, 6, 3.8, 2.2, 5.2, 6, 6.7],
+        "eventMass": 55.3,
+        "bankedAtPaintMass": 13.4,
+        "bankedAtPaintSec": 0.066,
+        "bridgedCount": 1,
+        "bridgedMass": 8.2,
+        "residualMass": 17.9,
+        "sumRealDelta": 94.8,
+        "lastCleanT": 124.683,
+        "lastCleanFill": 94.8,
+        "simWindow": 6,
+        "simDurationSec": 4.6667,
+        "simGauge": 102.183,
+        "rho": 2.4053
+      },
+      {
+        "id": 7,
+        "usable": true,
+        "barPaint": 141.4,
+        "fullInstant": 143.6,
+        "durationSec": 2.2,
+        "totalBins": 66,
+        "cleanBins": 47,
+        "cleanBinCoverage": 0.7121,
+        "saturatedBins": 6,
+        "usableCleanBins": 41,
+        "eventBins": 10,
+        "eventBinDeltas": [5.3, 5.2, 5.3, 6, 5.9, 6, 3.7, 3.7, 4.5, 5.2],
+        "eventMass": 50.8,
+        "bankedAtPaintMass": 14.9,
+        "bankedAtPaintSec": 0.483,
+        "bridgedCount": 1,
+        "bridgedMass": 17.9,
+        "residualMass": 15.7,
+        "sumRealDelta": 99.3,
+        "lastCleanT": 143.567,
+        "lastCleanFill": 99.3,
+        "simWindow": 7,
+        "simDurationSec": 5.1,
+        "simGauge": 107.11,
+        "rho": 2.1491
+      },
+      {
+        "id": 8,
+        "usable": false,
+        "barPaint": 160.3,
+        "fullInstant": 162.533,
+        "durationSec": 2.233,
+        "totalBins": 67,
+        "cleanBins": 36,
+        "cleanBinCoverage": 0.5373,
+        "saturatedBins": 2,
+        "usableCleanBins": 34,
+        "eventBins": 8,
+        "eventBinDeltas": [3, 5.2, 5.3, 3.7, 10.5, 3.7, 7.4, 11.2],
+        "eventMass": 50,
+        "bankedAtPaintMass": 10.4,
+        "bankedAtPaintSec": 0.467,
+        "bridgedCount": 2,
+        "bridgedMass": 23.9,
+        "residualMass": 15,
+        "sumRealDelta": 99.3,
+        "lastCleanT": 162.5,
+        "lastCleanFill": 99.3,
+        "simWindow": 8,
+        "simDurationSec": 3.3333,
+        "simGauge": 109,
+        "rho": 1.3599,
+        "reason": "clean-bin coverage 54% < 60% (B1)"
+      },
+      {
+        "id": 9,
+        "usable": false,
+        "barPaint": 179.233,
+        "fullInstant": 181.417,
+        "durationSec": 2.184,
+        "totalBins": 66,
+        "cleanBins": 47,
+        "cleanBinCoverage": 0.7121,
+        "saturatedBins": 12,
+        "usableCleanBins": 35,
+        "eventBins": 8,
+        "eventBinDeltas": [9, 8.2, 6.7, 6, 8.9, 7.5, 3.7, 10.4],
+        "eventMass": 60.4,
+        "bankedAtPaintMass": 10.4,
+        "bankedAtPaintSec": 0.45,
+        "bridgedCount": 2,
+        "bridgedMass": 15,
+        "residualMass": 12.7,
+        "sumRealDelta": 98.5,
+        "lastCleanT": 181.383,
+        "lastCleanFill": 98.5,
+        "simWindow": null,
+        "simDurationSec": null,
+        "simGauge": null,
+        "rho": null,
+        "reason": "no sim refill window with this ordinal"
+      }
+    ],
+    "pooled": {
+      "usableWindows": 7,
+      "sumRealDelta": 679.3,
+      "sumRealDurationSec": 15.118,
+      "realRatePerSec": 44.9332,
+      "sumSimGauge": 734.2,
+      "sumSimDurationSec": 31.4,
+      "simRatePerSec": 23.382,
+      "rho": 1.9217,
+      "rhoPerWindow": [2.2428, 1.8236, 3.1205, 0.8954, 2.0201, 2.4053, 2.1491],
+      "rhoMedian": 2.1491,
+      "rhoIqr": {
+        "p25": 1.9219,
+        "p75": 2.324,
+        "iqr": 0.4022
+      },
+      "rhoDispersion": 0.1871,
+      "eventBins": 69,
+      "usableCleanBins": 308,
+      "realEventBinFraction": 0.224,
+      "realEventBinsPerSec": 6.7208,
+      "medianEventBinDelta": 6,
+      "eventBinDeltaQuantiles": {
+        "n": 69,
+        "min": 2.2,
+        "p25": 4.5,
+        "p50": 6,
+        "p75": 7.4,
+        "p90": 9.14,
+        "max": 14.9,
+        "mean": 6.17
+      },
+      "bankedMassTotal": 94.8,
+      "bridgedMassTotal": 65,
+      "residualMassTotal": 94,
+      "O": 2.3385,
+      "S": 0.96,
+      "oTime": 1.6176,
+      "massCorrReal": 1.5965,
+      "massCorrSim": 1.2248,
+      "oEff": 2.1085,
+      "closureResidual": 0.0533
+    },
+    "basis": {
+      "b1UsableWindows": 7,
+      "b1Pass": true,
+      "b2ScheduleChecksPass": true,
+      "b2Warnings": [],
+      "b3RhoDispersion": 0.1871,
+      "b3Pass": true,
+      "b4RealSaturatedBins": 50,
+      "b4SimSaturatedBins": 21,
+      "pass": true,
+      "detail": "B1-B4 all satisfied"
+    },
+    "branch": {
+      "branch": "H-C",
+      "detail": "real event rate 6.7208/s > 1.15 x ceiling 5.1301/s; H-C share of rate 0.2367; demoted same-arm candidate remainder (descriptive only): H-B band hit (O 2.3385 >= 1.4, S 0.96 in [0.7,1.3))",
+      "realEventBinsPerSec": 6.7208,
+      "ceilingBinsPerSec": 5.1301,
+      "ceilingThreshold": 5.8996,
+      "hcShareOfRate": 0.2367,
+      "demotedCandidate": "H-B band hit (O 2.3385 >= 1.4, S 0.96 in [0.7,1.3))",
+      "observedCeilingExcess": null
+    },
+    "sim": {
+      "comp": "N3 scarlet/liberalio iron",
+      "binSec": 0.033333,
+      "jitterFrames": 0,
+      "phaseSec": 0,
+      "windowsUsed": [1, 2, 3, 4, 5, 6, 7, 8],
+      "totalBins": 1044,
+      "saturatedBins": 21,
+      "usableBins": 1023,
+      "creditBins": 98,
+      "creditBinFraction": 0.0958,
+      "binAmountQuantiles": {
+        "n": 98,
+        "min": 3.75,
+        "p25": 5.461,
+        "p50": 6.25,
+        "p75": 7.32,
+        "max": 18.52,
+        "mean": 7.025
+      },
+      "totalGauge": 843.198,
+      "totalDurationSec": 34.7333,
+      "ratePerSec": 24.2763
+    },
+    "ceiling": {
+      "perUnit": [
+        {
+          "slug": "liberalio",
+          "creditInstants": 19,
+          "minGapFrames": 90,
+          "maxRatePerSec": 0.6667
+        },
+        {
+          "slug": "rouge",
+          "creditInstants": 21,
+          "minGapFrames": 82,
+          "maxRatePerSec": 0.7317
+        },
+        {
+          "slug": "scarlet-black-shadow",
+          "creditInstants": 46,
+          "minGapFrames": 40,
+          "maxRatePerSec": 1.5
+        },
+        {
+          "slug": "soda-twinkling-bunny",
+          "creditInstants": 41,
+          "minGapFrames": 40,
+          "maxRatePerSec": 1.5
+        },
+        {
+          "slug": "trina",
+          "creditInstants": 18,
+          "minGapFrames": 82,
+          "maxRatePerSec": 0.7317
+        }
+      ],
+      "sumRatePerSec": 5.1301,
+      "ceilingBinsPerSec": 5.1301,
+      "binRateCap": 30
+    }
+  },
+  "closureDiagnostic_E3": {
+    "preCommitted": "For BOTH arms report the closure residual as-specified AND recomputed with bridgedMass excluded from sumRealDelta. Two variants are reported because 'excluding bridged mass' is ambiguous (rho also divides by sumRealDelta): (a) rho held at its committed value, only massCorrReal corrected; (b) rho recomputed from the corrected sumRealDelta as well.",
+    "peekDeclarationCompliance": "iron's bridged-mass-excluded residual was NOT computed before the work step. Both halves were computed on 2026-08-17, in this run, by the committed subcommand `closure-diag`.",
+    "ironSweepRunG": {
+      "computedOn": "2026-08-17",
+      "comp": "iron sweep (run G)",
+      "threshold": 0.25,
+      "usableWindows": 10,
+      "eventMass": 567,
+      "bridgedMassTotal": 132.9,
+      "held": {
+        "oTime": 1.3301,
+        "massCorrSim": 1.1667,
+        "S": 1.0714,
+        "simRatePerSec": 24.7236
+      },
+      "asSpecified": {
+        "label": "as-specified",
+        "sumRealDelta": 946.1,
+        "massCorrReal": 1.6686,
+        "oEff": 1.9022,
+        "rho": 1.6202,
+        "closureResidual": 0.2579,
+        "belowThreshold": false
+      },
+      "variantA": {
+        "label": "bridged mass excluded from massCorrReal only; rho held as-specified",
+        "sumRealDelta": 813.2,
+        "massCorrReal": 1.4342,
+        "oEff": 1.635,
+        "rho": 1.6202,
+        "closureResidual": 0.0812,
+        "belowThreshold": true
+      },
+      "variantB": {
+        "label": "bridged mass excluded from massCorrReal AND from rho",
+        "sumRealDelta": 813.2,
+        "massCorrReal": 1.4342,
+        "oEff": 1.635,
+        "rho": 1.3927,
+        "closureResidual": 0.2579,
+        "belowThreshold": false
+      },
+      "reproduces": {
+        "storedClosureResidual": 0.2579,
+        "recomputedClosureResidual": 0.2579,
+        "matches": true,
+        "storedRho": 1.6202,
+        "recomputedRho": 1.6202,
+        "storedS": 1.0714,
+        "recomputedS": 1.0714
+      }
+    },
+    "n3": {
+      "computedOn": "2026-08-17",
+      "comp": "N3 scarlet/liberalio iron",
+      "threshold": 0.25,
+      "usableWindows": 7,
+      "eventMass": 425.5,
+      "bridgedMassTotal": 65,
+      "held": {
+        "oTime": 1.6176,
+        "massCorrSim": 1.2248,
+        "S": 0.96,
+        "simRatePerSec": 23.382
+      },
+      "asSpecified": {
+        "label": "as-specified",
+        "sumRealDelta": 679.3,
+        "massCorrReal": 1.5965,
+        "oEff": 2.1085,
+        "rho": 1.9217,
+        "closureResidual": 0.0533,
+        "belowThreshold": true
+      },
+      "variantA": {
+        "label": "bridged mass excluded from massCorrReal only; rho held as-specified",
+        "sumRealDelta": 614.3,
+        "massCorrReal": 1.4437,
+        "oEff": 1.9068,
+        "rho": 1.9217,
+        "closureResidual": 0.0475,
+        "belowThreshold": true
+      },
+      "variantB": {
+        "label": "bridged mass excluded from massCorrReal AND from rho",
+        "sumRealDelta": 614.3,
+        "massCorrReal": 1.4437,
+        "oEff": 1.9068,
+        "rho": 1.7378,
+        "closureResidual": 0.0533,
+        "belowThreshold": true
+      },
+      "reproduces": {
+        "storedClosureResidual": 0.0533,
+        "recomputedClosureResidual": 0.0533,
+        "matches": true,
+        "storedRho": 1.9217,
+        "recomputedRho": 1.9217,
+        "storedS": 0.96,
+        "recomputedS": 0.96
+      }
+    },
+    "structuralObservation": {
+      "claim": "the closure residual is INVARIANT under any uniform rescaling of sumRealDelta, so variant (b) can never differ from the as-specified value on any arm",
+      "algebra": "oEff = oTime * (M / eventMass) / massCorrSim is proportional to M; rho = (M / sumRealDur) / simRate is proportional to M; residual = |oEff*S - rho| / rho = |k*S - c| / c, with M cancelling.",
+      "numericalConfirmation": {
+        "ironAsSpecified": 0.2579,
+        "ironVariantB": 0.2579,
+        "n3AsSpecified": 0.0533,
+        "n3VariantB": 0.0533
+      },
+      "status": "REPORTED, no verdict attached"
+    },
+    "ironSoloReading_perPacket": {
+      "underVariantA": {
+        "correctedResidual": 0.0812,
+        "belowThreshold": true,
+        "preRegisteredReading": "iron's closure failure is bridged-mass-consistent, R2 live"
+      },
+      "underVariantB": {
+        "correctedResidual": 0.2579,
+        "belowThreshold": false,
+        "preRegisteredReading": "iron's closure failure survives the correction, R2 weakened on that arm"
+      },
+      "scopeClause": "neither solo reading stamps anything about N3, about the paired diagnostic, or about either arm's branch"
+    },
+    "pairedReading": {
+      "preRegisteredClauses": [
+        "both fail as-specified AND both drop below 0.25 corrected => closure clause is bridged-mass-driven (R2 supported)",
+        "both fail and neither drops => R2 refuted",
+        "split => inconclusive on R2; both numbers reported verbatim, nothing claimed"
+      ],
+      "observed": {
+        "ironAsSpecified": 0.2579,
+        "ironFailsAsSpecified": true,
+        "n3AsSpecified": 0.0533,
+        "n3FailsAsSpecified": false
+      },
+      "preRegistrationGap": "ALL THREE pre-committed clauses presuppose that BOTH arms FAIL closure as-specified. N3 does not fail (0.0533 <= 0.25), so no clause matches on its own terms. The nearest-matching pre-registered clause is the third (SPLIT => inconclusive on R2; both numbers reported verbatim, nothing claimed), and that is the reading recorded. Flagged rather than resolved.",
+      "selectedReading": "SPLIT => inconclusive on R2; both numbers reported verbatim, nothing claimed"
+    }
+  },
+  "marDiagnostic_C7": {
+    "n3": {
+      "comp": "N3 scarlet/liberalio iron",
+      "eMin": 1.5,
+      "usableWindows": 7,
+      "windows": [
+        {
+          "id": 1,
+          "durationSec": 1.667,
+          "totalBins": 51,
+          "cleanBins": 45,
+          "cleanBinCoverage": 0.8824,
+          "droppedBinFraction": 0.1176,
+          "bridgedCount": 1,
+          "bridgedMass": 0,
+          "bridgedRealSec": 0.1,
+          "bridgedRealFraction": 0.06,
+          "simGaugeInsideBridged": 6.41,
+          "simSecInsideBridged": 0.2579,
+          "simGaugeOutsideBridged": 103.42,
+          "simSecOutsideBridged": 4.0421,
+          "simRateInsideBridged": 24.859,
+          "simRateOutsideBridged": 25.587,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 2,
+          "durationSec": 2.417,
+          "totalBins": 73,
+          "cleanBins": 62,
+          "cleanBinCoverage": 0.8493,
+          "droppedBinFraction": 0.1507,
+          "bridgedCount": 0,
+          "bridgedMass": 0,
+          "bridgedRealSec": 0,
+          "bridgedRealFraction": 0,
+          "simGaugeInsideBridged": 0,
+          "simSecInsideBridged": 0,
+          "simGaugeOutsideBridged": 105.18,
+          "simSecOutsideBridged": 5.05,
+          "simRateInsideBridged": null,
+          "simRateOutsideBridged": 20.8277,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 3,
+          "durationSec": 1.484,
+          "totalBins": 45,
+          "cleanBins": 41,
+          "cleanBinCoverage": 0.9111,
+          "droppedBinFraction": 0.0889,
+          "bridgedCount": 1,
+          "bridgedMass": 6.7,
+          "bridgedRealSec": 0.05,
+          "bridgedRealFraction": 0.0337,
+          "simGaugeInsideBridged": 5.8,
+          "simSecInsideBridged": 0.1657,
+          "simGaugeOutsideBridged": 99.63,
+          "simSecOutsideBridged": 4.751,
+          "simRateInsideBridged": 35.0123,
+          "simRateOutsideBridged": 20.9703,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 4,
+          "durationSec": 3.6,
+          "totalBins": 108,
+          "cleanBins": 66,
+          "cleanBinCoverage": 0.6111,
+          "droppedBinFraction": 0.3889,
+          "bridgedCount": 4,
+          "bridgedMass": 21.7,
+          "bridgedRealSec": 0.55,
+          "bridgedRealFraction": 0.1528,
+          "simGaugeInsideBridged": 5.46,
+          "simSecInsideBridged": 0.5118,
+          "simGaugeOutsideBridged": 93.99,
+          "simSecOutsideBridged": 2.8382,
+          "simRateInsideBridged": 10.6693,
+          "simRateOutsideBridged": 33.117,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 5,
+          "durationSec": 1.95,
+          "totalBins": 59,
+          "cleanBins": 50,
+          "cleanBinCoverage": 0.8475,
+          "droppedBinFraction": 0.1525,
+          "bridgedCount": 2,
+          "bridgedMass": 10.5,
+          "bridgedRealSec": 0.334,
+          "bridgedRealFraction": 0.1713,
+          "simGaugeInsideBridged": 17.96,
+          "simSecInsideBridged": 0.688,
+          "simGaugeOutsideBridged": 83.29,
+          "simSecOutsideBridged": 3.3287,
+          "simRateInsideBridged": 26.1069,
+          "simRateOutsideBridged": 25.0231,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 6,
+          "durationSec": 1.8,
+          "totalBins": 54,
+          "cleanBins": 47,
+          "cleanBinCoverage": 0.8704,
+          "droppedBinFraction": 0.1296,
+          "bridgedCount": 1,
+          "bridgedMass": 8.2,
+          "bridgedRealSec": 0.2,
+          "bridgedRealFraction": 0.1111,
+          "simGaugeInsideBridged": 11.2,
+          "simSecInsideBridged": 0.5185,
+          "simGaugeOutsideBridged": 90.98,
+          "simSecOutsideBridged": 4.1481,
+          "simRateInsideBridged": 21.6,
+          "simRateOutsideBridged": 21.9335,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 7,
+          "durationSec": 2.2,
+          "totalBins": 66,
+          "cleanBins": 47,
+          "cleanBinCoverage": 0.7121,
+          "droppedBinFraction": 0.2879,
+          "bridgedCount": 1,
+          "bridgedMass": 17.9,
+          "bridgedRealSec": 0.2,
+          "bridgedRealFraction": 0.0909,
+          "simGaugeInsideBridged": 0,
+          "simSecInsideBridged": 0.4636,
+          "simGaugeOutsideBridged": 107.11,
+          "simSecOutsideBridged": 4.6364,
+          "simRateInsideBridged": 0,
+          "simRateOutsideBridged": 23.1022,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        }
+      ],
+      "pooled": {
+        "bridgedCount": 10,
+        "bridgedMass": 65,
+        "bridgedMassShareOfSumRealDelta": 0.0957,
+        "bridgedRealSec": 1.434,
+        "bridgedRealFraction": 0.0949,
+        "droppedBinFractionMean": 0.188,
+        "simGaugeInsideBridged": 46.83,
+        "simSecInsideBridged": 2.6055,
+        "simGaugeOutsideBridged": 683.6,
+        "simSecOutsideBridged": 28.7945,
+        "simRateInsideBridged": 17.9735,
+        "simRateOutsideBridged": 23.7406,
+        "insideOverOutsideRateRatio": 0.7571
+      },
+      "selfCheck": {
+        "allWindowsReproduce": true
+      }
+    },
+    "ironSweepRunG_forComparison": {
+      "comp": "iron sweep (run G)",
+      "eMin": 1.5,
+      "usableWindows": 10,
+      "windows": [
+        {
+          "id": 1,
+          "durationSec": 2.034,
+          "totalBins": 62,
+          "cleanBins": 43,
+          "cleanBinCoverage": 0.6935,
+          "droppedBinFraction": 0.3065,
+          "bridgedCount": 3,
+          "bridgedMass": 36.6,
+          "bridgedRealSec": 0.451,
+          "bridgedRealFraction": 0.2217,
+          "simGaugeInsideBridged": 11.2,
+          "simSecInsideBridged": 0.7539,
+          "simGaugeOutsideBridged": 95.2,
+          "simSecOutsideBridged": 2.6461,
+          "simRateInsideBridged": 14.8564,
+          "simRateOutsideBridged": 35.9773,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 2,
+          "durationSec": 2.2,
+          "totalBins": 66,
+          "cleanBins": 47,
+          "cleanBinCoverage": 0.7121,
+          "droppedBinFraction": 0.2879,
+          "bridgedCount": 0,
+          "bridgedMass": 0,
+          "bridgedRealSec": 0,
+          "bridgedRealFraction": 0,
+          "simGaugeInsideBridged": 0,
+          "simSecInsideBridged": 0,
+          "simGaugeOutsideBridged": 100.8,
+          "simSecOutsideBridged": 5.4333,
+          "simRateInsideBridged": null,
+          "simRateOutsideBridged": 18.5521,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 3,
+          "durationSec": 2.483,
+          "totalBins": 75,
+          "cleanBins": 49,
+          "cleanBinCoverage": 0.6533,
+          "droppedBinFraction": 0.3467,
+          "bridgedCount": 1,
+          "bridgedMass": 27.6,
+          "bridgedRealSec": 0.2,
+          "bridgedRealFraction": 0.0805,
+          "simGaugeInsideBridged": 5.6,
+          "simSecInsideBridged": 0.3088,
+          "simGaugeOutsideBridged": 114.8,
+          "simSecOutsideBridged": 3.5246,
+          "simRateInsideBridged": 18.1367,
+          "simRateOutsideBridged": 32.5714,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 4,
+          "durationSec": 2.3,
+          "totalBins": 69,
+          "cleanBins": 62,
+          "cleanBinCoverage": 0.8986,
+          "droppedBinFraction": 0.1014,
+          "bridgedCount": 1,
+          "bridgedMass": 6,
+          "bridgedRealSec": 0.067,
+          "bridgedRealFraction": 0.0291,
+          "simGaugeInsideBridged": 0,
+          "simSecInsideBridged": 0.1233,
+          "simGaugeOutsideBridged": 100.8,
+          "simSecOutsideBridged": 4.11,
+          "simRateInsideBridged": 0,
+          "simRateOutsideBridged": 24.5255,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 5,
+          "durationSec": 2.467,
+          "totalBins": 75,
+          "cleanBins": 60,
+          "cleanBinCoverage": 0.8,
+          "droppedBinFraction": 0.2,
+          "bridgedCount": 2,
+          "bridgedMass": 5.2,
+          "bridgedRealSec": 0.433,
+          "bridgedRealFraction": 0.1755,
+          "simGaugeInsideBridged": 25.2,
+          "simSecInsideBridged": 0.6465,
+          "simGaugeOutsideBridged": 78.4,
+          "simSecOutsideBridged": 3.0368,
+          "simRateInsideBridged": 38.9799,
+          "simRateOutsideBridged": 25.8163,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 6,
+          "durationSec": 3.583,
+          "totalBins": 108,
+          "cleanBins": 100,
+          "cleanBinCoverage": 0.9259,
+          "droppedBinFraction": 0.0741,
+          "bridgedCount": 0,
+          "bridgedMass": 0,
+          "bridgedRealSec": 0,
+          "bridgedRealFraction": 0,
+          "simGaugeInsideBridged": 0,
+          "simSecInsideBridged": 0,
+          "simGaugeOutsideBridged": 100.8,
+          "simSecOutsideBridged": 4.2333,
+          "simRateInsideBridged": null,
+          "simRateOutsideBridged": 23.811,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 7,
+          "durationSec": 1.633,
+          "totalBins": 49,
+          "cleanBins": 42,
+          "cleanBinCoverage": 0.8571,
+          "droppedBinFraction": 0.1429,
+          "bridgedCount": 0,
+          "bridgedMass": 0,
+          "bridgedRealSec": 0,
+          "bridgedRealFraction": 0,
+          "simGaugeInsideBridged": 0,
+          "simSecInsideBridged": 0,
+          "simGaugeOutsideBridged": 100.8,
+          "simSecOutsideBridged": 3.4833,
+          "simRateInsideBridged": null,
+          "simRateOutsideBridged": 28.9378,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 8,
+          "durationSec": 2.484,
+          "totalBins": 75,
+          "cleanBins": 49,
+          "cleanBinCoverage": 0.6533,
+          "droppedBinFraction": 0.3467,
+          "bridgedCount": 2,
+          "bridgedMass": 30.6,
+          "bridgedRealSec": 0.583,
+          "bridgedRealFraction": 0.2347,
+          "simGaugeInsideBridged": 30.8,
+          "simSecInsideBridged": 1.1618,
+          "simGaugeOutsideBridged": 70,
+          "simSecOutsideBridged": 3.7882,
+          "simRateInsideBridged": 26.5111,
+          "simRateOutsideBridged": 18.4783,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 9,
+          "durationSec": 2.05,
+          "totalBins": 62,
+          "cleanBins": 57,
+          "cleanBinCoverage": 0.9194,
+          "droppedBinFraction": 0.0806,
+          "bridgedCount": 1,
+          "bridgedMass": 6,
+          "bridgedRealSec": 0.1,
+          "bridgedRealFraction": 0.0488,
+          "simGaugeInsideBridged": 19.6,
+          "simSecInsideBridged": 0.2033,
+          "simGaugeOutsideBridged": 84,
+          "simSecOutsideBridged": 3.9634,
+          "simRateInsideBridged": 96.432,
+          "simRateOutsideBridged": 21.1938,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        },
+        {
+          "id": 10,
+          "durationSec": 2.384,
+          "totalBins": 72,
+          "cleanBins": 61,
+          "cleanBinCoverage": 0.8472,
+          "droppedBinFraction": 0.1528,
+          "bridgedCount": 2,
+          "bridgedMass": 20.9,
+          "bridgedRealSec": 0.4,
+          "bridgedRealFraction": 0.1678,
+          "simGaugeInsideBridged": 36.4,
+          "simSecInsideBridged": 0.7718,
+          "simGaugeOutsideBridged": 64.4,
+          "simSecOutsideBridged": 3.8282,
+          "simRateInsideBridged": 47.1617,
+          "simRateOutsideBridged": 16.8226,
+          "bridgedCountMatches": true,
+          "bridgedMassMatches": true
+        }
+      ],
+      "pooled": {
+        "bridgedCount": 12,
+        "bridgedMass": 132.9,
+        "bridgedMassShareOfSumRealDelta": 0.1405,
+        "bridgedRealSec": 2.234,
+        "bridgedRealFraction": 0.0946,
+        "droppedBinFractionMean": 0.204,
+        "simGaugeInsideBridged": 128.8,
+        "simSecInsideBridged": 3.9694,
+        "simGaugeOutsideBridged": 910,
+        "simSecOutsideBridged": 38.0472,
+        "simRateInsideBridged": 32.4482,
+        "simRateOutsideBridged": 23.9177,
+        "insideOverOutsideRateRatio": 1.3567
+      },
+      "selfCheck": {
+        "allWindowsReproduce": true
+      }
+    }
+  },
+  "noiseCorrection_C6": {
+    "n3": {
+      "comp": "N3 scarlet/liberalio iron",
+      "inputs": {
+        "eventBins": 69,
+        "usableCleanBins": 308,
+        "quietBins": 239,
+        "cleanBinTimeSec": 10.2667,
+        "fullWindowDurationSec": 15.118,
+        "ceilingBinsPerSec": 5.1301,
+        "ceilingFactor": 1.15,
+        "thresholdBinsPerSec": 5.8996
+      },
+      "raw": {
+        "rate": 6.7208,
+        "vsThresholdPct": 13.9,
+        "vsCeilingPct": 31
+      },
+      "corrected": {
+        "corrected@0.55%": {
+          "falseRate": 0.0055,
+          "correctionBins": 1.3145,
+          "rate": 6.5927,
+          "vsThresholdPct": 11.7,
+          "vsCeilingPct": 28.5,
+          "aboveThreshold": true,
+          "aboveCeiling": true
+        },
+        "corrected@0.45%": {
+          "falseRate": 0.0045,
+          "correctionBins": 1.0755,
+          "rate": 6.616,
+          "vsThresholdPct": 12.1,
+          "vsCeilingPct": 29,
+          "aboveThreshold": true,
+          "aboveCeiling": true
+        }
+      },
+      "indifferencePoints": {
+        "thresholdCutoff": 0.03527,
+        "ceilingCutoff": 0.06833
+      },
+      "marAlternativeDenominator": {
+        "fullWindowDurationSec": 15.118,
+        "rawRate": 4.5641,
+        "vsCeilingPct": -11,
+        "aboveCeiling": false
+      }
+    },
+    "ironSweepRunG_replayCheck": {
+      "comp": "iron sweep (run G)",
+      "inputs": {
+        "eventBins": 80,
+        "usableCleanBins": 509,
+        "quietBins": 429,
+        "cleanBinTimeSec": 16.9667,
+        "fullWindowDurationSec": 23.618,
+        "ceilingBinsPerSec": 3.5935,
+        "ceilingFactor": 1.15,
+        "thresholdBinsPerSec": 4.1325
+      },
+      "raw": {
+        "rate": 4.7151,
+        "vsThresholdPct": 14.1,
+        "vsCeilingPct": 31.2
+      },
+      "corrected": {
+        "corrected@0.55%": {
+          "falseRate": 0.0055,
+          "correctionBins": 2.3595,
+          "rate": 4.5761,
+          "vsThresholdPct": 10.7,
+          "vsCeilingPct": 27.3,
+          "aboveThreshold": true,
+          "aboveCeiling": true
+        },
+        "corrected@0.45%": {
+          "falseRate": 0.0045,
+          "correctionBins": 1.9305,
+          "rate": 4.6013,
+          "vsThresholdPct": 11.3,
+          "vsCeilingPct": 28,
+          "aboveThreshold": true,
+          "aboveCeiling": true
+        }
+      },
+      "indifferencePoints": {
+        "thresholdCutoff": 0.02304,
+        "ceilingCutoff": 0.04436
+      },
+      "marAlternativeDenominator": {
+        "fullWindowDurationSec": 23.618,
+        "rawRate": 3.3872,
+        "vsCeilingPct": -5.7,
+        "aboveCeiling": false
+      }
+    }
+  },
+  "e2bObservedVsPredictions": {
+    "preCommittedConsequence": "per packet revision 1(c): this run does NOT discriminate H1 from R1 and no outcome of it will. Both predicted rates are reported against the observed one FOR THE RECORD; neither is stamped as favoured and no branch keys off which is closer.",
+    "observedRateRaw": 6.7208,
+    "predictionH1_scalesWithCeiling_raw": 6.7313,
+    "predictionR1_scalesWithSharedUnit_raw": 6.2517,
+    "distanceToH1": 0.0105,
+    "distanceToR1": 0.4691,
+    "preRunPower": {
+      "rateSeparation": 0.4796,
+      "rateSeparationPctOfRate": 7.3881,
+      "expectedEventBins": 178,
+      "oneSigmaRate": 0.487,
+      "separationSigmas": 0.9848,
+      "eventBinsFor2Sigma": 733,
+      "shortfallFactor": 4.1245,
+      "discriminates": false
+    },
+    "realisedPower": {
+      "note": "the pre-run power estimate assumed ~178 event bins from iron's clean-bin fraction; the arm actually delivered 69",
+      "observedEventBins": 69,
+      "expectedEventBins": 178,
+      "poissonOneSigmaRateAtObservedE": 0.8091,
+      "separationSigmasAtObservedE": 0.5928,
+      "reading": "REALISED separation is WEAKER than the pre-run 0.98 sigma; the non-discrimination consequence is unchanged"
+    }
+  },
+  "branchSelectedByPreRegisteredRule": {
+    "basisClauses": {
+      "B1_statisticOwnBasis": {
+        "usableWindows": 7,
+        "minRequired": 4,
+        "perWindowCleanBinCoverageEnforced": true,
+        "rhoDispersion": 0.1871,
+        "maxRhoDispersion": 0.6,
+        "instrumentBasisPass": true,
+        "detail": "B1-B4 all satisfied",
+        "verdict": "PASS"
+      },
+      "B2_C1C3C4C5": {
+        "C1": "PASS",
+        "C3_measuredFbCount": "PASS",
+        "C4_ceilingReplay": "PASS",
+        "C5_scheduleChecks": "PASS",
+        "verdict": "PASS"
+      },
+      "B3_C2_usableCycles": {
+        "usableCyclesRemaining": 9,
+        "minRequired": 4,
+        "precedenceRule": "C2 (>2 cycles fail) is the STRICTER clause and BINDS over B3 (packet section G)",
+        "verdictDependsOnC2Reading": true
+      }
+    },
+    "conditionalOnC2": [
+      {
+        "c2Reading": "C2-i",
+        "c2Verdict": "PASS",
+        "branch": "R-A",
+        "detail": "corrected@0.55% rate 6.5927/s > 5.8996/s threshold AND raw hcShareOfRate 0.2367 in [0.11895, 0.4758] => R-A: 'H-C-candidate excess reproduces on a second non-vacuous arm THAT SHARES `liberalio` WITH THE FIRST'. LOG-class; no engine or constant change."
+      },
+      {
+        "c2Reading": "C2-ii",
+        "c2Verdict": "PASS",
+        "branch": "R-A",
+        "detail": "corrected@0.55% rate 6.5927/s > 5.8996/s threshold AND raw hcShareOfRate 0.2367 in [0.11895, 0.4758] => R-A: 'H-C-candidate excess reproduces on a second non-vacuous arm THAT SHARES `liberalio` WITH THE FIRST'. LOG-class; no engine or constant change."
+      },
+      {
+        "c2Reading": "C2-iii",
+        "c2Verdict": "BASIS-BROKEN",
+        "branch": "BASIS-BROKEN",
+        "detail": "C2 leaves more than 2 cycles outside 15.0 +/- 0.5s => BASIS-BROKEN. Per packet section G a basis failure is NEVER 'the effect is absent'; it is explicitly distinguished from H0/R-C."
+      },
+      {
+        "c2Reading": "C2-iv",
+        "c2Verdict": "BASIS-BROKEN",
+        "branch": "BASIS-BROKEN",
+        "detail": "C2 leaves more than 2 cycles outside 15.0 +/- 0.5s => BASIS-BROKEN. Per packet section G a basis failure is NEVER 'the effect is absent'; it is explicitly distinguished from H0/R-C."
+      }
+    ],
+    "ratesAtEveryConvention": {
+      "raw": 6.7208,
+      "corrected@0.55%": 6.5927,
+      "corrected@0.45%": 6.616,
+      "rawCeiling": 5.1301,
+      "threshold_1.15xCeiling": 5.8996,
+      "marAlternativeDenominatorRaw": 4.5641
+    },
+    "branchesNotSelected": {
+      "R-B": "requires the raw share OUTSIDE [0.11895, 0.4758]; observed 0.2367 is inside",
+      "R-C": "requires the noise-corrected rate <= 5.1301/s (the raw ceiling); observed 6.5927/s is 28.5% above it",
+      "R-D": "requires 5.1301 < rate <= 5.8996; observed 6.5927/s is above the upper edge"
+    },
+    "instrumentBranchField": {
+      "branch": "H-C",
+      "detail": "real event rate 6.7208/s > 1.15 x ceiling 5.1301/s; H-C share of rate 0.2367; demoted same-arm candidate remainder (descriptive only): H-B band hit (O 2.3385 >= 1.4, S 0.96 in [0.7,1.3))",
+      "realEventBinsPerSec": 6.7208,
+      "ceilingBinsPerSec": 5.1301,
+      "ceilingThreshold": 5.8996,
+      "hcShareOfRate": 0.2367,
+      "demotedCandidate": "H-B band hit (O 2.3385 >= 1.4, S 0.96 in [0.7,1.3))",
+      "observedCeilingExcess": null
+    }
+  },
+  "anomaliesAndFindings": [
+    {
+      "id": "F1",
+      "severity": "material",
+      "finding": "The E.3 paired diagnostic's three pre-committed clauses all presuppose BOTH arms failing closure as-specified. N3 PASSES closure (0.0533). No clause matches on its own terms; the nearest (SPLIT => inconclusive on R2) is recorded. Additionally, the closure residual is algebraically INVARIANT under uniform rescaling of sumRealDelta, so variant (b) is identically equal to the as-specified value on every arm and can never move a verdict \u2014 confirmed numerically on both arms."
+    },
+    {
+      "id": "F2",
+      "severity": "material",
+      "finding": "C2 is the only control whose verdict depends on which reading of 'measure the real Full Burst duration' is taken, and the four readings SPLIT (2 PASS / 2 BASIS-BROKEN). Root cause: the drain-bar renderer under-renders by ~1.3s and the packet did not pin an estimator. Both PASS readings rest on the barPaint upper bound, whose calibration constant on the committed 10.0s iron fixture is 0.3193 +/- 0.0062 s (n=12); both BASIS-BROKEN readings rest on the rendered lower bound, whose iron calibration spread is 0.20 s sd with every N3 cycle flagged tailStitched and guard 3B cap-saturated. Reported without preference."
+    },
+    {
+      "id": "F3",
+      "severity": "informational",
+      "finding": "10.0s lies BELOW every N3 cycle's lower bound (minimum correctedRendered 12.78s), so the fixture positively excludes an unextended 10s Full Burst on this recording. Independent corroboration of packet P4's +5s premise WITHOUT relying on the sim: the analyze closure block reports realLadderSec 6.684s against the engine's 1.867s, and that block hardcodes FB_SEC = 10 (fill-trace-compare.ts:436) \u2014 6.684 - 5.0 = 1.684s, i.e. the 5s discrepancy is exactly the unmodeled Full-Burst extension."
+    },
+    {
+      "id": "F4",
+      "severity": "informational",
+      "finding": "cycle-table.ts DEFAULTS.searchCapSec = 11s cannot host a ~15s Full Burst: guard 3B saturates at the cap on 9/10 N3 cycles and marks every cycle tailStitched, making its corrected duration and its tailStitched flag uninformative on this arm. Raising the cap to 18s was tried and REJECTED because it re-admits stitched tails on the two calibration fixtures. Not fixed here (out of scope); reported."
+    },
+    {
+      "id": "F5",
+      "severity": "informational",
+      "finding": "Window pairing: the real fixture yields 9 refill windows, the sim schedule 8 non-truncated refill windows, so real window 9 is dropped as 'no sim refill window with this ordinal'. Window 8 is dropped separately at 53.7% clean-bin coverage (< 60%). 7 windows survive to the pooled statistic. This is the -1 full-burst gap (packet P2) manifesting in the pairing; ordinal pairing is what classifyArm does and is pre-registered."
+    },
+    {
+      "id": "F6",
+      "severity": "informational",
+      "finding": "C7 co-occurrence runs OPPOSITE on the two arms: N3's bridged spans sit on 0.757x the modeled fill rate of its unbridged spans (bias direction DOWNWARD), iron's on 1.357x (bias direction UPWARD). Bridged mass is 9.6% of sumRealDelta on N3 vs 14.0% on iron; bridged real time is 9.5% of window time on both. Descriptive; the packet attaches no verdict."
+    },
+    {
+      "id": "F7",
+      "severity": "informational",
+      "finding": "The MAR-alternative full-window denominator reproduces the standing caveat and is WORSE on this arm: N3's raw rate under it is 4.5641/s, 11.0% BELOW its raw ceiling (iron's was 5.7% below). The excess on both arms exists only under the clean-bin-time estimator."
+    },
+    {
+      "id": "F8",
+      "severity": "informational",
+      "finding": "The realised event count is 69, not the ~178 the pre-run power estimate assumed, so the realised H1-vs-R1 separation is 0.59 sigma rather than 0.98. The pre-committed non-discrimination consequence is unchanged, only strengthened."
+    },
+    {
+      "id": "F9",
+      "severity": "informational",
+      "finding": "scan.ts reported 2 orphan stage-3 hexagon events (videoT 54.4 and 90.85) matching no Full Burst window. The Full-Burst count is unaffected (10, 10/10 corroborated by a second detector). Recorded, not acted on."
+    },
+    {
+      "id": "F10",
+      "severity": "informational",
+      "finding": "The packet's C1 wording, 'boss element enters ONLY the elem damage multiplier and no gauge, cadence, rotation or trigger path', is not literally true of the ENGINE: `bossElementGate` (sim.ts:2498) and the `bossElement` trigger kind (sim.ts:3380) are general primitives that could gate any effect including a gauge effect. It IS true of this roster (no N3 unit uses either), and the empirical swap confirms zero gauge/FB movement across all six element arms."
+    }
+  ],
+  "e2ReplicationMagnitudeBand": {
+    "convention": "RAW vs RAW (section E.4)",
+    "ironRawShare": 0.2379,
+    "n3RawShare": 0.2367,
+    "band": [0.11895, 0.4758],
+    "inBand": true,
+    "packetCaveat": "the band's upper edge sits ~4.2-4.7 sigma above the expected value and is effectively vacuous; only the lower edge is a live test"
+  },
+  "deliverableScope": {
+    "writtenHere": "the verdict-free artifact, the tempo fixture, the trace bundle (= the reflagged trace), the four new/extended committed instruments, and the replay pin scripts/tests/probe/n3-third-arm.test.ts",
+    "deliberatelyNotWritten": "packet section I also lists a docs/probe-runs.md entry and a harness-log entry. Both are CHANGELOG-class and were NOT written by the work step: the run has not yet been through the blind post-op judge, and writing a measurement-log entry naming the branch would pre-empt it. They are owed after judgement."
+  }
+}
