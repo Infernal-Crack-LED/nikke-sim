@@ -14,6 +14,10 @@ import {
   OL_DEFAULT_TIER,
   type BuilderState,
 } from '../../../web/src/builderSpec.js';
+import {
+  DEFAULT_PULL_COUNT,
+  PULL_PRERENDER_COUNTS,
+} from '../../../src/infographics/spec.js';
 
 const BASE: BuilderState = {
   card: 'dps',
@@ -28,6 +32,7 @@ const BASE: BuilderState = {
   b1b2DpsBoard: 'c100-eleadv',
   olLines: OL_DEFAULT_LINES,
   olTier: OL_DEFAULT_TIER,
+  pulls: DEFAULT_PULL_COUNT,
   unitVariant: 'discord',
 };
 
@@ -194,6 +199,21 @@ describe('renderSpecFor — the on-demand tail', () => {
       expect(manifestKeyFor(s)).toBeNull();
       expect(renderSpecFor(s)).toBeNull();
     }
+  });
+
+  // The pull card is the one type where the SAME control (a count) crosses
+  // the manifest boundary: a preset count is pre-rendered, anything else is a
+  // POST. Both directions are pinned so a preset can never be POSTed and an
+  // off-preset count can never be handed a manifest URL that has no file.
+  it('splits pull counts between the pre-rendered presets and the on-demand tail', () => {
+    for (const n of PULL_PRERENDER_COUNTS) {
+      const s = { ...BASE, card: 'pull' as const, pulls: n };
+      expect(manifestKeyFor(s)).toBe(`pull/${n}`);
+      expect(renderSpecFor(s)).toBeNull();
+    }
+    const odd = { ...BASE, card: 'pull' as const, pulls: 137 };
+    expect(manifestKeyFor(odd)).toBeNull();
+    expect(renderSpecFor(odd)).toEqual({ kind: 'pull', pulls: 137 });
   });
 
   it('HEADLINE_CELL_IDS pins the same two cells build-infographics pre-renders', () => {

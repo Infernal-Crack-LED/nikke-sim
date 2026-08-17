@@ -12,6 +12,7 @@ import {
   parseRenderSpec,
   specCacheKey,
   specCacheType,
+  DEFAULT_PULL_COUNT,
 } from '../../../src/infographics/spec.js';
 import { encodeBuild, type Build } from '../../../src/share/build-code.js';
 
@@ -143,6 +144,8 @@ describe('specCacheKey — pinned key strings (cache compatibility)', () => {
     ).toBe('v2|table|charge-speed|alice');
     expect(specCacheKey({ kind: 'resources', tier: 9 })).toBe('v2|resources|9');
     expect(specCacheKey({ kind: 'resources', tier: 1 })).toBe('v2|resources|1');
+    expect(specCacheKey({ kind: 'pull', pulls: 200 })).toBe('v2|pull|200');
+    expect(specCacheKey({ kind: 'pull', pulls: 1 })).toBe('v2|pull|1');
   });
 
   it('maps kinds to the existing cache filename prefixes', () => {
@@ -156,6 +159,7 @@ describe('specCacheKey — pinned key strings (cache compatibility)', () => {
       'table'
     );
     expect(specCacheType({ kind: 'resources', tier: 9 })).toBe('resources');
+    expect(specCacheType({ kind: 'pull', pulls: 200 })).toBe('pull');
   });
 });
 
@@ -326,6 +330,35 @@ describe('parseRenderSpec — resources', () => {
       expect(parseRenderSpec({ kind: 'resources', tier })).toEqual({
         ok: false,
         error: 'tier must be an integer 1-9',
+      });
+    }
+  });
+});
+
+describe('parseRenderSpec — pull', () => {
+  it('defaults to the count the /pull page opens on', () => {
+    expect(parseRenderSpec({ kind: 'pull' })).toEqual({
+      ok: true,
+      spec: { kind: 'pull', pulls: DEFAULT_PULL_COUNT },
+    });
+  });
+
+  it('accepts a query-string count (GET) or a numeric count (POST)', () => {
+    expect(parseRenderSpec({ kind: 'pull', pulls: '30' })).toEqual({
+      ok: true,
+      spec: { kind: 'pull', pulls: 30 },
+    });
+    expect(parseRenderSpec({ kind: 'pull', pulls: 30 })).toEqual({
+      ok: true,
+      spec: { kind: 'pull', pulls: 30 },
+    });
+  });
+
+  it('rejects out-of-range or non-integer counts', () => {
+    for (const pulls of [0, -1, 1.5, 100001, 'bogus']) {
+      expect(parseRenderSpec({ kind: 'pull', pulls })).toEqual({
+        ok: false,
+        error: 'pulls must be an integer 1-100000',
       });
     }
   });

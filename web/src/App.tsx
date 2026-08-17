@@ -24,6 +24,7 @@ import type {
 import { DpsChartTab } from './DpsChartTab';
 import { SupportRankings } from './SupportRankings';
 import { ResourcesPage } from './ResourcesPage';
+import { PullPage } from './PullPage';
 import { TeamBuilderPage } from './TeamBuilderPage';
 import { BuilderPage } from './BuilderPage';
 import { CharSearch, CharPicker } from './components/CharSearch';
@@ -418,6 +419,7 @@ type CalcTab =
   | 'olsim'
   | 'doll'
   | 'resources'
+  | 'pull'
   | 'dps'
   | 'dpschart'
   | 'ranks'
@@ -442,6 +444,7 @@ const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
   { key: 'builder', label: 'Card Builder', group: 'tools' },
   { key: 'doll', label: 'Doll Leveling', group: 'tools' },
   { key: 'resources', label: 'Resource Calculator', group: 'tools' },
+  { key: 'pull', label: 'Pull Calculator', group: 'tools' },
 ];
 
 // Canonical URL per tab. The rankings section lives under /ranks/* (owner
@@ -7080,6 +7083,9 @@ export function App({ user }: { user: AuthUser | null }) {
     if (tab === 'resources') {
       return <ResourcesPage />;
     }
+    if (tab === 'pull') {
+      return <PullPage />;
+    }
     if (tab === 'builder') {
       return <BuilderPage />;
     }
@@ -7202,6 +7208,7 @@ export function App({ user }: { user: AuthUser | null }) {
     olsim: 'Overload Rolling',
     doll: 'Doll Leveling',
     resources: 'Resource Calculator',
+    pull: 'Pull Calculator',
     charge: 'Overload Breakpoints',
     teambuilder: 'Team Builder',
     builder: 'Card Builder',
@@ -7428,6 +7435,7 @@ export function App({ user }: { user: AuthUser | null }) {
         tab !== 'olsim' &&
         tab !== 'doll' &&
         tab !== 'resources' &&
+        tab !== 'pull' &&
         tab !== 'teambuilder' &&
         tab !== 'builder' &&
         !(tab === 'overload' && olMode === 'matrix') && (

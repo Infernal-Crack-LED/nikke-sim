@@ -60,7 +60,7 @@ const RANKINGS_PATHS = ['ranks', 'dpschart', 'dps'];
 const OVERLOAD_PATHS = ['overload', 'olsim', 'charge'];
 // Team Generator + Roster Generator live in the Sim section, so their paths
 // (/team, /roster) fall through to 'sim' below.
-const TOOL_PATHS = ['teambuilder', 'builder', 'doll', 'resources'];
+const TOOL_PATHS = ['teambuilder', 'builder', 'doll', 'resources', 'pull'];
 // Where each section's nav link lands — the section's first tab.
 const SECTION_LANDING: Record<'rankings' | 'overload' | 'tools', string> = {
   rankings: '/ranks',

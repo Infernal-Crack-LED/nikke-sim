@@ -24,6 +24,9 @@ import {
   drawDollCard,
   dollCardHeight,
   DOLL_CARD_W,
+  drawPullCard,
+  pullCardHeight,
+  PULL_CARD_W,
   unitName,
   type Canvas,
   type Canvas2DLike,
@@ -31,6 +34,7 @@ import {
   type TableCardData,
   type ResourcesCardData,
   type DollCardData,
+  type PullCardData,
 } from '../infographics/node/render.js';
 import { cellLabel, parseCellId } from '../dpschart/matrix.js';
 import { ELEMENT_FILTERS } from '../infographics/spec.js';
@@ -219,5 +223,19 @@ export function renderDollCardPng(data: DollCardData): Buffer {
   const ctx = canvas.getContext('2d');
   ctx.scale(SCALE, SCALE);
   drawDollCard(ctx as unknown as Canvas2DLike, data);
+  return canvas.toBuffer('image/png');
+}
+
+// Render a PullCardData (core/pullCard.ts) to a scale-2 PNG.
+export function renderPullCardPng(data: PullCardData): Buffer {
+  const w = PULL_CARD_W * SCALE;
+  const h = pullCardHeight(data.rows.length) * SCALE;
+  if (w * h > MAX_CANVAS_PIXELS) {
+    throw new Error(`pull card ${w}×${h} exceeds the pixel budget`);
+  }
+  const canvas = createCanvas(w, h);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(SCALE, SCALE);
+  drawPullCard(ctx as unknown as Canvas2DLike, data);
   return canvas.toBuffer('image/png');
 }

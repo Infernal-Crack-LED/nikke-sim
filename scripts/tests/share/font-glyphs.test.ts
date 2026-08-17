@@ -67,6 +67,9 @@ const SOURCES = [
   'src/infographics/core/dollCard.ts',
   'src/infographics/core/resourcesCard.ts',
   'src/infographics/core/resourcesData.ts',
+  'src/infographics/core/pullCard.ts',
+  // Not a renderer, but it authors the pool labels the pull card draws.
+  'src/infographics/core/pullData.ts',
   'src/infographics/core/tableData.ts',
   // Not a renderer, but it authors every string the doll card draws.
   'src/doll/card.ts',

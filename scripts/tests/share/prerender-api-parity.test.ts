@@ -24,6 +24,7 @@ import {
   buildChargeTable,
   chargeLatencyFrames,
   buildResourcesCard,
+  buildPullCard,
   BOSS_TABLES,
   iconBasename,
   loadIcon,
@@ -37,12 +38,15 @@ import {
   renderTableCardPng,
   renderResourcesCardPng,
   renderDollCardPng,
+  renderPullCardPng,
 } from '../../../src/server/dps-table-cards.js';
 import {
   buildDollPlan,
   dollCardData,
   type DollData,
 } from '../../../src/doll/card.js';
+
+import { PULL_PRERENDER_COUNTS } from '../../../src/infographics/spec.js';
 
 const run = promisify(execFile);
 const SCRIPT = new URL('../../build-infographics.ts', import.meta.url);
@@ -225,6 +229,31 @@ describe('pre-rendered set vs the API render', () => {
         card.icon = (await decodeToCanvas(SITE_ICON)) ?? undefined;
         expect(
           sha(renderDollCardPng(card)),
+          `${key} differs between the two render paths`
+        ).toBe(sha(readFileSync(join(out, manifest.images[key]!.file))));
+      }
+    } finally {
+      rmSync(out, { recursive: true, force: true });
+    }
+  }, 180_000);
+
+  it('pull cards are byte-identical either way', async () => {
+    const out = mkdtempSync(join(tmpdir(), 'prerender-parity-pull-'));
+    try {
+      const manifest = await build('pull/', out);
+      const keys = Object.keys(manifest.images).sort();
+      // The /pull page's presets only — see build-infographics.ts pullJobs for
+      // why the other 99995 counts are on-demand.
+      expect(keys).toEqual(
+        [...PULL_PRERENDER_COUNTS].map((n) => `pull/${n}`).sort()
+      );
+
+      for (const key of keys) {
+        const pulls = Number(key.replace('pull/', ''));
+        const card = buildPullCard(pulls);
+        card.icon = (await decodeToCanvas(SITE_ICON)) ?? undefined;
+        expect(
+          sha(renderPullCardPng(card)),
           `${key} differs between the two render paths`
         ).toBe(sha(readFileSync(join(out, manifest.images[key]!.file))));
       }

@@ -4085,6 +4085,10 @@ a.teambuilder-card {
 }
 
 /* ---- Resource Calculator page ---- */
+/* The .res-stat* tile system and the .res-controls / .res-heading /
+   .res-detail / .res-ladder wrappers are shared with the Pull Calculator page
+   (web/src/PullPage.tsx) — same stat tiles, same ladder table, so they are
+   styled once here rather than duplicated under a second prefix. */
 .res-controls {
   display: flex;
   align-items: center;
@@ -4226,6 +4230,22 @@ a.teambuilder-card {
     width: 22px;
     height: 22px;
   }
+}
+
+/* ---- Pull Calculator ---- */
+/* The pull-count field, on the /pull page and in the Card Builder's pull
+   controls. Wide enough for five digits (the 100000 cap) with the spinner. */
+.pull-input {
+  width: 96px;
+  font-variant-numeric: tabular-nums;
+}
+/* The odds ladders carry up to 7 columns — more than a phone viewport holds,
+   so they scroll sideways inside the page rather than widening it. */
+.pull-ladder {
+  overflow-x: auto;
+}
+.pull-ladder table {
+  min-width: 420px;
 }
 
 /* ---- Card builder (/builder) ---- */

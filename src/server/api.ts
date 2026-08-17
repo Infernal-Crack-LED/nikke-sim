@@ -4,7 +4,7 @@
 // trigger fired when POST /api/v1/img/render shipped).
 //
 //   GET /api/v1/img/manifest.json            → dist/img/manifest.json, no-cache
-//   GET /api/v1/img/{dps,unit,rank,table,doll,resources}/<file> → dist/img/..., immutable (hashed)
+//   GET /api/v1/img/{dps,unit,rank,table,doll,resources,pull}/<file> → dist/img/..., immutable (hashed)
 //   GET /api/v1/img/cache/<file>             → the dynamic-render cache, immutable
 //   GET /api/v1/img/team.png?b=<buildcode>|?id=<config> → 302 to /api/v1/img/cache/team.<hash>.png
 //   GET /api/v1/img/roster.png?b=<buildcode>|?id=<config> → 302 to .../roster.<hash>.png
@@ -12,6 +12,7 @@
 //   GET /api/v1/img/table/max-ammo.png?unit=<slug>     → 302 to .../table.<hash>.png
 //   GET /api/v1/img/table/charge-speed.png[?unit=<slug>] → 302 to .../table.<hash>.png
 //   GET /api/v1/img/doll.png[?rarity=R|SR&from=<0-14>]     → 302 to .../doll.<hash>.png
+//   GET /api/v1/img/pull.png[?pulls=<1-100000>]            → 302 to .../pull.<hash>.png
 //   POST /api/v1/img/render                  → 200 {"url","imageUrl","pageUrl"?}
 //
 // `?id=` is a SHARED CONFIG id (src/server/config-store.ts): the server reads
@@ -48,6 +49,7 @@ import {
   BOSS_TABLES,
   iconBasename,
 } from '../infographics/core/resourcesData.js';
+import { buildPullCard } from '../infographics/core/pullCard.js';
 import {
   parseRenderSpec,
   specCacheKey,
@@ -72,6 +74,7 @@ import {
   renderTableCardPng,
   renderResourcesCardPng,
   renderDollCardPng,
+  renderPullCardPng,
   type DpsArtifact,
 } from './dps-table-cards.js';
 import { buildDollPlan, dollCardData, type DollData } from '../doll/card.js';
@@ -79,7 +82,7 @@ import { buildDollPlan, dollCardData, type DollData } from '../doll/card.js';
 // Cached dynamic renders: `<type>.<hash16>.png` — nothing else is servable
 // from the cache dir.
 const CACHE_FILE =
-  /^(team|roster|dps|table|resources|doll)\.[0-9a-f]{16}\.png$/;
+  /^(team|roster|dps|table|resources|doll|pull)\.[0-9a-f]{16}\.png$/;
 
 export const API_PREFIX = '/api/v1/img/';
 
@@ -378,6 +381,18 @@ async function resolveRender(
         file,
         spec,
         render: () => Promise.resolve(renderDollCardPng(data)),
+      };
+    }
+    case 'pull': {
+      // Pure arithmetic over the pull count — no artifact, no icons beyond the
+      // site mark, so there is nothing here that can 404 the way the doll and
+      // dps kinds can.
+      const data = buildPullCard(spec.pulls);
+      data.icon = ctx.icon ?? undefined;
+      return {
+        file,
+        spec,
+        render: () => Promise.resolve(renderPullCardPng(data)),
       };
     }
   }
@@ -700,6 +715,14 @@ export function registerImgApi(app: Hono, ctx: ApiContext): void {
     )
   );
 
+  app.get(
+    '/api/v1/img/pull.png',
+    handleDynamicGet(
+      (c) => ({ kind: 'pull', pulls: c.req.query('pulls') }),
+      ctx
+    )
+  );
+
   // The JSON-spec entry point — same renders as the GETs above, 200 + {url}.
   app.post('/api/v1/img/render', (c) => handleRenderPost(c, ctx));
 
@@ -732,7 +755,11 @@ export function registerImgApi(app: Hono, ctx: ApiContext): void {
     const path = new URL(c.req.url).pathname;
     const rest = path.slice(API_PREFIX.length);
     const kind = rest.split('/')[0];
-    if (!['dps', 'unit', 'rank', 'table', 'doll', 'resources'].includes(kind)) {
+    if (
+      !['dps', 'unit', 'rank', 'table', 'doll', 'resources', 'pull'].includes(
+        kind
+      )
+    ) {
       return apiMiss();
     }
     const rel = normalize(decodeURIComponent(rest)).replace(
