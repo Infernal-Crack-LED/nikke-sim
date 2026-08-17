@@ -101,13 +101,20 @@ proc generation + her +6% team fill aura (the synergy aggregate folds these into
 per-shot number, which is why that column was retired). Independent cross-check: nikke-synergy's
 arena calculator lists per-shot values matching our BASE column for snipers/rifles/MGs
 (jill 1.1 = 110, takina 2.8 = 280, moran 0.25 = 25, crown 0.05 = 5), and its
-`special_burst_gauge` annotations catalogue per-unit skill-generation quirks — all four
-are now MODELED (gauge-source census 2026-08-14, investigation-plan item 2, plus the
+`special_burst_gauge` annotations catalogue per-unit skill-generation quirks — three of the
+four are MODELED (gauge-source census 2026-08-14, investigation-plan item 2, plus the
 2026-08-15 per-sub-hit enactment): Ein's orb adds 560 every ~2.8s — ein.json encodes it as
 a zero-damage permanent DoT whose ticks drive `skillGauge`; Helm's kit adds a fixed 1,431 —
-her `flatPerTrigger` row; Liberalio's per-shot-sequence bonus — §7's ×6; and Snow White:
-Heavy Arms' Seven Dwarves volley credits gauge **per HIT** (~560 each) via `flatDamage.gaugeHits`
-(damage stays one aggregated instance). Ein's open 0.7x team-fight residual (open-questions U8) is
+her `flatPerTrigger` row; and Snow White: Heavy Arms' Seven Dwarves volley credits gauge
+**per HIT** (~560 each) via `flatDamage.gaugeHits` (damage stays one aggregated instance).
+**Liberalio's per-shot sequence is the fourth and is NOT credited today** (audit 2026-08-17,
+`scripts/census-gauge-subhits.ts`): her `skill1` rider "Deals 40.5% … **Activates 5 times**"
+is modeled as one aggregated `flatDamage` of 202.5 with no `gaugeHits`, so the engine credits
+1 impact per full charge where the kit delivers 6 (1 bullet + 5 sub-hits) — a shortfall of
+4 × 5.6 = 22.4% of the bar per charge. The 2026-08-14 census counted her as covered by
+citing "§7's ×6", a value deleted on 2026-07-26 as a WEAPON misread (`hitsPerShot` = 1) and
+never relocated to the rider the kit actually puts it on. Proposed fix + full sizing:
+`docs/handoffs/2026-08-17-liberalio-gauge-credit-audit.md`. Ein's open 0.7x team-fight residual (open-questions U8) is
 therefore no longer attributable to the orb by default. The blablalink/synergy-API `burstGaugePerShot` column was **dropped as a
 gauge source** — its semantics vary per unit (helm's 5.6 is her TARGET value, takina's
 2.8 is her BASE, trina's 14.4 is her target ×2, a2's 15.6 matches nothing datamined).
@@ -292,9 +299,14 @@ The mismatches decode into exact kit mechanics rather than noise:
 - **Helm**: rl3 59.73 = 8.4 + 3 × **14.31 flat per shot** — matches the arena data's
   `fixed_add 14.31` independently; now modeled (`flatPerTrigger`, no boss doubling, no
   focus bonus). She is a major generation battery in every fight she's in.
-- **Liberalio**: rl3 33.6 = 2 triggers × **6 volley hits** × 2.8 — now modeled (per-
-  trigger values ×6). Adding this moved the run-G prediction from 12 to 13 full bursts,
-  inside the video's measured 13-14.
+- **Liberalio**: rl3 33.6 = 2 triggers × **6 impacts** × 2.8 base — exact and integral (her
+  90f/1.5s charge gives exactly 2 triggers in the 3s window). The 6 is **1 bullet + the 5
+  sub-hits of her `skill1` rider** ("Deals 40.5% … Activates 5 times"), NOT 6 weapon hits:
+  her weapon is `hitsPerShot` 1, which is why the ×6 applied to the per-trigger row was
+  deleted as a misread on 2026-07-26. **It has never been re-credited on the rider**, so the
+  engine still generates 1 impact per charge instead of 6 — see §2 and the audit handoff
+  `docs/handoffs/2026-08-17-liberalio-gauge-credit-audit.md`. This is the only unit whose
+  multi-hit line is per-shot triggered, so `rl3` corroborates its hit count directly.
 - **Standard launchers**: uniformly rl3 = 4 shots (not 3) — their opener's first charge
   completes during battle start; a comparison artifact, not a data problem.
 - **Jill**: matches once her real 150 rpm cadence is used.

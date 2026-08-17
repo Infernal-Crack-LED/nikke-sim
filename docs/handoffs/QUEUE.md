@@ -93,12 +93,24 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `basePerTrigger` 140 × 2.5 focus × 1.06 aura = 3.71%. Next step is a gated re-run of the
      counting rule with that hypothesis declared in the packet, so anomalous windows become
      CLASSIFIABLE instead of premise-violating.
-   - **⇒ `liberalio` GAUGE-CREDIT AUDIT — the dominant open item on this thread, and FOOTAGE-FREE.**
-     Named by both the pre-op and blind post-op judges of the 2026-08-17 third-arm run as the only
-     route at the rival that run provably could not touch. She is the SHARED unit of both
-     non-vacuous arms (iron sweep and N3), her burst-gauge datamine was once **6× off**
-     (`c12fcf4e`, 2026-07-26 — the correction that created this entire shortfall thread), and both
-     arms' excess is consistent with a per-unit defect in her model. Second, lower priority: settle
+   - **⇒ `liberalio` GAUGE-CREDIT AUDIT — DONE 2026-08-17, defect FOUND, magnitude OPEN.**
+     **→ Handoff: [2026-08-17-liberalio-gauge-credit-audit.md](2026-08-17-liberalio-gauge-credit-audit.md)**
+     Her datamine row is EXACT (refutes the per-unit-datamine hypothesis). The defect is that her
+     `skill1` rider's kit-literal **5 sub-hits are credited as 1 gauge impact** — no
+     `flatDamage.gaugeHits` — costing 22.4% of the bar per full charge. Count confirmed
+     independently and exactly by `rl3` 33.6 = 2 triggers × 6 impacts × 2.8 base. She sits in
+     EXACTLY the four `disabled: true` comps and no others, so the confounding is perfect.
+     **NOT enacted:** crediting all five improves FB counts on all four comps (none overshooting)
+     but drops refill-from-zero to 2.2–2.9s against measured 3.56–4.43s, turning 17 battery
+     assertions red — several measured-truth anchors. That is the compensating-errors shape, so the
+     MAGNITUDE needs `/scientific-method` with the **refill estimator pre-registered** (this is
+     follow-up (i) below, now load-bearing). Sizing arm:
+     `npx tsx scripts/battery/liberalio-gaugehits-ab.ts`; census:
+     `npx tsx scripts/census-gauge-subhits.ts`.
+   - **Batched `gaugeHits` follow-up (findings-only, small):** `cinderella` (burst, N=10, 4.0%/cast),
+     `eve` (burst, N=6, 2.0%), `julia` (burst, N=5, 1.6%) also aggregate a multi-hit without
+     `gaugeHits`. All once-per-cast, so none can carry the FB shortfall.
+   - Second, lower priority: settle
      the clean-bin-time vs full-window denominator on a fixture with known ground truth, which would
      turn the standing MAR caveat into a measured bias bound — every detection in this thread is
      currently estimator-conditional.

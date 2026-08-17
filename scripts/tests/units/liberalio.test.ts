@@ -70,6 +70,7 @@ import {
   controlComp,
   runComp,
   totals,
+  unitOf,
   withPatchedOverride,
 } from '../lib/harness.js';
 
@@ -184,9 +185,41 @@ const extSource = (target: any) =>
 const TO_LIB = { kind: 'alliesOfElement', element: 'Wind' };
 const TO_HELM = { kind: 'alliesOfElement', element: 'Water' };
 
+/**
+ * L3b arm: credit all FIVE rider sub-hits (`gaugeHits: 5`) — the 2026-08-17 audit's proposed fix,
+ * deliberately NOT shipped. Damage is byte-identical either way (one aggregated 202.5 instance),
+ * so only the gauge channel moves. Sized in scripts/battery/liberalio-gaugehits-ab.ts.
+ */
+const libGaugeHits5 = withPatchedOverride('liberalio', (ov) => {
+  const e = ov.skill1
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.kind === 'flatDamage' && x.atkPct === 202.5);
+  if (!e) {
+    throw new Error('liberalio S1 202.5 rider missing — fixture is stale');
+  }
+  e.gaugeHits = 5;
+});
+
+/** Raw SimResult (not just events/totals) — `unitOf` needs it for the gauge counters. */
+function runResult(
+  overrides: Record<string, any> = {},
+  cfg: Partial<SimConfig> = {}
+) {
+  return runComp({ ...controlComp('liberalio'), overrides, cfg });
+}
+
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
 const cf = run({ liberalio: libAllCf });
+/**
+ * L3b: bursting disabled so the bar never fills and `gaugeGenerated` accrues uncapped — the
+ * gaugeHits difference is then exactly (5-1) extra `skillGauge` calls per full charge.
+ */
+const noBurstGaugeBase = runResult({}, { disableBursts: true });
+const noBurstGaugeFive = runResult(
+  { liberalio: libGaugeHits5 },
+  { disableBursts: true }
+);
 /** requiresCore discrimination: identical basis but the boss core is never exposed. */
 const noCore = run({}, { coreHitRate: 0 });
 /** L7: the bundled external buff aimed at liberalio ALONE. */
@@ -383,6 +416,44 @@ describe('liberalio — kit spec', () => {
     });
   });
 
+  describe('L3b — the rider credits ONE gauge impact per full charge (KNOWN GAP, measurement-gated)', () => {
+    // The kit's "Activates 5 times" is one aggregated damage instance of 202.5 but FIVE physical
+    // impacts, and `docs/data/burst-gauge.md` §5 credits gauge per skill-damage impact at the
+    // caster's target per-trigger value with no focus bonus (measured on `maiden-ice-rose`'s rider
+    // at exactly 364). An aggregated multi-hit therefore needs `flatDamage.gaugeHits` to declare
+    // its count — and HERS DELIBERATELY DOES NOT CARRY IT (audit 2026-08-17).
+    //
+    // This group pins the SHIPPED state (1 credit) so it cannot drift silently in either
+    // direction, and pins what the fix would move. It is NOT an endorsement of 1: the count
+    // evidence is strong (kit-literal, and rl3 33.6 = 2 triggers × 6 impacts × 2.8 base — exact,
+    // 1 bullet + 5 sub-hits), but crediting all five pushes refill-from-zero BELOW the measured
+    // refill on the same footage while improving Full-Burst counts, so two measured observables
+    // disagree about the magnitude (the compensating-errors shape). Whoever settles it flips the
+    // shipped side and this group's expectation together.
+    // Sizing arm: scripts/battery/liberalio-gaugehits-ab.ts.
+    const libBase = unitOf(noBurstGaugeBase, 'liberalio');
+    const libFive = unitOf(noBurstGaugeFive, 'liberalio');
+
+    // This assertion also pins the SHIPPED side: were `gaugeHits: 5` already on the rider, the two
+    // arms would be identical and the difference would read 0 instead of 4 × pulls × 5.6.
+    it('DISCRIMINATING (gauge): the 5-sub-hit arm would add 4 skillGauge calls per full charge', () => {
+      expect(libBase.pulls).toBeGreaterThan(0);
+      // her targetPerTrigger is 560 ⇒ each skillGauge call feeds 5.6 gauge-percent
+      const expectedDiff = 4 * libBase.pulls * 5.6;
+      expect(libFive.gaugeGenerated - libBase.gaugeGenerated).toBeCloseTo(
+        expectedDiff,
+        -1
+      );
+    });
+
+    it('the sub-hit credit is gauge-ONLY — damage is identical in both arms', () => {
+      expect(totals(noBurstGaugeFive).liberalio).toBeCloseTo(
+        totals(noBurstGaugeBase).liberalio,
+        6
+      );
+    });
+  });
+
   describe('L4 — S1 grants the lowest-final-ATK Burst-3 ally Charge Speed ▲12.74% for 10 sec', () => {
     const applied = libBuffs(base.events, 'chargeSpeedPct');
 
@@ -513,7 +584,10 @@ describe('liberalio — kit spec', () => {
           .join(',')
       );
       const csToLib = buffs(ironSweepImm.events).filter(
-        (b) => b.stat === 'chargeSpeedPct' && b.value === 50 && b.targetSlug === 'liberalio'
+        (b) =>
+          b.stat === 'chargeSpeedPct' &&
+          b.value === 50 &&
+          b.targetSlug === 'liberalio'
       );
       expect(csToLib).toHaveLength(0);
     });
@@ -530,7 +604,10 @@ describe('liberalio — kit spec', () => {
 
     it('L7c: without the immunity the same bundled grant speeds her up', () => {
       const csToLib = buffs(ironSweepNoImm.events).filter(
-        (b) => b.stat === 'chargeSpeedPct' && b.value === 50 && b.targetSlug === 'liberalio'
+        (b) =>
+          b.stat === 'chargeSpeedPct' &&
+          b.value === 50 &&
+          b.targetSlug === 'liberalio'
       );
       expect(csToLib.length).toBeGreaterThan(0);
       expect(shotsOf(ironSweepNoImm.events, 'liberalio')).toBeGreaterThan(
