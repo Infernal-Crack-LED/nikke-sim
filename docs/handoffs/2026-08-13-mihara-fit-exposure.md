@@ -50,6 +50,62 @@ None of these is yet evidence — this is a ranked list of where a ~14% over-cre
 5. **MG cadence tuple.** Drives in-FB normal count → stack generation. Datamine-unreliable per the
    usual ⚑.
 
+## Per-channel split (2026-08-16, N6 comp, `scripts/mihara-channel-split.ts`)
+
+| Channel                | Hits | Damage (M) | Share | Notes                                                        |
+| ---------------------- | ---- | ---------- | ----- | ------------------------------------------------------------ |
+| Burst (Dragging Chain) | 56   | 414.7      | 46.3% | 1001%/s fixed, `flavor: "sustained"`, inherits sustDmg% buff |
+| Ensnaring DoT          | 179  | 269.9      | 30.1% | avg 13.27 stacks, `flavor: "sustained"`, inherits sustDmg%   |
+| Normal weapon fire     | 5611 | 201.4      | 22.5% | MG cadence                                                   |
+| Restraint dumps        | 11   | 9.2        | 1.0%  | 1 passive + 10 FB ends — correct count                       |
+
+**Structural counts:** 10 FB ends, 6 mihara burst casts, 11 stage-3 entries (sustainedDamagePct
+applies), 0 mihara FB starts (she's a B3 — her burst IS the chain's B3 cast).
+
+**N6 seats 3 B3s** (mihara, maiden-ice-rose, maxwell) — the sole-B3 gate is NOT exact on this
+comp. But the Restraint dump count (11 = 1 + 10 FB ends) is correct regardless: the fullBurstEnd
+trigger fires on every FB end, and the dump fires with it. No over-fire.
+
+### Ruled out
+
+- **Restraint dump cadence (candidate 3):** 11 dumps is correct (1 passive + 10 FB ends). Not the
+  carrier.
+- **Multi-B3 over-fire (candidate 4):** dump count is correct despite 3 B3s. Not the carrier.
+- **25.08 coefficient (candidate 1):** kit-literal, unchanged. Not the carrier.
+
+### Narrowed to
+
+The over-model sits in the **burst DoT + Ensnaring DoT interaction with the stage-3
+sustainedDamagePct buff**:
+
+- Both channels carry `flavor: "sustained"` and inherit the +59.98% buff through the Damage-Up
+  bucket.
+- 11 stage-3 entries × 10s = **110s of buff uptime** in a 180s fight (61%).
+- The burst DoT (46.3% of total) runs ~9.5s of its 10s window within the buff (stage-3 entry leads
+  B3 cast by 30f = 0.5s).
+- The Ensnaring DoT (30.1% of total) has ~61% of its ticks buffed.
+- The 11th stage-3 entry (10 FBs → 10 expected entries; the 11th is from a stalled chain) adds
+  ~10s of extra buff — load-bearing check: ~10 extra buffed Ensnaring ticks ≈ 4.7M ≈ 0.5% of
+  total. **Not load-bearing.**
+
+**The over-model is NOT in any single channel being wrong.** It is in the combined magnitude of
+the burst DoT (1001%/s fixed, kit-literal) + the sustainedDamagePct buff (59.98%, kit-literal) +
+the Ensnaring live pool (13.27 avg stacks, kit-faithful). Each piece is individually correct;
+their product is 17.9% above the measured value.
+
+### Next steps (needs owner input)
+
+The residual may be a **kit interpretation question** rather than an encoding defect:
+
+- Does the burst DoT "mirror" the CURRENT stack count (perResource-scaled) or always ship 1001%/s
+  (assuming 20 stacks)? The pool IS at 20 when the burst fires (rebuilt from previous cycle's
+  Restraint dump + hitCount), so both readings converge to 1001 — but a perResource encoding would
+  be more faithful and would catch any future cycle where the pool doesn't reach 20.
+- Does the sustainedDamagePct buff apply to the burst DoT? The kit says "Sustained Damage ▲59.98%"
+  and the burst DoT has `flavor: "sustained"`, so the engine applies it. But if the game's
+  "Sustained Damage" stat does NOT apply to burst skills, the buff should be scoped to non-burst
+  sustained damage only.
+
 ## How to test without re-fitting
 
 The trap here is obvious and worth naming: her one fitted number was just removed, and the fastest
