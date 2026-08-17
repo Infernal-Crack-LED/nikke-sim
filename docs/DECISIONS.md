@@ -3719,6 +3719,41 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Measured mechanics (video/frame evidence — reversing needs new footage)
 
+- **(2026-08-15, entry BACKFILLED 2026-08-17) A sequential multi-hit `flatDamage` rider credits burst
+  gauge PER SUB-HIT; the engine keeps ONE aggregated damage instance and carries the count in
+  `flatDamage.gaugeHits`.** Enacted by `4d60a624` off the measurement in `e64e0432` (both 2026-08-15);
+  this entry is a late backfill — the enactment shipped with **no DECISIONS entry at all**, found by the
+  2026-08-17 `liberalio` premise gate. EVIDENCE (solo gauge-bar read, `docs/probes/solo/swha-solo.mov`,
+  instrument `scripts/probe/gauge-fill.py --bar 489:501:2474:2612` with an explicit frame-verified lock;
+  full entry `docs/probe-runs.md` 2026-08-15): on `snow-white-heavy-arms` (Snow White: Heavy Arms,
+  SR/Water — NOT base `snow-white`) the bar runs **0 → FULL in 3.2s of generation over ~3 pulls** at her
+  clamped 1.2s cadence, in **clusters of +5.8–7.2 raw steps at an exact 0.20s spacing** (five in the
+  cleanest cluster, t=10.17–10.97) = the 5-hit Seven Dwarves volley unrolling at ~her 560 target value
+  each (5.6×1.064=5.96), plus one **+15.2** step (t=9.43) = the focused weapon shot (14.0×1.064=14.9).
+  **ARITHMETIC CLOSURE is what decides it, not the step-eyeballing:** per-EFFECT credit (the sim's model,
+  2 `skillGauge` events/pull) caps 3 pulls at 75.6 true / ~80 raw — **REFUTED** by the observed full bar;
+  per-HIT credit (weapon 14 + AoE 5.6 + 5×5.6 = 47.6/pull) gives 142.8 and fills mid-third-volley ✓. The
+  old model under-credited her by 4×560 = 2,240 energy = **22.4% of the bar per pull**. INDEPENDENT
+  CORROBORATION (different method, pre-existing, not derived from the solo read): `N5 snowwhite-HA fire`
+  was video-counted **12/12 by the yellow-splash scan on 2026-07-14**; the enactment moved sim 11 → 12,
+  matching, which is what allowed that comp to be PINNED in `scripts/regression.ts` — it had previously
+  been deliberately omitted as unpinnable. Note the probe entry PREDICTED naive enactment would overshoot
+  to "~13 against 12 measured"; it did not — the landing read 12. TIER: **calibrated ⚑ CV reader**, ONE
+  clip, ONE fill cycle, reader output raw with the ×1.064 anchor bias stated-not-applied — plus that one
+  independently-measured team FB count. SCOPE ENACTED vs SCOPE MEASURED — **they are not the same, and
+  this is the load-bearing caveat**: the same commit set `gaugeHits` on THREE units, but only
+  `snow-white-heavy-arms` (5 and 10) is measurement-backed; `eve` (3) and `little-mermaid` (10) were
+  authored from KIT PROSE alone and remain unmeasured. There is therefore **no class-wide law here** —
+  per-sub-hit crediting is opt-in per override, and the 2026-08-17 `liberalio` run (INCONCLUSIVE at
+  2-of-2, LOG, nothing enacted — see `docs/handoffs/scientific-method-harness.md`) declined to extend it
+  to a fourth unit on this evidence. PROCESS IRREGULARITY, recorded because it is the reason this entry
+  was missing: the probe-runs entry that established the finding ends **"FINDINGS ONLY — nothing enacted.
+  Enactment is an engine touch and owner-gated,"** and the enactment landed **49 minutes later in the
+  same session** (12:34 → 13:23). KNOWN LIMITATION found 2026-08-17: the credit-schedule reconstruction
+  in `scripts/battery/fb-count-matrix.ts` pushes exactly one skill credit per damage event and **never
+  reads `gaugeHits`**, so it under-counts any carrier by (N−1) per impact — latent only because no comp
+  it covers seats one of the three carriers. Extend it before enacting `gaugeHits` on a covered comp.
+
 - **(2026-07-14) The Full Burst +50% is a TIMING/snapshot gate, not a damage-type rule (JP+KR research,
   empirical both sides).** An instance gets +50% iff it is evaluated while the Full Burst STATE is live;
   the +50% is additive inside the Major-Modifiers bracket (with crit/core/range). Per type: normal fire

@@ -129,9 +129,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      drift-guards, and note its `PI2 < T5` assert is contradicted by measurement regardless of any
      arm (real T5 1.75–1.82s < real PI2 2.09–2.11s). Do NOT blanket-`--update`: of 19 reds under the
      arm, ZERO are measured-anchored, 4 are child-process harness artifacts, 15 genuine.
-   - **Ledger gap:** the 2026-08-15 `snow-white-heavy-arms` per-sub-hit enactment (`4d60a624`) has no
-     `docs/DECISIONS.md` entry and landed 49 min after a probe-runs entry reading "FINDINGS ONLY —
-     nothing enacted. Enactment is an engine touch and owner-gated."
+   - ~~Ledger gap: the 2026-08-15 `snow-white-heavy-arms` per-sub-hit enactment has no DECISIONS
+     entry.~~ **CLOSED 2026-08-17** — entry backfilled into `docs/DECISIONS.md` → Measured mechanics.
+     It records the arithmetic-closure evidence, the independent 12/12 splash-count corroboration, the
+     49-minute FINDINGS-ONLY→enacted gap, and the caveat that only `snow-white-heavy-arms` of the three
+     `gaugeHits` carriers is measurement-backed (`eve`/`little-mermaid` are kit-prose only).
    - **⚑ Protected-path correction pending owner approval:** the comment directly above `skillGauge()`
      in `src/engine/sim.ts` claims the `maiden-ice-rose` rider "measured exactly her target per-shot
      value, 364". The cited probe records **3.45%** vs a modeled 3.64% (U28's −5.2% residual).

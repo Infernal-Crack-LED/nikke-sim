@@ -58,9 +58,12 @@ comment states the contract: _"Sequential volleys generate gauge per sub-hit in-
 keeps one aggregated damage instance to preserve tuned totals. gaugeHits = N fires skillGauge N times;
 omit = 1."_
 
-So she is credited **1** impact per full charge where the kit delivers **6** (1 bullet + 5 rider hits).
-`skillGauge` credits `targetPerTrigger` with no focus bonus (measured on `maiden-ice-rose`'s rider at
-exactly 364), so the uncredited amount is `4 × 5.6 = 22.4%` of the bar **per full charge**, every ~1.5s.
+So she is credited **1** impact per full charge where the kit's wording delivers **6** (1 bullet + 5
+rider hits). `skillGauge` credits `targetPerTrigger / hitsPerShot` with no focus bonus — her
+`hitsPerShot` is 1, so 5.6 per impact — making the uncredited amount `4 × 5.6 = 22.4%` of the bar per
+full charge, every ~1.5s. (The anchor for the no-focus-bonus SHAPE is `maiden-ice-rose`'s rider, which
+measured **3.45%** against a modeled 3.64%; do not cite it as "exactly 364" — that overstates it, and
+the −5.2% residual is open as U28.)
 
 **This relocates the ×6 rather than resurrecting it.** The 2026-07-26 commit deleted a `×6` attributed
 to the WEAPON (refuted: `hitsPerShot` = 1) without relocating it to the rider the kit puts it on. The
