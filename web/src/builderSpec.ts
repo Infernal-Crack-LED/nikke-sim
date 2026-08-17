@@ -7,11 +7,14 @@
 // head-only set; everything else is the on-demand tail.
 // (imported with the repo's nodenext .js extension so the vitest suite can
 // pull this module in under the root tsconfig — vite resolves it identically)
-import type { RenderSpec } from '../../src/infographics/spec.js';
+import {
+  PULL_PRERENDER_COUNTS,
+  type RenderSpec,
+} from '../../src/infographics/spec.js';
 import type { B1B2DpsCell } from '../../src/ranks/b1b2-cells.js';
 
 export type BuilderCardType =
-  'dps' | 'rank' | 'unit' | 'ol' | 'charge' | 'ammo';
+  'dps' | 'rank' | 'unit' | 'ol' | 'charge' | 'ammo' | 'pull';
 export type BuilderBoard =
   'burstgen' | 'burstcdr' | 'sustain' | 'buffer' | 'b1b2dps';
 export type BuilderDpsMode = 'top' | 'window' | 'compare';
@@ -38,6 +41,7 @@ export interface BuilderState {
   b1b2DpsBoard: B1B2DpsCell; // rank/b1b2dps sub-mode
   olLines: OlLinesPreset; // ol: desired line count
   olTier: number; // ol: desired tier (1-15)
+  pulls: number; // pull: planned Advanced Recruit pull count
   // unit card: which variant to preview. 'discord' is the 2:1 landscape card the
   // bot embeds; 'twitter' is the 3:4 portrait launch asset. Both are
   // pre-rendered, so both map to the manifest.
@@ -87,6 +91,12 @@ export function manifestKeyFor(s: BuilderState): string | null {
       return s.unit ? null : 'table/charge-speed';
     case 'ammo':
       return null; // max-ammo is always per-unit → on-demand
+    case 'pull':
+      // build-infographics.ts pre-renders only PULL_PRERENDER_COUNTS (the
+      // /pull page's presets); every other count is the on-demand tail.
+      return (PULL_PRERENDER_COUNTS as readonly number[]).includes(s.pulls)
+        ? `pull/${s.pulls}`
+        : null;
   }
 }
 
@@ -121,6 +131,10 @@ export function renderSpecFor(s: BuilderState): RenderSpec | null {
       return s.unit ? { kind: 'table', table: 'max-ammo', unit: s.unit } : null;
     case 'unit':
       return null; // manifest-only card type
+    case 'pull':
+      // Any count the manifest doesn't already cover renders on demand — the
+      // API's pull kind takes the count directly.
+      return manifestKeyFor(s) ? null : { kind: 'pull', pulls: s.pulls };
     case 'rank':
     case 'ol':
       // No server RenderSpec support yet for the portrait bar chart or a

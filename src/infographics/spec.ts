@@ -47,6 +47,19 @@ export const DEFAULT_DOLL_RARITY = 'SR';
 export const DOLL_RARITIES = ['R', 'SR'] as const;
 export const DOLL_MAX_PHASE = 15;
 
+// pull.png with no params renders the /pull page's own default view.
+// The bounds match the bot's /pull option range: one pull is the smallest
+// meaningful plan, and past 100000 every cell in the card reads the same.
+export const DEFAULT_PULL_COUNT = 200;
+export const PULL_COUNT_MIN = 1;
+export const PULL_COUNT_MAX = 100000;
+
+// The pull counts build-infographics.ts pre-renders (a multi, a common
+// save-up, and the three sizes players plan a banner around). Every other
+// count renders on demand — the parameter space is 100000 wide, so only the
+// counts a link surface actually defaults to belong in every deploy.
+export const PULL_PRERENDER_COUNTS = [10, 30, 100, 200, 300] as const;
+
 // The element filter set both link surfaces expose (web DpsChartTab
 // ELEMENT_FILTERS pills, bot /dps choices) — request values are lowercase.
 export const ELEMENT_FILTERS = ['fire', 'water', 'wind', 'electric', 'iron'];
@@ -77,7 +90,8 @@ export type RenderSpec =
   | { kind: 'table'; table: 'max-ammo'; unit: string }
   | { kind: 'table'; table: 'charge-speed'; unit?: string }
   | { kind: 'resources'; tier: number }
-  | { kind: 'doll'; rarity: 'R' | 'SR'; from: number };
+  | { kind: 'doll'; rarity: 'R' | 'SR'; from: number }
+  | { kind: 'pull'; pulls: number };
 
 // A comparison chart is capped at 10 bars — the same row count the §6.6
 // window renders, so the card geometry never changes shape.
@@ -252,6 +266,22 @@ export function parseRenderSpec(
         spec: { kind: 'doll', rarity: rarity as 'R' | 'SR', from },
       };
     }
+    case 'pull': {
+      const rawPulls = trimmed(String(raw.pulls ?? ''));
+      const pulls =
+        rawPulls !== undefined ? Number(rawPulls) : DEFAULT_PULL_COUNT;
+      if (
+        !Number.isInteger(pulls) ||
+        pulls < PULL_COUNT_MIN ||
+        pulls > PULL_COUNT_MAX
+      ) {
+        return {
+          ok: false,
+          error: `pulls must be an integer ${PULL_COUNT_MIN}-${PULL_COUNT_MAX}`,
+        };
+      }
+      return { ok: true, spec: { kind: 'pull', pulls } };
+    }
     default:
       return { ok: false, error: `unknown render kind '${String(raw.kind)}'` };
   }
@@ -375,6 +405,8 @@ export function specCacheKey(spec: RenderSpec): string {
       return `${RENDERER_VERSION}|resources|${spec.tier}`;
     case 'doll':
       return `${RENDERER_VERSION}|doll|${spec.rarity}|${spec.from}`;
+    case 'pull':
+      return `${RENDERER_VERSION}|pull|${spec.pulls}`;
   }
 }
 
@@ -382,6 +414,6 @@ export function specCacheKey(spec: RenderSpec): string {
 // variants share the `table` prefix, matching the existing files).
 export function specCacheType(
   spec: RenderSpec
-): 'team' | 'roster' | 'dps' | 'table' | 'resources' | 'doll' {
+): 'team' | 'roster' | 'dps' | 'table' | 'resources' | 'doll' | 'pull' {
   return spec.kind === 'table' ? 'table' : spec.kind;
 }

@@ -132,6 +132,14 @@ export let TAB_META: Record<string, TabMeta> = {
     label: 'Resource Calculator',
     desc: 'Expected daily custom module and T9 drops by stage. Supports Kraken and other Anomaly Interception bosses. Plan your daily farming.',
   },
+  pull: {
+    title: 'NIKKE Pull Calculator — Recruit Odds, Copies & MLB Chances',
+    label: 'Pull Calculator',
+    desc: 'Cumulative Advanced Recruit odds for any number of pulls: expected SSRs, the chance of landing a rate-up or Pilgrim unit, and the odds of enough copies to max limit break.',
+    // The card the page itself exports, at the count the page opens on —
+    // the share image IS the tool's answer, not a site screenshot.
+    image: 'pull/200',
+  },
   howto: {
     title: 'How to Use the NIKKE Solo Raid Sim — Quick Start Guide',
     label: 'How To',
@@ -680,7 +688,8 @@ function breadcrumbItems(canonicalPath: string, pageLabel: string) {
       canonicalPath === '/teambuilder' ||
       canonicalPath === '/builder' ||
       canonicalPath === '/doll' ||
-      canonicalPath === '/resources'
+      canonicalPath === '/resources' ||
+      canonicalPath === '/pull'
     ) {
       return [home, { name: 'Tools', item: SITE + '/teambuilder' }, leaf];
     }

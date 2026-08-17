@@ -39,6 +39,7 @@ const ROUTES: Array<{ path: string; priority: number }> = [
   { path: '/builder', priority: PRIORITY.tools },
   { path: '/doll', priority: PRIORITY.tools },
   { path: '/resources', priority: PRIORITY.tools },
+  { path: '/pull', priority: PRIORITY.tools },
   { path: '/roster-sync', priority: PRIORITY.reference },
   { path: '/mechanics', priority: PRIORITY.reference },
   { path: '/howto', priority: PRIORITY.reference },
@@ -59,7 +60,10 @@ export function generateSitemap(): string {
   const slugs = Object.keys(data.characters).sort();
   const routes = [
     ...ROUTES,
-    ...slugs.map((slug) => ({ path: `/unit/${slug}`, priority: PRIORITY.unit })),
+    ...slugs.map((slug) => ({
+      path: `/unit/${slug}`,
+      priority: PRIORITY.unit,
+    })),
   ];
 
   const urlset = routes
