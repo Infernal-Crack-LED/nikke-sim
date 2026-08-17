@@ -13,11 +13,49 @@
 // non-liberalio, two charge-B3 competitors) shows a refill AT LEAST as slow as the four disabled
 // comps (iron sweep run G / T5 / T1 / N3 scarlet/liberalio, all liberalio-carrying, currently
 // `disabled: true` in scripts/regression.ts because sim under-counts their measured full bursts)
-// — while the zero-charge-competition reference (misc B3s / PI2) refills the FASTEST. This is what
-// routed the investigation to LOG (general charge-B3 gauge-fill-tempo gap, board-wide, NOT
-// liberalio-specific) rather than IMPLEMENT (a narrow liberalio-only fix). A failure here means
+// — while IN THE SIM the zero-charge-competition reference (misc B3s / PI2) refills the FASTEST.
+// This is what routed the investigation to LOG (general charge-B3 gauge-fill-tempo gap, board-wide,
+// NOT liberalio-specific) rather than IMPLEMENT (a narrow liberalio-only fix). A failure here means
 // either the engine's cycle timing changed (re-derive the finding, don't just re-pin) or this
 // instrument regressed.
+// ⚠ "PI2 refills the FASTEST" is a statement about the SIM only — the real tape inverts it. See the
+// correction block below; the LOG routing itself is untouched by that (it rested on the board-wide
+// baseline comparison, not on PI2's rank).
+//
+// ⚠ THE BANDS BELOW ARE SIM DRIFT-GUARDS, NOT MEASUREMENTS (corrected 2026-08-17).
+// Until today these titles read "measured 4.43 / 3.56 / 3.71". Those three literals are NOT
+// footage. They are THIS INSTRUMENT'S OWN sim `excess` output, produced and pinned by the
+// 2026-08-04 rotation-default-flip commit `2a8b869d` and mislabelled "measured" in the same
+// motion. Confirmed four ways, decisively by `git log -S"measured 4.43"` returning that single
+// commit — a sim re-derivation, not a video read. The FIRST real footage refill measurements for
+// these comps are the 2026-08-14 bar-paint traces (`f8cd76b9`), ten days LATER.
+//
+// What the real tape says — median `visibleSec` = [bar first paint → reader's green-full instant]
+// over readable windows, from the committed `docs/probe-data/fill-trace-*.json`
+// (`scripts/probe/fill-trace-compare.ts:284-289,811`; all values re-derived from raw 60fps reads
+// 2026-08-17, 36/36 per-window values identical to stored):
+//
+//   comp        pinned here (SIM)   real (bar-paint)                sim is
+//   iron sweep  3.5 – 5.5           2.342  (n=10 of 12)             ~1.7s SLOW
+//   T5          3.0 – 4.5           1.817 readable / 1.750 all      ~1.6s SLOW
+//   PI2         1.5 – 3.5           2.0915 (n=10 of 12)             ~0.9s SLOW
+//   T1          3.0 – 4.5           *** NO FOOTAGE MEASUREMENT ***  unknown
+//
+// So the sim refills TOO SLOWLY everywhere it has been measured — the opposite direction to what
+// the old "measured" labels implied. ⚠ T5's "1.75–1.82" is NOT an uncertainty interval: it is one
+// measurement under two window-inclusion choices (all 12 windows → 1.750; the 11 readable → 1.817).
+// ⚠ T1 has NO footage refill measurement at all — its band is pure sim self-pin, and no assertion
+// here may be read as evidence about T1's real refill.
+//
+// ⚠ THE `PI2 < T5` ASSERTION IS CONTRADICTED BY MEASUREMENT, under every arm. It pins PI2 as the
+// FASTEST refill ("the negative control"), but the real tape has T5 (1.75–1.82s) refilling FASTER
+// than PI2 (2.09–2.11s) — the ordering is inverted in reality. The assertion is retained ONLY as a
+// drift-guard on current sim behaviour; it is NOT evidence for the negative-control claim its old
+// title asserted, and it must not be cited as such.
+//
+// Do NOT blanket `--update` these bands to silence a failure: of the 19 reds observed under the
+// `gaugeHits` arm, ZERO were measured-anchored, 4 were child-process harness artifacts, and 15 were
+// genuine arm effects. A red here still means "re-derive the finding", not "re-pin the number".
 //
 // Regenerate via: `DECOMP=1 SEEDS=1 ONLY="<comp name>" npx tsx scripts/experiment.ts`
 import { describe, expect, it } from 'vitest';
@@ -33,13 +71,13 @@ function decomp(name: string) {
 }
 
 describe('gauge cycle decomposition (fb-count-regression LOG finding)', () => {
-  it('PG iron sweep: refill-from-zero in the good-team band (~3-4s, measured 4.43)', () => {
+  it('PG iron sweep: SIM refill-from-zero drift-guard [3.5,5.5] (real bar-paint: 2.342s — sim is SLOW)', () => {
     const d = decomp('PG iron sweep (boss Electric)');
     expect(d.excess).toBeGreaterThan(3.5);
     expect(d.excess).toBeLessThan(5.5);
   });
 
-  it('T5/T1 wind-weak: refill-from-zero in the same band (measured 3.56 / 3.71)', () => {
+  it('T5/T1 wind-weak: SIM refill-from-zero drift-guard [3.0,4.5] (real T5 1.75-1.82s; T1 has NO footage measurement)', () => {
     const t5 = decomp('T5 wind-weak probe (boss Iron)');
     const t1 = decomp('T1 wind-weak (boss Iron)');
     for (const d of [t5, t1]) {
@@ -62,15 +100,18 @@ describe('gauge cycle decomposition (fb-count-regression LOG finding)', () => {
     expect(n6.excess).toBeGreaterThanOrEqual(pg.excess - 0.5);
   });
 
-  it('PI2 misc B3s (zero charge-B3 competition, currently PASSES): the FASTEST refill — the negative control', () => {
+  it('PI2 misc B3s: SIM drift-guard — sim makes PI2 fastest, but the real tape INVERTS this (real PI2 2.09-2.11s > real T5 1.75-1.82s)', () => {
     const d = decomp('PI2 misc B3s RERUN w/ video (boss Water)');
     const t5 = decomp('T5 wind-weak probe (boss Iron)');
     const t1 = decomp('T1 wind-weak (boss Iron)');
     expect(d.excess).toBeGreaterThan(1.5);
     // Band re-derived 2026-08-09 (2.x → 3.16): the faithfulness-enactment batch gave this
     // comp's grave her kit Prediction-end ammo dump (one forced ~3.35s reload per burst
-    // cycle — MG gauge feed pauses), slowing the comp's refill-from-zero. The negative-
-    // control CLAIM is carried by the relative asserts below, which still hold.
+    // cycle — MG gauge feed pauses), slowing the comp's refill-from-zero.
+    // ⚠ The two relative asserts below pin SIM ORDERING ONLY. They were once described as
+    // carrying "the negative-control CLAIM"; they do not. Measurement contradicts the ordering
+    // they encode (real T5 1.75-1.82s < real PI2 2.09-2.11s), so a green here says the sim has
+    // not drifted — it says nothing about the game.
     expect(d.excess).toBeLessThan(3.5);
     expect(d.excess).toBeLessThan(t5.excess);
     expect(d.excess).toBeLessThan(t1.excess);
