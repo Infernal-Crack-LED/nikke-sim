@@ -88,8 +88,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      — always pass `--bar` + the maiden fixture gate (/skill-maintenance candidate);
      (ii) `read-ammo.ts` reads 0/851 frames on text-label HUD ("AMMO / NNN") — needs a text-label
      digit reader path.
-   - **T1 wind-weak video RECEIVED 2026-08-16** — `docs/probes/misc/t1 wind weak v2.jpg` + `.mov`,
-     queued for `/probe-processing` (achievable without new footage).
+   - **T1 wind-weak v2 PROCESSED 2026-08-16** — 13 FBs confirmed (scan.ts, 2nd detector
+     corroborated), per-unit totals from Battle Records screenshot. Result:
+     `docs/probes/misc/t1-wind-weak-v2-result.md`. Confirms the existing "windweak t257 13fb"
+     probe; comp remains disabled in regression (sim 11-12 FBs vs measured 13, engine shortfall).
    - **`ein` U8 0.7× team residual** — findings-only (N2); stage1→2 real 33f/32f vs modeled 30f
      (runs AGAINST the gap).
 3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
