@@ -46,6 +46,50 @@ export function DevPage() {
         </div>
       </section>
 
+      <section className="dev-callout">
+        <img
+          className="dev-callout-avatar"
+          src="/helen.png"
+          alt="Helen bot avatar"
+        />
+        <div className="dev-callout-body">
+          <h2>{dev.helen.name}</h2>
+          <p>{dev.helen.blurb}</p>
+          <div className="dev-callout-links">
+            <a
+              className="dev-link"
+              href={dev.helen.addToServer}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Add Helen to your server
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section className="dev-callout">
+        <img
+          className="dev-callout-avatar square"
+          src="/refittingroom-icon.png"
+          alt="Refitting Room logo"
+        />
+        <div className="dev-callout-body">
+          <h2>{dev.refittingroom.name}</h2>
+          <p>{dev.refittingroom.blurb}</p>
+          <div className="dev-callout-links">
+            <a
+              className="dev-link"
+              href={dev.refittingroom.url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Visit refittingroom.app
+            </a>
+          </div>
+        </div>
+      </section>
+
       <p className="muted dev-foot-note">
         Find me on Discord, X, Blablalink, and GitHub — links in the footer
         below.
