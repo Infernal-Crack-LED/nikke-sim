@@ -173,8 +173,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    `docs/handoffs/closed/2026-08-10-faithfulness-batch{1..8}-findings.md`). Most items closed by
    enactment, refutation, or owner ruling (2026-08-11 M-list triage + 2026-08-13 corrections).
    Open:
-   - **`noir` — OPEN (footage-gated).** Reload tension (recon ~0.6–0.9s vs datamined 62f ≈ 1.03s).
-     Folded into SG investigation (M7); same footage serves both.
+   - **`noir` — FOOTAGE RECEIVED, READER-BLOCKED (2026-08-17).** Reload tension (recon ~0.6–0.9s
+     vs datamined 62f ≈ 1.03s). Footage: `docs/probes/misc/noir solo reload.MP4` (26.75s, 60fps,
+     portrait 1206×2622). `read-ammo.ts` reads only 8.6% of frames — noir's 9-round SG magazine
+     renders 1-2 digits, below the template matcher's threshold. Same known limitation as the
+     text-label reader gap (QUEUE item ii). Folded into SG investigation (M7).
    - **`mihara-bonding-chain` — LOCALIZED (2026-08-17, findings-only).** Ensnaring primitive
      landed 2026-08-13; removing the old 12-stack average revealed an over-model elsewhere in her
      kit. 1.034 → 1.179 HOT on 2 graded comps; FB count UNCHANGED at 11 vs measured 11, so it is
@@ -296,14 +299,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    - **`ein` U8 0.7× team residual** — findings-only (N2); stage1→2 real 33f/32f vs modeled 30f
      (runs AGAINST the gap).
 3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
-   Recipe (unchanged, but the qualifying set is now exact): popup-read a qualifying all-enemies
-   burst nuke cast INSIDE vs OUTSIDE a `trina` Spread Roots window and compare against
-   `1 + 4.356` additive-in-Damage-Up. Any comp pairing `trina` with one of `isabel` / `liberalio` /
-   `mica` / `noir` / `phantom` / `privaty` / `quency-escape-queen` / `scarlet` /
-   `soda-twinkling-bunny` gives it; `cinderella` is NOT a candidate. If the test unit is `novel` or
-   another granularity-split unit the same measurement settles amp granularity for free (amped ⇒
-   skill-level, unamped ⇒ block-level). The MAGNITUDE half is genuinely footage-gated (only
-   popups produce a number); the GRANULARITY half is separately rulable if the owner ever knows
+   **INITIAL READ 2026-08-17 (VLM-assisted, single-popup).** Footage + screenshots provided:
+   `docs/probes/misc/trina scarlet.MP4` + `trina scarlet no roots.MP4` + two screenshots.
+   Scarlet burst popup: 11,063,912 (with roots) vs 1,955,754 (without) → ratio **5.658** vs modeled
+   **5.565** (435.6 + 20.9 additive in Damage-Up, +1.7% deviation). **CONSISTENT** with the
+   additive placement — supports but does not precisely pin the magnitude (VLM reads only 1 of 4
+   expected popups per screenshot; numbers are untrusted).
+   **→ Probe data: [trina-burst-amp-read-2026-08-17.json](../probe-data/trina-burst-amp-read-2026-08-17.json)**
+   **BLOCKED:** need all 4 popup numbers per condition (liter burst, trina burst, scarlet burst,
+   anchor maid off-burst) for a precise read. Options: (a) owner confirms the numbers from the
+   screenshots, (b) extract video frames at exact burst-cast moments, (c) dedicated popup-reader.
+   The GRANULARITY half (skill-level vs block-level) is separately rulable if the owner knows
    whether a split-kit unit like `novel` gets both halves amped (offered 2026-08-16, not yet
    answered). Carried out of the now-archived burst-amp handoff.
 
