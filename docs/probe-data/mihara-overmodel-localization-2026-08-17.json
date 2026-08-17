@@ -1,0 +1,66 @@
+{
+  "_note": "mihara-bonding-chain over-model localization. QUEUE item 1 (faithfulness sweep residue, mihara bullet). Findings-only — no override or engine was changed.",
+  "date": "2026-08-17",
+  "question": "Where does the 17.9% over-model (1.034 → 1.179 HOT on 2 graded comps) sit in mihara-bonding-chain's kit encoding?",
+  "priorHandoff": "docs/handoffs/2026-08-13-mihara-fit-exposure.md",
+  "channelSplit": {
+    "comp": "N6 mihara/maiden wind (boss Wind)",
+    "totalDamage": 895197123,
+    "measuredTarget": 759284667,
+    "overModel": 135912456,
+    "overModelPct": 17.9,
+    "channels": [
+      {
+        "name": "Burst DoT (Dragging Chain)",
+        "hits": 56,
+        "damage": 414715333,
+        "share": 0.463,
+        "inheritsSustDmg": true
+      },
+      {
+        "name": "Ensnaring DoT",
+        "ticks": 179,
+        "damage": 269872425,
+        "share": 0.301,
+        "avgStacks": 13.27,
+        "inheritsSustDmg": true
+      },
+      {
+        "name": "Normal weapon",
+        "hits": 5611,
+        "damage": 201442669,
+        "share": 0.225,
+        "inheritsSustDmg": false
+      },
+      {
+        "name": "Restraint dumps",
+        "hits": 11,
+        "damage": 9166696,
+        "share": 0.01,
+        "inheritsSustDmg": false
+      }
+    ]
+  },
+  "ruledOut": {
+    "burstDoTFixed1001": "Pool is ALWAYS at 20 before each burst (verified via DBG_UNIT resource trace on both test comp and N6 graded comp). The fixed 1001%/s (20 × 50.05) is correct — the override note's claim that the pool reaches 20 before each burst holds.",
+    "baselineEnsnaringDoT": "Live perResource, averages 13.27 stacks, correctly zeroes on burst cancel. Kit-faithful.",
+    "restraintDumpCadence": "11 dumps (1 battle start + 10 FB ends), correct count. Handoff already ruled this out.",
+    "multiB3OverFire": "Dump count correct despite 3 B3s on N6. Handoff already ruled this out.",
+    "countScope": "Already fixed (127 → 107 gains), moved time-average only 13.55 → 13.39. Not the explanation."
+  },
+  "localization": {
+    "verdict": "The over-model is in the SUSTAINED-DAMAGE-PCT BUFF INTERACTION with both DoT channels",
+    "detail": "Each encoding piece is individually kit-faithful: burst DoT 1001%/s (pool always at 20), baseline Ensnaring live perResource (avg 13.27 stacks), sustainedDamagePct +59.98%/10s (kit-literal). But both DoTs carry flavor:'sustained' and inherit the buff through the Damage-Up bucket. 11 stage-3 entries × 10s = 110s of buff uptime in 180s fight (61%). The combined magnitude exceeds measured by 17.9%.",
+    "mostLikelyExplanation": "The game's Sustained Damage stat may NOT apply to burst-skill DoTs, or may not apply to DoTs at all. The override faithfully applies it to both channels because the kit text says 'Sustained Damage ▲59.98%' without scoping, and both DoTs carry flavor:'sustained'. But if the game distinguishes burst-skill sustained damage from passive sustained damage, the buff should be scoped narrower.",
+    "sizingArm": "Removing sustainedDamagePct from the burst DoT only drops total by ~152M → ratio 0.979 (2.1% cold). Removing from both DoTs drops by ~250M → ratio 0.849 (too cold). The truth is between these bounds — likely the buff applies to the Ensnaring DoT but NOT the burst DoT, or applies at a reduced value to one channel."
+  },
+  "settlingMeasurement": {
+    "what": "Popup-read mihara's burst DoT (Dragging Chain) damage ticks with and without the S2 sustainedDamagePct buff active. If the buffed and unbuffed ticks are identical, the game does NOT apply sustainedDamagePct to burst DoTs. If the buffed ticks are ~60% higher, it does.",
+    "recipe": "Record a comp with mihara + a non-interfering team. During the first 10s after a stage-3 entry (buff active), popup-read the Dragging Chain ticks. Then wait for the buff to expire (10s after the next stage-3 entry that does NOT lead to a mihara burst), and read the Ensnaring DoT ticks. Compare.",
+    "alternative": "An owner ruling on whether the game's Sustained Damage stat applies to burst-skill DoTs would settle it without footage."
+  },
+  "consequence": {
+    "forTheBoard": "The 1.179 HOT reading on 2 graded comps is STRUCTURAL — no single encoding value is wrong. The fix is a buff-scoping change that needs a measurement to justify. Until then, the board reading overstates mihara's real damage by ~18%.",
+    "forTheOverride": "No change needed. Every value is kit-literal. The defect (if any) is in the ENGINE's application of sustainedDamagePct to all flavor:'sustained' damage without distinguishing burst-skill vs passive sustained damage."
+  }
+}

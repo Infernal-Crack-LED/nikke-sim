@@ -175,11 +175,20 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    Open:
    - **`noir` — OPEN (footage-gated).** Reload tension (recon ~0.6–0.9s vs datamined 62f ≈ 1.03s).
      Folded into SG investigation (M7); same footage serves both.
-   - **`mihara-bonding-chain` — FIT-EXPOSED (achievable without footage).** Ensnaring primitive
+   - **`mihara-bonding-chain` — LOCALIZED (2026-08-17, findings-only).** Ensnaring primitive
      landed 2026-08-13; removing the old 12-stack average revealed an over-model elsewhere in her
      kit. 1.034 → 1.179 HOT on 2 graded comps; FB count UNCHANGED at 11 vs measured 11, so it is
-     magnitude not rotation. LOCALIZE the over-model; do not restore the average.
+     magnitude not rotation. **Localization result:** the over-model is in the sustainedDamagePct
+     buff interaction with both DoT channels. Each encoding piece is individually kit-faithful
+     (burst DoT 1001%/s correct — pool always at 20; Ensnaring live perResource correct — avg
+     13.27 stacks; sustainedDamagePct +59.98%/10s kit-literal). But both DoTs inherit the buff
+     through `flavor:"sustained"` (11 stage-3 entries × 10s = 110s buff uptime, 61%), and the
+     combined magnitude exceeds measured by 17.9%. Most likely game-mechanics explanation: the
+     game's Sustained Damage stat does NOT apply to burst-skill DoTs (or to DoTs at all).
+     **Settling measurement needed:** popup-read burst DoT ticks with and without the S2 buff
+     active, or an owner ruling on whether sustainedDamagePct applies to burst-skill DoTs.
      **→ Handoff: [2026-08-13-mihara-fit-exposure.md](2026-08-13-mihara-fit-exposure.md)**
+     **→ Probe data: [mihara-overmodel-localization-2026-08-17.json](../probe-data/mihara-overmodel-localization-2026-08-17.json)**
    - **Held primitives** (F11 discipline — leave held): `moran` S1 DEF ▲/stack, `maxwell`
      `byFinalAtk`, `helm`'s held tag.
    - **`mint` — HELD** (M12 confirmed shipped `singing` model; solo magnitudes unanchored by
