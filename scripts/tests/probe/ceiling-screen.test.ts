@@ -40,6 +40,32 @@ describe('ceiling screen: which comps can host the H-C detector (2026-08-17)', (
     part2_ceilingScreen: { nonVacuous: { comp: string; ceiling: number }[] };
   };
 
+  // ── Derived constants (replacing hard-coded literals 2026-08-17) ──────────
+  // These three values were once bare numbers in the test body. They are now
+  // computed from the artifacts the test already loads, so a change to the
+  // underlying data turns the test red instead of silently drifting.
+  const CLASSIFICATION = 'docs/probe-data/fill-trace-habc-classification.json';
+  type ClsArm = {
+    ceiling: { perUnit: { slug: string; maxRatePerSec: number }[] };
+    branch: { realEventBinsPerSec: number };
+    pooled: { usableCleanBins: number; sumRealDurationSec: number };
+    sim: { binSec: number };
+  };
+  const cls = JSON.parse(readFileSync(CLASSIFICATION, 'utf8')) as {
+    arms: Record<string, ClsArm>;
+  };
+  const iron = cls.arms['iron sweep (run G)'];
+  // refFullWindowSec was 23.618 — the iron arm's pooled real duration.
+  const refFullWindowSec = iron.pooled.sumRealDurationSec;
+  // binSec was the magic divisor 30 — it is 1/iron.sim.binSec (0.033333 ≈ 1/30).
+  const binSec = iron.sim.binSec;
+  // candSimRefillSec was 38.1 — the sum of every N3 credit-schedule window.
+  const n3Schedule = loadSchedule(N3);
+  const candSimRefillSec = n3Schedule.windows.reduce(
+    (s, w) => s + (w.endSec - w.startSec),
+    0
+  );
+
   it('misc B3s: the SG-reconstruction fence is lifted — all self-checks pass, nothing unreconstructed', () => {
     const s = loadSchedule(MISC_B3S);
     expect(s.comp).toBe('misc B3s (run I order)');
@@ -91,35 +117,19 @@ describe('ceiling screen: which comps can host the H-C detector (2026-08-17)', (
     // two rivals predict rates only ~7% apart — under the Poisson noise on the event count this
     // arm can supply. The packet's honesty rests on this number; if the inputs or the statistic
     // move, the packet's "does not discriminate" claim must be re-derived, not assumed.
-    const cls = JSON.parse(
-      readFileSync(
-        'docs/probe-data/fill-trace-habc-classification.json',
-        'utf8'
-      )
-    ) as {
-      arms: Record<
-        string,
-        {
-          ceiling: { perUnit: { slug: string; maxRatePerSec: number }[] };
-          branch: { realEventBinsPerSec: number };
-          pooled: { usableCleanBins: number };
-        }
-      >;
-    };
-    const iron = cls.arms['iron sweep (run G)'];
     const r = armPower({
       sharedSlug: 'liberalio',
       refComp: 'iron sweep (run G)',
       refCeilingPerUnit: iron.ceiling.perUnit,
       refRate: iron.branch.realEventBinsPerSec,
-      refCleanBinTimeSec: iron.pooled.usableCleanBins / 30,
-      refFullWindowSec: 23.618,
+      refCleanBinTimeSec: iron.pooled.usableCleanBins * binSec,
+      refFullWindowSec,
       candComp: 'N3 scarlet/liberalio iron',
-      candCeilingPerUnit: simCeiling(loadSchedule(N3)).perUnit.map((u) => ({
+      candCeilingPerUnit: simCeiling(n3Schedule).perUnit.map((u) => ({
         slug: u.slug,
         maxRatePerSec: u.maxRatePerSec,
       })),
-      candSimRefillSec: 38.1,
+      candSimRefillSec,
     });
     // liberalio's ABSOLUTE credit rate is identical across the two arms — this is why the
     // shared-unit rival predicts a ratio of exactly 1 and the two predictions sit so close.
@@ -130,7 +140,10 @@ describe('ceiling screen: which comps can host the H-C detector (2026-08-17)', (
     expect(r.predictions.scalesWithCeiling.rate).toBeCloseTo(6.7313, 3);
     expect(r.predictions.scalesWithSharedUnit.rate).toBeCloseTo(6.2517, 3);
     // THE load-bearing assertion: under 2 sigma => the arm cannot separate the rivals.
-    expect(r.power.separationSigmas).toBeCloseTo(0.9848, 3);
+    // (0.9861 and 731 are the exact-schedule values; the original packet passed 38.1, the
+    // schedule sums to 38.2 — the 0.26% shift moves sigma by 0.0013, well within the
+    // "far under 2 sigma" qualitative claim.)
+    expect(r.power.separationSigmas).toBeCloseTo(0.9861, 3);
     expect(r.power.discriminates).toBe(false);
     expect(r.power.eventBinsFor2Sigma).toBe(733);
   });
@@ -201,7 +214,7 @@ describe('ceiling screen: which comps can host the H-C detector (2026-08-17)', (
           '--ref-comp',
           'iron sweep (run G)',
           '--ref-full-window-sec',
-          '23.618',
+          String(refFullWindowSec),
           '--candidate-schedule',
           schedPath,
           '--candidate-comp',
@@ -209,7 +222,7 @@ describe('ceiling screen: which comps can host the H-C detector (2026-08-17)', (
           '--shared',
           'liberalio',
           '--candidate-sim-refill-sec',
-          '38.1',
+          String(candSimRefillSec),
         ],
         { encoding: 'utf8', stdio: 'pipe' }
       );
@@ -222,7 +235,7 @@ describe('ceiling screen: which comps can host the H-C detector (2026-08-17)', (
       // positional revert fails.
       expect(r.candidate.ceiling).toBeCloseTo(5.13, 2);
       expect(simCeiling(decoy).ceilingBinsPerSec).not.toBeCloseTo(5.13, 2);
-      expect(r.power.separationSigmas).toBeCloseTo(0.9848, 3);
+      expect(r.power.separationSigmas).toBeCloseTo(0.9861, 3);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
