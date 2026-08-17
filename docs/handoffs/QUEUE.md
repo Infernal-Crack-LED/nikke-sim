@@ -121,17 +121,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    _(Body restored 2026-08-13: nine lines were dropped from this item by the archive commit
    `80c9f041`; recovered verbatim from `d3314ca3`.)_
 
-5. **`countScope: 'gated'` migration — 25 gated hitCount blocks across 18 units remain UNMIGRATED.**
-   Engine option landed 2026-08-13; default `'always'` keeps the roster byte-identical. 3 of 28
-   migrated (`velvet` ×2, `mihara-bonding-chain` ×1). **Triage these 18 units** (one kit-wording
-   read each): `asuka-wille`, `brid-silent-track`, `elegg`, `eve`, `guillotine`,
-   `guillotine-winter-slayer`, `kurumi`, `laplace-ultimate-hero`, `ludmilla-winter-owner`,
-   `marciana-marine-study`, `mica-snow-buddy`, `modernia`, `moran`, `power`,
-   `privaty-unkind-maid`, `rei-ayanami-tentative-name`, `rem`, `rouge`.
-   ⚠ Census numbers have been wrong three times — **regenerate from code**, don't trust this list.
-   Gate set: whatever `blockGatesPass` reads off `block.*` in `sim.ts`. Test to apply: does the kit
-   scope the COUNTING ("landing N normals **during X**") or only the EFFECT ("every N normals,
-   [effect] during X")? Only the former takes `'gated'`.
+5. **DONE 2026-08-16** — `countScope: 'gated'` triage complete. 18 units triaged from code census
+   (117 unmigrated hitCount blocks total). 2 migrated to `'gated'` (`kurumi` S2, `privaty-unkind-maid`
+   S2b); 16 stay at `'always'` (default) — their counting is scoped to a non-FB status (BOOM Install,
+   Hacked, Anti A.T. Field, etc.) or has no FB mention at all. Total migrated: 5 of 28
+   (`velvet` ×2, `mihara-bonding-chain` ×1, `kurumi` ×1, `privaty-unkind-maid` ×1). Zero damage
+   drift on regression.
 
 6. **DONE 2026-08-16** — both `dispatch-kimi.sh` and `dispatch-claude.sh` now gate on
    `jq -e 'has("verdict")'` before the model injection, matching the rescue path's shape check.
