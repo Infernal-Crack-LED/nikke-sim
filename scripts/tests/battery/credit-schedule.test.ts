@@ -130,6 +130,82 @@ describe('per-frame gauge-credit schedule', () => {
   });
 });
 
+describe('per-frame gauge-credit schedule — `gaugeHits` carrier comp', () => {
+  // WHY THIS COMP: `N5 snowwhite-HA fire` seats `snow-white-heavy-arms` (Snow White: Heavy Arms,
+  // SR — NOT `snow-white`), the one graded seat that carries `flatDamage.gaugeHits`. It is the
+  // regression guard for a defect this file previously could not see: one skill/burst damage
+  // instance is not always one gauge credit. A `flatDamage` with `gaugeHits: N` keeps ONE
+  // aggregated damage instance (so tuned totals are preserved) but fires `skillGauge` N times —
+  // sim.ts `case 'flatDamage'` (`e.gaugeHits ?? 1`) and the flighted-landing loop
+  // (`p.gaugeHits ?? 1`). The reconstruction used to push exactly one credit per damage event and
+  // never read the field, under-counting a carrier by (N−1) per impact; it was latent only because
+  // neither previously-pinned comp seats one.
+  //
+  // Her S1(b) volley is `527.95%` sequential with `gaugeHits: 5` (5 loaded ammo, measured
+  // 2026-08-15) on the same `shotFired` trigger as her ungated `41.9%` AoE, so every credited full
+  // charge is 1 shot credit + 6 skill credits (1 + 5). Her S1(c) `1055.9%` / `gaugeHits: 10` block
+  // fires only while swapped inside Full Burst, where generation is locked, so it contributes none.
+  const r = creditScheduleFor('N5 snowwhite-HA fire', { exactSamples: 2 });
+  const CARRIER = 'snow-white-heavy-arms';
+
+  it('reconstructs every credit path on this comp (nothing flagged inexact)', () => {
+    expect(r.unreconstructed).toEqual([]);
+  });
+
+  it('CHECK (a): the carrier’s schedule sums to the engine’s gaugeGenerated', () => {
+    // The endpoint residual IS the defect's signature: crediting once per instance left
+    // `snow-white-heavy-arms` scheduled 463.008 against an engine 1080.352 (−617.34).
+    const carrier = r.checks.endpoint.find((e) => e.slug === CARRIER);
+    expect(carrier).toBeDefined();
+    expect(carrier!.scheduled).toBeCloseTo(carrier!.engine, 9);
+    expect(r.checks.endpointOk).toBe(true);
+    for (const e of r.checks.endpoint) {
+      expect(e.scheduled).toBeCloseTo(e.engine, 9);
+    }
+  });
+
+  it('CHECK (b): every DBG_GAUGE line the engine printed is matched', () => {
+    // Engine truth, independent of the reconstruction: addGauge prints one `[g]` line per
+    // skillGauge call, so a sub-hit the schedule drops shows up here as an unmatched line.
+    expect(r.checks.dbgGauge.lines).toBeGreaterThan(0);
+    expect(r.checks.dbgGauge.unmatchedEngine).toEqual([]);
+    expect(r.checks.dbgGauge.unmatchedSchedule).toEqual([]);
+    expect(r.checks.dbgGauge.matched).toBe(r.checks.dbgGauge.lines);
+  });
+
+  it('CHECK (c): sampled truncated-run steps equal the scheduled amounts', () => {
+    expect(r.checks.truncated.length).toBeGreaterThan(0);
+    for (const t of r.checks.truncated) {
+      expect(t.engineStep).toBeCloseTo(t.scheduled, 9);
+    }
+    expect(r.checks.truncatedOk).toBe(true);
+  });
+
+  it('credits the multi-hit volley PER SUB-HIT: 6 skill credits on every credited charge', () => {
+    const skill = r.credits.filter(
+      (c) => c.slug === CARRIER && c.kind === 'skill'
+    );
+    expect(skill.length).toBeGreaterThan(0);
+    const perFrame = new Map<number, number>();
+    for (const c of skill) {
+      perFrame.set(c.frame, (perFrame.get(c.frame) ?? 0) + 1);
+    }
+    // 1 (the 41.9% AoE) + 5 (the 527.95% volley's `gaugeHits`). One credit per instance reads 2.
+    expect([...new Set(perFrame.values())]).toEqual([6]);
+    // each sub-hit is a SEPARATE credit of the same per-impact amount, not one N-fold credit —
+    // that is what lets CHECK (b) match DBG_GAUGE line-for-line
+    const amounts = new Set(skill.map((c) => c.amount.toFixed(9)));
+    expect(amounts.size).toBe(1);
+    // every credited charge also carries its own trigger-pull credit
+    const shotFrames = new Set(
+      r.credits
+        .filter((c) => c.slug === CARRIER && c.kind === 'shot')
+        .map((c) => c.frame)
+    );
+    expect([...perFrame.keys()].every((f) => shotFrames.has(f))).toBe(true);
+  });
+});
+
 describe('per-frame gauge-credit schedule — SG comp', () => {
   // `misc B3s (run I order)` seats `noir` (SG), so this exercises the hitFraction path that
   // was previously flagged as unreconstructed.

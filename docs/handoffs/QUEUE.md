@@ -103,13 +103,6 @@ snowwhite-HA fire`** (`docs/probes/714 noon/5.mp4`; roster `anis-star`, `arcana-
 > live. ⚑ `docs/probes/**` is GITIGNORED — a fresh worktree has no media, so run this in the main
 > tree (or symlink the probe dir).
 >
-> **N3. Fix the `gaugeHits` blindness in the credit-schedule reconstruction.** `scripts/battery/
-fb-count-matrix.ts` pushes exactly one skill credit per damage event and never reads `gaugeHits`,
-> under-counting a carrier by (N−1) per impact. Latent only because no comp in `CREDIT_SCHEDULE_COMPS`
-> seats one of the three carriers (`snow-white-heavy-arms`, `eve`, `little-mermaid`). **This BLOCKS any
-> future `gaugeHits` enactment on an iron-sweep or T5 seat** — without it, that instrument's CHECK (a)
-> is silently wrong. Pure tooling; gate is `verify.sh` + a fixture pinning a known-good carrier.
->
 > **N4. Test hygiene on `scripts/tests/gauge-cycle-decomp.test.ts`.** Retitle its "measured 4.43 /
 > 3.56 / 3.71" bands as SIM DRIFT-GUARDS — four-leg confirmed 2026-08-17 as that instrument's own
 > 2026-08-04 output relabelled "measured" (`git show 2a8b869d`); the real bar-paint tape is 2.342 /
@@ -191,9 +184,9 @@ fb-count-matrix.ts` pushes exactly one skill credit per damage event and never r
      5-sub-hit count; (c) her presence in exactly the four disabled comps is MEMBERSHIP, not
      mechanism — already stamped "NOT liberalio-specific" with 5 of the 9 affected comps seating
      no `liberalio`.
-     **NEXT, in priority order:** (1) ⚑ PREREQUISITE for any future enactment — the credit-schedule
-     reconstruction (`scripts/battery/fb-count-matrix.ts:2502-2509`) never reads `gaugeHits` and
-     under-counts a carrier by (N−1)/impact; (2) the settling measurement is a
+     **NEXT, in priority order:** (1) ~~PREREQUISITE — the credit-schedule reconstruction never reads
+     `gaugeHits`~~ **DONE 2026-08-17**: it now credits per sub-hit, pinned on `N5 snowwhite-HA fire`
+     by `scripts/tests/battery/credit-schedule.test.ts`; (2) the settling measurement is a
      `maiden-ice-rose`-style hand read of her per-pull gauge sub-steps (the comp-level estimator
      structurally cannot separate a reduced per-sub-hit value from the general gap); (3) a second
      committed fill trace on a `liberalio`-free stamped-class comp — **NEXT UP N2, and NOT

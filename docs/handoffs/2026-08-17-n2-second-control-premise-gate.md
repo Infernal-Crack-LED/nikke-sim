@@ -133,7 +133,11 @@ the whole δ = 0.15 band rests on them.
 
 ## What N2 needs before it can run
 
-1. **N3 landed** (the `gaugeHits` credit-schedule fix) — hard prerequisite, blocker 1.
+1. ~~**N3 landed** (the `gaugeHits` credit-schedule fix) — hard prerequisite, blocker 1.~~
+   **DONE 2026-08-17**: the reconstruction credits `gaugeHits` times per damage event, and
+   `N5 snowwhite-HA fire` — the first `gaugeHits` seat the instrument has ever covered — now passes
+   all three self-checks with an empty `unreconstructed` list (endpoint residual 0.00e+0 on all five
+   units, `DBG_GAUGE` 117/117, truncated 5/5). Pinned by `scripts/tests/battery/credit-schedule.test.ts`.
 2. **A different second control** — N1 rapi/quency wind or N2 modernia wind, not N5, per blocker 3;
    or an explicit owner ruling that the sign flip is acceptable and how `R_ctrl` absorbs it.
 3. **A conversion rule pinned numerically BEFORE the new control's residual is computed** — naming
