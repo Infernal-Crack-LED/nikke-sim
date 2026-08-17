@@ -9,6 +9,19 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-16) `countScope:'gated'` triage — 2 of 18 units migrated, 16 stay at default.**
+  Code census found 117 unmigrated `hitCount` blocks across the roster. Each unit's kit text was
+  read to determine whether the counter's counting scope is explicitly Full Burst. Result: 2 units
+  migrated to `'gated'` (`kurumi` S2: "during Full Burst after landing 36 normal attack(s)";
+  `privaty-unkind-maid` S2b: "hitting 30 times with pellets during Full Burst"); 16 stay at
+  `'always'` (default) — their counting is scoped to a non-FB status (BOOM Install, Hacked, Anti
+  A.T. Field, etc.) or has no FB mention at all. Total migrated across the roster: 5 of 28
+  (`velvet` ×2, `mihara-bonding-chain` ×1, `kurumi` ×1, `privaty-unkind-maid` ×1). Zero damage
+  drift on regression. Engine semantics: `countScope:'gated'` reuses `blockGatesPass` at accrual
+  time — the counter advances only while ALL block gates pass (e.g. fbGate AND requiresTargetStatus
+  for kurumi); partial counts carry across FB windows (no per-window reset). Proof:
+  `src/engine/sim.ts` countScope handler (lines ~4547–4565), `blockGatesPass` (lines ~2450+).
+
 - **(2026-08-16, latest) A weapon swap on an MG-BASE unit now governs its own cadence
   (`swapLeavesMgLadder`), and `neon-blue-ocean`'s kit-silent burst weapon is modeled at its
   datamined 1.5 shots/s instead of her MG wind-up ladder.** Owner-directed enactment; two
