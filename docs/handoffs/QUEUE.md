@@ -80,14 +80,52 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      missing application-gauge credits). H-A team-context route CLOSED by owner ruling. The
      `anis-star` U28 divisor read is what remains of the encoding audit path.
      `iron sweep (run G)` regression comp stays disabled.
-   - **`anis-star` solo magnitude residual — OPEN (footage-gated).** 10.39 vs ≥ ~10.96 exclusion
-     bound returned INCONCLUSIVE-LOG from solo #2 (≥2-window counting rule cannot fire). Three
-     anomalous credits (+15.2–16.0%) filed descriptively.
+   - **`anis-star` solo magnitude residual — OPEN.** 10.39 vs ≥ ~10.96 exclusion bound returned
+     INCONCLUSIVE-LOG from solo #2: the ≥2-window counting rule could not fire because the three
+     anomalous credits (+15.2–16.0%) violated the steady premise in W2 and W4. **NOT
+     footage-gated after all — the existing recording has four windows; the blocker was
+     hypothesis discrimination, not window count.**
+     **Source-hunt 2026-08-17 (`docs/probe-data/anis-star-anomaly-source-hunt-2026-08-17.json`)
+     narrowed it: W4p2 (+16.0), W4p3 (+15.2) and the steady W4p4 (+11.6) did the IDENTICAL damage
+     increment 480,330, so extra-hits, charge-level (`fullChargeBonus` 250) and crit/core are all
+     refuted — the excess is gauge-specific.** Candidate to PRE-REGISTER next (arithmetic fit,
+     n=3, fitted after the fact — not evidence yet): the anomalous pulls credit one extra
+     `basePerTrigger` 140 × 2.5 focus × 1.06 aura = 3.71%. Next step is a gated re-run of the
+     counting rule with that hypothesis declared in the packet, so anomalous windows become
+     CLASSIFIABLE instead of premise-violating.
+   - **⇒ `liberalio` GAUGE-CREDIT AUDIT — the dominant open item on this thread, and FOOTAGE-FREE.**
+     Named by both the pre-op and blind post-op judges of the 2026-08-17 third-arm run as the only
+     route at the rival that run provably could not touch. She is the SHARED unit of both
+     non-vacuous arms (iron sweep and N3), her burst-gauge datamine was once **6× off**
+     (`c12fcf4e`, 2026-07-26 — the correction that created this entire shortfall thread), and both
+     arms' excess is consistent with a per-unit defect in her model. Second, lower priority: settle
+     the clean-bin-time vs full-window denominator on a fixture with known ground truth, which would
+     turn the standing MAR caveat into a measured bias bound — every detection in this thread is
+     currently estimator-conditional.
+   - **Third-arm run LANDED 2026-08-17 → LOG.** Two open follow-ups only (the rest is in
+     `docs/probe-runs.md` + the harness log, do not re-narrate here):
+     (i) **future packets must PIN A CONTROL'S ESTIMATOR, not just its tolerance** — C2 bound on
+     "FB duration 15.0 ± 0.5s" without saying how to measure one, and the branch flipped between
+     four defensible readings; (ii) **every detection on this thread is ESTIMATOR-CONDITIONAL** —
+     under the full-window denominator N3 reads 11.0% BELOW its own ceiling (iron: 5.7%), and C7's
+     bridge-vs-activity ratios run OPPOSITE on the two arms (0.757 vs 1.357), so the estimator's
+     behaviour has no mechanism.
    - **Probe tooling follow-ups (achievable without footage):**
      (i) `gauge-fill.py` without `--bar` self-calibrates onto a dark terrain edge on solo footage
      — always pass `--bar` + the maiden fixture gate (/skill-maintenance candidate);
      (ii) `read-ammo.ts` reads 0/851 frames on text-label HUD ("AMMO / NNN") — needs a text-label
-     digit reader path.
+     digit reader path;
+     (iii) **filed 2026-08-17 from the cross-family code review (`qwen3.8-max-preview`)** — the FIX
+     and both FOLLOW-UPs it raised are already fixed; these remain: `scan.ts`'s fixture writer emits
+     fields (`frameT`/`frameFill`, the extended `expected` block) that the `TempoFixture` TYPE does
+     not declare, and both consumers bridge with casts — producer and declared type have drifted, so
+     a rename would only surface at runtime; `auditElementControl` / `--element-control` in
+     `fb-count-matrix.ts` has ZERO vitest coverage and the C1 artifact block it produced is never
+     replayed (the reviewer re-ran it manually and reproduced the recorded result exactly), plus it
+     matches the long `COMPS` name while the classification world uses the short arm label;
+     `ceiling-screen.test.ts` hard-codes three literals (23.618, 38.1, `/ 30`) that are derivable
+     from artifacts it already loads — drift risk, not error; a bare `--fixture-out` with no value
+     is silently skipped in `scan.ts`.
    - **T1 wind-weak v2 PROCESSED 2026-08-16** — 13 FBs confirmed (scan.ts, 2nd detector
      corroborated), per-unit totals from Battle Records screenshot. Result:
      `docs/probes/misc/t1-wind-weak-v2-result.md`. Confirms the existing "windweak t257 13fb"

@@ -2771,6 +2771,86 @@ export function auditCreditSchedule(
   );
 }
 
+// ---------------------------------------------------------------------------
+// --element-control — does the BOSS ELEMENT reach the burst-gauge economy at all?
+//
+// Control C1 of docs/handoffs/2026-08-17-n3-third-arm-preop-packet.md. A comp's boss element is
+// PROSE on the comp record (scripts/experiment.ts), not something any recording shows, so any
+// statistic that the element could move inherits an unverified premise. This re-runs one comp
+// under every element (plus forced-neutral) holding EVERYTHING else on the scope-lock basis, and
+// diffs per-unit `gaugeGenerated` and the Full-Burst count against the comp's declared element.
+// Identical across all arms ⇒ the element cannot reach a gauge/rotation statistic and the premise
+// is not load-bearing for it. `totalDamage` is reported too and is EXPECTED to move (the element
+// multiplier is a damage term) — it is the positive control that the arms really differ.
+// ---------------------------------------------------------------------------
+const ELEMENT_ARMS = [
+  'Electric',
+  'Iron',
+  'Wind',
+  'Fire',
+  'Water',
+  null,
+] as const;
+
+export interface ElementControlReport {
+  comp: string;
+  slugs: string[];
+  declaredElement: string | null;
+  arms: {
+    element: string | null;
+    fullBursts: number;
+    gaugeGenerated: number[];
+    totalDamage: number[];
+    advantaged: boolean[];
+  }[];
+  gaugeIdenticalAcrossElements: boolean;
+  fullBurstsIdenticalAcrossElements: boolean;
+  damageMovesAcrossElements: boolean;
+  maxGaugeDeltaVsDeclared: number;
+}
+
+export function auditElementControl(compName: string): ElementControlReport {
+  const comp = COMPS.find((c) => c.name === compName);
+  if (!comp) {
+    throw new Error(
+      `--element-control: no comp named "${compName}" in scripts/experiment.ts — have: ` +
+        COMPS.map((c) => c.name).join(' | ')
+    );
+  }
+  const arms = ELEMENT_ARMS.map((el) => {
+    const res: SimResult = run(comp, {}, undefined, undefined, {
+      bossElement: el,
+    });
+    return {
+      element: el,
+      fullBursts: res.fullBursts,
+      gaugeGenerated: res.units.map((u) => u.gaugeGenerated),
+      totalDamage: res.units.map((u) => u.totalDamage),
+      advantaged: res.units.map((u) => u.advantaged),
+    };
+  });
+  const ref = arms.find((a) => a.element === (comp.boss ?? null))!;
+  const maxDelta = Math.max(
+    ...arms.flatMap((a) =>
+      a.gaugeGenerated.map((g, i) => Math.abs(g - ref.gaugeGenerated[i]))
+    )
+  );
+  return {
+    comp: comp.name,
+    slugs: comp.slugs,
+    declaredElement: comp.boss ?? null,
+    arms,
+    gaugeIdenticalAcrossElements: maxDelta === 0,
+    fullBurstsIdenticalAcrossElements: arms.every(
+      (a) => a.fullBursts === ref.fullBursts
+    ),
+    damageMovesAcrossElements: arms.some((a) =>
+      a.totalDamage.some((d, i) => d !== ref.totalDamage[i])
+    ),
+    maxGaugeDeltaVsDeclared: maxDelta,
+  };
+}
+
 function printCreditSchedule(reports: CreditScheduleReport[]) {
   console.log(
     '\n===== PER-FRAME GAUGE-CREDIT SCHEDULE =====\n' +
@@ -2891,6 +2971,37 @@ if (isMain) {
         .slice(1)
         .join('=')
     );
+  } else if (process.argv.includes('--element-control')) {
+    const compArg = process.argv.find((a) => a.startsWith('--comp='));
+    if (!compArg) {
+      throw new Error('--element-control needs --comp="<comp name>"');
+    }
+    const rep = auditElementControl(compArg.slice('--comp='.length));
+    if (process.argv.includes('--json')) {
+      console.log(JSON.stringify(rep, null, 2));
+    } else {
+      console.log(
+        `\n===== BOSS-ELEMENT CONTROL — ${rep.comp} (declared ${rep.declaredElement ?? 'neutral'}) =====\n`
+      );
+      console.log(
+        `  ${'element'.padEnd(9)} ${'FBs'.padStart(4)}  ${rep.slugs.map((s) => s.slice(0, 12).padStart(13)).join('')}`
+      );
+      for (const a of rep.arms) {
+        console.log(
+          `  ${(a.element ?? 'neutral').padEnd(9)} ${String(a.fullBursts).padStart(4)}  ` +
+            a.gaugeGenerated.map((g) => g.toFixed(2).padStart(13)).join('')
+        );
+      }
+      console.log(
+        `\n  gauge identical across all elements : ${rep.gaugeIdenticalAcrossElements} (max |delta| ${rep.maxGaugeDeltaVsDeclared})`
+      );
+      console.log(
+        `  full-burst count identical          : ${rep.fullBurstsIdenticalAcrossElements}`
+      );
+      console.log(
+        `  damage moves across elements        : ${rep.damageMovesAcrossElements} (positive control)`
+      );
+    }
   } else if (process.argv.includes('--credit-schedule')) {
     const compArg = process.argv.find((a) => a.startsWith('--comp='));
     const samplesArg = process.argv.find((a) =>

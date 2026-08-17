@@ -1,0 +1,297 @@
+{
+  "_note": "Source-hunt on the three ANOMALOUS-MAGNITUDE gauge credits filed descriptively by the 2026-08-16 anis-star (Anis: Star) solo #2 run (docs/probe-data/anis-star-solo2-gauge.json, perPullTable W2p8 +15.3, W4p2 +16.0, W4p3 +15.2 \u2014 'no hypothesis family predicts' them). MEASUREMENT ONLY, verdict-free. This does NOT re-open Question A, does not re-issue its INCONCLUSIVE-LOG disposition, and enacts nothing. It supplies what the 2026-08-16 run said was missing: a hypothesis that PREDICTS the anomalies, stated so a future gated run can pre-register it.",
+  "date": "2026-08-17",
+  "video": "docs/probes/solo/anis-star-solo.mov",
+  "instrument": "scripts/probe/read-total-damage.ts (committed local-VLM cumulative-damage reader) at --fps 5 over --at 72 --dur 8; 40/40 totals and 40/40 timers read, zero warnings. The hand-read frame crops that first surfaced this agree with the reader digit-for-digit.",
+  "fightTimeAnchor": "The reader's own timer column pins it: videoT 73.00 reads timerSec 107 remaining = 73s elapsed, so fight-elapsed = videoT + 0..1s (1s timer granularity). The 03:00 -> 02:59 flip sits at videoT ~0.",
+  "theQuestionThisAnswers": "Do the anomalous pulls differ from the steady ones in anything the DAMAGE number can see \u2014 extra hits, a different charge level, a different crit/core state? If yes, the gauge excess is downstream of a hit-count or charge difference and needs no new mechanic. If no, the excess is gauge-specific.",
+  "whyThisComparisonIsClean": "W4p2, W4p3 and W4p4 are CONSECUTIVE pulls in the SAME refill window, the same boss range band, the same magazine, ~1.0s apart, on the same unit in the same fight. Every confound that varies across windows or bands is held fixed by construction.",
+  "damageIncrementsPerPull": [
+    {
+      "pull": "W4p2",
+      "fireSec": 73.6,
+      "creditAtSec": 73.9,
+      "gaugeDeltaPct": 16.0,
+      "damageIncrement": 480330,
+      "damageTier": "A"
+    },
+    {
+      "pull": "W4p3",
+      "fireSec": 74.57,
+      "creditAtSec": 74.87,
+      "gaugeDeltaPct": 15.2,
+      "damageIncrement": 480330,
+      "damageTier": "A"
+    },
+    {
+      "pull": "W4p4",
+      "fireSec": 75.57,
+      "creditAtSec": 75.87,
+      "gaugeDeltaPct": 11.6,
+      "damageIncrement": 480330,
+      "damageTier": "A"
+    },
+    {
+      "pull": "W4p5",
+      "fireSec": 76.4,
+      "creditAtSec": null,
+      "gaugeDeltaPct": null,
+      "damageIncrement": 307791,
+      "damageTier": "B",
+      "note": "gauge credit hidden inside the 76.51-77.21 flash span; implied plateau-to-plateau +10.8"
+    },
+    {
+      "pull": "W4p6",
+      "fireSec": 77.53,
+      "creditAtSec": 77.83,
+      "gaugeDeltaPct": 11.6,
+      "damageIncrement": 307791,
+      "damageTier": "B"
+    }
+  ],
+  "finding": {
+    "headline": "The two ANOMALOUS pulls (+16.0, +15.2) and the STEADY pull that immediately follows them (+11.6) all did the IDENTICAL damage increment of 480,330. Same damage, same window, same band, consecutive pulls \u2014 different gauge credit.",
+    "whatThisRefutes": [
+      "EXTRA HITS. An additional landed hit would raise the damage. It did not. The anomalous pulls are single-hit like the steady one, consistent with the perPullTable's single-ammo-decrement confirmation.",
+      "CHARGE LEVEL \u2014 the natural candidate, since data/gauge-per-shot.json carries fullChargeBonus 250 for this unit. A charge-level difference is a DAMAGE difference (shot_detail.full_charge_damage 25000). W4p2/p3/p4 share a damage value to the unit, so they share a charge level while differing in gauge by ~4pp.",
+      "CRIT/CORE state. Whatever separates damage tier A (480,330) from tier B (307,791) \u2014 ratio 1.5606 \u2014 the three compared pulls are all in tier A, so that property is held constant across the anomaly/steady boundary."
+    ],
+    "whatSurvives": "The excess is GAUGE-SPECIFIC: something credited burst gauge on those pulls without depositing damage. That is the signature of a skill-side gauge grant (a fillGauge-shaped credit), not of a weapon-side per-hit term.",
+    "arithmeticFit_HYPOTHESIS_ONLY": {
+      "observedExcessRaw": [4.4, 3.6],
+      "observedExcessTrue": [4.14, 3.38],
+      "candidate": "basePerTrigger 140 x 2.5 (focused-charge bonus) x 1.06 (her own +6% aura) = 371 energy = 3.71%",
+      "fit": "Both excesses sit within one bar column (0.72pp) of 3.71%. Equivalently: the anomalous pulls credit ONE EXTRA basePerTrigger at the focus+aura terms already in the shipped model.",
+      "status": "HYPOTHESIS. n=3 credits on ONE recording. It is an arithmetic coincidence with a plausible shape, NOT a measurement of a mechanism. Nothing is enacted on it."
+    }
+  },
+  "descriptiveCoincidenceNotClaimed": "All three anomalies land ~4-5s after a boss range-band transition in docs/data/range-data.md (mid->near at ~33s elapsed; near->far at ~70s elapsed; W2p8 at ~37s, W4p2/p3 at ~74-75s). Recorded because it is checkable, NOT claimed: window W3 sits entirely inside the near band and shows no anomaly at all, so band OCCUPANCY is already ruled out, and n=3 cannot separate 'transition' from coincidence.",
+  "caveats": [
+    "MEASUREMENT ONLY. No engine change, no constant change, no override change, no re-issue of the 2026-08-16 Question A disposition (INCONCLUSIVE-LOG stands, as does the >=2-window counting rule's failure).",
+    "n=3 anomalous credits on ONE recording; the A3 recording shows none of them.",
+    "The damage reader is a local VLM. Its 40/40 clean read and the independent hand-read of the same crops agree, but it is one instrument on one span.",
+    "This narrows the candidate SPACE (it refutes hit-count, charge-level and crit/core explanations); it does not identify the mechanic.",
+    "Any enactment needs the /scientific-method gate with the arithmetic fit PRE-REGISTERED, not fitted after the fact as it was here."
+  ],
+  "commands": {
+    "reader": "npx tsx scripts/probe/read-total-damage.ts \"docs/probes/solo/anis-star-solo.mov\" --at 72 --dur 8 --fps 5 --out <dir>",
+    "gaugeSource": "docs/probe-data/anis-star-solo2-gauge.json perPullTable (W4 rows)"
+  },
+  "readerOutput": {
+    "video": "docs/probes/solo/anis-star-solo.mov",
+    "fps": 5,
+    "at": 72,
+    "dur": 8,
+    "endpoint": "http://localhost:8090/v1",
+    "model": "qwen2.5-vl",
+    "totalCrop": "crop=347:74:1136:11",
+    "timerCrop": "crop=59:39:2317:21",
+    "totalZoom": 4,
+    "timerZoom": 8,
+    "framesProcessed": 40,
+    "timerCorrections": 3,
+    "reads": [
+      {
+        "videoT": 72,
+        "timerSec": 108,
+        "totalDamage": 44608803
+      },
+      {
+        "videoT": 72.2,
+        "timerSec": 108,
+        "totalDamage": 44608803
+      },
+      {
+        "videoT": 72.4,
+        "timerSec": 108,
+        "totalDamage": 44608803
+      },
+      {
+        "videoT": 72.6,
+        "timerSec": 107,
+        "totalDamage": 44608803
+      },
+      {
+        "videoT": 72.8,
+        "timerSec": 107,
+        "totalDamage": 44608803
+      },
+      {
+        "videoT": 73,
+        "timerSec": 107,
+        "totalDamage": 45156758
+      },
+      {
+        "videoT": 73.2,
+        "timerSec": 107,
+        "totalDamage": 45156758
+      },
+      {
+        "videoT": 73.4,
+        "timerSec": 107,
+        "totalDamage": 45156758
+      },
+      {
+        "videoT": 73.6,
+        "timerSec": 106,
+        "totalDamage": 45156758
+      },
+      {
+        "videoT": 73.8,
+        "timerSec": 106,
+        "totalDamage": 45637088
+      },
+      {
+        "videoT": 74,
+        "timerSec": 106,
+        "totalDamage": 45637088
+      },
+      {
+        "videoT": 74.2,
+        "timerSec": 106,
+        "totalDamage": 45637088
+      },
+      {
+        "videoT": 74.4,
+        "timerSec": 106,
+        "totalDamage": 45637088
+      },
+      {
+        "videoT": 74.6,
+        "timerSec": 105,
+        "totalDamage": 45637088
+      },
+      {
+        "videoT": 74.8,
+        "timerSec": 105,
+        "totalDamage": 46117418
+      },
+      {
+        "videoT": 75,
+        "timerSec": 105,
+        "totalDamage": 46117418
+      },
+      {
+        "videoT": 75.2,
+        "timerSec": 105,
+        "totalDamage": 46117418
+      },
+      {
+        "videoT": 75.4,
+        "timerSec": 105,
+        "totalDamage": 46117418
+      },
+      {
+        "videoT": 75.6,
+        "timerSec": 104,
+        "totalDamage": 46117418
+      },
+      {
+        "videoT": 75.8,
+        "timerSec": 104,
+        "totalDamage": 46597748
+      },
+      {
+        "videoT": 76,
+        "timerSec": 104,
+        "totalDamage": 46597748
+      },
+      {
+        "videoT": 76.2,
+        "timerSec": 104,
+        "totalDamage": 46597748
+      },
+      {
+        "videoT": 76.4,
+        "timerSec": 104,
+        "totalDamage": 46597748
+      },
+      {
+        "videoT": 76.6,
+        "timerSec": 103,
+        "totalDamage": 46597748
+      },
+      {
+        "videoT": 76.8,
+        "timerSec": 103,
+        "totalDamage": 46905539
+      },
+      {
+        "videoT": 77,
+        "timerSec": 103,
+        "totalDamage": 46905539
+      },
+      {
+        "videoT": 77.2,
+        "timerSec": 103,
+        "totalDamage": 46905539
+      },
+      {
+        "videoT": 77.4,
+        "timerSec": 103,
+        "totalDamage": 46905539
+      },
+      {
+        "videoT": 77.6,
+        "timerSec": 102,
+        "totalDamage": 46905539
+      },
+      {
+        "videoT": 77.8,
+        "timerSec": 102,
+        "totalDamage": 47213330
+      },
+      {
+        "videoT": 78,
+        "timerSec": 102,
+        "totalDamage": 47213330
+      },
+      {
+        "videoT": 78.2,
+        "timerSec": 102,
+        "totalDamage": 47213330
+      },
+      {
+        "videoT": 78.4,
+        "timerSec": 102,
+        "totalDamage": 47213330
+      },
+      {
+        "videoT": 78.6,
+        "timerSec": 101,
+        "totalDamage": 47213330
+      },
+      {
+        "videoT": 78.8,
+        "timerSec": 101,
+        "totalDamage": 47213330
+      },
+      {
+        "videoT": 79,
+        "timerSec": 101,
+        "totalDamage": 47213330
+      },
+      {
+        "videoT": 79.2,
+        "timerSec": 101,
+        "totalDamage": 47213330
+      },
+      {
+        "videoT": 79.4,
+        "timerSec": 101,
+        "totalDamage": 47213330
+      },
+      {
+        "videoT": 79.6,
+        "timerSec": 100,
+        "totalDamage": 47213330
+      },
+      {
+        "videoT": 79.8,
+        "timerSec": 100,
+        "totalDamage": 47213330
+      }
+    ],
+    "warnings": []
+  }
+}

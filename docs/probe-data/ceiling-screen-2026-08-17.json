@@ -1,0 +1,70 @@
+{
+  "_note": "FEASIBILITY SCREEN for the classification thread's outstanding judge-ranked step (4): 'a third comp with a non-vacuous ceiling'. This is a property of the SIM SCHEDULE plus an instrument smoke test \u2014 it makes NO claim about the game, stamps no classification, and is not a /scientific-method run. Its whole job is to decide whether that step still needs NEW FOOTAGE. It does not.",
+  "date": "2026-08-17",
+  "question": "T5 wind-weak's H-C ceiling detector was VACUOUS: its per-unit max credit rates summed past the 30/s bin cap, so the ceiling IS the cap, the real event rate is bounded by the same cap, and the detector can never fire. That left the iron-sweep detection structurally n=1. Which comps, if any, have a non-vacuous ceiling \u2014 and do any of them already have footage?",
+  "part1_miscB3sFenceLifted": {
+    "claim_checked": "The 2026-08-15 classification packet EXCLUDED the misc B3s (run I order) arm: 'its sim arm self-voided (SG crediting not reconstructable - step 1c is owner-gated and NOT landed)'. The 2026-08-17 question was whether that fence still holds.",
+    "result": "LIFTED. The credit-schedule instrument now passes ALL THREE self-checks on this comp with an EMPTY `unreconstructed` list: (a) endpoint reconciliation residual 0.00e+0 on all five units, (b) DBG_GAUGE 158/158 engine [g] lines matched, (c) truncated-run 21/21 per-unit steps with prefix determinism HELD.",
+    "whatActuallyLiftedIt": "NOT the U40 owner ruling as such. Commit a4d08e19 (2026-08-15 21:17) 'engine: emit SG hitFraction on shot event tap for credit-schedule reconstruction' added the landed/base gauge fraction to the shot SimEvent, so the instrument multiplies shot-channel gauge by it instead of warning that SG spray is unreconstructed. That landed HOURS AFTER the classification packet was written, so the packet's fence was accurate when written and went stale the same day.",
+    "butItDoesNotHelp": "misc B3s is CAP-SATURATED anyway \u2014 sum of per-unit max rates 94.5/s against the 30/s bin cap, driven by chisato (SMG, minGap 3f = 20/s) and jill (minGap 1f = 60/s). Its H-C ceiling detector is VACUOUS for exactly the reason T5's was. Reconstructable != usable."
+  },
+  "part2_ceilingScreen": {
+    "method": "For each comp in scripts/battery/fb-count-matrix.ts: `npx tsx scripts/battery/fb-count-matrix.ts --credit-schedule --comp=<name> --json` piped to `npx tsx scripts/probe/fill-trace-compare.ts ceiling --schedule <json>`, which runs the committed `simCeiling` statistic (the same function the classification uses).",
+    "table": [
+      "iron sweep (run G)           sum=    3.59 ceiling=  3.59 NON-VACUOUS  | d-killer-wife:0.7317 liberalio:0.6667 maxwell:0.7317 milk-blooming-bunny:0.7317 takina:0.7317",
+      "T5 wind-weak                 sum=   82.40 ceiling= 30.00 VACUOUS  | anis-star:1 cinderella-crystal-wave:60 liberalio:0.6667 nayuta:20 velvet:0.7317",
+      "T1 wind-weak                 sum=  123.17 ceiling= 30.00 VACUOUS  | anis-star:1 crown:60 liberalio:0.6667 mast-romantic-maid:60 scarlet-black-shadow:1.5",
+      "N3 scarlet/liberalio iron    sum=    5.13 ceiling=  5.13 NON-VACUOUS  | liberalio:0.6667 rouge:0.7317 scarlet-black-shadow:1.5 soda-twinkling-bunny:1.5 trina:0.7317",
+      "misc B3s (run I order)       sum=   94.50 ceiling= 30.00 VACUOUS  | anis-star:1 chisato:20 grave:12 jill:60 noir:1.5",
+      "N1 rapi/quency wind          sum=  107.73 ceiling= 30.00 VACUOUS  | d-killer-wife:0.7317 grave:12 jill:15 quency-escape-queen:20 rapi-red-hood:60",
+      "soda-tb control (neutral)    sum=  122.23 ceiling= 30.00 VACUOUS  | crown:60 helm:0.7317 little-mermaid:60 soda-twinkling-bunny:1.5",
+      "N2 modernia wind             sum=  112.23 ceiling= 30.00 VACUOUS  | chisato:20 d-killer-wife:0.7317 ein:60 modernia:30 naga:1.5",
+      "N5 snowwhite-HA fire         sum=   15.87 ceiling= 15.87 NON-VACUOUS  | anis-star:1 arcana-fortune-mate:1.5 diesel-winter-sweets:0.7317 privaty:12 snow-white-heavy-arms:0.6383"
+    ],
+    "nonVacuous": [
+      {
+        "comp": "iron sweep (run G)",
+        "ceiling": 3.59,
+        "note": "the existing arm; its real event rate was 4.7151/s, so the detector had genuine room"
+      },
+      {
+        "comp": "N3 scarlet/liberalio iron",
+        "ceiling": 5.13,
+        "note": "THE CANDIDATE \u2014 comparable to iron's, all five units slow-firing (rouge SR, trina RL, scarlet-black-shadow RL, liberalio SR, soda-twinkling-bunny SG)"
+      },
+      {
+        "comp": "N5 snowwhite-HA fire",
+        "ceiling": 15.87,
+        "note": "nominally non-vacuous but LOW POWER: firing needs a real rate above 1.15 x 15.87 = 18.25/s, where iron's was 4.7/s and the bin cap is 30/s. privaty (AR, 12/s) is what lifts it. Treat as a distant fallback, not a peer of N3."
+      }
+    ],
+    "whyEveryOtherCompFails": "One fast weapon is enough to saturate. Per-unit max rate = 60 / the unit's tightest observed credit gap: MG ~60/s, SMG 20/s, AR 12/s, SG 1.5/s, SR/RL/charge 0.64-1.0/s. Five slow units sum to ~3-5/s; a single MG or SMG carrier puts the comp at or past the cap on its own.",
+    "sharpEdgeWorthKnowing": "The ceiling is a MAX-rate statistic driven by a unit's single tightest gap, so ONE coincident credit pair pins that unit at 60/s regardless of its weapon \u2014 jill is an AR with a measured 2.5 pulls/s cadence override and still scores 60/s off a single 1-frame gap. 'Slow weapons' is therefore necessary but not sufficient; the screen must be RUN, not predicted from the roster."
+  },
+  "part3_n3FootageExists": {
+    "recording": "docs/probes/714 noon/3.mp4",
+    "provenance": "docs/probes/714 noon/probe.md row 3 \u2014 'Rouge, Trina, Scarlet:Black Shadow, Liberalio, Soda:Twinkling Bunny | Iron | Real FB 10 | Sim FB 10'. Nine full-team scope-lock recordings processed 2026-07-14, damage screenshot + 3-min video each.",
+    "geometry": "1206x2622 @60fps rotation-90, 198.6s \u2014 the same geometry as every other probe recording.",
+    "readerSmokeTest": "gauge-fill.py --team locked the TEAM bar at 134px, rows [26,33] x 135-268 in crop 280:70:2342:465 = rows 491-498, x 2477-2610 absolute \u2014 exactly the documented team bar geometry. Over a 40s slice at 60fps the full state machine resolves (filling / full / chain / burstRender / fullburst / flash) with the first cycle reaching full at t=11.67 and refill resuming at t=28.35. The recording is READABLE by the existing instrument; no new footage is needed for step (4).",
+    "notYetDone": "The classification itself. Adding a third arm and applying a decision rule to it is exactly the gated surface \u2014 it needs its own /scientific-method pre-op packet with the arm, the window map, the thresholds and the decision branches PRE-REGISTERED. This screen deliberately stops at feasibility."
+  },
+  "correctionToAnEarlierRecordingAsk": "An earlier statement of this ask said 'five slow-firing units - SR / RL / charge / AR, no MG and no SMG'. Including AR was WRONG: AR scores 12/s per unit, so even two AR carriers plus three slow units reach ~26/s and leave the detector no room. The screen's own numbers are the correction. Moot in practice, since the ask is retired.",
+  "caveats": [
+    "FEASIBILITY ONLY. No classification, no branch, no stamp, no engine or constant change.",
+    "The ceiling is a sim-side property; a non-vacuous ceiling means the detector CAN fire, not that it WILL.",
+    "The reader smoke test covers a 40s slice, not the full 198s fight; a real run must read all windows.",
+    "N3's measured FB count is 10 vs sim 10 (matrix status 'disabled'), so it is NOT a comp with a known rotation shortfall - what it offers is an independent ceiling test, not a second copy of iron sweep's gap.",
+    "N5 is reported for completeness; its ceiling 15.87 leaves little power and it should not be treated as a peer candidate."
+  ],
+  "commands": {
+    "schedule": "npx tsx scripts/battery/fb-count-matrix.ts --credit-schedule --comp=\"<comp>\" --json > <out>",
+    "ceiling": "npx tsx scripts/probe/fill-trace-compare.ts ceiling --schedule <out>",
+    "n3Frames": "ffmpeg -v error -i \"docs/probes/714 noon/3.mp4\" -vf \"fps=60,crop=280:70:2342:465\" fine/f_%05d.png  (and fps=5 into lock/)",
+    "n3Reader": "scripts/probe/.venv/bin/python scripts/probe/gauge-fill.py --team --frames fine --fps 60 --lock-frames lock --crop 280:70:2342:465 --out <trace>",
+    "replayPin": "npx vitest run scripts/tests/probe/ceiling-screen.test.ts"
+  },
+  "committedSchedules": {
+    "N3 scarlet/liberalio iron": "docs/probe-data/credit-schedule-n3-scarlet-liberalio-iron.json",
+    "misc B3s (run I order)": "docs/probe-data/credit-schedule-misc-b3s.json"
+  }
+}

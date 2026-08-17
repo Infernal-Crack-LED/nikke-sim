@@ -61,8 +61,17 @@ Hypothesis classes the next measurement must discriminate:
    bar-validated (`nayuta` SMG datamined 20: 0.220 raw %/shot ≈ 0.207 bias-adjusted;
    `cinderella-crystal-wave` MG class-modal 10: 0.109 raw ≈ 0.103; cadence side-results: SMG
    19.95/s off the ammo counter, MG terminal 60.1/s off her fillGauge proc snaps). Full record:
-   `docs/probe-runs.md` 2026-08-15 solo-reads entry. AR and SG families remain never-bar-checked;
-   the team-seated read (H-A sizing) was not part of the delivered footage.
+   `docs/probe-runs.md` 2026-08-15 solo-reads entry.
+   **AR + SG DONE 2026-08-17 with NO new footage** — both read out of recordings already in the
+   tree (`docs/probes/ar-sg-smg/scarlet ar.MP4`, `drake sg.MP4`; solo Burst III = one clean
+   monotonic fill window). `scarlet`'s AR row VALIDATED (0.9199 %/shot vs datamined 0.90, ratio
+   1.0221); `drake`'s SG per-trigger credit reads 0.847 of the datamined column and is measured
+   NON-CONSTANT (varianceRatio 10.02 vs the ~1 that per-trigger crediting requires) — an
+   independent mechanical corroboration of U40's per-landed-pellet rule. Artifact
+   `docs/probe-data/ar-sg-solo-gauge-2026-08-17.json`; instrument
+   `scripts/probe/fill-trace-compare.ts solo-rate`; pin `scripts/tests/probe/solo-rate.test.ts`.
+   **All four non-charge weapon families are now bar-checked; this avenue is CLOSED.**
+   The team-seated read (H-A sizing) is retired by the 2026-08-16 owner ruling closing H-A.
 4. ~~**`liberalio` charge-speed-effect immunity**~~ **ENACTED 2026-08-14** (DECISIONS:
    receiving-side `charFixes.statImmunities` primitive; cross-family `/code-review` ACCEPT).
    Live defect in iron sweep (run G), inert in his other three seated comps. Direction ran

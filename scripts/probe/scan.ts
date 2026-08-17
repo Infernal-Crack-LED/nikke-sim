@@ -17,6 +17,8 @@
 //     --t0 <s>             video time of the 03:00->02:59 flip (game t0). Given it, every event
 //                          also carries fightT. Without it only videoT is reported.
 //     --expect <n>         expected Full Burst count — prints a PASS/FAIL line (validation runs)
+//     --cycle-table        per-cycle burst tempo decomposition (guards 3a/3b)
+//     --fixture-out <p>    with --cycle-table, write the committed-shape tempo fixture to <p>
 //
 // FULL-BURST DETECTION — three independent detectors, merged (PROVE-IT-DIFFERENTLY):
 //   gauge   the RED stage-3 hexagon in the burst-gauge crop. One per burst chain; the Full Burst
@@ -393,6 +395,58 @@ const result = {
   },
 };
 writeFileSync(`${outDir}/scan.json`, JSON.stringify(result, null, 2) + '\n');
+
+// --fixture-out <path>: emit the committed-shape TEMPO FIXTURE (docs/probe-data/tempo-cycle-*.json)
+// so a downstream measurement replays WITHOUT the recording (docs/probes/ is gitignored). Requires
+// --cycle-table, since the fixture's `expected` block is the cycle table's own output.
+const fixtureOut = flags['fixture-out'];
+if (fixtureOut && fixtureOut !== 'true') {
+  if (!cycleRows || !cycleBound || !cycleSteady) {
+    console.error('--fixture-out requires --cycle-table');
+    process.exit(1);
+  }
+  writeFileSync(
+    fixtureOut,
+    JSON.stringify(
+      {
+        _note:
+          'Burst-cycle tempo fixture. Frame trace + detector output from scripts/probe/scan.ts ' +
+          '--fps <n> --cycle-table --fixture-out <this file>, committed so a downstream ' +
+          'measurement (and scripts/tests/probe/) replays WITHOUT the recording — docs/probes/ ' +
+          'is gitignored. Regenerate with the command in `source`.',
+        source: {
+          video,
+          fps,
+          command: `npx tsx scripts/probe/scan.ts <video> --fps ${fps} --cycle-table --fixture-out <file>`,
+        },
+        fullWindows: result.fullWindows,
+        burstChains: result.burstChains.map((c) => ({
+          stage1: c.stage1,
+          stage2: c.stage2,
+          stage3: c.stage3,
+        })),
+        frameT: result.gaugeStates.map((g) => g.videoT),
+        frameFill: result.gaugeStates.map((g) => g.fill),
+        expected: {
+          fullBursts: confirmed.length,
+          fbDurationLowerBound: {
+            bound: cycleBound.bound,
+            cycle: cycleBound.cycle,
+          },
+          steadyStateMean: cycleSteady.mean,
+          correctedDurations: cycleRows.map((r) => r.correctedDuration),
+          qualifies: cycleRows.map((r) => r.qualifies),
+          tailStitched: cycleRows.map((r) => r.tailStitched),
+          nominalDurations: cycleRows.map((r) => r.nominalDuration),
+          guard3aResiduals: cycleRows.map((r) => r.guard3aResidual),
+        },
+      },
+      null,
+      1
+    ) + '\n'
+  );
+  console.log(`wrote ${fixtureOut}`);
+}
 
 console.log(`\nwrote ${outDir}/scan.json`);
 console.log(
