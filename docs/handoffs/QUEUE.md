@@ -80,9 +80,19 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      missing application-gauge credits). H-A team-context route CLOSED by owner ruling. The
      `anis-star` U28 divisor read is what remains of the encoding audit path.
      `iron sweep (run G)` regression comp stays disabled.
-   - **`anis-star` solo magnitude residual — OPEN (footage-gated).** 10.39 vs ≥ ~10.96 exclusion
-     bound returned INCONCLUSIVE-LOG from solo #2 (≥2-window counting rule cannot fire). Three
-     anomalous credits (+15.2–16.0%) filed descriptively.
+   - **`anis-star` solo magnitude residual — OPEN.** 10.39 vs ≥ ~10.96 exclusion bound returned
+     INCONCLUSIVE-LOG from solo #2: the ≥2-window counting rule could not fire because the three
+     anomalous credits (+15.2–16.0%) violated the steady premise in W2 and W4. **NOT
+     footage-gated after all — the existing recording has four windows; the blocker was
+     hypothesis discrimination, not window count.**
+     **Source-hunt 2026-08-17 (`docs/probe-data/anis-star-anomaly-source-hunt-2026-08-17.json`)
+     narrowed it: W4p2 (+16.0), W4p3 (+15.2) and the steady W4p4 (+11.6) did the IDENTICAL damage
+     increment 480,330, so extra-hits, charge-level (`fullChargeBonus` 250) and crit/core are all
+     refuted — the excess is gauge-specific.** Candidate to PRE-REGISTER next (arithmetic fit,
+     n=3, fitted after the fact — not evidence yet): the anomalous pulls credit one extra
+     `basePerTrigger` 140 × 2.5 focus × 1.06 aura = 3.71%. Next step is a gated re-run of the
+     counting rule with that hypothesis declared in the packet, so anomalous windows become
+     CLASSIFIABLE instead of premise-violating.
    - **Probe tooling follow-ups (achievable without footage):**
      (i) `gauge-fill.py` without `--bar` self-calibrates onto a dark terrain edge on solo footage
      — always pass `--bar` + the maiden fixture gate (/skill-maintenance candidate);

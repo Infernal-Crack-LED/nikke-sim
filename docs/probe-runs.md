@@ -8040,3 +8040,68 @@ landing figure to be scored against (the four measured units' mid-band ratio-to-
 window affords no band comparison. **MEASUREMENT ONLY** — the AR and SG rows are unchanged, the
 engine is untouched, and the SG result corroborates a settled ruling rather than overturning
 anything.
+
+---
+
+## 2026-08-17 — `anis-star` anomalous-credit source-hunt: the anomalous and steady pulls did IDENTICAL damage, so the excess is gauge-specific (hit-count, charge-level and crit/core explanations all refuted)
+
+The 2026-08-16 solo #2 run filed three anomalous-magnitude gauge credits descriptively — W2p8
++15.3, W4p2 +16.0, W4p3 +15.2, each montage-confirmed as a single ammo decrement — with the
+explicit note that **no hypothesis family predicts them**. They are what broke Question A: the
+≥2-window counting rule could not fire because the anomalies violated the steady premise in W2 and
+W4. This is a source-hunt on them, run on the SAME committed recording
+(`docs/probes/solo/anis-star-solo.mov`) with a DIFFERENT instrument. Artifact:
+`docs/probe-data/anis-star-anomaly-source-hunt-2026-08-17.json`.
+
+**MEASUREMENT ONLY.** Question A's INCONCLUSIVE-LOG disposition stands and is not re-opened; no
+constant, override or engine line is touched.
+
+**Method.** `scripts/probe/read-total-damage.ts` (the committed local-VLM cumulative-damage reader)
+at 5fps over `--at 72 --dur 8` — 40/40 totals and 40/40 timers read, zero warnings, and
+digit-for-digit agreement with an independent hand-read of the same crops. The reader's own timer
+column anchors fight time: videoT 73.00 reads 107s remaining = 73s elapsed, so fight-elapsed =
+videoT + 0–1s.
+
+**The comparison is confound-free by construction.** W4p2, W4p3 and W4p4 are CONSECUTIVE pulls
+~1.0s apart in the same refill window, the same magazine, the same boss range band, same unit,
+same fight.
+
+| pull | fired  | gauge credit | damage increment |
+| ---- | ------ | ------------ | ---------------- |
+| W4p2 | 73.60s | **+16.0**    | **480,330**      |
+| W4p3 | 74.57s | **+15.2**    | **480,330**      |
+| W4p4 | 75.57s | +11.6        | **480,330**      |
+| W4p5 | 76.40s | (~+10.8)     | 307,791          |
+| W4p6 | 77.53s | +11.6        | 307,791          |
+
+**The result: the two anomalous pulls and the steady pull right after them did the IDENTICAL
+damage — 480,330 to the unit.** Same damage, different gauge. That refutes three candidate
+explanations at once:
+
+- **Extra hits** — an extra landed hit deposits damage. It did not. (Consistent with the
+  perPullTable's single-ammo-decrement confirmation, now corroborated from the damage side.)
+- **Charge level** — the natural candidate, since `data/gauge-per-shot.json` carries
+  `fullChargeBonus: 250` for this unit. But charge level IS a damage difference
+  (`shot_detail.full_charge_damage` 25000), and these three pulls share a damage value exactly
+  while differing ~4pp in gauge.
+- **Crit/core state** — whatever separates the 480,330 tier from the 307,791 tier (ratio 1.5606,
+  cause unresolved and irrelevant here), all three compared pulls sit in the SAME tier.
+
+**What survives:** the excess is **gauge-specific** — something credited burst gauge without
+depositing damage, which is the shape of a skill-side `fillGauge`-type grant, not a weapon-side
+per-hit term.
+
+**Arithmetic fit — HYPOTHESIS ONLY, stated so a future gated run can PRE-REGISTER it.** The two
+excesses are +4.4 and +3.6 raw = +4.14 and +3.38 after the anchor bias. Her
+`basePerTrigger` 140 × 2.5 (the measured focused-charge bonus) × 1.06 (her own +6% aura) = 371
+energy = **3.71%** — both excesses land within one bar column (0.72pp) of it. Equivalently: the
+anomalous pulls credit ONE EXTRA `basePerTrigger` at the focus and aura terms the shipped model
+already carries. **This is n=3 credits on one recording and was fitted AFTER the fact; it is a
+candidate to test, not a measurement of a mechanism.** Enacting it needs the `/scientific-method`
+gate with the prediction pre-registered.
+
+**Recorded but NOT claimed:** all three anomalies land ~4–5s after a boss range-band transition
+(`docs/data/range-data.md`: mid→near ~33s elapsed, near→far ~70s; W2p8 at ~37s, W4p2/p3 at
+~74–75s). Band OCCUPANCY is already ruled out — W3 sits entirely inside the near band and shows no
+anomaly — and n=3 cannot separate "transition" from coincidence. Logged because it is cheaply
+checkable on the next recording that has one.
