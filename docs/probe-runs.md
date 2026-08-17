@@ -8166,6 +8166,20 @@ window map, thresholds and decision branches pre-registered. This screen stops a
 purpose. Note also that N3 reads 10 measured vs 10 sim full bursts, so it is not a second copy of
 iron sweep's rotation gap — what it offers is an INDEPENDENT ceiling test.
 
+> **CORRECTION (2026-08-17, same day) — the preceding sentence is WRONG; disregard it.** N3 reads
+> **9 sim vs 10 measured**, not 10 vs 10. It carries a −1 full-burst gap of the SAME SIGN AND FAMILY
+> as the other `liberalio`-seated disabled comps. Caught by the step-0 premise gate of the
+> third-arm `/scientific-method` pass. Provenance of the error: every "sim 10" statement in the tree
+> traces to ONE artifact — `docs/probes/714 noon/probe.md` row 3, dated 2026-07-14 — restated as a
+> present-tense fact here. The sim count moved after that row was written: commit `c12fcf4e`
+> (2026-07-26) fixed `liberalio`'s 6×-inflated burst-gauge datamine and unmasked a pre-existing
+> shortfall on the four comps she seats, N3 among them; `scripts/regression.ts:255` then disabled N3
+> on 2026-08-09 with the reason "sim reads 9 FBs". Current sources agree on 9: `regression.ts:255`,
+> `docs/fb-count-matrix.md:85`, and two independent live re-derivations (`ONLY=` experiment run,
+> deterministic 9 on 25/25 seeds; `fb-count-matrix.ts` battery). **Two consequences for the third-arm
+> plan:** (i) the "independent, no rotation gap" property must NOT be carried as a given; (ii) N3 and
+> iron sweep (run G) both seat `liberalio`, so they are not roster-independent arms.
+
 **Correction to an earlier statement of the recording ask** (now moot, since the ask is retired):
 it said "five slow-firing units — SR / RL / charge / AR, no MG and no SMG". Including AR was wrong
 — AR scores 12/s per unit, so two AR carriers plus three slow units already reach ~26/s and leave

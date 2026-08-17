@@ -105,6 +105,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      classification itself is the gated surface, not the feasibility. (`misc B3s` SG fence also
      lifted, by commit `a4d08e19`, but that arm is cap-saturated at 94.5/s and stays unusable;
      `N5 snowwhite-HA fire` is non-vacuous at 15.87/s but too low-power to be a peer candidate.)
+     **Two premise corrections from the step-0 gate (2026-08-17), both binding on that packet:**
+     (i) N3 reads **9 sim vs 10 measured**, NOT 10 vs 10 — it carries a −1 FB gap of the same sign
+     as the other `liberalio`-seated disabled comps, so "independent, no rotation gap" is NOT a
+     property it has; (ii) N3 and iron sweep (run G) **both seat `liberalio`**, so they are not
+     roster-independent arms and a shared-unit confound has to be addressed in the packet.
    - **Probe tooling follow-ups (achievable without footage):**
      (i) `gauge-fill.py` without `--bar` self-calibrates onto a dark terrain edge on solo footage
      — always pass `--bar` + the maiden fixture gate (/skill-maintenance candidate);
