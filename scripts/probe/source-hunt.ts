@@ -1,13 +1,12 @@
 /**
  * Source-hunt: cross-reference real event-bin timing against sim credit timing
- * using the classification's real window boundaries (barPaint → fullInstant).
+ * using within-window phase coordinates.
  *
- * ⚠ KNOWN LIMITATION (2026-08-16 code-review, claude-opus-5): real event times
- * (video trace clock) and sim credit times (engine clock) do NOT share an origin.
- * Per-window offsets drift from ~+8s (W1) to ~−9s (W10). Gap statistics computed
- * here (explained/excess) measure clock drift, not gauge causality. To produce
- * meaningful results, events must be mapped into paired sim windows via
- * `w.simWindow` using within-window phase before comparing against sim credits.
+ * Real events (video trace clock) and sim credits (engine clock) do NOT share
+ * an origin — per-window offsets drift across the fight. This script maps each
+ * real window to its paired sim window via `w.simWindow`, converts both sides
+ * to within-window phase ∈ [0, 1], and compares phases (gap reported in sim
+ * seconds using the sim window duration as the time scale).
  *
  * Usage: npx tsx scripts/probe/source-hunt.ts
  */
@@ -60,6 +59,21 @@ const credits: Array<{
   window: number;
 }> = sched.credits;
 
+// Build sim-window lookup (indexed by sim window index)
+interface SimWin {
+  index: number;
+  startSec: number;
+  endSec: number;
+}
+const simWinByIndex = new Map<number, SimWin>();
+for (const sw of sched.windows) {
+  simWinByIndex.set(sw.index, {
+    index: sw.index,
+    startSec: sw.startSec,
+    endSec: sw.endSec,
+  });
+}
+
 // Get the iron sweep arm from the classification
 interface ClsWindow {
   id: number;
@@ -67,6 +81,8 @@ interface ClsWindow {
   barPaint: number;
   fullInstant: number;
   durationSec: number;
+  simWindow: number | null;
+  simDurationSec: number;
   eventBins: number;
   eventBinDeltas: number[];
 }
@@ -85,13 +101,16 @@ const isClean = (r: {
 
 interface EventInfo {
   windowId: number;
+  simWinIndex: number;
   binIdx: number;
   t: number;
+  realPhase: number;
   delta: number;
-  nearestCreditSec: number;
   nearestCreditSlug: string;
   nearestCreditKind: string;
-  gapToNearestSec: number;
+  nearestCreditPhase: number;
+  phaseGap: number;
+  gapSec: number;
   explained: boolean;
 }
 
@@ -144,72 +163,79 @@ for (const w of clsWindows) {
     }
   }
 
-  // Cross-reference each event with nearest sim credit
+  // Cross-reference each event with nearest sim credit using within-window phase.
+  // Map real window → paired sim window via w.simWindow; compare phases ∈ [0,1].
+  const pairedSimWin =
+    w.simWindow != null ? simWinByIndex.get(w.simWindow) : undefined;
+  const simDur = pairedSimWin
+    ? pairedSimWin.endSec - pairedSimWin.startSec
+    : w.durationSec;
+  const pairedCredits = pairedSimWin
+    ? credits.filter((c) => c.window === pairedSimWin.index)
+    : [];
+
   for (const [binIdx, { delta, t }] of eventByBin) {
-    let nearestSec = Infinity;
-    let nearestCreditTime = -1;
-    let nearestSlug = '';
-    let nearestKind = '';
-    for (const c of credits) {
-      const gap = Math.abs(t - c.sec);
-      if (gap < nearestSec) {
-        nearestSec = gap;
-        nearestCreditTime = c.sec;
-        nearestSlug = c.slug;
-        nearestKind = c.kind;
+    const realPhase = (t - barPaint) / (fullInstant - barPaint);
+    let bestPhaseGap = Infinity;
+    let bestSlug = '';
+    let bestKind = '';
+    let bestCreditPhase = -1;
+
+    for (const c of pairedCredits) {
+      const cPhase =
+        (c.sec - pairedSimWin!.startSec) /
+        (pairedSimWin!.endSec - pairedSimWin!.startSec);
+      const gap = Math.abs(realPhase - cPhase);
+      if (gap < bestPhaseGap) {
+        bestPhaseGap = gap;
+        bestCreditPhase = cPhase;
+        bestSlug = c.slug;
+        bestKind = c.kind;
       }
     }
+
+    const gapSec = bestPhaseGap === Infinity ? -1 : bestPhaseGap * simDur;
+
     allEvents.push({
       windowId: w.id,
+      simWinIndex: pairedSimWin?.index ?? -1,
       binIdx,
       t,
+      realPhase: Math.round(realPhase * 10000) / 10000,
       delta: Math.round(delta * 100) / 100,
-      nearestCreditSec:
-        nearestCreditTime === -1
+      nearestCreditSlug: bestSlug,
+      nearestCreditKind: bestKind,
+      nearestCreditPhase:
+        bestCreditPhase === -1
           ? -1
-          : Math.round(nearestCreditTime * 1000) / 1000,
-      nearestCreditSlug: nearestSlug,
-      nearestCreditKind: nearestKind,
-      gapToNearestSec:
-        nearestSec === Infinity ? -1 : Math.round(nearestSec * 1000) / 1000,
-      explained: nearestSec <= EXPLAIN_THRESHOLD_SEC,
+          : Math.round(bestCreditPhase * 10000) / 10000,
+      phaseGap:
+        bestPhaseGap === Infinity
+          ? -1
+          : Math.round(bestPhaseGap * 10000) / 10000,
+      gapSec: Math.round(gapSec * 1000) / 1000,
+      explained: gapSec <= EXPLAIN_THRESHOLD_SEC,
     });
   }
 }
 
-// Compute unique sim credit bins within usable windows
-const simCreditBinsInWindows: Array<{
-  sec: number;
-  slug: string;
-  kind: string;
-  amount: number;
-}> = [];
-for (const w of clsWindows) {
-  if (!w.usable) {
-    continue;
+// Count sim credits in each paired sim window (using the simWindow mapping, not raw time overlap)
+function simCreditsInPairedWindow(w: ClsWindow): typeof credits {
+  if (w.simWindow == null) {
+    return [];
   }
-  for (const c of credits) {
-    if (c.sec >= w.barPaint && c.sec < w.fullInstant) {
-      simCreditBinsInWindows.push(c);
-    }
-  }
+  return credits.filter((c) => c.window === w.simWindow);
 }
-
-// Deduplicate sim credits to unique bins (same frame = same bin)
-const simCreditFrames = new Set(credits.map((c) => c.frame));
-const uniqueSimFrames = [...simCreditFrames].sort((a, b) => a - b);
 
 // Summary
 const totalEvents = allEvents.length;
 const explained = allEvents.filter((e) => e.explained).length;
 const loose = allEvents.filter(
-  (e) => e.gapToNearestSec <= LOOSE_THRESHOLD_SEC
+  (e) => e.gapSec >= 0 && e.gapSec <= LOOSE_THRESHOLD_SEC
 ).length;
-const excess = allEvents.filter(
-  (e) => e.gapToNearestSec > LOOSE_THRESHOLD_SEC
-).length;
+const excess = allEvents.filter((e) => e.gapSec > LOOSE_THRESHOLD_SEC).length;
 
-console.log(`=== Source-hunt: iron sweep (run G) ===`);
+console.log(`=== Source-hunt: iron sweep (run G) — within-window phase ===`);
 console.log(
   `Real windows: ${clsWindows.filter((w) => w.usable).length} usable`
 );
@@ -223,11 +249,10 @@ if (totalEvents !== ironArm.pooled.eventBins) {
       `Likely cause: boundary rounding on barPaint/fullInstant re-derivation.`
   );
 }
+console.log(`Sim credit instants (all credits in run): ${credits.length}`);
 console.log(
-  `Sim credit instants (all credits in run): ${credits.length}, unique frames: ${uniqueSimFrames.length}`
-);
-console.log(
-  `Sim credits within usable real windows: ${simCreditBinsInWindows.length}`
+  `Gaps are within-window phase distances (real-phase vs sim-phase), ` +
+    `reported in sim seconds using the paired sim window duration as the time scale.`
 );
 console.log();
 console.log(`At tight threshold (${EXPLAIN_THRESHOLD_SEC}s):`);
@@ -255,17 +280,16 @@ for (const w of clsWindows) {
   const winEvents = allEvents.filter((e) => e.windowId === w.id);
   const winExplained = winEvents.filter((e) => e.explained).length;
   const winExcess = winEvents.filter(
-    (e) => e.gapToNearestSec > LOOSE_THRESHOLD_SEC
+    (e) => e.gapSec > LOOSE_THRESHOLD_SEC
   ).length;
-  const winCredits = simCreditBinsInWindows.filter(
-    (c) => c.sec >= w.barPaint && c.sec < w.fullInstant
-  );
+  const winCredits = simCreditsInPairedWindow(w);
   const winCreditSlugs = new Map<string, number>();
   for (const c of winCredits) {
     winCreditSlugs.set(c.slug, (winCreditSlugs.get(c.slug) ?? 0) + 1);
   }
+  const simWinStr = w.simWindow != null ? `simW${w.simWindow}` : 'no-sim-pair';
   console.log(
-    `  W${w.id} [${w.barPaint.toFixed(1)}-${w.fullInstant.toFixed(1)}s, ${w.durationSec.toFixed(1)}s]: ` +
+    `  W${w.id} [real ${w.barPaint.toFixed(1)}-${w.fullInstant.toFixed(1)}s, ${w.durationSec.toFixed(1)}s | ${simWinStr} ${w.simDurationSec.toFixed(1)}s]: ` +
       `${winEvents.length} events (tight:${winExplained} loose:${winEvents.length - winExcess} excess:${winExcess}) | ` +
       `${winCredits.length} sim credits — ${[...winCreditSlugs.entries()].map(([s, n]) => `${s}:${n}`).join(', ')}`
   );
@@ -273,28 +297,33 @@ for (const w of clsWindows) {
 
 // Excess events detail
 const excessEvents = allEvents
-  .filter((e) => e.gapToNearestSec > LOOSE_THRESHOLD_SEC)
+  .filter((e) => e.gapSec > LOOSE_THRESHOLD_SEC)
   .sort((a, b) => a.t - b.t);
 console.log(
-  `\n--- Excess events (gap > ${LOOSE_THRESHOLD_SEC}s from any sim credit) ---`
+  `\n--- Excess events (phase gap > ${LOOSE_THRESHOLD_SEC}s from any paired sim credit) ---`
 );
 if (excessEvents.length === 0) {
   console.log(
-    `  NONE — all events have a sim credit within ${LOOSE_THRESHOLD_SEC}s`
+    `  NONE — all events have a paired sim credit within ${LOOSE_THRESHOLD_SEC}s (phase distance)`
   );
 } else {
   for (const e of excessEvents) {
     console.log(
-      `  W${e.windowId} bin ${e.binIdx} t=${e.t.toFixed(3)}s delta=${e.delta} | ` +
+      `  W${e.windowId} (simW${e.simWinIndex}) bin ${e.binIdx} ` +
+        `realPhase=${e.realPhase.toFixed(3)} delta=${e.delta} | ` +
         `nearest: ${e.nearestCreditSlug} ${e.nearestCreditKind} ` +
-        `gap=${e.gapToNearestSec.toFixed(3)}s`
+        `creditPhase=${e.nearestCreditPhase.toFixed(3)} ` +
+        `phaseGap=${e.phaseGap.toFixed(4)} (${e.gapSec.toFixed(3)}s)`
     );
   }
 }
 
 // Gap distribution
-console.log(`\n--- Gap-to-nearest-credit distribution ---`);
-const gaps = allEvents.map((e) => e.gapToNearestSec).sort((a, b) => a - b);
+console.log(`\n--- Phase-gap distribution (sim seconds) ---`);
+const gaps = allEvents
+  .map((e) => e.gapSec)
+  .filter((g) => g >= 0)
+  .sort((a, b) => a - b);
 const buckets = [0, 0.033, 0.067, 0.1, 0.15, 0.2, 0.3, 0.5, 1.0, 2.0, Infinity];
 for (let i = 0; i < buckets.length - 1; i++) {
   const count = gaps.filter(
@@ -309,24 +338,23 @@ for (let i = 0; i < buckets.length - 1; i++) {
   );
 }
 
-// Burst-cast proximity test: are excess events near burst-cast times?
-// Burst casts happen at the START of each window (the FB that precedes the refill)
-console.log(`\n--- Burst-cast proximity ---`);
+// Burst-cast proximity test: are excess events near window boundaries?
+console.log(`\n--- Window-boundary proximity ---`);
 for (const w of clsWindows) {
   if (!w.usable) {
     continue;
   }
   const winEvents = allEvents.filter((e) => e.windowId === w.id);
-  const earlyEvents = winEvents.filter((e) => e.t - w.barPaint < 0.5);
-  const lateEvents = winEvents.filter((e) => w.fullInstant - e.t < 0.5);
+  const earlyEvents = winEvents.filter((e) => e.realPhase < 0.15);
+  const lateEvents = winEvents.filter((e) => e.realPhase > 0.85);
   console.log(
-    `  W${w.id}: ${earlyEvents.length} events in first 0.5s, ${lateEvents.length} events in last 0.5s ` +
-      `(of ${winEvents.length} total, ${w.durationSec.toFixed(1)}s window)`
+    `  W${w.id}: ${earlyEvents.length} events in first 15% phase, ${lateEvents.length} in last 15% ` +
+      `(of ${winEvents.length} total, real ${w.durationSec.toFixed(1)}s / sim ${w.simDurationSec.toFixed(1)}s)`
   );
 }
 
 // Clustering: are events uniformly distributed within windows or clustered?
-console.log(`\n--- Event temporal density ---`);
+console.log(`\n--- Event phase density ---`);
 for (const w of clsWindows) {
   if (!w.usable) {
     continue;
@@ -335,12 +363,12 @@ for (const w of clsWindows) {
   if (winEvents.length < 3) {
     continue;
   }
-  const times = winEvents.map((e) => e.t - w.barPaint).sort((a, b) => a - b);
+  const phases = winEvents.map((e) => e.realPhase).sort((a, b) => a - b);
   const interGaps: number[] = [];
-  for (let i = 1; i < times.length; i++) {
-    interGaps.push(times[i] - times[i - 1]);
+  for (let i = 1; i < phases.length; i++) {
+    interGaps.push(phases[i] - phases[i - 1]);
   }
-  const rateMeanGap = w.durationSec / winEvents.length;
+  const meanGap = 1 / winEvents.length;
   const cv =
     interGaps.length > 0
       ? (() => {
@@ -351,7 +379,7 @@ for (const w of clsWindows) {
         })()
       : 0;
   console.log(
-    `  W${w.id}: ${winEvents.length} events, meanGap=${(rateMeanGap * 1000).toFixed(0)}ms, ` +
+    `  W${w.id}: ${winEvents.length} events, meanPhaseGap=${(meanGap * 1000).toFixed(0)}ms, ` +
       `CV=${cv.toFixed(2)} (${cv > 1 ? 'clustered' : cv > 0.5 ? 'moderate' : 'uniform'})`
   );
 }

@@ -192,8 +192,8 @@ sgGaugeFrac)` in `firePull`, gauge scaled by the base-capped landed-pellet fract
   - **The refuted reading is SIZED, so it stays dead.** The audit's ceiling arm
     (`SGGAUGE=trigger`, sim.ts — full per-trigger gauge per SG spray pull, gauge-only, default
     OFF) lifts SG-carrier generation +27–48% (team +7–17% on all five SG-seated off-count comps)
-    and moves **zero** Full-Burst counts anywhere (31-comp EV board: 0 FB movers; the four SG-free
-    comps byte-identical). Instrument: `scripts/battery/fb-count-matrix.ts --multihit-crediting`,
+    and moves **zero** Full-Burst counts anywhere (ad-hoc 31-comp re-run: 0 FB movers; the
+    committed 11-comp pin is byte-identical on both arms). Instrument: `scripts/battery/fb-count-matrix.ts --multihit-crediting`,
     pinned by `scripts/tests/battery/multihit-crediting.test.ts`. The arm is kept — default OFF —
     as the refuted reading's A/B revert, the same footing as `ROTMODEL=floor` for the overturned
     post-FB chain-open block. Do not re-open without new evidence.
