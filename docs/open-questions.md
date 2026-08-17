@@ -669,9 +669,9 @@ focus`. ⇒ For a GENUINE multi-muzzle unit, the engine's `targetPerTrigger / hi
 2. **`anis-star` is NOT a real multi-hit unit — ENACTED 2026-08-16 (DECISIONS): her carve-out
    is REMOVED.** Datamine: `shot_count 1 × muzzle_count 1`, one projectile crediting 280 on
    boss (matches our own 2026-07-13 solo measurement). The `/scientific-method` run (packet
-   `docs/handoffs/2026-08-16-anis-star-carveout-preop-packet.md`, 2-of-2 ACCEPT HIGH) verified
-   the hack's recorded justification stale at HEAD — the gauge lock had independently removed
-   the dot over-emission it compensated — and landed `hitsPerShot` 1 with every enabled
+   `docs/handoffs/closed/2026-08-16-anis-star-carveout-preop-packet.md`, 2-of-2 ACCEPT HIGH)
+   verified the hack's recorded justification stale at HEAD — the gauge lock had independently
+   removed the dot over-emission it compensated — and landed `hitsPerShot` 1 with every enabled
    measured FB pin byte-identical. She now sits at hitsPerShot 1 where the divisor is a no-op,
    so **she no longer bears on the divisor question**; what remains of U28's divisor half rides
    on genuine multi-hit units only (`modernia` MG ÷2, the SG ÷10), gated on the `modernia`

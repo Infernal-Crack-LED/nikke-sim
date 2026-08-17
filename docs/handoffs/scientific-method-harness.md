@@ -945,11 +945,12 @@ by the step-0 premise verifier). Work commit `6311cc2d`; packet pre-registration
 ## 2026-08-16 — anis-star hitsPerShot carve-out removal → IMPLEMENT (driver ACCEPT HIGH + blind post-op ACCEPT HIGH)
 
 **Outcome: IMPLEMENT.** 2-of-2 ACCEPT, both HIGH. Packet:
-`docs/handoffs/2026-08-16-anis-star-carveout-preop-packet.md` (pre-op APPROVED-WITH-REVISIONS,
-R1–R3 executed); work deliverable:
-`docs/handoffs/2026-08-16-anis-star-carveout-work-deliverable.md`; change commit `145d8df6`
-(branch `anis-star-gauge-divisor`); ruling: DECISIONS 2026-08-16. Accepted claim (blind judge's
-words): the `'anis-star': 2` carve-out was a stale compensator — the dot over-emission it
+`docs/handoffs/closed/2026-08-16-anis-star-carveout-preop-packet.md` (pre-op
+APPROVED-WITH-REVISIONS, R1–R3 executed); work deliverable:
+`docs/handoffs/closed/2026-08-16-anis-star-carveout-work-deliverable.md`; change commit
+`145d8df6` (branch `anis-star-gauge-divisor`); ruling: DECISIONS 2026-08-16. Accepted claim
+(blind judge's words): the `'anis-star': 2` carve-out was a stale compensator — the dot
+over-emission it
 halved was independently removed by the gauge-lock rulings — and its removal preserves every
 enabled measured FB pin byte-exactly, confines all movement to the six comps seating her
 (84-row exact-zero negative control), and moves the solo decomposition 8.90 → 10.39 %/pull
@@ -1050,10 +1051,11 @@ deliverable's §6 claimed "n≥8 requirement met in every pool" but the W1-separ
    by construction; Question B's basis does not depend on Question A's decision rule.
 
 **Artifacts (all committed):** pre-op packet
-`docs/handoffs/2026-08-16-anis-star-solo2-gauge-preop-packet.md` (APPROVED-WITH-REVISIONS,
-R1–R5 executed); verdict-free artifact `docs/probe-data/anis-star-solo2-gauge.json`; work
-deliverable `docs/handoffs/2026-08-16-anis-star-solo2-gauge-work-deliverable.md`; blind
-post-op packet `docs/handoffs/2026-08-16-anis-star-solo2-blind-postop-packet.md` + result
-`docs/handoffs/2026-08-16-anis-star-solo2-blind-postop-result.json` (kimi-code/k3, ACCEPT
-HIGH); replay pin `scripts/tests/probe/noise-solo2.test.ts` (5/5 GREEN); tooling extension
-`scripts/probe/fill-trace-compare.ts` noise-solo2 subcommand (+243 lines).
+`docs/handoffs/closed/2026-08-16-anis-star-solo2-gauge-preop-packet.md`
+(APPROVED-WITH-REVISIONS, R1–R5 executed); verdict-free artifact
+`docs/probe-data/anis-star-solo2-gauge.json`; work deliverable
+`docs/handoffs/closed/2026-08-16-anis-star-solo2-gauge-work-deliverable.md`; blind post-op
+packet `docs/handoffs/closed/2026-08-16-anis-star-solo2-blind-postop-packet.md` + result
+`docs/handoffs/closed/2026-08-16-anis-star-solo2-blind-postop-result.json` (kimi-code/k3,
+ACCEPT HIGH); replay pin `scripts/tests/probe/noise-solo2.test.ts` (5/5 GREEN); tooling
+extension `scripts/probe/fill-trace-compare.ts` noise-solo2 subcommand (+243 lines).

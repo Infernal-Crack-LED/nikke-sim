@@ -5879,9 +5879,10 @@ which reconciles byte-exactly with the raw shot row's `target_burst_energy_persh
 — it stays ⚑ (a refit candidate) and is NOT promoted by this landing.
 
 **Why (procedure: `/scientific-method`, packet
-`docs/handoffs/2026-08-16-anis-star-carveout-preop-packet.md`, pre-op APPROVED-WITH-REVISIONS,
-driver ACCEPT HIGH + blind post-op ACCEPT HIGH):** the 2 was a documented calibration hack
-(role-object audit C.1, 2026-07-17) halving her 40-tick burst-DoT's then-over-emitted
+`docs/handoffs/closed/2026-08-16-anis-star-carveout-preop-packet.md`, pre-op
+APPROVED-WITH-REVISIONS, driver ACCEPT HIGH + blind post-op ACCEPT HIGH):** the 2 was a
+documented calibration hack (role-object audit C.1, 2026-07-17) halving her 40-tick burst-DoT's
+then-over-emitted
 `skillGauge`, with removal gated on "her dot gauge properly re-modeled." That re-model has
 since happened _systemically_: the gauge-lock rulings (2026-08-04 / 2026-08-13 — nothing
 generates during chain stages 1–3 or Full Burst) swallow ALL 40 of her Shooting Stars ticks in
@@ -5930,7 +5931,8 @@ hits (was 0; threshold still passes) — observation only.
 **Instruments/pins updated from their own output:** `gauge-source-census.test.ts` (divisor
 rows gone; `skillImpactGauge('anis-star')` 2.8), `focus-columns.test.ts`,
 `multihit-crediting.test.ts`, `refill-starvation.test.ts`, snapshot regen in the same commit;
-G1–G4 specs added. Work record: `docs/handoffs/2026-08-16-anis-star-carveout-work-deliverable.md`.
+G1–G4 specs added. Work record:
+`docs/handoffs/closed/2026-08-16-anis-star-carveout-work-deliverable.md`.
 
 ## Owner rulings: non-damage enemy-debuff APPLICATIONS generate burst gauge, and so do their RE-APPLICATIONS/refreshes (2026-08-16)
 
@@ -6104,8 +6106,8 @@ regression comp; `verify.sh` green.
 known ×2.5 focus-charge bonus is the only context-dependent credit term and it is already
 modeled. This retires the "team-seated bar read of an already-solo-validated unit" recording ask
 and strikes H-A from the 2026-08-15 H-A/H-B/H-C classification's candidate list
-(`docs/handoffs/2026-08-16-burst-gen-autonomous-audit.md`). **What does NOT change:** the
-underlying iron-sweep excess (~1.6× shortfall on a comp with zero cadence buffs) stays
+(`docs/handoffs/closed/2026-08-16-burst-gen-autonomous-audit.md`). **What does NOT change:**
+the underlying iron-sweep excess (~1.6× shortfall on a comp with zero cadence buffs) stays
 UNEXPLAINED — this rules out one candidate class, not the excess itself.
 
 **2. `modernia`'s Destroy Mode as the `hitsPerShot > 1` gauge-divisor probe (U28) — CLOSED,
@@ -6120,5 +6122,5 @@ open; its live candidate is `anis-star` (rider fires on normal weapon shots, out
 footage was handed to another session the same day for the parallel U28 divisor read).
 
 **Recorded in:** `docs/handoffs/QUEUE.md` (burst-generation thread, recording-asks list);
-`docs/open-questions.md` U28 (Gate paragraph corrected); `docs/handoffs/2026-08-16-burst-gen-autonomous-audit.md`
-(candidate list items 2/3).
+`docs/open-questions.md` U28 (Gate paragraph corrected);
+`docs/handoffs/closed/2026-08-16-burst-gen-autonomous-audit.md` (candidate list items 2/3).

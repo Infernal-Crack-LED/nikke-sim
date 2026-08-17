@@ -161,13 +161,39 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      BOTH the floor and the Wilson clause in one pass, and any new packet must power-check its
      floor against the guard spec first). **Noise-floor input NOW AVAILABLE from the solo #2
      measurement (492 primary / 597 pooled quiet bins, zero false events, Wilson 0.55%/0.45%)
-     — the C4 deficit is resolved at 3.3× margin.** Still open, re-ranked: (2) a pre-registered
-     noise-corrected ceiling test (subtract falseRate × quietBins — the falseRate input is now
-     measured; this needs its OWN pre-op); (3) source-hunt the excess
-     event instants (clustered-at-visual-cause supports H-C, scattered refutes); (4) a third comp
-     with a non-vacuous ceiling (T5's was cap-saturated — the H-C detector was effectively n=1);
-     (5) a symmetric-E_min statistic as its OWN pre-op (T5's O/S were structurally
-     uninterpretable with the one-sided threshold).
+     — the C4 deficit is resolved at 3.3× margin.** Still open, re-ranked: (2) ~~a pre-registered
+     noise-corrected ceiling test~~ **COMPUTED 2026-08-16, owner-accepted (no /scientific-method
+     gate — arithmetic is trivial):** pre-op packet at
+     `docs/handoffs/2026-08-16-noise-corrected-ceiling-preop-packet.md`; artifact at
+     `docs/probe-data/noise-corrected-ceiling-iron-sweep-2026-08-16.json`. R1 fires: DETECTION
+     "H-C-candidate excess survives noise correction." Correction removes ~2.4 of 80 bins
+     (3%); corrected rate 4.576/s (primary) / 4.601/s (pooled) — both 10.7–11.3% above the
+     4.1325 threshold. Robust to falseRate up to 2.3% (4× measured input). Classification
+     stays MIXED/INCONCLUSIVE (closure 0.2579 stands).** (3) ~~source-hunt the excess
+     event instants~~ **ANALYZED 2026-08-16 (`scripts/probe/source-hunt.ts`) — INSTRUMENT
+     DEFECT FOUND (2026-08-16 code-review, claude-opus-5): source-hunt compares real event
+     times (video trace clock) against sim credit times (engine clock) without correcting for
+     the per-window offset drift (W1 +7.85s → W10 −8.75s). The headline numbers (76.8% excess,
+     56.1% >2s away) track clock drift, not gauge causality. The H-C refutation previously
+     recorded here is RETRACTED — item re-opened. The script is a useful scaffold but needs
+     within-window phase comparison (map events into paired sim windows via `w.simWindow`)
+     before its gap statistics are meaningful.** (4) ~~a third comp
+     with a non-vacuous ceiling~~ **AUDITED 2026-08-16 — STRUCTURALLY IMPOSSIBLE with existing
+     footage:** every filmed comp except iron sweep has ≥1 fast-cadence unit (AR/MG/SMG/SG)
+     whose minGap is 1–5 frames (rate 12–60/s), saturating the 30/s bin cap. Iron sweep is
+     uniquely all-SR (minGaps 82–90f, sum 3.6/s — the only non-vacuous ceiling). The H-C
+     detector is structurally n=1; resolving requires new footage of an all-slow-cadence comp.
+     (5) ~~a symmetric-E_min statistic as its OWN pre-op~~ **ANALYZED 2026-08-16 —
+     DIRECTION DETERMINED, no pre-op needed:** iron sweep is already symmetric by construction
+     (all 179 sim credits ≥5.6, zero below E_min=1.5; symmetric thresholding changes nothing).
+     T5 wind-weak has 92.2% of sim credits below E_min (cinderella-crystal-wave MG 1167×0.106,
+     nayuta SMG 801×0.212); symmetric E_min at credit level drops sim gauge from 1275.59 to
+     982.08 (77% survives) — making S even COLDER, not warmer. The original asymmetric test was
+     already generous to the sim side. The "T5 uninterpretable" problem is NOT caused by
+     asymmetric thresholding — it's structural (MG/SMG units contribute via many tiny hits
+     that aggregate below the per-event threshold by design). No symmetric-E_min variant
+     resolves this; the fix is a bin-level aggregation (not credit-level) which is the existing
+     sim-side computation. Pre-op not warranted.**
    - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — **LANDED
      2026-08-16** (2-of-2 ACCEPT HIGH, driver + blind kimi-code/k3). Question A:
      **INCONCLUSIVE-LOG** — the ≥2-window counting rule cannot fire (anomalous-magnitude
@@ -180,7 +206,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      classification thread's ranked item (2) (noise-corrected ceiling test) needs — feed it
      there (that item needs its OWN pre-op). Record:
      `scientific-method-harness.md` 2026-08-16 (second entry);
-     `docs/handoffs/2026-08-16-anis-star-session-handoff.md` (Thread B) closes.
+     `docs/handoffs/closed/2026-08-16-anis-star-session-handoff.md` (Thread B) CLOSED
+     2026-08-16 (2-of-2 landed; Thread A merged as PR #125). Two tooling follow-ups it carried
+     stay OPEN: (i) `gauge-fill.py` WITHOUT an explicit `--bar` self-calibrates onto a dark
+     terrain edge on solo footage — always pass `--bar` + the maiden fixture gate
+     (/skill-maintenance candidate for the probe-processing reader table); (ii) `read-ammo.ts`
+     reads 0/851 frames on her text-label HUD ("AMMO / NNN", not the boxed digits its template
+     matches) — MISSING READERS: a text-label digit path is needed.
      ~~`modernia` Destroy-Mode bar read (U28's named probe)~~ **CLOSED 2026-08-16 — forced dead
      by the already-settled FB gauge-lock rule** (CLAUDE.md verified facts: nothing generates
      during the chain or Full Burst): her Destroy Mode window is coincident with her own
@@ -206,37 +238,60 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      candidate — was re-modeled 2026-08-16 as the owner-confirmed 15s pulse (DECISIONS entry;
      each application credits her 5.6 bar-%), and the comp still reads 11 FBs on 100% of seeds
      (only ~2–3 of her ~11 applications land inside generating windows ≈ a sixth of one bar).
-     The `iron sweep (run G)` regression comp stays disabled. Remaining leads: audit the other
+     The `iron sweep (run G)` regression comp stays disabled. Remaining leads: ~~audit the other
      four kits (`d-killer-wife`/`milk-blooming-bunny`/`maxwell`/`liberalio`) for
-     re-apply-encoded-as-passive or mixed-block shapes whose applications should credit (the
+     re-apply-encoded-as-passive or mixed-block shapes whose applications should credit~~
+     **AUDITED 2026-08-16 — ALL FOUR CLEAN (no missing application-gauge credits):**
+     `d-killer-wife` burst is a mixed block (`flatDamage 269.28` + `targetStatus 'Wipe Out' 10s`)
+     — `isGeneratingApplication()` correctly rejects it (the `.every()` check fails on
+     `flatDamage`); also timing-disqualified (`burstCast` inside FB lock). `milk-blooming-bunny`
+     has no enemy debuffs at all (S1 self `gainPierce`, S2 DoT via `skillGauge`). `maxwell` burst
+     is self `weaponSwap`; S1 buffs allies — no enemy-targeted debuff effects. `liberalio` S1
+     `flatDamage 202.5` generates via `skillGauge` (not application gauge); all other effects are
+     self/ally buffs. The iron-sweep FB shortfall is NOT explained by missing application-gauge
+     credits from any seated unit. (The
      H-A team-context route was CLOSED by owner ruling 2026-08-16 — no team-scaling credit
-     mechanism exists — so encoding audits and the anis-star U28 divisor read are what remain).
-     Also open: ⚑ four live-credit
+     mechanism exists — so the anis-star U28 divisor read is what remains of the encoding audit path.)
+     Also open: ~~⚑ four live-credit
      units carry class-modal (not datamined) gauge rows — `eunhwa`/`ludmilla`/
-     `sakura-suzuhara`/`signal` (see the `applicationGauge` ⚑ comment) — worth a datamine
-     re-pull if any of them ever seats a graded comp. (2)
+     `sakura-suzuhara`/`signal`~~ **RESOLVED 2026-08-16:** datamine re-pull found `eunhwa`
+     (SR 580 ≠ modal 560) and `ludmilla` (SMG 30 ≠ modal 20) needed real rows — added to
+     `data/gauge-per-shot.json`; `sakura-suzuhara` and `signal` both match SMG modal
+     (20 = 20) — no row needed. `sim.ts` ⚑ comment updated. (2)
      per-HIT credit — community-settled HIGH for weapon normals, MEDIUM-HIGH for skill sub-hits;
      the engine's divisor is CORROBORATED for genuine multi-muzzle units. ~~The bundled
      `anis-star` carve-out removal~~ **ENACTED 2026-08-16** via `/scientific-method` (2-of-2
      ACCEPT HIGH; DECISIONS 2026-08-16, branch `anis-star-gauge-divisor`, PR pending): every
      enabled measured FB pin byte-identical, T5 moves 11/12→12 toward its measured 13. The
-     noise-floor half of the `anis-star` re-record ask STANDS (and the solo magnitude residual
-     now reads 10.39 vs the ≥ ~10.96 exclusion bound — same footage ask resolves it).
-     **NEW follow-up (fit-exposure re-tune):** PA MiKa's supports were fit to the old
-     halved-gauge burst timing and got hotter on the board (`mint` → 1.067, `prika` 1.074 →
-     1.112, `alice` 1.099 → 1.114, `red-hood` +2.7%) while `anis-star`/`cinderella` improved —
-     re-tune those overrides against the corrected rotation timing per the rotation-fix
-     doctrine (never re-fudge the divisor).
-     **NEW follow-up (implementation-review FOLLOW-UP 6):** the rider channel that drives every
+     noise-floor half of the `anis-star` re-record ask STANDS (Question B MEASURED: 492/597
+     quiet bins, zero false events, Wilson 0.55%/0.45%; feeds the classification thread's
+     noise-corrected ceiling test). The solo magnitude residual (10.39 vs ≥ ~10.96 exclusion
+     bound) returned INCONCLUSIVE-LOG from solo #2 — the ≥2-window counting rule cannot fire;
+     no hypothesis discriminated. U28 both halves resolved per the autonomous audit
+     (2026-08-16).
+     ~~**NEW follow-up (fit-exposure re-tune):** PA MiKa's supports were fit to the old
+     halved-gauge burst timing and got hotter on the board~~ **INVESTIGATED 2026-08-16,
+     NOTHING TO RE-TUNE:** all four PA MiKa support overrides (`mint`, `prika`, `alice`,
+     `red-hood`) are kit-exact — every damage-relevant parameter is datamined or kit-literal,
+     with zero hand-fitted values. The ratio shifts are the correct output of faithful
+     overrides running on the corrected rotation timing; the old (colder) readings were the
+     ones distorted by the halved gauge. Per the rotation-fix doctrine: faithful > fit, and
+     the divisor is never re-fudged. The prika duet-window ⚑s (Encore 9999 vs 10s) are
+     structural owner-rulings, independent of the divisor fix.
+     ~~**NEW follow-up (implementation-review FOLLOW-UP 6):** the rider channel that drives every
      board delta (`anis-star`'s unlocked `shotFired` flatDamage credit, now 2.8/impact) is
      pinned only via `skillImpactGauge()` — a MIRROR of the sim.ts formula, so it stays green
      if the engine's divisor changed underneath. Add an engine-level G5 spec reading the
      per-pull generation off `gaugeGenerated` through the engine in a fixture whose unlocked
-     windows are controlled (the naive `gaugeGenerated / pulls` conflates locked pulls — needs
-     a window-aware shape; that subtlety is why it was filed, not rushed).
+     windows are controlled~~ **ENACTED 2026-08-16:** G5 spec test added to
+     `scripts/tests/units/anis-star.test.ts` — reads the engine's `gaugeGenerated` accumulator
+     through the G2 stall fixture's counterfactual delta (one dot tick per cast isolates the
+     exact 2.8×1.06 per-impact credit at the `addGauge` level). Catches any drift between the
+     engine's `skillGauge` path and the `skillImpactGauge()` mirror formula that G4 pins.
    - **Residue ledger (findings-only):** ~~`snow-white-heavy-arms` U11c~~ **MEASURED 2026-08-15,
-     PROMOTED TO ITEM 8** (volley generates per HIT; per-sub-hit gauge enactment planned there).
-     `ein` U8 0.7× team residual (N2); stage1→2 real 33f/32f vs modeled 30f (runs AGAINST the gap).
+     ENACTED 2026-08-15** via `flatDamage.gaugeHits` (per-sub-hit gauge credit; volleys generate
+     per HIT, not per proc). `ein` U8 0.7× team residual (N2); stage1→2 real 33f/32f vs modeled
+     30f (runs AGAINST the gap).
    - ~~Liberalio patch-note draft~~ **DROPPED by owner 2026-08-16** ("it doesn't matter") —
      never published, no draft file existed; do not resurrect.
 3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
@@ -323,10 +378,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    because it was outside that diff's intent and the bridges are shared by every gate skill.
 
 8. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
-   ⚠ FIRST: the cadence landing itself is not finished shipping — branch `nbo-swap-cadence`
-   (`4aa50dfe`) is committed + `verify.sh` green but UNREVIEWED and UNPUSHED; its `/code-review`
-   result was never read. Resume from
-   `docs/handoffs/2026-08-16-nbo-swap-cadence-landing.md` on that worktree before anything below.
+   The cadence landing itself is SHIPPED (merged as PR #126, 2026-08-16; cross-family
+   `/code-review` verdict FIX-BEFORE-MERGE → all 3 FIX findings addressed pre-merge; landing
+   record archived to `docs/handoffs/closed/2026-08-16-nbo-swap-cadence-landing.md`).
    The cadence half landed 2026-08-16 (DECISIONS): her burst weapon fires at its datamined 1.5
    shots/s, not her MG wind-up ladder, and the engine's `swapLeavesMgLadder` gate makes a swap
    cadence readable on an MG-base unit at all. What that exposed is the open part: at 1.5 shots/s a

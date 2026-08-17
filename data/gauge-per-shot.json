@@ -203,6 +203,12 @@
     "source": "datamined",
     "targetPerTrigger": 10.0
   },
+  "eunhwa": {
+    "basePerTrigger": 290.0,
+    "fullChargeBonus": 250.0,
+    "source": "datamined (target_burst_energy_pershot 58000 → 580.0; differs from SR class-modal 560)",
+    "targetPerTrigger": 580.0
+  },
   "eunhwa-tactical-upgrade": {
     "basePerTrigger": 280.0,
     "fullChargeBonus": 250.0,
@@ -311,6 +317,12 @@
     "fullChargeBonus": 0.0,
     "source": "datamined",
     "targetPerTrigger": 20.0
+  },
+  "ludmilla": {
+    "basePerTrigger": 15.0,
+    "fullChargeBonus": 0.0,
+    "source": "datamined (target_burst_energy_pershot 3000 → 30.0; differs from SMG class-modal 20)",
+    "targetPerTrigger": 30.0
   },
   "ludmilla-winter-owner": {
     "basePerTrigger": 5.0,
