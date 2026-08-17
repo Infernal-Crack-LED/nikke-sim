@@ -96,6 +96,20 @@ const barCrop = flags['bar-crop'] ?? 'crop=200:14:2420:478';
 const soloCrop = flags['solo-crop'] ?? 'crop=142:12:2470:488';
 const wantBar = flags['no-bar'] !== 'true';
 
+// Validate value-taking flags BEFORE the (expensive) decode — a bare `--fixture-out` parses as the
+// string 'true', and the old guard treated that as "flag absent", so the run decoded the whole
+// video and then silently wrote no fixture, exiting 0. Fail here instead, in under a second.
+if (flags['fixture-out'] === 'true') {
+  console.error(
+    '--fixture-out requires a path (got a bare --fixture-out with no value)'
+  );
+  process.exit(1);
+}
+if (flags['fixture-out'] && flags['cycle-table'] !== 'true') {
+  console.error('--fixture-out requires --cycle-table');
+  process.exit(1);
+}
+
 mkdirSync(outDir, { recursive: true });
 const dirs = {
   gauge: `${outDir}/frames-gauge`,
@@ -399,8 +413,9 @@ writeFileSync(`${outDir}/scan.json`, JSON.stringify(result, null, 2) + '\n');
 // --fixture-out <path>: emit the committed-shape TEMPO FIXTURE (docs/probe-data/tempo-cycle-*.json)
 // so a downstream measurement replays WITHOUT the recording (docs/probes/ is gitignored). Requires
 // --cycle-table, since the fixture's `expected` block is the cycle table's own output.
+// Bare-flag and --cycle-table validation already happened before the decode (see the early guard).
 const fixtureOut = flags['fixture-out'];
-if (fixtureOut && fixtureOut !== 'true') {
+if (fixtureOut) {
   if (!cycleRows || !cycleBound || !cycleSteady) {
     console.error('--fixture-out requires --cycle-table');
     process.exit(1);

@@ -65,12 +65,13 @@ absorbed differently — pinned to the sim's count, or had the assertion dropped
 seat no `liberalio`.** The `liberalio` correlation is in which comps got _flagged_, not in which are
 wrong.
 
-| status          | meaning                                                 | comps                                                                     |
-| --------------- | ------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `disabled`      | skipped by `verify.sh`                                  | iron sweep (run G), T5 wind-weak, T1 wind-weak, N3 scarlet/liberalio iron |
-| `pinned-to-sim` | `simFullBursts` pin; gate green, prints KNOWN SHORTFALL | misc B3s (run I order)                                                    |
-| `unpinned`      | assertion removed/commented                             | N1 rapi/quency wind, soda-tb control                                      |
-| `omitted`       | never entered `scripts/regression.ts`                   | N2 modernia wind, N5 snowwhite-HA fire                                    |
+| status           | meaning                                                 | comps                                                                     |
+| ---------------- | ------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `disabled`       | skipped by `verify.sh`                                  | iron sweep (run G), T5 wind-weak, T1 wind-weak, N3 scarlet/liberalio iron |
+| `pinned-to-sim`  | `simFullBursts` pin; gate green, prints KNOWN SHORTFALL | misc B3s (run I order)                                                    |
+| `unpinned`       | assertion removed/commented                             | N1 rapi/quency wind, soda-tb control                                      |
+| `omitted`        | never entered `scripts/regression.ts`                   | N2 modernia wind                                                          |
+| `seeded-overlap` | live `realFullBursts`; passes only on seeded overlap    | N5 snowwhite-HA fire                                                      |
 
 ## The matrix
 

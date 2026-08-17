@@ -1269,3 +1269,116 @@ from the focus-matched arm). Even under H1 every seated comp still undershoots i
    entry reading "FINDINGS ONLY — nothing enacted. Enactment is an engine touch and owner-gated."
 6. **T5's measured refill is the weakest leg in this run** (n=11, one 4.75s outlier, sd 0.944). Any
    future citation of "T5 above band" from this entry must carry that caveat.
+
+## 2026-08-17 — `anis-star` solo per-pull gauge magnitude, pre-registered re-run → LOG, disposition SPLIT (driver INCONCLUSIVE/HIGH + blind post-op ACCEPT-narrowed/MEDIUM)
+
+**Outcome: LOG. The 2-of-2 did NOT close — this is the designed owner escalation, surfaced not
+resolved.** Measurement-only packet; **nothing enacted**, no `src/engine/**`, `data/**` or override
+file touched. QUEUE item N1. Packet:
+`docs/handoffs/2026-08-17-anis-star-solo-magnitude-preop-packet.md`. Deliverable:
+`docs/handoffs/2026-08-17-anis-star-solo-magnitude-work-deliverable.md`. Artifact:
+`docs/probe-data/anis-star-solo-magnitude-2026-08-17.json`. Instrument:
+`scripts/probe/gauge-magnitude.ts` + pin `scripts/tests/probe/gauge-magnitude.test.ts` (19/19).
+
+**What the run was.** The 2026-08-16 run went INCONCLUSIVE because its count-to-fill rule assumed
+every pull credits the same steady `P`, and the data falsified that (three departing credits plus
+every window's opener). This run gathered no new data: it pinned two estimators well-posed under
+departing credits — **E1** anomaly-aware count-to-fill (integer, low gain exposure) and **E2** a
+telescoping run-mean (quantization enters twice per RUN, not twice per pull, so `SE_quant ≈ 0.296/m`)
+— plus **E3** run-height linearity, and added the independent A3 recording as an out-of-sample leg.
+
+**Result.** The rule as written selects clause 1 (MEASURED-ELEVATED): pooled E2 = **11.32**,
+CI **[10.745, 11.894]**, excluding the shipped 10.388; A3's E2 = **11.15**, CI **[10.800, 11.500]**,
+independently calibrated, same direction. Departure membership identical at both radii (the `[NR1]`
+sensitivity trigger did not fire); all three controls pass; every `K` counted to the game-driven
+green-full cue.
+
+**Why the driver did not accept it.** Three defects, all in the pre-registration rather than the data:
+
+1. **W3 cannot count.** Its E1 lower bound is `93.5/9 = 10.38889` against 10.388 — a margin of
+   **0.0012 of a render column**. The 2026-08-16 _approved_ packet had already adjudicated this exact
+   window (`anis-star-solo2-gauge.json:919-921`: "H-model sits on the closed lower bound …
+   DOUBLY-CONSISTENT"), and clause 1(ii) here failed to carry that bar forward. **The blind judge
+   struck W3 independently, for the same reason.**
+2. **`rawOverTrue = 1.064`** — a standing instrument-gain claim living in A3's own calibration block
+   (`series30fps.calibration`, anchored on `maiden-ice-rose`). Applying it moves E2 to ~10.64 with a
+   CI containing 10.388. Clause 3 tests for the gain SIGNATURE inside the data; it has **no leg for an
+   externally calibrated gain CONSTANT**. H0-a is therefore bounded, not excluded.
+3. **The clause-2 reachability wording is degenerate** — as drafted, "clause 2 unreachable at the
+   achieved width" is logically equivalent to "clause 1(i) satisfied", which would make clause 1
+   unsatisfiable in all possible worlds. **Both judges independently identified this and repaired it
+   the same way** (design-intent reading: clause 2 _was_ reachable — any pooled estimate in
+   [9.81, 10.96] would have selected it). ~~It is a harness template defect, not a run defect.~~
+   **SUPERSEDED (2026-08-17) — disregard that last sentence.** Verified after the fact: the wording
+   exists nowhere in `.claude/**`, and there is no packet template — `SKILL.md` said only
+   "**pre-committed DECISION RULE** with a falsification clause". **The defect was authored in THIS
+   run's own packet**, so it is a run defect after all. Nor was it spreading: the same-day
+   `2026-08-17-n3-third-arm-preop-packet.md` states the identical concern correctly
+   ("R-C is a real, reachable outcome that this run can produce"). The durable fix landed as a
+   generalized rule in `SKILL.md` step 1 + Gotchas (owner-approved 2026-08-17): **no decision-rule
+   clause may be conditioned on the realized estimate**, enforced by a pre-run substitution test.
+
+**Where the two judges split.** The blind judge granted **A3's window as a substitute clause-1(ii)
+leg** (its `K` is human-ammo-verified, not reader-only) and accepted on W2 + A3. The driver rejects
+that substitution on a ground the blind judge did not weigh: **the packet's own `[R5]` had already
+demoted A3's E1** as on-the-record and carrying no falsifying power, so spending it as a
+discriminating leg spends exactly the evidence the packet ruled non-discriminating. With W3 void and
+A3 barred, clause 1(ii) holds one window ⇒ clause 4, INCONCLUSIVE-LOG.
+
+**The split does not change what happens to the tree.** Nothing is enacted under either reading, and
+the blind judge's MEDIUM confidence caps the run at LOG regardless (HIGH+HIGH → Implement). What is
+at stake is only what the record claims. **Owner call.**
+
+**What the run nevertheless established, and it is not nothing.** E2 is the only genuinely
+pre-registered, previously-uncomputed leg in this whole thread, and it delivers the same answer on
+two recordings whose bar extents were calibrated by _different mechanisms_ (hand `--bar` geometry vs
+`--calib-frame` auto-lock) and which independently agreed on 138 px. Both exclude 10.388. That is a
+real observation regardless of how the clause dispute resolves — filed on U28's magnitude half as a
+measured overshoot of the shipped model **on solo footage only**. The shipped 10.388 keeps its own
+basis (datamine + comp-level FB pins), which no solo observable touches — the firewall
+`DECISIONS.md:5953-5959` already draws.
+
+**Harness lessons (the durable part).**
+
+- **A pre-registered rule can inherit a defect from the run it replaces.** The 2026-08-16 packet had
+  correctly barred W3 as doubly-consistent; the re-run's rule silently re-admitted it, and W3 is what
+  delivered clause 1. When a rule is rewritten to repair a falsified premise, **the bars the previous
+  rule imposed have to be re-imposed explicitly** — they do not survive the rewrite.
+- **A "margin" of 1/800th of a measurement column is a tie, not an exclusion.** Any future
+  count-to-fill clause should require a minimum exclusion margin in RENDER COLUMNS, not merely a
+  strict inequality. Proposed: ≥ 0.5 column.
+- **Test for calibration constants, not just calibration signatures.** Clause 3 looked for a gain
+  fingerprint in the data and found none; it never asked whether a gain constant was already written
+  down elsewhere in the tree. It was — in the input artifact's own calibration block.
+- **Two judges converging independently on the same strike is worth more than either verdict.** W3
+  and the reachability defect were each found twice, separately.
+
+### Open items handed forward (owner action)
+
+1. **The single measurement that would settle this: a render-scale calibration read on `anis-star`'s
+   own solo bar** — apply the `maiden-ice-rose`-anchored method to this footage directly and confirm
+   or refute `rawOverTrue ≈ 1.064` for this bar. This closes H0-a outright instead of bounding it,
+   and it is what the packet's own clause 3 named as the correct next step. **It is the prerequisite
+   for any future magnitude run** — a third magnitude run without it re-fights this argument.
+2. **Owner ruling wanted on the split:** may an out-of-sample recording's E1 window carry a
+   clause-1(ii) leg when the packet has demoted that same E1 as already-on-record? Driver says no,
+   blind judge says yes in the spirit of the rule.
+3. ~~**Harness template fix:** the clause-2 reachability wording is defective as drafted and should be
+   corrected wherever it is reused, before the next packet inherits it.~~
+   **SUPERSEDED (2026-08-17) — CLOSED, and the premise was wrong.** There was no template to fix:
+   the wording existed nowhere in `.claude/**`, and the same-day N3 third-arm packet already stated
+   the concern correctly, so nothing was inheriting it. What DID generalize is the underlying rule,
+   now landed in `SKILL.md` (owner-approved): **no decision-rule clause may be conditioned on the
+   realized estimate**, plus a pre-run substitution test that each clause is selectable by some
+   admissible outcome. Recorded as a lesson about the diagnosis, not just the bug: "a defect in my
+   own packet" was reported as "a defect in the shared harness" without checking the shared harness.
+4. **Pin the Question-B SE formula.** It dominates the CI (7.5× quantization) under a driver-chosen
+   formula. Nothing turned on it here (both the conservative and near-zero readings exclude 10.388),
+   but the next packet should pin it rather than leave it to the work step.
+5. **`P` may not be a constant.** Steady deltas span three render columns where floor-quantization of
+   a constant can produce only two; empirical scatter ran 2.11× the quantization model. Both judges
+   scoped the finding to "the classified-steady mean", not a dispersion-free constant. A many-pull
+   dispersion study is the separate question.
+6. **Unexplained and reported-not-used:** the +547,955 damage step at the W4 opener (a third
+   magnitude, 14.1% above tier A) and the W4 rendered-100.0-at-81.63 vs green-full-at-83.20 gap with
+   two pulls in between. Neither entered any estimator; neither has an explanation.

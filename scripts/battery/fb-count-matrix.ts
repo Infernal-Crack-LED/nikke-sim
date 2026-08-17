@@ -58,7 +58,14 @@ const FIGHT_SEC = 180;
 /** gauge-full -> B1 cast (`PRE_B1_GAP_FRAMES`, 30f). Subtracted to recover the refill's true end. */
 const PRE_B1_SEC = 0.5;
 
-type Status = 'disabled' | 'pinned-to-sim' | 'unpinned' | 'omitted';
+type Status =
+  | 'disabled'
+  | 'pinned-to-sim'
+  | 'unpinned'
+  | 'omitted'
+  /** in `scripts/regression.ts` with a LIVE `realFullBursts` assertion that passes only because
+   *  the SEEDED distribution still spans the measured count — the deterministic run does not. */
+  | 'seeded-overlap';
 
 interface OffComp {
   /** label used in the report */
@@ -157,8 +164,8 @@ const OFF: OffComp[] = [
     name: 'N5 snowwhite-HA fire',
     from: 'N5 snowwhite-HA fire (boss Fire)',
     measured: 12,
-    status: 'omitted',
-    note: 'LIBERALIO-FREE. Recorded as real 12 vs sim 11.',
+    status: 'seeded-overlap',
+    note: 'LIBERALIO-FREE. In scripts/regression.ts with a live realFullBursts: 12 (undisabled, unpinned) since the 2026-08-15 per-sub-hit gauge enactment; the deterministic run reads 13 and the gate passes on seeded-distribution overlap.',
   },
 ];
 
@@ -2427,6 +2434,103 @@ export function creditScheduleFor(
     }
   }
 
+  // ---- per-impact gauge MULTIPLICITY (`flatDamage.gaugeHits`).
+  //
+  // One skill/burst damage instance is NOT always one gauge credit: a `flatDamage` carrying
+  // `gaugeHits: N` fires `skillGauge` N times off its single aggregated damage instance — the
+  // engine's `case 'flatDamage'` loop (`const gaugeHits = e.gaugeHits ?? 1; for (…) skillGauge(…)`)
+  // and the flighted-landing loop (`const landingGaugeHits = p.gaugeHits ?? 1`) both do it, so a
+  // sequential volley modeled as one packet (snow-white-heavy-arms 5/10, eve 3, little-mermaid 10)
+  // feeds the bar per SUB-HIT while its damage stays aggregated to preserve tuned totals.
+  //
+  // The event tap carries no effect identity, so the multiplicity is recovered by matching the
+  // event's (slug, srcSlot, atkPct) against the override's own flatDamage coefficients. That is
+  // exact here because an override must define all three slots (src/skills/index.ts throws
+  // otherwise) — there is no parsed-kit fallback whose coefficients this table would miss — and
+  // because the lab runs skills at 10/10/10, where `scaleBlocks` is a no-op and the authored
+  // coefficient IS the one dealDamage logs. Everything the match could get wrong is a build-time
+  // LOUD flag rather than a silent guess:
+  //   * a carrier whose atkPct is rescaled at deal time (`rampSec`) can never match — flagged;
+  //   * a carrier whose (slot, atkPct) collides with another damage-producing coefficient of a
+  //     different multiplicity is AMBIGUOUS — flagged and dropped back to 1 credit.
+  // A unit with no `gaugeHits` anywhere gets an empty table and the pre-existing 1-credit path.
+  interface GaugeHitEntry {
+    slot: string;
+    atkPct: number;
+    hits: number;
+  }
+  const nearPct = (a: number, b: number) =>
+    Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(a));
+  const gaugeHitCarriers: Record<string, GaugeHitEntry[]> = {};
+  for (const s of slugs) {
+    const carriers: GaugeHitEntry[] = [];
+    // every coefficient in this unit's kit that can produce a skill/burst damage EVENT, with the
+    // number of skillGauge calls the engine makes for it (dot ticks / stored releases: one each)
+    const coeffs: GaugeHitEntry[] = [];
+    const walk = (e: EffectDef, slot: string) => {
+      if (e.kind === 'escalating') {
+        for (const step of e.steps) {
+          walk(step, slot);
+        }
+        return;
+      }
+      if (e.kind === 'flatDamage') {
+        const hits = e.gaugeHits ?? 1;
+        coeffs.push({ slot, atkPct: e.atkPct, hits });
+        if (hits > 1) {
+          if (e.rampSec !== undefined) {
+            warn(
+              `${s}: ${slot} carries gaugeHits ${hits} on a rampSec flatDamage — the logged atkPct ` +
+                'is ramp-scaled, so this reconstruction cannot identify its impacts and credits them ONCE'
+            );
+            return;
+          }
+          carriers.push({ slot, atkPct: e.atkPct, hits });
+        }
+        return;
+      }
+      if (
+        e.kind === 'dot' ||
+        e.kind === 'storedHit' ||
+        e.kind === 'stackedNuke'
+      ) {
+        coeffs.push({ slot, atkPct: e.atkPct, hits: 1 });
+      }
+    };
+    for (const b of activeRawBlocksAll(s, comp.modes?.[s])) {
+      for (const e of b.effects) {
+        walk(e, b.slot);
+      }
+    }
+    gaugeHitCarriers[s] = carriers.filter((c) => {
+      const clash = coeffs.some(
+        (o) =>
+          o.slot === c.slot && nearPct(o.atkPct, c.atkPct) && o.hits !== c.hits
+      );
+      if (clash) {
+        warn(
+          `${s}: ${c.slot} atkPct ${c.atkPct} is carried by both a gaugeHits ${c.hits} line and a ` +
+            'differently-crediting line — the tap cannot tell them apart, so it credits ONCE'
+        );
+      }
+      return !clash;
+    });
+  }
+  /** How many `skillGauge` calls the engine makes for this damage instance. */
+  const skillGaugeHits = (
+    slug: string,
+    srcSlot: string | null,
+    atkPct: number
+  ): number => {
+    if (srcSlot === null) {
+      return 1;
+    }
+    const hit = gaugeHitCarriers[slug]?.find(
+      (c) => c.slot === srcSlot && nearPct(c.atkPct, atkPct)
+    );
+    return hit?.hits ?? 1;
+  };
+
   // ---- fold the frame-ordered event stream into the schedule.
   const credits: GaugeCredit[] = [];
   const perUnitScheduled: Record<string, number> = {};
@@ -2499,14 +2603,18 @@ export function creditScheduleFor(
       (ev.bucket === 'skill' || ev.bucket === 'burst')
     ) {
       // skillGauge: one target-base impact per skill/burst damage instance (flatDamage procs,
-      // hitRepeat, flighted landings, DoT ticks, the extraHitDamagePct rider).
-      push(
-        ev.frame,
-        ev.slug,
-        ev.unitIdx,
-        'skill',
-        skillImpactGauge(ev.slug) * (1 + burstGenPctAt(ev.slug, ev.frame) / 100)
-      );
+      // hitRepeat, flighted landings, DoT ticks, the extraHitDamagePct rider) — EXCEPT a
+      // `flatDamage` carrying `gaugeHits: N`, whose one aggregated instance fires skillGauge N
+      // times (see the multiplicity table above). Pushed as N SEPARATE credits rather than one
+      // N-fold amount because the engine makes N separate addGauge calls: CHECK (b) matches
+      // DBG_GAUGE line-for-line, and a real fill trace shows the sub-hits individually too.
+      const amount =
+        skillImpactGauge(ev.slug) *
+        (1 + burstGenPctAt(ev.slug, ev.frame) / 100);
+      const hits = skillGaugeHits(ev.slug, ev.srcSlot, ev.atkPct);
+      for (let h = 0; h < hits; h++) {
+        push(ev.frame, ev.slug, ev.unitIdx, 'skill', amount);
+      }
     }
   }
 

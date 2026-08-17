@@ -677,8 +677,23 @@ focus`. ⇒ For a GENUINE multi-muzzle unit, the engine's `targetPerTrigger / hi
    on genuine multi-hit units only (`modernia` MG ÷2, the SG ÷10), gated on the `modernia`
    Destroy-Mode bar read. **The magnitude half stays open**: her post-change solo decomposition
    (700 + 280) × 1.06 = 10.39%/pull moves TOWARD the 2026-08-15 count-to-fill exclusion bound
-   (steady ≥ ~10.96) but is still excluded — the residual is the in-window elevation class,
-   footage-gated (the ≥60s solo re-record ask, QUEUE item 2).
+   (steady ≥ ~10.96) but is still excluded.
+
+   **NOT footage-gated (corrected 2026-08-17 — the earlier "≥60s solo re-record ask" wording was
+   stale).** Two solo recordings are on disk and the blocker was hypothesis discrimination, not
+   window count. The 2026-08-17 pre-registered re-run
+   (`docs/handoffs/scientific-method-harness.md`, LOG with a SPLIT 2-of-2) measured the
+   classified-steady per-pull credit at **11.32 (CI [10.745, 11.894])** on solo #2 and **11.15
+   (CI [10.800, 11.500])** on the independently-calibrated A3 footage — both excluding 10.388, same
+   direction, different calibration mechanisms. **It is still not settled, for one specific reason:**
+   `rawOverTrue = 1.064`, a standing instrument-gain claim in A3's own `series30fps.calibration`
+   block, would move the estimate to ~10.64 with a CI containing 10.388, and the run's pre-registered
+   gain test could not adjudicate an externally written-down gain constant.
+
+   ⇒ **The blocking measurement is now a render-scale calibration read on `anis-star`'s own solo
+   bar** — apply the `maiden-ice-rose`-anchored method to this footage and confirm or refute
+   `rawOverTrue ≈ 1.064` for this bar. Until that exists, another magnitude run cannot separate a
+   real elevation from a reader gain.
 
 ### U27 — isabel's mid/midfar SG landing needs a clock-drift-corrected re-derive (split out of U17, 2026-07-22)
 

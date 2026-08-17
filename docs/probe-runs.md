@@ -8274,3 +8274,63 @@ audit**. She is the shared unit of both arms, her datamine was once 6× off (`c1
 correction that created this whole shortfall thread), and she is the only route at the rival this
 run provably cannot touch. Second: settle the clean-bin vs full-window denominator on a fixture with
 known ground truth, which would convert the standing MAR caveat into a measured bias bound.
+
+---
+
+## 2026-08-17 — `anis-star` (Anis: Star) solo per-pull gauge magnitude: pre-registered re-run of two existing recordings
+
+**MEASUREMENT ONLY.** No engine, data or override value is touched. Disposition **LOG with a SPLIT
+2-of-2** (driver INCONCLUSIVE/HIGH, blind post-op ACCEPT-narrowed/MEDIUM) — the split is an owner
+escalation, recorded not resolved. Full record:
+`docs/handoffs/scientific-method-harness.md` (2026-08-17 entry). Packet / deliverable / artifact:
+`docs/handoffs/2026-08-17-anis-star-solo-magnitude-preop-packet.md`,
+`docs/handoffs/2026-08-17-anis-star-solo-magnitude-work-deliverable.md`,
+`docs/probe-data/anis-star-solo-magnitude-2026-08-17.json`.
+
+**Footage:** no new recording. Re-analysis of `docs/probes/solo/anis-star-solo.mov` (solo #2) and
+`docs/probes/burst tests/a2 anis star.MP4` (A3), via their committed traces.
+
+**Instrument (committed, constraint 9):** `scripts/probe/gauge-magnitude.ts`, pinned by
+`scripts/tests/probe/gauge-magnitude.test.ts` (19/19). It implements three pre-registered estimators
+and applies the pre-committed decision rule mechanically.
+
+**Measured — the new number.** The telescoping run-mean (E2), the only genuinely uncomputed leg in
+this thread, gives a classified-steady per-pull credit of:
+
+| recording                               | E2 pooled | 95% CI           | vs shipped 10.388 |
+| --------------------------------------- | --------- | ---------------- | ----------------- |
+| solo #2 (`--bar` hand geometry, 138 px) | **11.32** | [10.745, 11.894] | excludes          |
+| A3 (`--calib-frame` auto-lock, 138 px)  | **11.15** | [10.800, 11.500] | excludes          |
+
+Two recordings whose bar extents were fixed by _different mechanisms_ and independently agreed on
+138 px. Departure classification identical at both pinned radii (3 and 2 render columns). All three
+controls pass. Every `K` counted to the game-driven green-full cue (in W4 that is 83.20, **not** the
+rendered 100.0 at 81.63).
+
+**Why this is NOT recorded as a settled elevation.** Three defects, all in the pre-registration:
+
+1. **W3's E1 "exclusion" is `93.5/9 = 10.38889` vs 10.388 — 0.0012 of a render column.** The
+   2026-08-16 approved packet had already ruled this window DOUBLY-CONSISTENT and non-counting
+   (`anis-star-solo2-gauge.json:919-921`); the re-run's rule failed to carry that bar forward. Both
+   judges struck it independently.
+2. **`rawOverTrue = 1.064`**, a standing instrument-gain claim in A3's own
+   `series30fps.calibration` block (anchored on `maiden-ice-rose`). Applied, it moves E2 to ~10.64
+   with a CI containing 10.388. The pre-registered gain test looks for a gain _signature in the data_
+   and has no leg for a gain _constant already written down elsewhere_. H0-a is bounded, not excluded.
+3. The clause-2 reachability wording is degenerate as drafted (both judges found and repaired it
+   identically).
+
+⇒ **The elevation is a real, cross-recording-consistent observation on solo footage, and it is not
+yet separable from a documented instrument gain.** Filed on U28's magnitude half. The shipped 10.388
+keeps its own basis (datamine + comp-level FB pins) — no solo observable touches it.
+
+**Named next step, and it is now the blocking one:** a **render-scale calibration read on
+`anis-star`'s own solo bar** — apply the `maiden-ice-rose`-anchored method to this footage and
+confirm or refute `rawOverTrue ≈ 1.064` for this bar. Until that exists, a third magnitude run only
+re-fights this argument.
+
+**Reported, unexplained, used by nothing:** a +547,955 damage step at the W4 opener (a third
+magnitude, 14.1% above the tier-A 480,330) and the W4 rendered-100.0 → green-full gap spanning two
+pulls. The post-verdict candidate check put 2 of 3 upward departures within one render column of the
+declared 3.71 pp and the third 0.97 off; the downward departure (W4p7) is unexplained by it. That
+check is descriptive at n=3 — it identifies no mechanism.

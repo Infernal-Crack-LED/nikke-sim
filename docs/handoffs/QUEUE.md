@@ -59,38 +59,73 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > exist. Take them top-down. The numbered threads below (1–5) stay as the reference detail and are
 > mostly footage-gated — do NOT start there.
 >
-> **N1. `anis-star` solo magnitude residual — pre-registered re-run.** NOT footage-gated (the
-> existing recording has four windows; the blocker was hypothesis discrimination, not window count).
-> The 2026-08-17 source hunt narrowed it hard: W4p2 (+16.0), W4p3 (+15.2) and the steady W4p4
-> (+11.6) did the IDENTICAL damage increment 480,330, refuting extra-hits, charge-level
-> (`fullChargeBonus` 250) and crit/core — so the excess is gauge-specific. Artifact:
-> `docs/probe-data/anis-star-anomaly-source-hunt-2026-08-17.json`. **DO:** `/scientific-method` with
-> the candidate DECLARED in the packet — one extra `basePerTrigger` 140 × 2.5 focus × 1.06 aura =
-> 3.71%. ⚑ That figure was fitted AFTER the fact on n=3 and is NOT evidence; declaring it up front is
-> what makes the anomalous windows CLASSIFIABLE instead of premise-violating. Do not let it enter as
-> a conclusion.
+> **N1. DONE 2026-08-17 — LOG with a SPLIT 2-of-2; superseded by N1b below.** The pre-registered
+> re-run ran (packet + deliverable + `docs/probe-data/anis-star-solo-magnitude-2026-08-17.json`,
+> instrument `scripts/probe/gauge-magnitude.ts` + pin). Record:
+> `docs/handoffs/scientific-method-harness.md` 2026-08-17. Nothing enacted. Two things to carry:
+> the declared 3.71 candidate rests on `basePerTrigger`, which the premise gate proved
+> **ENGINE-INERT** (`sim.ts` never reads it) — so it could only ever describe a NEW mechanism, never
+> a mis-set constant; and the run measured the classified-steady credit at **11.32 / 11.15** on two
+> independently-calibrated recordings, both excluding the shipped 10.388.
 >
-> **N2. A SECOND `liberalio`-free fill trace — this is what decides the `liberalio` question.** Also
-> NOT footage-gated, contrary to how it was first filed: the recording is on disk. **Use `N5
-snowwhite-HA fire`** (`docs/probes/714 noon/5.mp4`; roster `anis-star`, `arcana-fortune-mate`,
-> `privaty`, `snow-white-heavy-arms`, `diesel-winter-sweets`, boss Fire, measured FB 12/12
-> splash-counted 2026-07-14). It is the ideal control: `liberalio`-free, in the stamped nine, with an
-> INDEPENDENT measured FB count, and a clean bundle — PI2 is currently both the sole control and the
-> only `amountsTrusted: false` bundle. **DO:** produce a bar-paint fill trace with the same
-> instruments as the 2026-08-14 set (`scripts/probe/gauge-fill.py --bar …` + `scripts/probe/scan.ts
---cycle-table`), commit it to `docs/probe-data/`, then apply the ALREADY-PRE-COMMITTED conversion
-> rule: if two-plus `liberalio`-free controls cluster within ~δ (0.15 proportional), a reproduced
-> iron-vs-T5 split converts to an affirmative REJECT of full-value per-sub-hit crediting; if the
-> controls spread comparably, the proportional-uniformity premise is the refuted thing and H1 stays
-> live. ⚑ `docs/probes/**` is GITIGNORED — a fresh worktree has no media, so run this in the main
-> tree (or symlink the probe dir).
+> **N1b. ⛔ BLOCKING PREREQUISITE — a render-scale calibration read on `anis-star`'s own solo bar.**
+> This is the one measurement that settles the magnitude question, and until it exists **no further
+> magnitude run is worth starting** (a third would re-fight the same argument). A3's own
+> `series30fps.calibration` block carries `rawOverTrue = 1.064` — a standing instrument-gain claim
+> anchored on `maiden-ice-rose`. Applied, it drags the measured 11.32 down to ~10.64 with a CI that
+> CONTAINS the shipped 10.388, i.e. the whole elevation could be reader gain. The 2026-08-17 run's
+> pre-registered gain test looks for a gain SIGNATURE in the data (absent) and has no leg for a gain
+> CONSTANT already written down elsewhere in the tree. **DO:** apply the `maiden-ice-rose`-anchored
+> calibration method to `docs/probes/solo/anis-star-solo.mov` directly and confirm or refute
+> `rawOverTrue ≈ 1.064` for THIS bar. Footage-free (recording on disk).
 >
-> **N3. Fix the `gaugeHits` blindness in the credit-schedule reconstruction.** `scripts/battery/
-fb-count-matrix.ts` pushes exactly one skill credit per damage event and never reads `gaugeHits`,
-> under-counting a carrier by (N−1) per impact. Latent only because no comp in `CREDIT_SCHEDULE_COMPS`
-> seats one of the three carriers (`snow-white-heavy-arms`, `eve`, `little-mermaid`). **This BLOCKS any
-> future `gaugeHits` enactment on an iron-sweep or T5 seat** — without it, that instrument's CHECK (a)
-> is silently wrong. Pure tooling; gate is `verify.sh` + a fixture pinning a known-good carrier.
+> **N1c. Owner ruling wanted (cheap, no work attached).** The 2-of-2 split turned on one question:
+> may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg when the same
+> packet has demoted that recording's E1 as already-on-record and non-falsifying? Driver said no
+> (⇒ INCONCLUSIVE), blind Fable said yes in the spirit of the rule (⇒ ACCEPT-narrowed). Both struck
+> the W3 window independently — its "exclusion" margin was 0.0012 of a render column.
+>
+> ~~Also flagged for the harness template: the clause-2 reachability wording is degenerate…~~
+> **DONE 2026-08-17 — and the framing was wrong.** There was no harness-template defect: the wording
+> was in **this run's own packet**, nowhere in `.claude/**` (there is no packet template), and the
+> same-day N3 third-arm packet already phrased the concern correctly, so nothing was inheriting it.
+> The generalizable rule landed in `.claude/skills/scientific-method/SKILL.md` with owner approval:
+> **no decision-rule clause may be conditioned on the realized estimate**, plus a pre-run
+> substitution test that every clause is selectable by some admissible outcome.
+>
+> **N2. A SECOND `liberalio`-free fill trace. ⛔ DO NOT RUN AS FILED — the premise gate stopped it
+> at step 0 (2026-08-17).** Full record, with every quote and `git log -S` receipt:
+> **`docs/handoffs/2026-08-17-n2-second-control-premise-gate.md`**. Read that BEFORE re-planning;
+> three verifier passes are in it and none of it needs re-deriving. Summary of what failed:
+>
+> - ~~**Blocker 1 — N3 gates N2.**~~ **CLEARED 2026-08-17** by the `gaugeHits` credit-schedule fix
+>   (`2d4dd117`): the carrier seat now reconstructs at 1080.352 = engine, residual 0, was 463.008.
+> - **Blocker 2 — the "ALREADY-PRE-COMMITTED conversion rule" is neither pre-committed nor
+>   applicable. STILL OPEN.** `git log -S` puts its text in `c8f3caf8` at 07:53, **23 minutes AFTER**
+>   the verdict it supposedly preceded (`7e2f7e1f`, 07:30); that run committed no pre-op packet at
+>   all, so the attribution is self-attested. And the conversion half is a sketch: the clustering
+>   statistic is unnamed, the two-control `R_ctrl` reconstruction undefined, "spread comparably" has
+>   no threshold, and there is an uncovered middle zone where NEITHER branch fires. δ = 0.15 also
+>   fails its own seconds→proportional step (derived ~0.064–0.084). **Pin the rule numerically
+>   BEFORE computing the new control's residual, or the run inherits exactly the post-hoc-tolerance
+>   exposure harness lessons 1 and 4 exist to prevent.**
+> - **Blocker 3 — `N5 snowwhite-HA fire` is the wrong control. STILL OPEN.** It is the ONLY member of
+>   the stamped nine where the sim reads **HIGH** (13 vs measured 12); the other eight under-count,
+>   and the band was built on PI2, which under-counts. Untraced `liberalio`-free alternatives:
+>   `N1 rapi/quency wind`, `N2 modernia wind` (prefer these), or `soda-tb control` — ⚠ the last seats
+>   `soda-twinkling-bunny`, whose `fullBurstExtend` broke the closure decomposition on N3.
+>
+> Also corrected there: N5 has **no fill-trace bundle at all** (so "clean bundle" was a hoped-for
+> outcome, not a property); "measured FB 12/12" is splash-scan notation, **not** sim 12 / real 12
+> (measured is 12, sim reads 13); and T5's "1.75–1.82" is **not** an uncertainty interval but one
+> measurement under two window-inclusion choices.
+>
+> **What CONFIRMED and is reusable:** the bar-paint chain is sound — iron 2.342 / T5 1.817 (readable)
+> / PI2 2.0915 all recompute exactly from raw 60fps reads (36/36 per-window identical), and the chain
+> applies to new footage (precedent: `fill-trace-n3-scarlet-liberalio-iron.json`). The handoff lists
+> its per-recording requirements, its five gates, and its documented failure modes.
+> ⚑ `docs/probes/**` is GITIGNORED — a fresh worktree has no media, so run this in the main tree (or
+> symlink the probe dir).
 >
 > **N4. Test hygiene on `scripts/tests/gauge-cycle-decomp.test.ts`.** Retitle its "measured 4.43 /
 > 3.56 / 3.71" bands as SIM DRIFT-GUARDS — four-leg confirmed 2026-08-17 as that instrument's own
@@ -100,12 +135,30 @@ fb-count-matrix.ts` pushes exactly one skill credit per damage event and never r
 > measurement at all. ⚑ Do NOT blanket-`--update`: of the 19 reds under the `gaugeHits` arm, ZERO are
 > measured-anchored, 4 are child-process harness artifacts, 15 are genuine arm effects.
 >
-> **N5. Probe-tooling follow-ups** (all footage-free, detail in thread 2 below): the `scan.ts` fixture
-> writer emits fields the `TempoFixture` type does not declare (producer/type drift — a rename would
-> only surface at runtime); `auditElementControl` / `--element-control` has ZERO vitest coverage and
-> its C1 artifact block is never replayed; `ceiling-screen.test.ts` hard-codes three literals
-> (23.618, 38.1, `/ 30`) derivable from artifacts it already loads; a bare `--fixture-out` with no
-> value is silently skipped.
+> **N5. Probe-tooling follow-ups — 2 of 4 DONE 2026-08-17, 2 remain** (all footage-free, detail in
+> thread 2 below).
+>
+> - ~~`scan.ts` fixture writer emits fields `TempoFixture` does not declare~~ **DONE** (`b43378cf`):
+>   every emitted field now declared, verified against all four committed fixtures; the two
+>   `as TempoFixture & {...}` casts in `n3-third-arm.test.ts` retired and replaced with an explicit
+>   assertion (a `?? []` default would have silently produced an EMPTY frame trace on a rename).
+> - ~~a bare `--fixture-out` with no value is silently skipped~~ **DONE** (`50198c6f`): now fails
+>   loudly, and both it and the `--cycle-table` requirement are validated **before** the decode, so a
+>   typo costs a second instead of a full video extraction. ⚑ Reported, NOT changed: `--debug-dir`
+>   (`scan.ts` ~line 184) has the identical bare-flag pattern — left alone because absence there is
+>   genuinely optional rather than a dropped deliverable. Owner call.
+> - **OPEN:** `auditElementControl` / `--element-control` has ZERO vitest coverage and its C1
+>   artifact block is never replayed.
+> - **OPEN:** `ceiling-screen.test.ts` hard-codes three literals (23.618, 38.1, `/ 30`) derivable
+>   from artifacts it already loads.
+>
+> **N6 (new, from the N3 landing — findings-only, reported not acted on).** The sibling
+> `--refill-starvation` and `--multihit-crediting` folds in `scripts/battery/fb-count-matrix.ts`
+> count damage **instances** as gauge-eligible hits, so they carry the SAME (N−1) `gaugeHits`
+> blindness N3 just fixed in the credit-schedule fold — latent for the same reason, and now the only
+> remaining instance of that defect class in the file. Also: `docs/fb-count-matrix.md`'s generated
+> tables have drifted from a fresh run (e.g. T5's buzzer state reads "opened 173.5s" vs the doc's
+> 179.2s).
 >
 > Also unblocked but lower value: `mihara-bonding-chain`'s fit exposure (thread 1 — localize the
 > over-model, do not restore the 12-stack average); the clean-bin-time vs full-window denominator
@@ -173,9 +226,9 @@ fb-count-matrix.ts` pushes exactly one skill credit per damage event and never r
      5-sub-hit count; (c) her presence in exactly the four disabled comps is MEMBERSHIP, not
      mechanism — already stamped "NOT liberalio-specific" with 5 of the 9 affected comps seating
      no `liberalio`.
-     **NEXT, in priority order:** (1) ⚑ PREREQUISITE for any future enactment — the credit-schedule
-     reconstruction (`scripts/battery/fb-count-matrix.ts:2502-2509`) never reads `gaugeHits` and
-     under-counts a carrier by (N−1)/impact; (2) the settling measurement is a
+     **NEXT, in priority order:** (1) ~~PREREQUISITE — the credit-schedule reconstruction never reads
+     `gaugeHits`~~ **DONE 2026-08-17**: it now credits per sub-hit, pinned on `N5 snowwhite-HA fire`
+     by `scripts/tests/battery/credit-schedule.test.ts`; (2) the settling measurement is a
      `maiden-ice-rose`-style hand read of her per-pull gauge sub-steps (the comp-level estimator
      structurally cannot separate a reduced per-sub-hit value from the general gap); (3) a second
      committed fill trace on a `liberalio`-free stamped-class comp — **NEXT UP N2, and NOT

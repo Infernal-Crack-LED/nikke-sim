@@ -237,14 +237,23 @@ describe('N3 third arm — C7 MAR diagnostic', () => {
 });
 
 describe('N3 third arm — C2/C3 tempo fixture', () => {
+  // `frameT`/`frameFill` are now DECLARED on TempoFixture (optional — the older hand-built PI2
+  // windows fixture lacks them), which retires the two `as TempoFixture & {...}` casts that used to
+  // sit inline here. This fixture is scan.ts-written and always carries them, so assert rather than
+  // default: a writer-side rename must fail loudly here, not silently yield an empty frame trace.
+  const frameTrace = fixture.frameT;
+  const frameFill = fixture.frameFill;
+  if (!frameTrace?.length || !frameFill?.length) {
+    throw new Error(
+      `fixture ${FIXTURE} is missing frameT/frameFill — scan.ts --fixture-out must emit both`
+    );
+  }
   const rows = buildCycleTable({
     windows: fixture.fullWindows,
     chains: fixture.burstChains,
-    frames: (
-      fixture as TempoFixture & { frameT: number[]; frameFill: number[] }
-    ).frameT.map((t, i) => ({
+    frames: frameTrace.map((t, i) => ({
       videoT: t,
-      fill: (fixture as TempoFixture & { frameFill: number[] }).frameFill[i],
+      fill: frameFill[i],
     })),
   });
 
