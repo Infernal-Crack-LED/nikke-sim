@@ -84,7 +84,9 @@ const kurumiNoDt = withPatchedOverride('kurumi', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'damageTakenPct'));
   if (ov.burst.length === before) {
-    throw new Error('kurumi burst damageTakenPct block missing — fixture is stale');
+    throw new Error(
+      'kurumi burst damageTakenPct block missing — fixture is stale'
+    );
   }
 });
 /** K2 reference: S1's 36-normal-attack (hitCount) Hacked block removed. */
@@ -111,9 +113,13 @@ const kurumiNoFbGate = withPatchedOverride('kurumi', (ov) => {
       delete b.fbGate;
       touched = true;
     }
+    if (b.trigger?.countScope === 'gated') {
+      delete b.trigger.countScope;
+      touched = true;
+    }
   });
   if (!touched) {
-    throw new Error('kurumi S2 fbGate missing — fixture is stale');
+    throw new Error('kurumi S2 fbGate/countScope missing — fixture is stale');
   }
 });
 /** K5c isolation: S1's Hacked status APPLICATION removed (DoT kept) — the boss never becomes
@@ -123,7 +129,9 @@ const kurumiNoStatusApply = withPatchedOverride('kurumi', (ov) => {
   ov.skill1.forEach((b: any) => {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.kind !== 'targetStatus');
-    if (b.effects.length !== before) touched = true;
+    if (b.effects.length !== before) {
+      touched = true;
+    }
   });
   if (!touched) {
     throw new Error('kurumi S1 targetStatus effect missing — fixture is stale');
@@ -150,7 +158,9 @@ const kurumiNormals = (evs: SimEvent[]) =>
       e.kind === 'damage' && e.slug === 'kurumi' && e.bucket === 'normal'
   );
 const kurumiBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'kurumi');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'kurumi'
+  );
 const dtBuffs = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BuffApply => e.kind === 'buffApply' && e.stat === 'damageTakenPct'
@@ -167,12 +177,12 @@ describe('kurumi — kit spec', () => {
       expect(kurumiBursts(base.events).length).toBeGreaterThan(0);
       expect(applied.length).toBe(kurumiBursts(base.events).length);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([18.06]);
-      expect([...new Set(applied.map((b) => b.expiresFrame! - b.frame))]).toEqual([
-        10 * FPS,
-      ]);
+      expect([
+        ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
+      ]).toEqual([10 * FPS]);
     });
 
-    it('is LIVE and team-wide: removing it lowers every unit\'s total', () => {
+    it("is LIVE and team-wide: removing it lowers every unit's total", () => {
       for (const s of SLUGS) {
         expect(
           base.totals[s],
