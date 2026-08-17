@@ -4047,7 +4047,9 @@ export interface SoloMagRateResult {
   magSize: number;
   dataminedColumnPct: number | null;
   plateaus: { tStart: number; tEnd: number; level: number }[];
+  saturatedPlateausDropped: number;
   perMagRaw: number[];
+  cycleSdSec: number;
   meanPerMagRaw: number;
   sdPerMagRaw: number;
   perShotRaw: number;
@@ -4128,14 +4130,21 @@ export function soloMagRate(opts: {
   });
   flush();
 
-  if (plateaus.length < 2) {
+  // SATURATION GUARD — the sibling `soloRate` has one and this did not. A plateau sitting at the
+  // 100% cap is not a reload boundary: the bar stopped climbing because it was FULL, so its delta
+  // is truncated and would drag the per-magazine mean down. Drop capped plateaus outright rather
+  // than let them contribute a short final delta.
+  const saturatedPlateaus = plateaus.filter((p) => p.level >= 100 - columnPct);
+  const usablePlateaus = plateaus.filter((p) => p.level < 100 - columnPct);
+  if (usablePlateaus.length < 2) {
     throw new Error(
-      `solo-rate --mag: need >=2 reload plateaus in the window, found ${plateaus.length}`
+      `solo-rate --mag: need >=2 non-saturated reload plateaus in the window, found ` +
+        `${usablePlateaus.length} (${saturatedPlateaus.length} at the 100% cap)`
     );
   }
   const perMag: number[] = [];
-  for (let i = 1; i < plateaus.length; i += 1) {
-    perMag.push(round(plateaus[i].level - plateaus[i - 1].level));
+  for (let i = 1; i < usablePlateaus.length; i += 1) {
+    perMag.push(round(usablePlateaus[i].level - usablePlateaus[i - 1].level));
   }
   const mean = perMag.reduce((a, b) => a + b, 0) / perMag.length;
   const sd =
@@ -4145,9 +4154,23 @@ export function soloMagRate(opts: {
         )
       : 0;
   const cycles: number[] = [];
-  for (let i = 1; i < plateaus.length; i += 1) {
-    cycles.push(plateaus[i].tStart - plateaus[i - 1].tStart);
+  for (let i = 1; i < usablePlateaus.length; i += 1) {
+    cycles.push(usablePlateaus[i].tStart - usablePlateaus[i - 1].tStart);
   }
+  // SPURIOUS-PLATEAU SURFACING. A mid-magazine firing pause longer than plateauMinSec looks exactly
+  // like a reload boundary and splits one magazine's delta into two undersized ones. That cannot be
+  // detected from the plateau list alone, so instead of guessing, report the dispersion and let the
+  // caller judge: a clean read has tight perMag and a cycle length near the weapon's real one.
+  const cycleMean = cycles.length
+    ? cycles.reduce((a, b) => a + b, 0) / cycles.length
+    : 0;
+  const cycleSd =
+    cycles.length > 1
+      ? Math.sqrt(
+          cycles.reduce((a, b) => a + (b - cycleMean) ** 2, 0) /
+            (cycles.length - 1)
+        )
+      : 0;
   const perShotRaw = mean / magSize;
   const perShotTrue = perShotRaw / rawOverTrue;
   return {
@@ -4158,7 +4181,9 @@ export function soloMagRate(opts: {
     magSize,
     dataminedColumnPct,
     plateaus,
+    saturatedPlateausDropped: saturatedPlateaus.length,
     perMagRaw: perMag,
+    cycleSdSec: round(cycleSd),
     meanPerMagRaw: round(mean),
     sdPerMagRaw: round(sd),
     perShotRaw: round(perShotRaw),
@@ -4171,6 +4196,25 @@ export function soloMagRate(opts: {
       ? round(cycles.reduce((a, b) => a + b, 0) / cycles.length)
       : null,
   };
+}
+
+/**
+ * Required-numeric CLI arg. `Number(undefined)` is NaN and every downstream comparison against
+ * NaN is false, so an omitted or garbled numeric flag does NOT fail loudly — it silently produces
+ * a NaN-poisoned result. On a PRE-REGISTRATION tool that is the worst failure available: `arm-power`
+ * would report `discriminates: false` (because `NaN >= 2` is false) and a claim could be withdrawn
+ * on a missing flag rather than on evidence.
+ */
+function numArg(name: string, opts: { positive?: boolean } = {}): number {
+  const raw = arg(name);
+  const n = Number(raw);
+  if (raw === undefined || !Number.isFinite(n)) {
+    throw new Error(`--${name} <number> is required (got ${raw ?? 'nothing'})`);
+  }
+  if (opts.positive && n <= 0) {
+    throw new Error(`--${name} must be > 0 (got ${n})`);
+  }
+  return n;
 }
 
 function soloRateCli(): void {
@@ -4208,7 +4252,7 @@ function soloRateCli(): void {
     label: arg('label') ?? tracePath,
   };
   const result = magRaw
-    ? soloMagRate({ ...common, magSize: Number(magRaw) })
+    ? soloMagRate({ ...common, magSize: numArg('mag', { positive: true }) })
     : soloRate({ ...common, cadencePerSec: cadence });
   const artifact = arg('artifact');
   if (artifact) {
@@ -5162,11 +5206,20 @@ function fbDurationCli(): void {
             comp: calibComp,
             fx: JSON.parse(readFileSync(calibFx, 'utf8')) as TempoFixture,
             arm: loadArm(calibArm, calibComp),
-            knownFbSec: Number(arg('calib-fb-sec') ?? FB_SEC),
+            knownFbSec:
+              arg('calib-fb-sec') === undefined
+                ? FB_SEC
+                : numArg('calib-fb-sec', { positive: true }),
           }
         : undefined,
-    expectSec: expectSec === undefined ? undefined : Number(expectSec),
-    tolSec: arg('tol-sec') === undefined ? undefined : Number(arg('tol-sec')),
+    expectSec:
+      expectSec === undefined
+        ? undefined
+        : numArg('expect-sec', { positive: true }),
+    tolSec:
+      arg('tol-sec') === undefined
+        ? undefined
+        : numArg('tol-sec', { positive: true }),
   });
   const artifact = arg('artifact');
   if (artifact) {
@@ -5215,6 +5268,10 @@ function closureDiagCli(): void {
   process.stdout.write(`${JSON.stringify(res, null, 1)}\n`);
 }
 
+// NOTE: mar-diag accepts --e-min and echoes it, but every field it emits is eMin-INVARIANT — the
+// bridged-span census runs before the eMin event rule, and the bin/coverage counts do not depend on
+// it either. The flag exists so the diagnostic's label matches the classification it accompanies;
+// it is NOT a sweepable parameter, and a caller expecting to sweep eMin here gets identical output.
 function marDiagCli(): void {
   const schedPath = arg('schedule');
   const compName = arg('comp');
@@ -5283,7 +5340,18 @@ function armPowerCli(): void {
   }
   const rawCand = JSON.parse(readFileSync(candPath, 'utf8')) as
     SimSchedule | SimSchedule[];
-  const cand = Array.isArray(rawCand) ? rawCand[0] : rawCand;
+  // Select the candidate BY NAME, never by position: silently taking entry [0] of a multi-comp
+  // schedule would measure one comp and label the output with another's name. Sibling CLIs
+  // (ceilingCli, marDiagCli) already select by name; this one did not.
+  const candList = Array.isArray(rawCand) ? rawCand : [rawCand];
+  const cand = candList.find((c) => c.comp === candName);
+  if (!cand) {
+    throw new Error(
+      `arm-power: no comp "${candName}" in ${candPath} — have: ${candList
+        .map((c) => c.comp)
+        .join(', ')}`
+    );
+  }
   const candPerUnit = simCeiling(cand).perUnit.map((u) => ({
     slug: u.slug,
     maxRatePerSec: u.maxRatePerSec,
@@ -5301,7 +5369,7 @@ function armPowerCli(): void {
     refFullWindowSec: Number.isFinite(refFull) ? refFull : refT,
     candComp: candName,
     candCeilingPerUnit: candPerUnit,
-    candSimRefillSec: Number(arg('candidate-sim-refill-sec')),
+    candSimRefillSec: numArg('candidate-sim-refill-sec', { positive: true }),
   });
   const artifact = arg('artifact');
   if (artifact) {

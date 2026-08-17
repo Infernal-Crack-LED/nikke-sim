@@ -59,7 +59,9 @@
           "level": 89.9
         }
       ],
+      "saturatedPlateausDropped": 0,
       "perMagRaw": [20.3, 19.5, 18.9, 19.6],
+      "cycleSdSec": 0.5274,
       "meanPerMagRaw": 19.575,
       "sdPerMagRaw": 0.5737,
       "perShotRaw": 0.9788,
@@ -218,5 +220,8 @@
     "analysisScarlet": "npx tsx scripts/probe/fill-trace-compare.ts solo-rate --trace docs/probe-data/scarlet-ar-solo-gauge-trace.json --window 9.0:29.0 --mag 20 --column 90",
     "analysisDrake": "npx tsx scripts/probe/fill-trace-compare.ts solo-rate --trace docs/probe-data/drake-sg-solo-gauge-trace.json --window 8.6:17.8 --cadence 1.5 --column 900",
     "replayPin": "npx vitest run scripts/tests/probe/solo-rate.test.ts"
+  },
+  "postReviewNote": {
+    "2026-08-17": "Regenerated after the cross-family code review (qwen3.8-max-preview) added a SATURATION GUARD to soloMagRate (its sibling soloRate already had one) plus a cycleSdSec dispersion field. Every published number is BYTE-IDENTICAL \u2014 perMagRaw [20.3,19.5,18.9,19.6], perShotTrue 0.9199, ratioToColumn 1.0221 \u2014 because this window's plateaus top out at 89.9%, below the cap, so the new guard drops nothing here (saturatedPlateausDropped 0). The guard matters for FUTURE windows that run into the 100% cap; the reviewer verified the same before flagging it."
   }
 }

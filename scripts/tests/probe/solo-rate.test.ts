@@ -17,8 +17,11 @@ import { describe, expect, it } from 'vitest';
 import {
   soloMagRate,
   soloRate,
+  type SoloRead,
   type SoloSeries,
 } from '../../probe/fill-trace-compare.js';
+
+const round4 = (n: number): number => Math.round(n * 10000) / 10000;
 
 const ARTIFACT = 'docs/probe-data/ar-sg-solo-gauge-2026-08-17.json';
 const SCARLET_TRACE = 'docs/probe-data/scarlet-ar-solo-gauge-trace.json';
@@ -115,6 +118,39 @@ describe('solo-rate: AR + SG solo gauge-bar reads (2026-08-17)', () => {
     expect(r.steps.filter((s) => s.acrossReload)).toHaveLength(1);
     // The step that lands on the 100% cap is truncated and must not be counted.
     expect(r.steps.filter((s) => s.saturated)).toHaveLength(1);
+  });
+
+  it('soloMagRate: a plateau AT the 100% cap is dropped, not counted as a magazine boundary', () => {
+    // Regression guard for the cross-family review finding (2026-08-17): soloMagRate had no
+    // saturation guard where its sibling soloRate did. A capped plateau is not a reload boundary —
+    // the bar stopped climbing because it was FULL — so counting it drags the per-magazine mean
+    // down. Synthetic series: three real magazine plateaus, then a plateau pinned at 100.
+    const mk = (t0: number, level: number): SoloRead[] =>
+      Array.from({ length: 40 }, (_v, i) => ({
+        t: round4(t0 + i * 0.033),
+        state: 'filling',
+        fillRaw: level,
+      }));
+    const series = {
+      fps: 30,
+      reads: [
+        ...mk(0, 10),
+        ...mk(2, 30),
+        ...mk(4, 50),
+        ...mk(6, 100), // saturated — must be dropped
+      ],
+    } as unknown as SoloSeries;
+    const r = soloMagRate({
+      series,
+      barWidthPx: 138,
+      rawOverTrue: 1,
+      window: [0, 10],
+      magSize: 20,
+    });
+    expect(r.saturatedPlateausDropped).toBe(1);
+    // 10 -> 30 -> 50 only: two deltas of 20, NOT a third truncated one from the capped plateau.
+    expect(r.perMagRaw).toEqual([20, 20]);
+    expect(r.meanPerMagRaw).toBe(20);
   });
 
   it('the saturated cap step and the reload step are excluded from the statistics', () => {

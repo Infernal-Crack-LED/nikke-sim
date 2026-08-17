@@ -93,35 +93,82 @@ PROMPT+="$(cat "$PACKET")"
 
 echo "→ dispatching $(basename "$PACKET") to $MODEL (qwen, sighted code-review) …" >&2
 
-# -o json emits an array of envelope objects; the final {"type":"result"} entry carries
-# the model's answer in .result. Errors surface as is_error true.
-RAW="$(cd "$ROOT" && QWEN_CODE_SUPPRESS_YOLO_WARNING=1 "$QWEN" \
+# STREAM DIRECTLY TO FILE — never through command substitution. A `$(...)` capture
+# is size-capped (observed 2026-08-17: two dispatches truncated at exactly 65536
+# bytes, losing the session mid-flight with no result entry), and it also discards
+# partial output when the CLI exits early. Writing straight to the file keeps
+# whatever arrived, which is what makes a failed run rescuable.
+# stream-json is line-delimited and emits progressively, so a truncated file is
+# still parseable up to its last complete line.
+RAW_OUT="${OUT%.json}.raw.jsonl"
+(cd "$ROOT" && QWEN_CODE_SUPPRESS_YOLO_WARNING=1 "$QWEN" \
   -m "$MODEL" \
   -p "$PROMPT" \
-  -o json \
-  2>/dev/null)" || true
+  -o stream-json \
+  > "$RAW_OUT" 2>/dev/null) || true
+
+echo "   raw envelope saved to $RAW_OUT ($(wc -c < "$RAW_OUT" | tr -d ' ') bytes)" >&2
+RAW="$(cat "$RAW_OUT")"
 
 if [[ -z "$RAW" ]]; then
   echo "❌ qwen returned no output" >&2
   exit 1
 fi
 
-RESULT_TEXT="$(printf '%s' "$RAW" | python3 -c "
+# Surface an error envelope explicitly rather than failing later as "no result".
+ERR="$(python3 -c "
 import json, sys
-try:
-    doc = json.load(sys.stdin)
-except Exception:
-    sys.exit(1)
-entries = doc if isinstance(doc, list) else [doc]
-for m in reversed(entries):
-    if isinstance(m, dict) and m.get('type') == 'result' and m.get('result'):
-        sys.stdout.write(m['result'])
+for line in open('$RAW_OUT'):
+    try:
+        m = json.loads(line)
+    except Exception:
+        continue
+    if isinstance(m, dict) and m.get('is_error'):
+        print(json.dumps({k: m.get(k) for k in ('subtype', 'result', 'error') if m.get(k)})[:2000])
         break
+" 2>/dev/null)" || true
+if [[ -n "$ERR" ]]; then
+  echo "❌ qwen reported an error envelope: $ERR" >&2
+  exit 1
+fi
+
+RESULT_TEXT="$(python3 -c "
+import json, sys
+best = None
+for line in open('$RAW_OUT'):
+    line = line.strip()
+    if not line:
+        continue
+    try:
+        m = json.loads(line)          # a truncated final line just fails and is skipped
+    except Exception:
+        continue
+    if not isinstance(m, dict):
+        continue
+    if m.get('type') == 'result' and m.get('result'):
+        best = m['result']
+    # Fallback: the last assistant TEXT block, in case the run was cut off before
+    # the result envelope but after the model had already answered.
+    msg = m.get('message')
+    if isinstance(msg, dict) and msg.get('role') == 'assistant':
+        for blk in msg.get('content') or []:
+            if isinstance(blk, dict) and blk.get('type') == 'text' and blk.get('text', '').strip():
+                if best is None or '{' in blk['text']:
+                    best = blk['text']
+if best:
+    sys.stdout.write(best)
 " 2>/dev/null)" || true
 
 if [[ -z "$RESULT_TEXT" ]]; then
-  echo "❌ could not extract a result from the qwen envelope" >&2
-  printf '%s\n' "$RAW" | head -c 1000 >&2 || true
+  echo "❌ could not extract a result from the qwen envelope — FULL raw at $RAW_OUT" >&2
+  python3 -c "
+import json
+ts=[]
+for line in open('$RAW_OUT'):
+    try: ts.append(json.loads(line).get('type'))
+    except Exception: pass
+print('envelope entry types:', ts[-12:])
+" >&2 2>/dev/null || true
   exit 1
 fi
 

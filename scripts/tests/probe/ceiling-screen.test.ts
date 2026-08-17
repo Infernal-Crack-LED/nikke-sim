@@ -14,6 +14,7 @@
 // FEASIBILITY ONLY — this pins a property of the SIM SCHEDULE. It carries no classification and
 // no claim about the game, and neither does the artifact.
 // ============================================================================
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
@@ -131,6 +132,44 @@ describe('ceiling screen: which comps can host the H-C detector (2026-08-17)', (
     expect(r.power.discriminates).toBe(false);
     expect(r.power.eventBinsFor2Sigma).toBe(733);
   });
+
+  it('arm-power CLI REFUSES a missing numeric arg instead of silently returning discriminates:false', () => {
+    // Regression guard for the cross-family review's FIX finding (2026-08-17). `Number(undefined)`
+    // is NaN and `NaN >= 2` is false, so before the guard an OMITTED --candidate-sim-refill-sec
+    // produced a clean-looking `discriminates: false` — the exact false-NEGATIVE that would let a
+    // claim be withdrawn on a missing flag rather than on evidence. The CLI must exit non-zero.
+    let exitCode = 0;
+    let stderr = '';
+    try {
+      execFileSync(
+        'npx',
+        [
+          'tsx',
+          'scripts/probe/fill-trace-compare.ts',
+          'arm-power',
+          '--classification',
+          'docs/probe-data/fill-trace-habc-classification.json',
+          '--ref-comp',
+          'iron sweep (run G)',
+          '--candidate-schedule',
+          N3,
+          '--candidate-comp',
+          'N3 scarlet/liberalio iron',
+          '--shared',
+          'liberalio',
+          // --candidate-sim-refill-sec deliberately OMITTED
+        ],
+        { encoding: 'utf8', stdio: 'pipe' }
+      );
+    } catch (e) {
+      const err = e as { status?: number; stderr?: string };
+      exitCode = err.status ?? 1;
+      stderr = err.stderr ?? '';
+    }
+    expect(exitCode).not.toBe(0);
+    expect(stderr).toContain('candidate-sim-refill-sec');
+    expect(stderr).not.toContain('discriminates');
+  }, 60000);
 
   it('the artifact reports the same two ceilings it is cited for', () => {
     const nv = Object.fromEntries(
