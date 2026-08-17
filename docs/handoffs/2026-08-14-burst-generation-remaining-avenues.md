@@ -63,29 +63,17 @@ Hypothesis classes the next measurement must discriminate:
    19.95/s off the ammo counter, MG terminal 60.1/s off her fillGauge proc snaps). Full record:
    `docs/probe-runs.md` 2026-08-15 solo-reads entry. AR and SG families remain never-bar-checked;
    the team-seated read (H-A sizing) was not part of the delivered footage.
-4. **`liberalio` charge-speed-effect immunity — CHECKED 2026-08-14: LIVE defect in iron sweep
-   (run G), inert in his other three seated comps.** His skill2 is kit-literal ("Immunity to
-   Increase/Decrease Charge Speed effects, continuous"); the override already documents that only
-   his own-buff case is enforced (`excludeSelf`) and **no receiving-side immunity primitive
-   exists** — `sim.ts`'s charge-time formula sums every active `chargeSpeedPct` unconditionally.
-   In iron sweep, `maxwell`'s skill1 (+4.48% charge speed to top-2 static-ATK allies on
-   `fullBurstEnter`) reaches him (confirmed via `DBG_BUFFS`), and an A/B with it zeroed moves him
-   94→92 pulls, 518.9M→494.8M damage — the sim over-credits him ~4.9%, and his sim/real ratio
-   would improve 1.071 → 1.021 if the immunity were enforced. Team FB count unchanged (11 both
-   arms). **Direction note: this runs AGAINST the generation shortfall** — enforcing it lowers
-   sim generation slightly, so it cannot be part of the missing ~39%. Enactment (a receiving-side
-   immunity primitive, engine + schema) is kit-literal → encode + `/code-review` lane, on a
-   worktree, **awaiting owner approval** (proposed in QUEUE).
-5. **`snow-white-heavy-arms` U11c burst-fire quirk** — **MEASURED 2026-08-15**
-   (`docs/probes/solo/swha-solo.mov`, same probe-runs entry): the volley generates gauge **per
-   HIT** (~560 each; bar 0→full in 3.2s on ~3 pulls — per-effect credit caps at 75.6, refuted by
-   closure), not per proc. The engine credits once per flatDamage EFFECT (`sim.ts:2751`), an
-   under-credit of **22.4% of bar per pull**. No longer a "~24 hits/3s" annotation — now a
-   quantified enactment candidate (owner-gated engine touch: per-sub-hit gauge on multi-hit
-   riders, a roster-wide candidate class the census was blind to). Stated team bound: naive
-   enactment moves N5 11 → ~13 vs **12 measured**.
-6. **stage1→stage2 real 33f/32f vs modeled 30f** (`STAGE_CAST_GAP_FRAMES`) — runs AGAINST the gap
-   so it never inflated the finding; worth one measurement before anyone touches the constant.
+4. ~~**`liberalio` charge-speed-effect immunity**~~ **ENACTED 2026-08-14** (DECISIONS:
+   receiving-side `charFixes.statImmunities` primitive; cross-family `/code-review` ACCEPT).
+   Live defect in iron sweep (run G), inert in his other three seated comps. Direction ran
+   AGAINST the generation shortfall (enforcing lowers sim generation slightly), so it was
+   never part of the missing ~39%.
+5. ~~**`snow-white-heavy-arms` U11c burst-fire quirk**~~ **MEASURED 2026-08-15, ENACTED
+   2026-08-15** via `flatDamage.gaugeHits` (per-sub-hit gauge credit; volleys generate per
+   HIT, not per proc — `docs/probes/solo/swha-solo.mov`).
+6. ~~**stage1→stage2 real 33f/32f vs modeled 30f** (`STAGE_CAST_GAP_FRAMES`)~~ **CLOSED
+   2026-08-16 — owner ruling: 30f is the modeled value.** Runs AGAINST the gap so it never
+   inflated the finding; the constant stays as-is.
 
 ## Closed — do not re-open without new evidence
 
@@ -102,13 +90,15 @@ Hypothesis classes the next measurement must discriminate:
   `data/cubes.json` anyway.
 - **The real-FB-duration read** (owner ruling: exactly 10s unless ability-modified).
 
-## Instrument hygiene from the branch review (small, non-blocking)
+## ~~Instrument hygiene from the branch review~~ **RESOLVED 2026-08-16**
 
-- `GAUGE_KIND_CENSUS` basis strings + census header in `scripts/battery/fb-count-matrix.ts` cite
-  `sim.ts` line anchors that went stale (~15–25 lines off) during the branch's own later commits.
-- The "31-comp EV board: 0 FB movers" claim in DECISIONS/plan rides on an ad-hoc re-run (the
-  committed pin covers the 11-comp panel); either commit the arm-diff driver as a flag or reword
-  the citation.
-- `auditFocusColumns` mirrors the engine's unexported `PENDING_TEAM_ISOLATION` set
-  (`PENDING_TEAM_ISOLATION_MIRROR`) — nothing trips if they diverge; consider exporting the set
-  or pinning the mirror against the engine source text.
+- ~~`GAUGE_KIND_CENSUS` basis strings + census header in `scripts/battery/fb-count-matrix.ts` cite
+  `sim.ts` line anchors that went stale~~ **FIXED 2026-08-16** — all 13 line citations refreshed
+  against the current engine source (typical drift ~100–200 lines from engine growth).
+- ~~The "31-comp EV board: 0 FB movers" claim in DECISIONS/plan rides on an ad-hoc re-run~~
+  **REWORDED 2026-08-16** — DECISIONS citation now says "ad-hoc 31-comp re-run" with the
+  committed 11-comp pin noted.
+- ~~`auditFocusColumns` mirrors the engine's unexported `PENDING_TEAM_ISOLATION` set with no
+  divergence guard~~ **PINNED 2026-08-16** — mirror exported; pin test
+  `scripts/tests/battery/pending-team-isolation-mirror.test.ts` reads the engine source text
+  and asserts the two sets are identical.

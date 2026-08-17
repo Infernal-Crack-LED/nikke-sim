@@ -12,10 +12,10 @@
 // short of a burst it would otherwise have reached, and those two look identical in a count alone.
 //
 // SOURCES — everything here is read from the engine's own exposed results; nothing is re-derived:
-//   * `u.gaugeGenerated`  uncapped per-unit gauge fed to the bar, pre-100-clamp (sim.ts:1475)
+//   * `u.gaugeGenerated`  uncapped per-unit gauge fed to the bar, pre-100-clamp (sim.ts:1538)
 //   * `gaugeBuildTimeSec` frames where stage===0 && !fbActive && gauge<100, i.e. exactly the
 //                         REFILLING time — not wall-clock, and not time spent sitting at full
-//                         (sim.ts:3347). Dividing the first by the second gives a true generation
+//                         (sim.ts:4745). Dividing the first by the second gives a true generation
 //                         rate rather than a fight-average diluted by the ~60% of the fight that
 //                         is Full Burst + chain, when generation is locked.
 //   * `rotationLog`       the cast/Full-Burst timeline, for the per-cycle refills and end state.
@@ -791,49 +791,49 @@ export const GAUGE_KIND_CENSUS: Record<EffectDef['kind'], KindCensusRow> = {
     emission: 'skillGauge-per-impact',
     ruling: 'measured',
     basis:
-      'sim.ts:2761 (instant) + sim.ts:4079 (delaySec landing); when `gaugeHits: N` is present the effect credits skillGauge N times per impact — per-SUB-HIT credit for sequential volleys while damage stays one aggregated instance (measured swha-solo.mov, ENACTED 2026-08-15; carriers snow-white-heavy-arms 5/10, eve 3, little-mermaid 10); maiden-ice-rose rider anchor — 12.55%/pull = 910 weapon + 364 flat rider (burst-gauge.md §6); owner D4 2026-08-10',
+      'sim.ts:2859 (instant) + sim.ts:4177 (delaySec landing); when `gaugeHits: N` is present the effect credits skillGauge N times per impact — per-SUB-HIT credit for sequential volleys while damage stays one aggregated instance (measured swha-solo.mov, ENACTED 2026-08-15; carriers snow-white-heavy-arms 5/10, eve 3, little-mermaid 10); maiden-ice-rose rider anchor — 12.55%/pull = 910 weapon + 364 flat rider (burst-gauge.md §6); owner D4 2026-08-10',
   },
   hitRepeat: {
     impact: true,
     emission: 'skillGauge-per-impact',
     ruling: 'owner-ruling',
     basis:
-      'sim.ts:2730; owner D4 2026-08-10 (a function-damage instance that lands SHOULD generate); ⚑ the %-of-hit repeat itself is UNMEASURED — the engine follows the function-damage precedent (types.ts kind note); sole carrier emilia, seats no off-count comp',
+      'sim.ts:2897; owner D4 2026-08-10 (a function-damage instance that lands SHOULD generate); ⚑ the %-of-hit repeat itself is UNMEASURED — the engine follows the function-damage precedent (types.ts kind note); sole carrier emilia, seats no off-count comp',
   },
   dot: {
     impact: true,
     emission: 'skillGauge-per-impact',
     ruling: 'measured',
     basis:
-      'sim.ts:4034 on each tick; wiki3 Haran S1 DoT 290/tick ≈ her SR base (burst-gauge.md §5); emission is at TICK time, so a DoT started in-FB keeps feeding after FB end',
+      'sim.ts:4204 on each tick; wiki3 Haran S1 DoT 290/tick ≈ her SR base (burst-gauge.md §5); emission is at TICK time, so a DoT started in-FB keeps feeding after FB end',
   },
   storedHit: {
     impact: true,
     emission: 'no-emission',
     ruling: 'owner-ruling',
     basis:
-      'releases ONLY during Full Burst — the FB-entry batch (sim.ts:3283) and the instantInFb loop (sim.ts:3984), both commented under the owner 2026-08-04 ruling that in-FB generation is impossible; the attach itself is bookkeeping (its co-authored flatDamage is the emitting impact). Sole carrier rapi-red-hood',
+      'releases ONLY during Full Burst — the FB-entry batch (sim.ts:3443) and the instantInFb loop (sim.ts:4141), both commented under the owner 2026-08-04 ruling that in-FB generation is impossible; the attach itself is bookkeeping (its co-authored flatDamage is the emitting impact). Sole carrier rapi-red-hood',
   },
   stackedNuke: {
     impact: true,
     emission: 'no-emission',
     ruling: 'unexamined',
     basis:
-      'sim.ts:3089 deals the impact with NO skillGauge and no ruling comment — but the contribution is zero by construction: its only trigger is burstCast ⇒ stage ≠ 0 ⇒ addGauge (sim.ts:1464) is locked. Sole carrier maiden-ice-rose; seats none of the nine off-count comps. FINDING per the plan decision rule — reported, not enacted',
+      'sim.ts:3247 deals the impact with NO skillGauge and no ruling comment — but the contribution is zero by construction: its only trigger is burstCast ⇒ stage ≠ 0 ⇒ addGauge (sim.ts:1521) is locked. Sole carrier maiden-ice-rose; seats none of the nine off-count comps. FINDING per the plan decision rule — reported, not enacted',
   },
   weaponSwap: {
     impact: false,
     emission: 'shotGauge-per-pull',
     ruling: 'owner-ruling',
     basis:
-      'no impact of its own — swap shots route through firePull → shotGauge (sim.ts:4282); a REAL weapon change generates NO gauge (owner 2026-08-13, the u.swap guard in shotGauge sim.ts:1489); same-weapon flavor swaps keep feeding',
+      'no impact of its own — swap shots route through firePull → shotGauge (sim.ts:4461); a REAL weapon change generates NO gauge (owner 2026-08-13, the u.swap guard in shotGauge sim.ts:1558); same-weapon flavor swaps keep feeding',
   },
   fillGauge: {
     impact: false,
     emission: 'direct-gauge',
     ruling: 'owner-ruling',
     basis:
-      'sim.ts:2810; discrete "Fills Burst Gauge X%" respects the same chain + FB lock as continuous generation (owner 2026-07-30; burst-gauge.md §5)',
+      'sim.ts:2975; discrete "Fills Burst Gauge X%" respects the same chain + FB lock as continuous generation (owner 2026-07-30; burst-gauge.md §5)',
   },
   buff: {
     impact: false,
@@ -1779,7 +1779,9 @@ function focusColumnStatus(
  * and this audit reads data files, not engine state). The fixture pins the only consequence
  * that matters here: no seated focus unit is a member, so the pin list cannot alter any row.
  */
-const PENDING_TEAM_ISOLATION_MIRROR = new Set(['vesti-tactical-upgrade']);
+export const PENDING_TEAM_ISOLATION_MIRROR = new Set([
+  'vesti-tactical-upgrade',
+]);
 const FOCUS_CHARGE_GEN_FLAT = 2.5; // src/engine/sim.ts FOCUS_CHARGE_GEN — the pin's value
 /** Largest live column — the most extreme upward error a wrong column could carry. */
 const MAX_LIVE_FOCUS_COLUMN = 350;

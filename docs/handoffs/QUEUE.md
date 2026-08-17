@@ -170,14 +170,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      (3%); corrected rate 4.576/s (primary) / 4.601/s (pooled) — both 10.7–11.3% above the
      4.1325 threshold. Robust to falseRate up to 2.3% (4× measured input). Classification
      stays MIXED/INCONCLUSIVE (closure 0.2579 stands).** (3) ~~source-hunt the excess
-     event instants~~ **ANALYZED 2026-08-16 (`scripts/probe/source-hunt.ts`) — INSTRUMENT
-     DEFECT FOUND (2026-08-16 code-review, claude-opus-5): source-hunt compares real event
-     times (video trace clock) against sim credit times (engine clock) without correcting for
-     the per-window offset drift (W1 +7.85s → W10 −8.75s). The headline numbers (76.8% excess,
-     56.1% >2s away) track clock drift, not gauge causality. The H-C refutation previously
-     recorded here is RETRACTED — item re-opened. The script is a useful scaffold but needs
-     within-window phase comparison (map events into paired sim windows via `w.simWindow`)
-     before its gap statistics are meaningful.** (4) ~~a third comp
+     event instants~~ **FIXED 2026-08-16 (`scripts/probe/source-hunt.ts`): within-window phase
+     comparison enacted — events and sim credits both converted to phase ∈ [0,1] within their
+     paired windows (real via `w.barPaint`/`w.fullInstant`, sim via `simWin.startSec`/`endSec`),
+     gap reported in sim seconds. Result: 97.6% of events explained at 0.5s loose threshold
+     (was 23.2% with the broken clock); only 2 borderline excess events in W2 (0.51–0.74s
+     phase gap); zero gaps >1s. The old "76.8% excess, 56.1% >2s away" was entirely clock
+     drift. The H-C refutation from the broken numbers stays retracted (it was never valid),
+     but the corrected numbers show no H-C mass either — the excess is 2.4% at loose
+     threshold, not the "mass" the broken script suggested. Source-hunt is now a usable
+     instrument; the classification stays MIXED/INCONCLUSIVE (closure 0.2579 stands).** (4) ~~a third comp
      with a non-vacuous ceiling~~ **AUDITED 2026-08-16 — STRUCTURALLY IMPOSSIBLE with existing
      footage:** every filmed comp except iron sweep has ≥1 fast-cadence unit (AR/MG/SMG/SG)
      whose minGap is 1–5 frames (rate 12–60/s), saturating the 30/s bin cap. Iron sweep is
