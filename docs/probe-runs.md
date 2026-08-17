@@ -8105,3 +8105,68 @@ gate with the prediction pre-registered.
 ~74–75s). Band OCCUPANCY is already ruled out — W3 sits entirely inside the near band and shows no
 anomaly — and n=3 cannot separate "transition" from coincidence. Logged because it is cheaply
 checkable on the next recording that has one.
+
+---
+
+## 2026-08-17 — Ceiling feasibility screen: the "third comp with a non-vacuous ceiling" needs NO new footage — `N3 scarlet/liberalio iron` is the arm, and its recording already exists
+
+The classification thread's last outstanding judge-ranked step (4) was "a third comp with a
+non-vacuous ceiling", because T5 wind-weak's H-C detector was cap-saturated and that left the
+iron-sweep detection structurally n=1. This screen answers whether that step needs a recording ask.
+It does not. **FEASIBILITY ONLY** — a property of the sim schedule plus an instrument smoke test;
+no classification, no branch, no stamp, no engine change. Artifact:
+`docs/probe-data/ceiling-screen-2026-08-17.json`; pin `scripts/tests/probe/ceiling-screen.test.ts`
+(4/4 green); new committed subcommand `fill-trace-compare.ts ceiling`.
+
+**1. The `misc B3s (run I order)` fence is LIFTED — and it does not help.** The 2026-08-15 packet
+excluded that arm because "its sim arm self-voided (SG crediting not reconstructable — step 1c is
+owner-gated and NOT landed)". The credit-schedule instrument now passes all three self-checks on it
+with an **empty `unreconstructed` list**: endpoint residual 0.00e+0 on all five units, DBG_GAUGE
+158/158 lines matched, truncated-run 21/21 steps with prefix determinism held. What lifted it was
+**not the U40 ruling as such** but commit `a4d08e19` (2026-08-15 21:17), which added the landed
+gauge `hitFraction` to the shot event tap so the reconstruction multiplies by it instead of warning
+— that landed _hours after_ the packet was written, so the fence was accurate when written and went
+stale the same day. But the arm is **CAP-SATURATED anyway**: per-unit max rates sum to **94.5/s**
+against the 30/s bin cap, driven by `chisato` (SMG, minGap 3f = 20/s) and `jill` (minGap 1f =
+60/s). Its detector is vacuous for exactly T5's reason. **Reconstructable ≠ usable.**
+
+**2. Screening every comp in the matrix** (`fb-count-matrix.ts --credit-schedule --json` →
+`fill-trace-compare.ts ceiling`, which runs the committed `simCeiling` the classification itself
+uses) finds **three non-vacuous comps**:
+
+| comp                          | ceiling | verdict                                                     |
+| ----------------------------- | ------- | ----------------------------------------------------------- |
+| **iron sweep (run G)**        | 3.59/s  | the existing arm (its real event rate 4.7151/s — real room) |
+| **N3 scarlet/liberalio iron** | 5.13/s  | **the candidate** — comparable to iron's                    |
+| **N5 snowwhite-HA fire**      | 15.87/s | nominally non-vacuous, LOW POWER — distant fallback only    |
+
+Every other comp saturates: T5 82.4, T1 123.2, misc B3s 94.5, N1 107.7, soda-tb control 122.2, N2
+112.2. One fast weapon is enough — per-unit max rate is 60 ÷ the unit's tightest credit gap, so MG
+~60/s, SMG 20/s, AR 12/s against SG 1.5/s and SR/RL/charge 0.64–1.0/s. N5's 15.87 would need a real
+rate above 1.15 × 15.87 = 18.25/s to fire, where iron's was 4.7/s and the bin cap is 30/s, so it is
+reported for completeness rather than as a peer of N3.
+
+**A sharp edge worth carrying forward:** the ceiling is a MAX-rate statistic driven by a unit's
+single tightest gap, so **one coincident credit pair pins that unit at 60/s regardless of its
+weapon** — `jill` is an AR with a measured 2.5 pulls/s cadence override and still scores 60/s off a
+single 1-frame gap. "Slow weapons" is necessary but not sufficient; the screen must be RUN, not
+predicted from a roster.
+
+**3. N3's footage already exists and reads.** `docs/probes/714 noon/3.mp4` — row 3 of that folder's
+`probe.md` ("Rouge, Trina, Scarlet:Black Shadow, Liberalio, Soda:Twinkling Bunny | Iron | Real FB
+10 | Sim FB 10"), one of nine full-team scope-lock recordings processed 2026-07-14, 1206×2622
+@60fps rotation-90, 198.6s. Smoke test: `gauge-fill.py --team` locked the TEAM bar at **134px, rows
+[26,33] x 135–268** in crop `280:70:2342:465` = rows 491–498, x 2477–2610 absolute — exactly the
+documented team bar geometry — and over a 40s slice the full state machine resolves (filling / full
+/ chain / burstRender / fullburst / flash), first cycle full at t=11.67, refill resuming at t=28.35.
+
+**What is NOT done:** the classification itself. Adding a third arm and applying a decision rule to
+it is precisely the gated surface and needs its own `/scientific-method` pre-op packet with the arm,
+window map, thresholds and decision branches pre-registered. This screen stops at feasibility on
+purpose. Note also that N3 reads 10 measured vs 10 sim full bursts, so it is not a second copy of
+iron sweep's rotation gap — what it offers is an INDEPENDENT ceiling test.
+
+**Correction to an earlier statement of the recording ask** (now moot, since the ask is retired):
+it said "five slow-firing units — SR / RL / charge / AR, no MG and no SMG". Including AR was wrong
+— AR scores 12/s per unit, so two AR carriers plus three slow units already reach ~26/s and leave
+the detector no room.

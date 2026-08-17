@@ -93,6 +93,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `basePerTrigger` 140 × 2.5 focus × 1.06 aura = 3.71%. Next step is a gated re-run of the
      counting rule with that hypothesis declared in the packet, so anomalous windows become
      CLASSIFIABLE instead of premise-violating.
+   - **Third classification arm — FOOTAGE ASK RETIRED 2026-08-17, run is GATED-PENDING.** The
+     judge-ranked step (4) "a third comp with a non-vacuous ceiling" needs no recording:
+     `N3 scarlet/liberalio iron` screens **non-vacuous at 5.13/s** (vs iron's 3.59; every other
+     comp saturates the 30/s bin cap) and its recording already exists and reads —
+     `docs/probes/714 noon/3.mp4`, team bar locking at the documented 134px geometry. Screen +
+     verdicts: `docs/probe-data/ceiling-screen-2026-08-17.json`, pin
+     `scripts/tests/probe/ceiling-screen.test.ts`, subcommand
+     `fill-trace-compare.ts ceiling --schedule <json>`. **Next step is a `/scientific-method`
+     pre-op packet** pre-registering the arm, window map, thresholds and decision branches — the
+     classification itself is the gated surface, not the feasibility. (`misc B3s` SG fence also
+     lifted, by commit `a4d08e19`, but that arm is cap-saturated at 94.5/s and stays unusable;
+     `N5 snowwhite-HA fire` is non-vacuous at 15.87/s but too low-power to be a peer candidate.)
    - **Probe tooling follow-ups (achievable without footage):**
      (i) `gauge-fill.py` without `--bar` self-calibrates onto a dark terrain edge on solo footage
      — always pass `--bar` + the maiden fixture gate (/skill-maintenance candidate);

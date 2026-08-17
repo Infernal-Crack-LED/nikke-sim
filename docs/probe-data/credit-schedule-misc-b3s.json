@@ -1,0 +1,8266 @@
+[
+  {
+    "comp": "misc B3s (run I order)",
+    "slugs": ["grave", "anis-star", "jill", "chisato", "noir"],
+    "focusSlug": "jill",
+    "fightSec": 180,
+    "windows": [
+      {
+        "index": 0,
+        "kind": "first-fill",
+        "startFrame": 0,
+        "endFrame": 128,
+        "startSec": 0,
+        "endSec": 2.1333333333333333,
+        "truncated": false,
+        "credits": 77,
+        "gauge": 106.16442246144001
+      },
+      {
+        "index": 1,
+        "kind": "refill",
+        "startFrame": 840,
+        "endFrame": 980,
+        "startSec": 14,
+        "endSec": 16.333333333333332,
+        "truncated": false,
+        "credits": 67,
+        "gauge": 104.15288328191994
+      },
+      {
+        "index": 2,
+        "kind": "refill",
+        "startFrame": 1692,
+        "endFrame": 1914,
+        "startSec": 28.2,
+        "endSec": 31.9,
+        "truncated": false,
+        "credits": 71,
+        "gauge": 106.03736328192002
+      },
+      {
+        "index": 3,
+        "kind": "refill",
+        "startFrame": 2662,
+        "endFrame": 2807,
+        "startSec": 44.36666666666667,
+        "endSec": 46.78333333333333,
+        "truncated": false,
+        "credits": 72,
+        "gauge": 107.53146716160002
+      },
+      {
+        "index": 4,
+        "kind": "refill",
+        "startFrame": 3519,
+        "endFrame": 3727,
+        "startSec": 58.65,
+        "endSec": 62.11666666666667,
+        "truncated": false,
+        "credits": 64,
+        "gauge": 102.60282716160003
+      },
+      {
+        "index": 5,
+        "kind": "refill",
+        "startFrame": 4439,
+        "endFrame": 4608,
+        "startSec": 73.98333333333333,
+        "endSec": 76.8,
+        "truncated": false,
+        "credits": 79,
+        "gauge": 100.51884880281597
+      },
+      {
+        "index": 6,
+        "kind": "refill",
+        "startFrame": 5320,
+        "endFrame": 5531,
+        "startSec": 88.66666666666667,
+        "endSec": 92.18333333333334,
+        "truncated": false,
+        "credits": 66,
+        "gauge": 100.02688100351999
+      },
+      {
+        "index": 7,
+        "kind": "refill",
+        "startFrame": 6243,
+        "endFrame": 6446,
+        "startSec": 104.05,
+        "endSec": 107.43333333333334,
+        "truncated": false,
+        "credits": 73,
+        "gauge": 106.10053105151998
+      },
+      {
+        "index": 8,
+        "kind": "refill",
+        "startFrame": 7158,
+        "endFrame": 7371,
+        "startSec": 119.3,
+        "endSec": 122.85,
+        "truncated": false,
+        "credits": 67,
+        "gauge": 100.95661779763205
+      },
+      {
+        "index": 9,
+        "kind": "refill",
+        "startFrame": 8083,
+        "endFrame": 8225,
+        "startSec": 134.71666666666667,
+        "endSec": 137.08333333333334,
+        "truncated": false,
+        "credits": 67,
+        "gauge": 101.24653779763197
+      },
+      {
+        "index": 10,
+        "kind": "refill",
+        "startFrame": 8937,
+        "endFrame": 9150,
+        "startSec": 148.95,
+        "endSec": 152.5,
+        "truncated": false,
+        "credits": 68,
+        "gauge": 104.8931603712
+      },
+      {
+        "index": 11,
+        "kind": "refill",
+        "startFrame": 9862,
+        "endFrame": 10002,
+        "startSec": 164.36666666666667,
+        "endSec": 166.7,
+        "truncated": false,
+        "credits": 66,
+        "gauge": 106.22682716159996
+      },
+      {
+        "index": 12,
+        "kind": "refill",
+        "startFrame": 10714,
+        "endFrame": 10800,
+        "startSec": 178.56666666666666,
+        "endSec": 180,
+        "truncated": true,
+        "credits": 39,
+        "gauge": 49.15755444940801
+      }
+    ],
+    "credits": [
+      {
+        "frame": 10,
+        "sec": 0.16666666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 12,
+        "sec": 0.2,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 13,
+        "sec": 0.21666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 16,
+        "sec": 0.26666666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 17,
+        "sec": 0.2833333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 19,
+        "sec": 0.31666666666666665,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 22,
+        "sec": 0.36666666666666664,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 22,
+        "sec": 0.36666666666666664,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 25,
+        "sec": 0.4166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 27,
+        "sec": 0.45,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 28,
+        "sec": 0.4666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 31,
+        "sec": 0.5166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 32,
+        "sec": 0.5333333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 32,
+        "sec": 0.5333333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 0
+      },
+      {
+        "frame": 34,
+        "sec": 0.5666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 37,
+        "sec": 0.6166666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 37,
+        "sec": 0.6166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 40,
+        "sec": 0.6666666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 42,
+        "sec": 0.7,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 43,
+        "sec": 0.7166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 46,
+        "sec": 0.7666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 47,
+        "sec": 0.7833333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 47,
+        "sec": 0.7833333333333333,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 9.29534082048,
+        "window": 0
+      },
+      {
+        "frame": 49,
+        "sec": 0.8166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 52,
+        "sec": 0.8666666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 52,
+        "sec": 0.8666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 55,
+        "sec": 0.9166666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 56,
+        "sec": 0.9333333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 0
+      },
+      {
+        "frame": 57,
+        "sec": 0.95,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 58,
+        "sec": 0.9666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 60,
+        "sec": 1,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 0
+      },
+      {
+        "frame": 61,
+        "sec": 1.0166666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 62,
+        "sec": 1.0333333333333334,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 64,
+        "sec": 1.0666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 67,
+        "sec": 1.1166666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 67,
+        "sec": 1.1166666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 0
+      },
+      {
+        "frame": 67,
+        "sec": 1.1166666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 0
+      },
+      {
+        "frame": 67,
+        "sec": 1.1166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 70,
+        "sec": 1.1666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 72,
+        "sec": 1.2,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 73,
+        "sec": 1.2166666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 76,
+        "sec": 1.2666666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 77,
+        "sec": 1.2833333333333334,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 79,
+        "sec": 1.3166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 80,
+        "sec": 1.3333333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 0
+      },
+      {
+        "frame": 82,
+        "sec": 1.3666666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 82,
+        "sec": 1.3666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 85,
+        "sec": 1.4166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 87,
+        "sec": 1.45,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 87,
+        "sec": 1.45,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 9.29534082048,
+        "window": 0
+      },
+      {
+        "frame": 88,
+        "sec": 1.4666666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 91,
+        "sec": 1.5166666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 92,
+        "sec": 1.5333333333333334,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 94,
+        "sec": 1.5666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 97,
+        "sec": 1.6166666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 97,
+        "sec": 1.6166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 100,
+        "sec": 1.6666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 102,
+        "sec": 1.7,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 103,
+        "sec": 1.7166666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 104,
+        "sec": 1.7333333333333334,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 0
+      },
+      {
+        "frame": 106,
+        "sec": 1.7666666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 107,
+        "sec": 1.7833333333333334,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 109,
+        "sec": 1.8166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 112,
+        "sec": 1.8666666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 112,
+        "sec": 1.8666666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 115,
+        "sec": 1.9166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 117,
+        "sec": 1.95,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 118,
+        "sec": 1.9666666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 120,
+        "sec": 2,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 0
+      },
+      {
+        "frame": 121,
+        "sec": 2.0166666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 122,
+        "sec": 2.033333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 124,
+        "sec": 2.066666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 127,
+        "sec": 2.1166666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 0
+      },
+      {
+        "frame": 127,
+        "sec": 2.1166666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 0
+      },
+      {
+        "frame": 127,
+        "sec": 2.1166666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 0
+      },
+      {
+        "frame": 127,
+        "sec": 2.1166666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 0
+      },
+      {
+        "frame": 127,
+        "sec": 2.1166666666666667,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 9.29534082048,
+        "window": 0
+      },
+      {
+        "frame": 840,
+        "sec": 14,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 840,
+        "sec": 14,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 9.29534082048,
+        "window": 1
+      },
+      {
+        "frame": 840,
+        "sec": 14,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 1
+      },
+      {
+        "frame": 843,
+        "sec": 14.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 846,
+        "sec": 14.1,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 849,
+        "sec": 14.15,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 850,
+        "sec": 14.166666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 1
+      },
+      {
+        "frame": 852,
+        "sec": 14.2,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 855,
+        "sec": 14.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 858,
+        "sec": 14.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 859,
+        "sec": 14.316666666666666,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 1
+      },
+      {
+        "frame": 859,
+        "sec": 14.316666666666666,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 1
+      },
+      {
+        "frame": 861,
+        "sec": 14.35,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 864,
+        "sec": 14.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 867,
+        "sec": 14.45,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 870,
+        "sec": 14.5,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 873,
+        "sec": 14.55,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 874,
+        "sec": 14.566666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 1
+      },
+      {
+        "frame": 876,
+        "sec": 14.6,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 879,
+        "sec": 14.65,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 880,
+        "sec": 14.666666666666666,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 9.29534082048,
+        "window": 1
+      },
+      {
+        "frame": 882,
+        "sec": 14.7,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 885,
+        "sec": 14.75,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 888,
+        "sec": 14.8,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 891,
+        "sec": 14.85,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 894,
+        "sec": 14.9,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 897,
+        "sec": 14.95,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 898,
+        "sec": 14.966666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 1
+      },
+      {
+        "frame": 900,
+        "sec": 15,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 900,
+        "sec": 15,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 1
+      },
+      {
+        "frame": 903,
+        "sec": 15.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 906,
+        "sec": 15.1,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 909,
+        "sec": 15.15,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 912,
+        "sec": 15.2,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 915,
+        "sec": 15.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 918,
+        "sec": 15.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 919,
+        "sec": 15.316666666666666,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 1
+      },
+      {
+        "frame": 919,
+        "sec": 15.316666666666666,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 1
+      },
+      {
+        "frame": 920,
+        "sec": 15.333333333333334,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 9.29534082048,
+        "window": 1
+      },
+      {
+        "frame": 921,
+        "sec": 15.35,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 922,
+        "sec": 15.366666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 1
+      },
+      {
+        "frame": 924,
+        "sec": 15.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 927,
+        "sec": 15.45,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 930,
+        "sec": 15.5,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 933,
+        "sec": 15.55,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 936,
+        "sec": 15.6,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 939,
+        "sec": 15.65,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 942,
+        "sec": 15.7,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 945,
+        "sec": 15.75,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 946,
+        "sec": 15.766666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 1
+      },
+      {
+        "frame": 948,
+        "sec": 15.8,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 951,
+        "sec": 15.85,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 954,
+        "sec": 15.9,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 957,
+        "sec": 15.95,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 960,
+        "sec": 16,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 960,
+        "sec": 16,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 9.29534082048,
+        "window": 1
+      },
+      {
+        "frame": 960,
+        "sec": 16,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 1
+      },
+      {
+        "frame": 963,
+        "sec": 16.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 963,
+        "sec": 16.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 966,
+        "sec": 16.1,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 969,
+        "sec": 16.15,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 970,
+        "sec": 16.166666666666668,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 1
+      },
+      {
+        "frame": 972,
+        "sec": 16.2,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 975,
+        "sec": 16.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 978,
+        "sec": 16.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 1
+      },
+      {
+        "frame": 979,
+        "sec": 16.316666666666666,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 1
+      },
+      {
+        "frame": 979,
+        "sec": 16.316666666666666,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 1
+      },
+      {
+        "frame": 1693,
+        "sec": 28.216666666666665,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1696,
+        "sec": 28.266666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1699,
+        "sec": 28.316666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1702,
+        "sec": 28.366666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1705,
+        "sec": 28.416666666666668,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1708,
+        "sec": 28.466666666666665,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1711,
+        "sec": 28.516666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 2
+      },
+      {
+        "frame": 1711,
+        "sec": 28.516666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1714,
+        "sec": 28.566666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1717,
+        "sec": 28.616666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1735,
+        "sec": 28.916666666666668,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 2
+      },
+      {
+        "frame": 1740,
+        "sec": 29,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 2
+      },
+      {
+        "frame": 1759,
+        "sec": 29.316666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 2
+      },
+      {
+        "frame": 1793,
+        "sec": 29.883333333333333,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 9.29534082048,
+        "window": 2
+      },
+      {
+        "frame": 1800,
+        "sec": 30,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 2
+      },
+      {
+        "frame": 1812,
+        "sec": 30.2,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1815,
+        "sec": 30.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1815,
+        "sec": 30.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1818,
+        "sec": 30.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1819,
+        "sec": 30.316666666666666,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 2
+      },
+      {
+        "frame": 1819,
+        "sec": 30.316666666666666,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 2
+      },
+      {
+        "frame": 1821,
+        "sec": 30.35,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1824,
+        "sec": 30.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1827,
+        "sec": 30.45,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1830,
+        "sec": 30.5,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1833,
+        "sec": 30.55,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1833,
+        "sec": 30.55,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 9.29534082048,
+        "window": 2
+      },
+      {
+        "frame": 1836,
+        "sec": 30.6,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1839,
+        "sec": 30.65,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1842,
+        "sec": 30.7,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1845,
+        "sec": 30.75,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1848,
+        "sec": 30.8,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1851,
+        "sec": 30.85,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1854,
+        "sec": 30.9,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1857,
+        "sec": 30.95,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1859,
+        "sec": 30.983333333333334,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 2
+      },
+      {
+        "frame": 1860,
+        "sec": 31,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1860,
+        "sec": 31,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 2
+      },
+      {
+        "frame": 1863,
+        "sec": 31.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1864,
+        "sec": 31.066666666666666,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 2
+      },
+      {
+        "frame": 1866,
+        "sec": 31.1,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1869,
+        "sec": 31.15,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 2
+      },
+      {
+        "frame": 1869,
+        "sec": 31.15,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1872,
+        "sec": 31.2,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1873,
+        "sec": 31.216666666666665,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 9.29534082048,
+        "window": 2
+      },
+      {
+        "frame": 1874,
+        "sec": 31.233333333333334,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 2
+      },
+      {
+        "frame": 1875,
+        "sec": 31.25,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 2
+      },
+      {
+        "frame": 1875,
+        "sec": 31.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1878,
+        "sec": 31.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1879,
+        "sec": 31.316666666666666,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 2
+      },
+      {
+        "frame": 1879,
+        "sec": 31.316666666666666,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 2
+      },
+      {
+        "frame": 1879,
+        "sec": 31.316666666666666,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 2
+      },
+      {
+        "frame": 1881,
+        "sec": 31.35,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1884,
+        "sec": 31.4,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 2
+      },
+      {
+        "frame": 1884,
+        "sec": 31.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1887,
+        "sec": 31.45,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1889,
+        "sec": 31.483333333333334,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 2
+      },
+      {
+        "frame": 1890,
+        "sec": 31.5,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1893,
+        "sec": 31.55,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1894,
+        "sec": 31.566666666666666,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 2
+      },
+      {
+        "frame": 1896,
+        "sec": 31.6,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1899,
+        "sec": 31.65,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 2
+      },
+      {
+        "frame": 1899,
+        "sec": 31.65,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 2
+      },
+      {
+        "frame": 1899,
+        "sec": 31.65,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1902,
+        "sec": 31.7,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1904,
+        "sec": 31.733333333333334,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 2
+      },
+      {
+        "frame": 1905,
+        "sec": 31.75,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1908,
+        "sec": 31.8,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1909,
+        "sec": 31.816666666666666,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 2
+      },
+      {
+        "frame": 1911,
+        "sec": 31.85,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 2
+      },
+      {
+        "frame": 1913,
+        "sec": 31.883333333333333,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 9.29534082048,
+        "window": 2
+      },
+      {
+        "frame": 2663,
+        "sec": 44.38333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2666,
+        "sec": 44.43333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2669,
+        "sec": 44.483333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2672,
+        "sec": 44.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2675,
+        "sec": 44.583333333333336,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2678,
+        "sec": 44.63333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2681,
+        "sec": 44.68333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 3
+      },
+      {
+        "frame": 2681,
+        "sec": 44.68333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2684,
+        "sec": 44.733333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2686,
+        "sec": 44.766666666666666,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 3
+      },
+      {
+        "frame": 2687,
+        "sec": 44.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2687,
+        "sec": 44.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2690,
+        "sec": 44.833333333333336,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2693,
+        "sec": 44.88333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2696,
+        "sec": 44.93333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2699,
+        "sec": 44.983333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2700,
+        "sec": 45,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 3
+      },
+      {
+        "frame": 2702,
+        "sec": 45.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2705,
+        "sec": 45.083333333333336,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 3
+      },
+      {
+        "frame": 2705,
+        "sec": 45.083333333333336,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2707,
+        "sec": 45.11666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 3
+      },
+      {
+        "frame": 2707,
+        "sec": 45.11666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 3
+      },
+      {
+        "frame": 2708,
+        "sec": 45.13333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2711,
+        "sec": 45.18333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2714,
+        "sec": 45.233333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2717,
+        "sec": 45.28333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2720,
+        "sec": 45.333333333333336,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2723,
+        "sec": 45.38333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2726,
+        "sec": 45.43333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2726,
+        "sec": 45.43333333333333,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 3
+      },
+      {
+        "frame": 2729,
+        "sec": 45.483333333333334,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 3
+      },
+      {
+        "frame": 2729,
+        "sec": 45.483333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2732,
+        "sec": 45.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2735,
+        "sec": 45.583333333333336,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2738,
+        "sec": 45.63333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2741,
+        "sec": 45.68333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2744,
+        "sec": 45.733333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2747,
+        "sec": 45.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2750,
+        "sec": 45.833333333333336,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2753,
+        "sec": 45.88333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 3
+      },
+      {
+        "frame": 2753,
+        "sec": 45.88333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2756,
+        "sec": 45.93333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2759,
+        "sec": 45.983333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2760,
+        "sec": 46,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 3
+      },
+      {
+        "frame": 2762,
+        "sec": 46.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2765,
+        "sec": 46.083333333333336,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2766,
+        "sec": 46.1,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 3
+      },
+      {
+        "frame": 2767,
+        "sec": 46.11666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 3
+      },
+      {
+        "frame": 2767,
+        "sec": 46.11666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 3
+      },
+      {
+        "frame": 2768,
+        "sec": 46.13333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2771,
+        "sec": 46.18333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2774,
+        "sec": 46.233333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2775,
+        "sec": 46.25,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 3
+      },
+      {
+        "frame": 2777,
+        "sec": 46.28333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 3
+      },
+      {
+        "frame": 2777,
+        "sec": 46.28333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2780,
+        "sec": 46.333333333333336,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 3
+      },
+      {
+        "frame": 2780,
+        "sec": 46.333333333333336,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2783,
+        "sec": 46.38333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2785,
+        "sec": 46.416666666666664,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 3
+      },
+      {
+        "frame": 2786,
+        "sec": 46.43333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2789,
+        "sec": 46.483333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2790,
+        "sec": 46.5,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 3
+      },
+      {
+        "frame": 2792,
+        "sec": 46.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2795,
+        "sec": 46.583333333333336,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 3
+      },
+      {
+        "frame": 2795,
+        "sec": 46.583333333333336,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2798,
+        "sec": 46.63333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2800,
+        "sec": 46.666666666666664,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 3
+      },
+      {
+        "frame": 2801,
+        "sec": 46.68333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 3
+      },
+      {
+        "frame": 2801,
+        "sec": 46.68333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2804,
+        "sec": 46.733333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 3
+      },
+      {
+        "frame": 2805,
+        "sec": 46.75,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 3
+      },
+      {
+        "frame": 2806,
+        "sec": 46.766666666666666,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 3
+      },
+      {
+        "frame": 3520,
+        "sec": 58.666666666666664,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3523,
+        "sec": 58.71666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3526,
+        "sec": 58.766666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3529,
+        "sec": 58.81666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3532,
+        "sec": 58.86666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3535,
+        "sec": 58.916666666666664,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3538,
+        "sec": 58.96666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 4
+      },
+      {
+        "frame": 3538,
+        "sec": 58.96666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3540,
+        "sec": 59,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 4
+      },
+      {
+        "frame": 3541,
+        "sec": 59.016666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3544,
+        "sec": 59.06666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3562,
+        "sec": 59.36666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 4
+      },
+      {
+        "frame": 3586,
+        "sec": 59.766666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 4
+      },
+      {
+        "frame": 3599,
+        "sec": 59.983333333333334,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 4
+      },
+      {
+        "frame": 3600,
+        "sec": 60,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 4
+      },
+      {
+        "frame": 3639,
+        "sec": 60.65,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3639,
+        "sec": 60.65,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 4
+      },
+      {
+        "frame": 3642,
+        "sec": 60.7,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3645,
+        "sec": 60.75,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3648,
+        "sec": 60.8,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3648,
+        "sec": 60.8,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3651,
+        "sec": 60.85,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3654,
+        "sec": 60.9,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3657,
+        "sec": 60.95,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3660,
+        "sec": 61,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3660,
+        "sec": 61,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 4
+      },
+      {
+        "frame": 3663,
+        "sec": 61.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3666,
+        "sec": 61.1,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3669,
+        "sec": 61.15,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3672,
+        "sec": 61.2,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3675,
+        "sec": 61.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3678,
+        "sec": 61.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3679,
+        "sec": 61.31666666666667,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 4
+      },
+      {
+        "frame": 3681,
+        "sec": 61.35,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3684,
+        "sec": 61.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3685,
+        "sec": 61.416666666666664,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 4
+      },
+      {
+        "frame": 3685,
+        "sec": 61.416666666666664,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 4
+      },
+      {
+        "frame": 3686,
+        "sec": 61.43333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 4
+      },
+      {
+        "frame": 3687,
+        "sec": 61.45,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3690,
+        "sec": 61.5,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3691,
+        "sec": 61.516666666666666,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 4
+      },
+      {
+        "frame": 3693,
+        "sec": 61.55,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3696,
+        "sec": 61.6,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 4
+      },
+      {
+        "frame": 3696,
+        "sec": 61.6,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3699,
+        "sec": 61.65,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3701,
+        "sec": 61.68333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 4
+      },
+      {
+        "frame": 3702,
+        "sec": 61.7,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 4
+      },
+      {
+        "frame": 3702,
+        "sec": 61.7,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3705,
+        "sec": 61.75,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3706,
+        "sec": 61.766666666666666,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 4
+      },
+      {
+        "frame": 3708,
+        "sec": 61.8,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3711,
+        "sec": 61.85,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 4
+      },
+      {
+        "frame": 3711,
+        "sec": 61.85,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3714,
+        "sec": 61.9,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3716,
+        "sec": 61.93333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 4
+      },
+      {
+        "frame": 3717,
+        "sec": 61.95,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3719,
+        "sec": 61.983333333333334,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 4
+      },
+      {
+        "frame": 3720,
+        "sec": 62,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3720,
+        "sec": 62,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 4
+      },
+      {
+        "frame": 3721,
+        "sec": 62.016666666666666,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 4
+      },
+      {
+        "frame": 3723,
+        "sec": 62.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 3726,
+        "sec": 62.1,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 4
+      },
+      {
+        "frame": 3726,
+        "sec": 62.1,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 4
+      },
+      {
+        "frame": 3726,
+        "sec": 62.1,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 4
+      },
+      {
+        "frame": 4439,
+        "sec": 73.98333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4440,
+        "sec": 74,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 5
+      },
+      {
+        "frame": 4442,
+        "sec": 74.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4445,
+        "sec": 74.08333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4447,
+        "sec": 74.11666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 5
+      },
+      {
+        "frame": 4448,
+        "sec": 74.13333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4451,
+        "sec": 74.18333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4454,
+        "sec": 74.23333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4457,
+        "sec": 74.28333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4460,
+        "sec": 74.33333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4463,
+        "sec": 74.38333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4466,
+        "sec": 74.43333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4469,
+        "sec": 74.48333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4471,
+        "sec": 74.51666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 5
+      },
+      {
+        "frame": 4472,
+        "sec": 74.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4472,
+        "sec": 74.53333333333333,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 5
+      },
+      {
+        "frame": 4475,
+        "sec": 74.58333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4478,
+        "sec": 74.63333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4478,
+        "sec": 74.63333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4481,
+        "sec": 74.68333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4484,
+        "sec": 74.73333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4487,
+        "sec": 74.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4490,
+        "sec": 74.83333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4493,
+        "sec": 74.88333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4495,
+        "sec": 74.91666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 5
+      },
+      {
+        "frame": 4495,
+        "sec": 74.91666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 5
+      },
+      {
+        "frame": 4495,
+        "sec": 74.91666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 5
+      },
+      {
+        "frame": 4496,
+        "sec": 74.93333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4499,
+        "sec": 74.98333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4500,
+        "sec": 75,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 5
+      },
+      {
+        "frame": 4502,
+        "sec": 75.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4505,
+        "sec": 75.08333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4508,
+        "sec": 75.13333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4511,
+        "sec": 75.18333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4512,
+        "sec": 75.2,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 5
+      },
+      {
+        "frame": 4514,
+        "sec": 75.23333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4517,
+        "sec": 75.28333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4519,
+        "sec": 75.31666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 5
+      },
+      {
+        "frame": 4520,
+        "sec": 75.33333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4523,
+        "sec": 75.38333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4526,
+        "sec": 75.43333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4529,
+        "sec": 75.48333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4532,
+        "sec": 75.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4535,
+        "sec": 75.58333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4538,
+        "sec": 75.63333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4541,
+        "sec": 75.68333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4543,
+        "sec": 75.71666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 5
+      },
+      {
+        "frame": 4544,
+        "sec": 75.73333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4547,
+        "sec": 75.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4550,
+        "sec": 75.83333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4552,
+        "sec": 75.86666666666666,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 5
+      },
+      {
+        "frame": 4553,
+        "sec": 75.88333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4555,
+        "sec": 75.91666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 5
+      },
+      {
+        "frame": 4555,
+        "sec": 75.91666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 5
+      },
+      {
+        "frame": 4556,
+        "sec": 75.93333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4559,
+        "sec": 75.98333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4560,
+        "sec": 76,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 5
+      },
+      {
+        "frame": 4562,
+        "sec": 76.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4565,
+        "sec": 76.08333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4567,
+        "sec": 76.11666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 5
+      },
+      {
+        "frame": 4568,
+        "sec": 76.13333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4571,
+        "sec": 76.18333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4574,
+        "sec": 76.23333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4577,
+        "sec": 76.28333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4580,
+        "sec": 76.33333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4583,
+        "sec": 76.38333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4586,
+        "sec": 76.43333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4589,
+        "sec": 76.48333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4591,
+        "sec": 76.51666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 5
+      },
+      {
+        "frame": 4592,
+        "sec": 76.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4592,
+        "sec": 76.53333333333333,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 5
+      },
+      {
+        "frame": 4595,
+        "sec": 76.58333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4597,
+        "sec": 76.61666666666666,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 5
+      },
+      {
+        "frame": 4598,
+        "sec": 76.63333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4601,
+        "sec": 76.68333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4602,
+        "sec": 76.7,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 5
+      },
+      {
+        "frame": 4604,
+        "sec": 76.73333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 4607,
+        "sec": 76.78333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 5
+      },
+      {
+        "frame": 4607,
+        "sec": 76.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 5
+      },
+      {
+        "frame": 5321,
+        "sec": 88.68333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5324,
+        "sec": 88.73333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5327,
+        "sec": 88.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5330,
+        "sec": 88.83333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5333,
+        "sec": 88.88333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5336,
+        "sec": 88.93333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5339,
+        "sec": 88.98333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 6
+      },
+      {
+        "frame": 5339,
+        "sec": 88.98333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5340,
+        "sec": 89,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 6
+      },
+      {
+        "frame": 5342,
+        "sec": 89.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5345,
+        "sec": 89.08333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5345,
+        "sec": 89.08333333333333,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 6
+      },
+      {
+        "frame": 5363,
+        "sec": 89.38333333333334,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 6
+      },
+      {
+        "frame": 5385,
+        "sec": 89.75,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 6
+      },
+      {
+        "frame": 5387,
+        "sec": 89.78333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 6
+      },
+      {
+        "frame": 5400,
+        "sec": 90,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 6
+      },
+      {
+        "frame": 5425,
+        "sec": 90.41666666666667,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 6
+      },
+      {
+        "frame": 5440,
+        "sec": 90.66666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5443,
+        "sec": 90.71666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5446,
+        "sec": 90.76666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5449,
+        "sec": 90.81666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5452,
+        "sec": 90.86666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5455,
+        "sec": 90.91666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5455,
+        "sec": 90.91666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5458,
+        "sec": 90.96666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5460,
+        "sec": 91,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 6
+      },
+      {
+        "frame": 5461,
+        "sec": 91.01666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5464,
+        "sec": 91.06666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5465,
+        "sec": 91.08333333333333,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 6
+      },
+      {
+        "frame": 5467,
+        "sec": 91.11666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5470,
+        "sec": 91.16666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5473,
+        "sec": 91.21666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 6
+      },
+      {
+        "frame": 5473,
+        "sec": 91.21666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 6
+      },
+      {
+        "frame": 5473,
+        "sec": 91.21666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5476,
+        "sec": 91.26666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5479,
+        "sec": 91.31666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5482,
+        "sec": 91.36666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5485,
+        "sec": 91.41666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5488,
+        "sec": 91.46666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 6
+      },
+      {
+        "frame": 5488,
+        "sec": 91.46666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5491,
+        "sec": 91.51666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5493,
+        "sec": 91.55,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 6
+      },
+      {
+        "frame": 5494,
+        "sec": 91.56666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5497,
+        "sec": 91.61666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5498,
+        "sec": 91.63333333333334,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 6
+      },
+      {
+        "frame": 5500,
+        "sec": 91.66666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5503,
+        "sec": 91.71666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 6
+      },
+      {
+        "frame": 5503,
+        "sec": 91.71666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 6
+      },
+      {
+        "frame": 5503,
+        "sec": 91.71666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5505,
+        "sec": 91.75,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 6
+      },
+      {
+        "frame": 5506,
+        "sec": 91.76666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5508,
+        "sec": 91.8,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 6
+      },
+      {
+        "frame": 5509,
+        "sec": 91.81666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5512,
+        "sec": 91.86666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5513,
+        "sec": 91.88333333333334,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 6
+      },
+      {
+        "frame": 5515,
+        "sec": 91.91666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5518,
+        "sec": 91.96666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 6
+      },
+      {
+        "frame": 5518,
+        "sec": 91.96666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5520,
+        "sec": 92,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 6
+      },
+      {
+        "frame": 5521,
+        "sec": 92.01666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5523,
+        "sec": 92.05,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 6
+      },
+      {
+        "frame": 5524,
+        "sec": 92.06666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5527,
+        "sec": 92.11666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 6
+      },
+      {
+        "frame": 5527,
+        "sec": 92.11666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 5528,
+        "sec": 92.13333333333334,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 6
+      },
+      {
+        "frame": 5530,
+        "sec": 92.16666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 6
+      },
+      {
+        "frame": 6243,
+        "sec": 104.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6246,
+        "sec": 104.1,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6249,
+        "sec": 104.15,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 7
+      },
+      {
+        "frame": 6249,
+        "sec": 104.15,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6252,
+        "sec": 104.2,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6255,
+        "sec": 104.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6258,
+        "sec": 104.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6258,
+        "sec": 104.3,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 7
+      },
+      {
+        "frame": 6261,
+        "sec": 104.35,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6264,
+        "sec": 104.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6265,
+        "sec": 104.41666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 7
+      },
+      {
+        "frame": 6265,
+        "sec": 104.41666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 7
+      },
+      {
+        "frame": 6267,
+        "sec": 104.45,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6267,
+        "sec": 104.45,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6270,
+        "sec": 104.5,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6273,
+        "sec": 104.55,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 7
+      },
+      {
+        "frame": 6273,
+        "sec": 104.55,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6276,
+        "sec": 104.6,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6279,
+        "sec": 104.65,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6282,
+        "sec": 104.7,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6285,
+        "sec": 104.75,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6288,
+        "sec": 104.8,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6291,
+        "sec": 104.85,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6294,
+        "sec": 104.9,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6297,
+        "sec": 104.95,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 7
+      },
+      {
+        "frame": 6297,
+        "sec": 104.95,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6298,
+        "sec": 104.96666666666667,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 7
+      },
+      {
+        "frame": 6300,
+        "sec": 105,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6300,
+        "sec": 105,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 7
+      },
+      {
+        "frame": 6303,
+        "sec": 105.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6306,
+        "sec": 105.1,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6309,
+        "sec": 105.15,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6312,
+        "sec": 105.2,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6315,
+        "sec": 105.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6318,
+        "sec": 105.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6321,
+        "sec": 105.35,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 7
+      },
+      {
+        "frame": 6321,
+        "sec": 105.35,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6324,
+        "sec": 105.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6325,
+        "sec": 105.41666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 7
+      },
+      {
+        "frame": 6325,
+        "sec": 105.41666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 7
+      },
+      {
+        "frame": 6327,
+        "sec": 105.45,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6330,
+        "sec": 105.5,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6333,
+        "sec": 105.55,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6336,
+        "sec": 105.6,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6338,
+        "sec": 105.63333333333334,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.915712200703999,
+        "window": 7
+      },
+      {
+        "frame": 6339,
+        "sec": 105.65,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6342,
+        "sec": 105.7,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6345,
+        "sec": 105.75,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 7
+      },
+      {
+        "frame": 6345,
+        "sec": 105.75,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6348,
+        "sec": 105.8,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6351,
+        "sec": 105.85,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6354,
+        "sec": 105.9,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6357,
+        "sec": 105.95,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6360,
+        "sec": 106,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 7
+      },
+      {
+        "frame": 6420,
+        "sec": 107,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6420,
+        "sec": 107,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 7
+      },
+      {
+        "frame": 6423,
+        "sec": 107.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6424,
+        "sec": 107.06666666666666,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 7
+      },
+      {
+        "frame": 6426,
+        "sec": 107.1,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6429,
+        "sec": 107.15,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 7
+      },
+      {
+        "frame": 6429,
+        "sec": 107.15,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 7
+      },
+      {
+        "frame": 6429,
+        "sec": 107.15,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6432,
+        "sec": 107.2,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6434,
+        "sec": 107.23333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 7
+      },
+      {
+        "frame": 6435,
+        "sec": 107.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6438,
+        "sec": 107.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6438,
+        "sec": 107.3,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 8.568754449407999,
+        "window": 7
+      },
+      {
+        "frame": 6439,
+        "sec": 107.31666666666666,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 7
+      },
+      {
+        "frame": 6441,
+        "sec": 107.35,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6444,
+        "sec": 107.4,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 7
+      },
+      {
+        "frame": 6444,
+        "sec": 107.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 7
+      },
+      {
+        "frame": 6445,
+        "sec": 107.41666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 7
+      },
+      {
+        "frame": 6445,
+        "sec": 107.41666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 7
+      },
+      {
+        "frame": 7159,
+        "sec": 119.31666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7162,
+        "sec": 119.36666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7165,
+        "sec": 119.41666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7168,
+        "sec": 119.46666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7171,
+        "sec": 119.51666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7174,
+        "sec": 119.56666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7177,
+        "sec": 119.61666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 8
+      },
+      {
+        "frame": 7177,
+        "sec": 119.61666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7180,
+        "sec": 119.66666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7183,
+        "sec": 119.71666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7200,
+        "sec": 120,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 8
+      },
+      {
+        "frame": 7201,
+        "sec": 120.01666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 8
+      },
+      {
+        "frame": 7225,
+        "sec": 120.41666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 8
+      },
+      {
+        "frame": 7231,
+        "sec": 120.51666666666667,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 8.568754449407999,
+        "window": 8
+      },
+      {
+        "frame": 7260,
+        "sec": 121,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 8
+      },
+      {
+        "frame": 7271,
+        "sec": 121.18333333333334,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 8.568754449407999,
+        "window": 8
+      },
+      {
+        "frame": 7278,
+        "sec": 121.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7281,
+        "sec": 121.35,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7284,
+        "sec": 121.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7285,
+        "sec": 121.41666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 8
+      },
+      {
+        "frame": 7285,
+        "sec": 121.41666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 8
+      },
+      {
+        "frame": 7287,
+        "sec": 121.45,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7290,
+        "sec": 121.5,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7293,
+        "sec": 121.55,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7296,
+        "sec": 121.6,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7299,
+        "sec": 121.65,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7299,
+        "sec": 121.65,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7302,
+        "sec": 121.7,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7305,
+        "sec": 121.75,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7308,
+        "sec": 121.8,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7311,
+        "sec": 121.85,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7311,
+        "sec": 121.85,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 8.568754449407999,
+        "window": 8
+      },
+      {
+        "frame": 7314,
+        "sec": 121.9,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7317,
+        "sec": 121.95,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7320,
+        "sec": 122,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7320,
+        "sec": 122,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 8
+      },
+      {
+        "frame": 7323,
+        "sec": 122.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7325,
+        "sec": 122.08333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 8
+      },
+      {
+        "frame": 7326,
+        "sec": 122.1,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7329,
+        "sec": 122.15,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7330,
+        "sec": 122.16666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 8
+      },
+      {
+        "frame": 7332,
+        "sec": 122.2,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7335,
+        "sec": 122.25,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 8
+      },
+      {
+        "frame": 7335,
+        "sec": 122.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7338,
+        "sec": 122.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7340,
+        "sec": 122.33333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 8
+      },
+      {
+        "frame": 7341,
+        "sec": 122.35,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 8
+      },
+      {
+        "frame": 7341,
+        "sec": 122.35,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7344,
+        "sec": 122.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7345,
+        "sec": 122.41666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 8
+      },
+      {
+        "frame": 7345,
+        "sec": 122.41666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 8
+      },
+      {
+        "frame": 7345,
+        "sec": 122.41666666666667,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 8
+      },
+      {
+        "frame": 7347,
+        "sec": 122.45,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7350,
+        "sec": 122.5,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 8
+      },
+      {
+        "frame": 7350,
+        "sec": 122.5,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7351,
+        "sec": 122.51666666666667,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 8.568754449407999,
+        "window": 8
+      },
+      {
+        "frame": 7353,
+        "sec": 122.55,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7355,
+        "sec": 122.58333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 8
+      },
+      {
+        "frame": 7356,
+        "sec": 122.6,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7359,
+        "sec": 122.65,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7360,
+        "sec": 122.66666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 8
+      },
+      {
+        "frame": 7362,
+        "sec": 122.7,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7365,
+        "sec": 122.75,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 8
+      },
+      {
+        "frame": 7365,
+        "sec": 122.75,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 8
+      },
+      {
+        "frame": 7365,
+        "sec": 122.75,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7368,
+        "sec": 122.8,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 8
+      },
+      {
+        "frame": 7370,
+        "sec": 122.83333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 8
+      },
+      {
+        "frame": 8084,
+        "sec": 134.73333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8087,
+        "sec": 134.78333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 9
+      },
+      {
+        "frame": 8087,
+        "sec": 134.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8090,
+        "sec": 134.83333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8091,
+        "sec": 134.85,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 9
+      },
+      {
+        "frame": 8091,
+        "sec": 134.85,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 9
+      },
+      {
+        "frame": 8093,
+        "sec": 134.88333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8096,
+        "sec": 134.93333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8099,
+        "sec": 134.98333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8100,
+        "sec": 135,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 9
+      },
+      {
+        "frame": 8102,
+        "sec": 135.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8104,
+        "sec": 135.06666666666666,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 8.568754449407999,
+        "window": 9
+      },
+      {
+        "frame": 8105,
+        "sec": 135.08333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8108,
+        "sec": 135.13333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8111,
+        "sec": 135.18333333333334,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 9
+      },
+      {
+        "frame": 8111,
+        "sec": 135.18333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8111,
+        "sec": 135.18333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8114,
+        "sec": 135.23333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8117,
+        "sec": 135.28333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8120,
+        "sec": 135.33333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8123,
+        "sec": 135.38333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8126,
+        "sec": 135.43333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8129,
+        "sec": 135.48333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8132,
+        "sec": 135.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8135,
+        "sec": 135.58333333333334,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 9
+      },
+      {
+        "frame": 8135,
+        "sec": 135.58333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8138,
+        "sec": 135.63333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8141,
+        "sec": 135.68333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8144,
+        "sec": 135.73333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8144,
+        "sec": 135.73333333333332,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 8.568754449407999,
+        "window": 9
+      },
+      {
+        "frame": 8147,
+        "sec": 135.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8150,
+        "sec": 135.83333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8151,
+        "sec": 135.85,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 9
+      },
+      {
+        "frame": 8151,
+        "sec": 135.85,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 9
+      },
+      {
+        "frame": 8153,
+        "sec": 135.88333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8156,
+        "sec": 135.93333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8159,
+        "sec": 135.98333333333332,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 9
+      },
+      {
+        "frame": 8159,
+        "sec": 135.98333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8160,
+        "sec": 136,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 9
+      },
+      {
+        "frame": 8162,
+        "sec": 136.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8165,
+        "sec": 136.08333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8168,
+        "sec": 136.13333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8171,
+        "sec": 136.18333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8174,
+        "sec": 136.23333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8177,
+        "sec": 136.28333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8180,
+        "sec": 136.33333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8183,
+        "sec": 136.38333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 9
+      },
+      {
+        "frame": 8183,
+        "sec": 136.38333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8184,
+        "sec": 136.4,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 8.568754449407999,
+        "window": 9
+      },
+      {
+        "frame": 8186,
+        "sec": 136.43333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8189,
+        "sec": 136.48333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8192,
+        "sec": 136.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8195,
+        "sec": 136.58333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8198,
+        "sec": 136.63333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8201,
+        "sec": 136.68333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8204,
+        "sec": 136.73333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8207,
+        "sec": 136.78333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 9
+      },
+      {
+        "frame": 8207,
+        "sec": 136.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8210,
+        "sec": 136.83333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8211,
+        "sec": 136.85,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 9
+      },
+      {
+        "frame": 8211,
+        "sec": 136.85,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 9
+      },
+      {
+        "frame": 8213,
+        "sec": 136.88333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8216,
+        "sec": 136.93333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8219,
+        "sec": 136.98333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8220,
+        "sec": 137,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 9
+      },
+      {
+        "frame": 8222,
+        "sec": 137.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 9
+      },
+      {
+        "frame": 8224,
+        "sec": 137.06666666666666,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 8.568754449407999,
+        "window": 9
+      },
+      {
+        "frame": 8938,
+        "sec": 148.96666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8939,
+        "sec": 148.98333333333332,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 10
+      },
+      {
+        "frame": 8939,
+        "sec": 148.98333333333332,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 10
+      },
+      {
+        "frame": 8940,
+        "sec": 149,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 10
+      },
+      {
+        "frame": 8941,
+        "sec": 149.01666666666668,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8944,
+        "sec": 149.06666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 10
+      },
+      {
+        "frame": 8944,
+        "sec": 149.06666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8947,
+        "sec": 149.11666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8950,
+        "sec": 149.16666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8953,
+        "sec": 149.21666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8956,
+        "sec": 149.26666666666668,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8959,
+        "sec": 149.31666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8962,
+        "sec": 149.36666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8965,
+        "sec": 149.41666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8968,
+        "sec": 149.46666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 10
+      },
+      {
+        "frame": 8968,
+        "sec": 149.46666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8971,
+        "sec": 149.51666666666668,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8974,
+        "sec": 149.56666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8977,
+        "sec": 149.61666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8980,
+        "sec": 149.66666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8983,
+        "sec": 149.71666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8986,
+        "sec": 149.76666666666668,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8989,
+        "sec": 149.81666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8992,
+        "sec": 149.86666666666667,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 10
+      },
+      {
+        "frame": 8992,
+        "sec": 149.86666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8995,
+        "sec": 149.91666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 8998,
+        "sec": 149.96666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9000,
+        "sec": 150,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 10
+      },
+      {
+        "frame": 9001,
+        "sec": 150.01666666666668,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9004,
+        "sec": 150.06666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9007,
+        "sec": 150.11666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9010,
+        "sec": 150.16666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9013,
+        "sec": 150.21666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9016,
+        "sec": 150.26666666666668,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 10
+      },
+      {
+        "frame": 9016,
+        "sec": 150.26666666666668,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9019,
+        "sec": 150.31666666666666,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9022,
+        "sec": 150.36666666666667,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9037,
+        "sec": 150.61666666666667,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 10
+      },
+      {
+        "frame": 9040,
+        "sec": 150.66666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 10
+      },
+      {
+        "frame": 9060,
+        "sec": 151,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 10
+      },
+      {
+        "frame": 9064,
+        "sec": 151.06666666666666,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 10
+      },
+      {
+        "frame": 9077,
+        "sec": 151.28333333333333,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 10
+      },
+      {
+        "frame": 9102,
+        "sec": 151.7,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 10
+      },
+      {
+        "frame": 9107,
+        "sec": 151.78333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 10
+      },
+      {
+        "frame": 9112,
+        "sec": 151.86666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 10
+      },
+      {
+        "frame": 9117,
+        "sec": 151.95,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 10
+      },
+      {
+        "frame": 9117,
+        "sec": 151.95,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9117,
+        "sec": 151.95,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 10
+      },
+      {
+        "frame": 9120,
+        "sec": 152,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9120,
+        "sec": 152,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 10
+      },
+      {
+        "frame": 9122,
+        "sec": 152.03333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 10
+      },
+      {
+        "frame": 9123,
+        "sec": 152.05,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9126,
+        "sec": 152.1,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9127,
+        "sec": 152.11666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 10
+      },
+      {
+        "frame": 9129,
+        "sec": 152.15,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9132,
+        "sec": 152.2,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 10
+      },
+      {
+        "frame": 9132,
+        "sec": 152.2,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9135,
+        "sec": 152.25,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9137,
+        "sec": 152.28333333333333,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 10
+      },
+      {
+        "frame": 9138,
+        "sec": 152.3,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9141,
+        "sec": 152.35,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9142,
+        "sec": 152.36666666666667,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 10
+      },
+      {
+        "frame": 9144,
+        "sec": 152.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9144,
+        "sec": 152.4,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9147,
+        "sec": 152.45,
+        "slug": "grave",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 1.30464,
+        "window": 10
+      },
+      {
+        "frame": 9147,
+        "sec": 152.45,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 10
+      },
+      {
+        "frame": 9149,
+        "sec": 152.48333333333332,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 10
+      },
+      {
+        "frame": 9149,
+        "sec": 152.48333333333332,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 10
+      },
+      {
+        "frame": 9863,
+        "sec": 164.38333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9866,
+        "sec": 164.43333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9869,
+        "sec": 164.48333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9870,
+        "sec": 164.5,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 11
+      },
+      {
+        "frame": 9872,
+        "sec": 164.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9875,
+        "sec": 164.58333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9878,
+        "sec": 164.63333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 11
+      },
+      {
+        "frame": 9878,
+        "sec": 164.63333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9881,
+        "sec": 164.68333333333334,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 11
+      },
+      {
+        "frame": 9881,
+        "sec": 164.68333333333334,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 11
+      },
+      {
+        "frame": 9881,
+        "sec": 164.68333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9884,
+        "sec": 164.73333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9887,
+        "sec": 164.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9890,
+        "sec": 164.83333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9893,
+        "sec": 164.88333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9896,
+        "sec": 164.93333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9899,
+        "sec": 164.98333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9900,
+        "sec": 165,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 11
+      },
+      {
+        "frame": 9902,
+        "sec": 165.03333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 11
+      },
+      {
+        "frame": 9902,
+        "sec": 165.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9905,
+        "sec": 165.08333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9908,
+        "sec": 165.13333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9910,
+        "sec": 165.16666666666666,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 11
+      },
+      {
+        "frame": 9911,
+        "sec": 165.18333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9914,
+        "sec": 165.23333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9917,
+        "sec": 165.28333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9920,
+        "sec": 165.33333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9923,
+        "sec": 165.38333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9926,
+        "sec": 165.43333333333334,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 11
+      },
+      {
+        "frame": 9926,
+        "sec": 165.43333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9929,
+        "sec": 165.48333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9932,
+        "sec": 165.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9935,
+        "sec": 165.58333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9938,
+        "sec": 165.63333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9941,
+        "sec": 165.68333333333334,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 11
+      },
+      {
+        "frame": 9941,
+        "sec": 165.68333333333334,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 11
+      },
+      {
+        "frame": 9941,
+        "sec": 165.68333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9944,
+        "sec": 165.73333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9947,
+        "sec": 165.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9950,
+        "sec": 165.83333333333334,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 11
+      },
+      {
+        "frame": 9950,
+        "sec": 165.83333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9950,
+        "sec": 165.83333333333334,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 11
+      },
+      {
+        "frame": 9953,
+        "sec": 165.88333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9956,
+        "sec": 165.93333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9956,
+        "sec": 165.93333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9959,
+        "sec": 165.98333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9960,
+        "sec": 166,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 11
+      },
+      {
+        "frame": 9962,
+        "sec": 166.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9965,
+        "sec": 166.08333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9968,
+        "sec": 166.13333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9971,
+        "sec": 166.18333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9974,
+        "sec": 166.23333333333332,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 11
+      },
+      {
+        "frame": 9974,
+        "sec": 166.23333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9977,
+        "sec": 166.28333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9980,
+        "sec": 166.33333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9983,
+        "sec": 166.38333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9986,
+        "sec": 166.43333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9989,
+        "sec": 166.48333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9990,
+        "sec": 166.5,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 10.6111067904,
+        "window": 11
+      },
+      {
+        "frame": 9992,
+        "sec": 166.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9995,
+        "sec": 166.58333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 9998,
+        "sec": 166.63333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 11
+      },
+      {
+        "frame": 9998,
+        "sec": 166.63333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 10001,
+        "sec": 166.68333333333334,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 11
+      },
+      {
+        "frame": 10001,
+        "sec": 166.68333333333334,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 11
+      },
+      {
+        "frame": 10001,
+        "sec": 166.68333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 11
+      },
+      {
+        "frame": 10715,
+        "sec": 178.58333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10718,
+        "sec": 178.63333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10721,
+        "sec": 178.68333333333334,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 12
+      },
+      {
+        "frame": 10721,
+        "sec": 178.68333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10724,
+        "sec": 178.73333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10727,
+        "sec": 178.78333333333333,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 12
+      },
+      {
+        "frame": 10727,
+        "sec": 178.78333333333333,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 12
+      },
+      {
+        "frame": 10727,
+        "sec": 178.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10730,
+        "sec": 178.83333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10730,
+        "sec": 178.83333333333334,
+        "slug": "noir",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 8.568754449407999,
+        "window": 12
+      },
+      {
+        "frame": 10733,
+        "sec": 178.88333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10736,
+        "sec": 178.93333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10739,
+        "sec": 178.98333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10740,
+        "sec": 179,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 3.1891200000000004,
+        "window": 12
+      },
+      {
+        "frame": 10742,
+        "sec": 179.03333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10745,
+        "sec": 179.08333333333334,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 12
+      },
+      {
+        "frame": 10745,
+        "sec": 179.08333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10748,
+        "sec": 179.13333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10751,
+        "sec": 179.18333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10754,
+        "sec": 179.23333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10757,
+        "sec": 179.28333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10760,
+        "sec": 179.33333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10763,
+        "sec": 179.38333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10766,
+        "sec": 179.43333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10769,
+        "sec": 179.48333333333332,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 12
+      },
+      {
+        "frame": 10769,
+        "sec": 179.48333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10772,
+        "sec": 179.53333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10775,
+        "sec": 179.58333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10778,
+        "sec": 179.63333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10781,
+        "sec": 179.68333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10784,
+        "sec": 179.73333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10787,
+        "sec": 179.78333333333333,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "skill",
+        "amount": 4.058879999999999,
+        "window": 12
+      },
+      {
+        "frame": 10787,
+        "sec": 179.78333333333333,
+        "slug": "anis-star",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 4.058879999999999,
+        "window": 12
+      },
+      {
+        "frame": 10787,
+        "sec": 179.78333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10790,
+        "sec": 179.83333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10793,
+        "sec": 179.88333333333333,
+        "slug": "jill",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.1891200000000004,
+        "window": 12
+      },
+      {
+        "frame": 10793,
+        "sec": 179.88333333333333,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10796,
+        "sec": 179.93333333333334,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      },
+      {
+        "frame": 10799,
+        "sec": 179.98333333333332,
+        "slug": "chisato",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 0.28992,
+        "window": 12
+      }
+    ],
+    "perUnitScheduled": {
+      "grave": 114.80832000000021,
+      "anis-star": 227.29727999999974,
+      "jill": 344.4249600000002,
+      "chisato": 166.99391999999844,
+      "noir": 442.091441783808
+    },
+    "unreconstructed": [],
+    "checks": {
+      "endpoint": [
+        {
+          "slug": "grave",
+          "scheduled": 114.80832000000021,
+          "engine": 114.80832000000021,
+          "residual": 0
+        },
+        {
+          "slug": "anis-star",
+          "scheduled": 227.29727999999974,
+          "engine": 227.29727999999974,
+          "residual": 0
+        },
+        {
+          "slug": "jill",
+          "scheduled": 344.4249600000002,
+          "engine": 344.4249600000002,
+          "residual": 0
+        },
+        {
+          "slug": "chisato",
+          "scheduled": 166.99391999999844,
+          "engine": 166.99391999999844,
+          "residual": 0
+        },
+        {
+          "slug": "noir",
+          "scheduled": 442.091441783808,
+          "engine": 442.091441783808,
+          "residual": 0
+        }
+      ],
+      "endpointMaxAbsResidual": 0,
+      "endpointOk": true,
+      "dbgGauge": {
+        "lines": 158,
+        "matched": 158,
+        "unmatchedEngine": [],
+        "unmatchedSchedule": [],
+        "ok": true
+      },
+      "prefixDeterminism": {
+        "ok": true,
+        "detail": "durationSec=180 reproduces the default run per-unit exactly; cumulative monotone across sampled boundaries"
+      },
+      "truncated": [
+        {
+          "frame": 10,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.28992,
+          "ok": true
+        },
+        {
+          "frame": 79,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.2899200000000004,
+          "ok": true
+        },
+        {
+          "frame": 858,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.2899200000000004,
+          "ok": true
+        },
+        {
+          "frame": 954,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.2899199999999986,
+          "ok": true
+        },
+        {
+          "frame": 1839,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.2899199999999986,
+          "ok": true
+        },
+        {
+          "frame": 2663,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.2899200000000022,
+          "ok": true
+        },
+        {
+          "frame": 2760,
+          "slug": "jill",
+          "kinds": ["skill"],
+          "scheduled": 3.1891200000000004,
+          "engineStep": 3.1891200000000026,
+          "ok": true
+        },
+        {
+          "frame": 3600,
+          "slug": "jill",
+          "kinds": ["skill"],
+          "scheduled": 3.1891200000000004,
+          "engineStep": 3.1891200000000026,
+          "ok": true
+        },
+        {
+          "frame": 3720,
+          "slug": "jill",
+          "kinds": ["skill"],
+          "scheduled": 3.1891200000000004,
+          "engineStep": 3.1891200000000026,
+          "ok": true
+        },
+        {
+          "frame": 3720,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.2899200000000022,
+          "ok": true
+        },
+        {
+          "frame": 4517,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.28991999999999507,
+          "ok": true
+        },
+        {
+          "frame": 5321,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.28991999999999507,
+          "ok": true
+        },
+        {
+          "frame": 5497,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.28991999999999507,
+          "ok": true
+        },
+        {
+          "frame": 6285,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.28991999999999507,
+          "ok": true
+        },
+        {
+          "frame": 6434,
+          "slug": "grave",
+          "kinds": ["shot"],
+          "scheduled": 1.30464,
+          "engineStep": 1.3046400000000062,
+          "ok": true
+        },
+        {
+          "frame": 7317,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.28991999999999507,
+          "ok": true
+        },
+        {
+          "frame": 8100,
+          "slug": "jill",
+          "kinds": ["skill"],
+          "scheduled": 3.1891200000000004,
+          "engineStep": 3.1891200000000026,
+          "ok": true
+        },
+        {
+          "frame": 8195,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.28991999999999507,
+          "ok": true
+        },
+        {
+          "frame": 9001,
+          "slug": "chisato",
+          "kinds": ["shot"],
+          "scheduled": 0.28992,
+          "engineStep": 0.28991999999999507,
+          "ok": true
+        },
+        {
+          "frame": 9870,
+          "slug": "noir",
+          "kinds": ["shot"],
+          "scheduled": 10.6111067904,
+          "engineStep": 10.611106790400015,
+          "ok": true
+        },
+        {
+          "frame": 9960,
+          "slug": "jill",
+          "kinds": ["skill"],
+          "scheduled": 3.1891200000000004,
+          "engineStep": 3.1891200000000026,
+          "ok": true
+        }
+      ],
+      "truncatedSamples": 20,
+      "truncatedOk": true
+    }
+  }
+]

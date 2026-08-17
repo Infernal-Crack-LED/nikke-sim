@@ -174,6 +174,12 @@ The R1 outcome is robust to falseRate values up to ~2.3% — approximately 4× t
 - **The MAR assumption's validity** — quantified as a band (section C table), not tested.
 - **Generality** — n=1 comp (iron sweep only); T5's ceiling was cap-saturated (30/s), making
   its H-C detector vacuous.
+  **⇒ RESOLVED AS A FOOTAGE QUESTION 2026-08-17, still open as a measurement.** The ceiling
+  feasibility screen (`docs/probe-data/ceiling-screen-2026-08-17.json`, pin
+  `scripts/tests/probe/ceiling-screen.test.ts`) found `N3 scarlet/liberalio iron` non-vacuous at
+  **5.13/s** — comparable to iron's 3.59 — and its recording already exists and reads
+  (`docs/probes/714 noon/3.mp4`; the team bar locks at the documented 134px geometry). No new
+  footage is needed for the third arm. The classification on it is a separate gated run.
 - **Anything enactable** — LOG-class finding only.
 - **Solo→team noise transfer** — the falseRate was measured on solo footage; the team footage
   may have different noise characteristics. The solo measurement BOUNDS the team noise

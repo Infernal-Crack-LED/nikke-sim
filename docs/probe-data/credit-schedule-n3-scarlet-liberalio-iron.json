@@ -1,0 +1,1956 @@
+[
+  {
+    "comp": "N3 scarlet/liberalio iron",
+    "slugs": [
+      "rouge",
+      "trina",
+      "scarlet-black-shadow",
+      "liberalio",
+      "soda-twinkling-bunny"
+    ],
+    "focusSlug": "scarlet-black-shadow",
+    "fightSec": 180,
+    "windows": [
+      {
+        "index": 0,
+        "kind": "first-fill",
+        "startFrame": 0,
+        "endFrame": 208,
+        "startSec": 0,
+        "endSec": 3.466666666666667,
+        "truncated": false,
+        "credits": 19,
+        "gauge": 101.711744
+      },
+      {
+        "index": 1,
+        "kind": "refill",
+        "startFrame": 1220,
+        "endFrame": 1478,
+        "startSec": 20.333333333333332,
+        "endSec": 24.633333333333333,
+        "truncated": false,
+        "credits": 21,
+        "gauge": 109.8364416
+      },
+      {
+        "index": 2,
+        "kind": "refill",
+        "startFrame": 2490,
+        "endFrame": 2793,
+        "startSec": 41.5,
+        "endSec": 46.55,
+        "truncated": false,
+        "credits": 20,
+        "gauge": 105.18009599999999
+      },
+      {
+        "index": 3,
+        "kind": "refill",
+        "startFrame": 3805,
+        "endFrame": 4100,
+        "startSec": 63.416666666666664,
+        "endSec": 68.33333333333333,
+        "truncated": false,
+        "credits": 20,
+        "gauge": 105.43009599999999
+      },
+      {
+        "index": 4,
+        "kind": "refill",
+        "startFrame": 5112,
+        "endFrame": 5313,
+        "startSec": 85.2,
+        "endSec": 88.55,
+        "truncated": false,
+        "credits": 21,
+        "gauge": 103.20309119999999
+      },
+      {
+        "index": 5,
+        "kind": "refill",
+        "startFrame": 6325,
+        "endFrame": 6566,
+        "startSec": 105.41666666666667,
+        "endSec": 109.43333333333334,
+        "truncated": false,
+        "credits": 20,
+        "gauge": 101.25508416
+      },
+      {
+        "index": 6,
+        "kind": "refill",
+        "startFrame": 7578,
+        "endFrame": 7858,
+        "startSec": 126.3,
+        "endSec": 130.96666666666667,
+        "truncated": false,
+        "credits": 19,
+        "gauge": 102.18334943999999
+      },
+      {
+        "index": 7,
+        "kind": "refill",
+        "startFrame": 8870,
+        "endFrame": 9176,
+        "startSec": 147.83333333333334,
+        "endSec": 152.93333333333334,
+        "truncated": false,
+        "credits": 20,
+        "gauge": 107.11007200000002
+      },
+      {
+        "index": 8,
+        "kind": "refill",
+        "startFrame": 10188,
+        "endFrame": 10388,
+        "startSec": 169.8,
+        "endSec": 173.13333333333333,
+        "truncated": false,
+        "credits": 20,
+        "gauge": 109.00012
+      }
+    ],
+    "credits": [
+      {
+        "frame": 25,
+        "sec": 0.4166666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 0
+      },
+      {
+        "frame": 47,
+        "sec": 0.7833333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 0
+      },
+      {
+        "frame": 65,
+        "sec": 1.0833333333333333,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 0
+      },
+      {
+        "frame": 67,
+        "sec": 1.1166666666666667,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 0
+      },
+      {
+        "frame": 67,
+        "sec": 1.1166666666666667,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 0
+      },
+      {
+        "frame": 87,
+        "sec": 1.45,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 0
+      },
+      {
+        "frame": 97,
+        "sec": 1.6166666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 0
+      },
+      {
+        "frame": 97,
+        "sec": 1.6166666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 0
+      },
+      {
+        "frame": 105,
+        "sec": 1.75,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 0
+      },
+      {
+        "frame": 105,
+        "sec": 1.75,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 0
+      },
+      {
+        "frame": 127,
+        "sec": 2.1166666666666667,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 0
+      },
+      {
+        "frame": 145,
+        "sec": 2.4166666666666665,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 0
+      },
+      {
+        "frame": 149,
+        "sec": 2.4833333333333334,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 0
+      },
+      {
+        "frame": 149,
+        "sec": 2.4833333333333334,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 0
+      },
+      {
+        "frame": 167,
+        "sec": 2.783333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 0
+      },
+      {
+        "frame": 185,
+        "sec": 3.0833333333333335,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 0
+      },
+      {
+        "frame": 187,
+        "sec": 3.1166666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 0
+      },
+      {
+        "frame": 187,
+        "sec": 3.1166666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 0
+      },
+      {
+        "frame": 207,
+        "sec": 3.45,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 0
+      },
+      {
+        "frame": 1226,
+        "sec": 20.433333333333334,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 1
+      },
+      {
+        "frame": 1227,
+        "sec": 20.45,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 1
+      },
+      {
+        "frame": 1237,
+        "sec": 20.616666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 1
+      },
+      {
+        "frame": 1237,
+        "sec": 20.616666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 1
+      },
+      {
+        "frame": 1266,
+        "sec": 21.1,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 1
+      },
+      {
+        "frame": 1266,
+        "sec": 21.1,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 1
+      },
+      {
+        "frame": 1267,
+        "sec": 21.116666666666667,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 1
+      },
+      {
+        "frame": 1306,
+        "sec": 21.766666666666666,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 1
+      },
+      {
+        "frame": 1307,
+        "sec": 21.783333333333335,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 1
+      },
+      {
+        "frame": 1346,
+        "sec": 22.433333333333334,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 1
+      },
+      {
+        "frame": 1347,
+        "sec": 22.45,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 1
+      },
+      {
+        "frame": 1386,
+        "sec": 23.1,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 1
+      },
+      {
+        "frame": 1386,
+        "sec": 23.1,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 1
+      },
+      {
+        "frame": 1387,
+        "sec": 23.116666666666667,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 1
+      },
+      {
+        "frame": 1391,
+        "sec": 23.183333333333334,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 1
+      },
+      {
+        "frame": 1409,
+        "sec": 23.483333333333334,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 1
+      },
+      {
+        "frame": 1427,
+        "sec": 23.783333333333335,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 1
+      },
+      {
+        "frame": 1467,
+        "sec": 24.45,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 6.4123488,
+        "window": 1
+      },
+      {
+        "frame": 1473,
+        "sec": 24.55,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 1
+      },
+      {
+        "frame": 1477,
+        "sec": 24.616666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 1
+      },
+      {
+        "frame": 1477,
+        "sec": 24.616666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 1
+      },
+      {
+        "frame": 2507,
+        "sec": 41.78333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 2
+      },
+      {
+        "frame": 2523,
+        "sec": 42.05,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 2
+      },
+      {
+        "frame": 2527,
+        "sec": 42.11666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 2
+      },
+      {
+        "frame": 2527,
+        "sec": 42.11666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 2
+      },
+      {
+        "frame": 2528,
+        "sec": 42.13333333333333,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 2
+      },
+      {
+        "frame": 2531,
+        "sec": 42.18333333333333,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 2
+      },
+      {
+        "frame": 2547,
+        "sec": 42.45,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 2
+      },
+      {
+        "frame": 2568,
+        "sec": 42.8,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 2
+      },
+      {
+        "frame": 2587,
+        "sec": 43.11666666666667,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 2
+      },
+      {
+        "frame": 2608,
+        "sec": 43.46666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 2
+      },
+      {
+        "frame": 2608,
+        "sec": 43.46666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 2
+      },
+      {
+        "frame": 2617,
+        "sec": 43.61666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 2
+      },
+      {
+        "frame": 2617,
+        "sec": 43.61666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 2
+      },
+      {
+        "frame": 2627,
+        "sec": 43.78333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 2
+      },
+      {
+        "frame": 2648,
+        "sec": 44.13333333333333,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 2
+      },
+      {
+        "frame": 2688,
+        "sec": 44.8,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 2
+      },
+      {
+        "frame": 2728,
+        "sec": 45.46666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 2
+      },
+      {
+        "frame": 2728,
+        "sec": 45.46666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 2
+      },
+      {
+        "frame": 2775,
+        "sec": 46.25,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 2
+      },
+      {
+        "frame": 2792,
+        "sec": 46.53333333333333,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 2
+      },
+      {
+        "frame": 3810,
+        "sec": 63.5,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 3
+      },
+      {
+        "frame": 3817,
+        "sec": 63.61666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 3
+      },
+      {
+        "frame": 3817,
+        "sec": 63.61666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 3
+      },
+      {
+        "frame": 3847,
+        "sec": 64.11666666666666,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 3
+      },
+      {
+        "frame": 3850,
+        "sec": 64.16666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 3
+      },
+      {
+        "frame": 3850,
+        "sec": 64.16666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 3
+      },
+      {
+        "frame": 3873,
+        "sec": 64.55,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 3
+      },
+      {
+        "frame": 3890,
+        "sec": 64.83333333333333,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 3
+      },
+      {
+        "frame": 3907,
+        "sec": 65.11666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 3
+      },
+      {
+        "frame": 3907,
+        "sec": 65.11666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 3
+      },
+      {
+        "frame": 3930,
+        "sec": 65.5,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 3
+      },
+      {
+        "frame": 3957,
+        "sec": 65.95,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 3
+      },
+      {
+        "frame": 3970,
+        "sec": 66.16666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 3
+      },
+      {
+        "frame": 3970,
+        "sec": 66.16666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 3
+      },
+      {
+        "frame": 3997,
+        "sec": 66.61666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 3
+      },
+      {
+        "frame": 3997,
+        "sec": 66.61666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 3
+      },
+      {
+        "frame": 3997,
+        "sec": 66.61666666666666,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 3
+      },
+      {
+        "frame": 4037,
+        "sec": 67.28333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 3
+      },
+      {
+        "frame": 4077,
+        "sec": 67.95,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 3
+      },
+      {
+        "frame": 4099,
+        "sec": 68.31666666666666,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 3
+      },
+      {
+        "frame": 5112,
+        "sec": 85.2,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 4
+      },
+      {
+        "frame": 5117,
+        "sec": 85.28333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.46061824,
+        "window": 4
+      },
+      {
+        "frame": 5149,
+        "sec": 85.81666666666666,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 4
+      },
+      {
+        "frame": 5152,
+        "sec": 85.86666666666666,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 4
+      },
+      {
+        "frame": 5157,
+        "sec": 85.95,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.46061824,
+        "window": 4
+      },
+      {
+        "frame": 5167,
+        "sec": 86.11666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 4
+      },
+      {
+        "frame": 5167,
+        "sec": 86.11666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 4
+      },
+      {
+        "frame": 5192,
+        "sec": 86.53333333333333,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 4
+      },
+      {
+        "frame": 5192,
+        "sec": 86.53333333333333,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 4
+      },
+      {
+        "frame": 5193,
+        "sec": 86.55,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 4
+      },
+      {
+        "frame": 5197,
+        "sec": 86.61666666666666,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.46061824,
+        "window": 4
+      },
+      {
+        "frame": 5231,
+        "sec": 87.18333333333334,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 4
+      },
+      {
+        "frame": 5232,
+        "sec": 87.2,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 4
+      },
+      {
+        "frame": 5237,
+        "sec": 87.28333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.46061824,
+        "window": 4
+      },
+      {
+        "frame": 5257,
+        "sec": 87.61666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 4
+      },
+      {
+        "frame": 5257,
+        "sec": 87.61666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 4
+      },
+      {
+        "frame": 5272,
+        "sec": 87.86666666666666,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 4
+      },
+      {
+        "frame": 5275,
+        "sec": 87.91666666666667,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 4
+      },
+      {
+        "frame": 5277,
+        "sec": 87.95,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.46061824,
+        "window": 4
+      },
+      {
+        "frame": 5312,
+        "sec": 88.53333333333333,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 4
+      },
+      {
+        "frame": 5312,
+        "sec": 88.53333333333333,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 4
+      },
+      {
+        "frame": 6337,
+        "sec": 105.61666666666666,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.46061824,
+        "window": 5
+      },
+      {
+        "frame": 6345,
+        "sec": 105.75,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 5
+      },
+      {
+        "frame": 6427,
+        "sec": 107.11666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 5
+      },
+      {
+        "frame": 6427,
+        "sec": 107.11666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 5
+      },
+      {
+        "frame": 6431,
+        "sec": 107.18333333333334,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 5
+      },
+      {
+        "frame": 6437,
+        "sec": 107.28333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.91111648,
+        "window": 5
+      },
+      {
+        "frame": 6445,
+        "sec": 107.41666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 5
+      },
+      {
+        "frame": 6445,
+        "sec": 107.41666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 5
+      },
+      {
+        "frame": 6451,
+        "sec": 107.51666666666667,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 5
+      },
+      {
+        "frame": 6477,
+        "sec": 107.95,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.91111648,
+        "window": 5
+      },
+      {
+        "frame": 6485,
+        "sec": 108.08333333333333,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 5
+      },
+      {
+        "frame": 6513,
+        "sec": 108.55,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 5
+      },
+      {
+        "frame": 6517,
+        "sec": 108.61666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 5
+      },
+      {
+        "frame": 6517,
+        "sec": 108.61666666666666,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 5
+      },
+      {
+        "frame": 6517,
+        "sec": 108.61666666666666,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.91111648,
+        "window": 5
+      },
+      {
+        "frame": 6525,
+        "sec": 108.75,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 5
+      },
+      {
+        "frame": 6533,
+        "sec": 108.88333333333334,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 5
+      },
+      {
+        "frame": 6557,
+        "sec": 109.28333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.91111648,
+        "window": 5
+      },
+      {
+        "frame": 6565,
+        "sec": 109.41666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 5
+      },
+      {
+        "frame": 6565,
+        "sec": 109.41666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 5
+      },
+      {
+        "frame": 7598,
+        "sec": 126.63333333333334,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 6
+      },
+      {
+        "frame": 7609,
+        "sec": 126.81666666666666,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 6
+      },
+      {
+        "frame": 7611,
+        "sec": 126.85,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 6
+      },
+      {
+        "frame": 7617,
+        "sec": 126.95,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.91111648,
+        "window": 6
+      },
+      {
+        "frame": 7638,
+        "sec": 127.3,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 6
+      },
+      {
+        "frame": 7657,
+        "sec": 127.61666666666666,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.91111648,
+        "window": 6
+      },
+      {
+        "frame": 7678,
+        "sec": 127.96666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 6
+      },
+      {
+        "frame": 7678,
+        "sec": 127.96666666666667,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 6
+      },
+      {
+        "frame": 7691,
+        "sec": 128.18333333333334,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 6
+      },
+      {
+        "frame": 7693,
+        "sec": 128.21666666666667,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 6
+      },
+      {
+        "frame": 7697,
+        "sec": 128.28333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 5.91111648,
+        "window": 6
+      },
+      {
+        "frame": 7718,
+        "sec": 128.63333333333333,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 6
+      },
+      {
+        "frame": 7758,
+        "sec": 129.3,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 6
+      },
+      {
+        "frame": 7773,
+        "sec": 129.55,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 6
+      },
+      {
+        "frame": 7775,
+        "sec": 129.58333333333334,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 6
+      },
+      {
+        "frame": 7807,
+        "sec": 130.11666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 6
+      },
+      {
+        "frame": 7807,
+        "sec": 130.11666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 6
+      },
+      {
+        "frame": 7855,
+        "sec": 130.91666666666666,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 6
+      },
+      {
+        "frame": 7857,
+        "sec": 130.95,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 6
+      },
+      {
+        "frame": 8899,
+        "sec": 148.31666666666666,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 7
+      },
+      {
+        "frame": 8917,
+        "sec": 148.61666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 7
+      },
+      {
+        "frame": 8917,
+        "sec": 148.61666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 7
+      },
+      {
+        "frame": 8935,
+        "sec": 148.91666666666666,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 7
+      },
+      {
+        "frame": 8939,
+        "sec": 148.98333333333332,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 7
+      },
+      {
+        "frame": 8939,
+        "sec": 148.98333333333332,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 7
+      },
+      {
+        "frame": 8979,
+        "sec": 149.65,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 7
+      },
+      {
+        "frame": 9007,
+        "sec": 150.11666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 7
+      },
+      {
+        "frame": 9007,
+        "sec": 150.11666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 7
+      },
+      {
+        "frame": 9011,
+        "sec": 150.18333333333334,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 7
+      },
+      {
+        "frame": 9017,
+        "sec": 150.28333333333333,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 7
+      },
+      {
+        "frame": 9019,
+        "sec": 150.31666666666666,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 7
+      },
+      {
+        "frame": 9059,
+        "sec": 150.98333333333332,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 7
+      },
+      {
+        "frame": 9059,
+        "sec": 150.98333333333332,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 7
+      },
+      {
+        "frame": 9087,
+        "sec": 151.45,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 7
+      },
+      {
+        "frame": 9093,
+        "sec": 151.55,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 7
+      },
+      {
+        "frame": 9099,
+        "sec": 151.65,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 7
+      },
+      {
+        "frame": 9127,
+        "sec": 152.11666666666667,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 7
+      },
+      {
+        "frame": 9167,
+        "sec": 152.78333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 7
+      },
+      {
+        "frame": 9175,
+        "sec": 152.91666666666666,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 7
+      },
+      {
+        "frame": 10207,
+        "sec": 170.11666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 8
+      },
+      {
+        "frame": 10207,
+        "sec": 170.11666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 8
+      },
+      {
+        "frame": 10221,
+        "sec": 170.35,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 8
+      },
+      {
+        "frame": 10221,
+        "sec": 170.35,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 8
+      },
+      {
+        "frame": 10227,
+        "sec": 170.45,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 8
+      },
+      {
+        "frame": 10259,
+        "sec": 170.98333333333332,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 8
+      },
+      {
+        "frame": 10261,
+        "sec": 171.01666666666668,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 8
+      },
+      {
+        "frame": 10267,
+        "sec": 171.11666666666667,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 8
+      },
+      {
+        "frame": 10297,
+        "sec": 171.61666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 8
+      },
+      {
+        "frame": 10297,
+        "sec": 171.61666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 8
+      },
+      {
+        "frame": 10301,
+        "sec": 171.68333333333334,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 8
+      },
+      {
+        "frame": 10307,
+        "sec": 171.78333333333333,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 8
+      },
+      {
+        "frame": 10341,
+        "sec": 172.35,
+        "slug": "rouge",
+        "unitIdx": 0,
+        "kind": "shot",
+        "amount": 5.8,
+        "window": 8
+      },
+      {
+        "frame": 10341,
+        "sec": 172.35,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "skill",
+        "amount": 2.5,
+        "window": 8
+      },
+      {
+        "frame": 10341,
+        "sec": 172.35,
+        "slug": "scarlet-black-shadow",
+        "unitIdx": 2,
+        "kind": "shot",
+        "amount": 3.75,
+        "window": 8
+      },
+      {
+        "frame": 10347,
+        "sec": 172.45,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 8
+      },
+      {
+        "frame": 10353,
+        "sec": 172.55,
+        "slug": "trina",
+        "unitIdx": 1,
+        "kind": "shot",
+        "amount": 7.2,
+        "window": 8
+      },
+      {
+        "frame": 10387,
+        "sec": 173.11666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "skill",
+        "amount": 5.6,
+        "window": 8
+      },
+      {
+        "frame": 10387,
+        "sec": 173.11666666666667,
+        "slug": "liberalio",
+        "unitIdx": 3,
+        "kind": "shot",
+        "amount": 5.6,
+        "window": 8
+      },
+      {
+        "frame": 10387,
+        "sec": 173.11666666666667,
+        "slug": "soda-twinkling-bunny",
+        "unitIdx": 4,
+        "kind": "shot",
+        "amount": 7.320023999999999,
+        "window": 8
+      }
+    ],
+    "perUnitScheduled": {
+      "rouge": 121.79999999999995,
+      "trina": 129.60000000000002,
+      "scarlet-black-shadow": 212.5,
+      "liberalio": 212.79999999999987,
+      "soda-twinkling-bunny": 268.2100944
+    },
+    "unreconstructed": [],
+    "checks": {
+      "endpoint": [
+        {
+          "slug": "rouge",
+          "scheduled": 121.79999999999995,
+          "engine": 121.79999999999995,
+          "residual": 0
+        },
+        {
+          "slug": "trina",
+          "scheduled": 129.60000000000002,
+          "engine": 129.60000000000002,
+          "residual": 0
+        },
+        {
+          "slug": "scarlet-black-shadow",
+          "scheduled": 212.5,
+          "engine": 212.5,
+          "residual": 0
+        },
+        {
+          "slug": "liberalio",
+          "scheduled": 212.79999999999987,
+          "engine": 212.79999999999987,
+          "residual": 0
+        },
+        {
+          "slug": "soda-twinkling-bunny",
+          "scheduled": 268.2100944,
+          "engine": 268.2100944,
+          "residual": 0
+        }
+      ],
+      "endpointMaxAbsResidual": 0,
+      "endpointOk": true,
+      "dbgGauge": {
+        "lines": 40,
+        "matched": 40,
+        "unmatchedEngine": [],
+        "unmatchedSchedule": [],
+        "ok": true
+      },
+      "prefixDeterminism": {
+        "ok": true,
+        "detail": "durationSec=180 reproduces the default run per-unit exactly; cumulative monotone across sampled boundaries"
+      },
+      "truncated": [
+        {
+          "frame": 25,
+          "slug": "scarlet-black-shadow",
+          "kinds": ["shot"],
+          "scheduled": 3.75,
+          "engineStep": 3.75,
+          "ok": true
+        },
+        {
+          "frame": 105,
+          "slug": "scarlet-black-shadow",
+          "kinds": ["shot", "skill"],
+          "scheduled": 6.25,
+          "engineStep": 6.25,
+          "ok": true
+        },
+        {
+          "frame": 207,
+          "slug": "soda-twinkling-bunny",
+          "kinds": ["shot"],
+          "scheduled": 6.4123488,
+          "engineStep": 6.412348800000004,
+          "ok": true
+        },
+        {
+          "frame": 1307,
+          "slug": "soda-twinkling-bunny",
+          "kinds": ["shot"],
+          "scheduled": 6.4123488,
+          "engineStep": 6.412348800000004,
+          "ok": true
+        },
+        {
+          "frame": 1467,
+          "slug": "soda-twinkling-bunny",
+          "kinds": ["shot"],
+          "scheduled": 6.4123488,
+          "engineStep": 6.412348800000004,
+          "ok": true
+        },
+        {
+          "frame": 2531,
+          "slug": "trina",
+          "kinds": ["shot"],
+          "scheduled": 7.2,
+          "engineStep": 7.199999999999999,
+          "ok": true
+        },
+        {
+          "frame": 2648,
+          "slug": "scarlet-black-shadow",
+          "kinds": ["shot"],
+          "scheduled": 3.75,
+          "engineStep": 3.75,
+          "ok": true
+        },
+        {
+          "frame": 3847,
+          "slug": "rouge",
+          "kinds": ["shot"],
+          "scheduled": 5.8,
+          "engineStep": 5.799999999999997,
+          "ok": true
+        },
+        {
+          "frame": 3970,
+          "slug": "scarlet-black-shadow",
+          "kinds": ["shot", "skill"],
+          "scheduled": 6.25,
+          "engineStep": 6.25,
+          "ok": true
+        },
+        {
+          "frame": 5117,
+          "slug": "soda-twinkling-bunny",
+          "kinds": ["shot"],
+          "scheduled": 5.46061824,
+          "engineStep": 5.460618240000002,
+          "ok": true
+        },
+        {
+          "frame": 5197,
+          "slug": "soda-twinkling-bunny",
+          "kinds": ["shot"],
+          "scheduled": 5.46061824,
+          "engineStep": 5.460618240000002,
+          "ok": true
+        },
+        {
+          "frame": 5312,
+          "slug": "scarlet-black-shadow",
+          "kinds": ["shot", "skill"],
+          "scheduled": 6.25,
+          "engineStep": 6.25,
+          "ok": true
+        },
+        {
+          "frame": 6445,
+          "slug": "scarlet-black-shadow",
+          "kinds": ["shot", "skill"],
+          "scheduled": 6.25,
+          "engineStep": 6.25,
+          "ok": true
+        },
+        {
+          "frame": 6533,
+          "slug": "rouge",
+          "kinds": ["shot"],
+          "scheduled": 5.8,
+          "engineStep": 5.799999999999997,
+          "ok": true
+        },
+        {
+          "frame": 7657,
+          "slug": "soda-twinkling-bunny",
+          "kinds": ["shot"],
+          "scheduled": 5.91111648,
+          "engineStep": 5.911116480000004,
+          "ok": true
+        },
+        {
+          "frame": 7775,
+          "slug": "rouge",
+          "kinds": ["shot"],
+          "scheduled": 5.8,
+          "engineStep": 5.799999999999997,
+          "ok": true
+        },
+        {
+          "frame": 8939,
+          "slug": "scarlet-black-shadow",
+          "kinds": ["shot", "skill"],
+          "scheduled": 6.25,
+          "engineStep": 6.25,
+          "ok": true
+        },
+        {
+          "frame": 9059,
+          "slug": "scarlet-black-shadow",
+          "kinds": ["shot", "skill"],
+          "scheduled": 6.25,
+          "engineStep": 6.25,
+          "ok": true
+        },
+        {
+          "frame": 10221,
+          "slug": "scarlet-black-shadow",
+          "kinds": ["shot", "skill"],
+          "scheduled": 6.25,
+          "engineStep": 6.25,
+          "ok": true
+        },
+        {
+          "frame": 10307,
+          "slug": "soda-twinkling-bunny",
+          "kinds": ["shot"],
+          "scheduled": 7.320023999999999,
+          "engineStep": 7.320023999999989,
+          "ok": true
+        }
+      ],
+      "truncatedSamples": 20,
+      "truncatedOk": true
+    }
+  }
+]

@@ -4216,10 +4216,54 @@ function soloRateCli(): void {
   process.stdout.write(`${JSON.stringify(result, null, 1)}\n`);
 }
 
+/**
+ * ceiling: run the committed `simCeiling` statistic over a credit-schedule report, to answer
+ * ONE question before a comp is proposed as a classification arm — is its H-C ceiling detector
+ * NON-VACUOUS?
+ *
+ * The ceiling sums each unit's maximum credit rate (60 / its tightest observed credit gap) and
+ * clamps to the bin cap. When the sum reaches the cap, the ceiling IS the cap, the real event rate
+ * cannot exceed it (it is bounded by the same cap), and the detector can never fire — that is what
+ * made T5 wind-weak vacuous. This is a property of the SIM schedule alone, so it is checkable
+ * without any footage and belongs BEFORE a recording is requested, not after.
+ */
+function ceilingCli(): void {
+  const path = arg('schedule');
+  if (!path) {
+    throw new Error(
+      'usage: fill-trace-compare.ts ceiling --schedule <fb-count-matrix --credit-schedule --json output>'
+    );
+  }
+  const raw = JSON.parse(readFileSync(path, 'utf8')) as
+    SimSchedule | SimSchedule[];
+  const scheds = Array.isArray(raw) ? raw : [raw];
+  const out = scheds.map((s) => {
+    const c = simCeiling(s);
+    return {
+      comp: s.comp,
+      focusSlug: s.focusSlug,
+      unreconstructed: s.unreconstructed,
+      checksPass:
+        s.checks.endpointOk && s.checks.truncatedOk && s.checks.dbgGauge.ok,
+      ...c,
+      capSaturated: c.sumRatePerSec >= c.binRateCap,
+      verdict:
+        c.sumRatePerSec >= c.binRateCap
+          ? 'VACUOUS — sum rate reaches the bin cap, the H-C ceiling detector can never fire'
+          : 'NON-VACUOUS — the detector has room to fire',
+    };
+  });
+  process.stdout.write(`${JSON.stringify(out, null, 1)}\n`);
+}
+
 function main(): void {
   const mode = process.argv[2];
   if (mode === 'solo-rate') {
     soloRateCli();
+    return;
+  }
+  if (mode === 'ceiling') {
+    ceilingCli();
     return;
   }
   if (mode === 'noise-solo') {
