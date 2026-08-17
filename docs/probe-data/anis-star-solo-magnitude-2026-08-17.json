@@ -1,0 +1,2299 @@
+{
+  "slug": "anis-star-solo-magnitude",
+  "date": "2026-08-17",
+  "plan": "docs/handoffs/2026-08-17-anis-star-solo-magnitude-preop-packet.md",
+  "_note": "MEASUREMENT ONLY — raw inputs, per-window tables, estimator outputs, controls, caveats. NO verdict is recorded here; the decision-rule application below is reported as arithmetic (which clause the pre-committed rule selects), not as a stamp. Computed by scripts/probe/gauge-magnitude.ts and replayed by scripts/tests/probe/gauge-magnitude.test.ts.",
+  "inputs": {
+    "solo2": "docs/probe-data/anis-star-solo2-gauge.json",
+    "a3": "docs/probe-data/anis-star-solo-a3-gauge-reread.json",
+    "footageRead": "none — both traces were already committed"
+  },
+  "pinnedConstants": {
+    "barWidthPx": 138,
+    "columnPp": 0.724638,
+    "departureRadiusPrimaryPp": 2.175,
+    "departureRadiusSensitivityPp": 1.45,
+    "settleFrames": 6,
+    "eventMinPp": 1.41,
+    "quantSdPp": 0.209289,
+    "z95": 1.96,
+    "hypotheses": {
+      "hModel": 10.388,
+      "hElevated": [10.96, 12.2],
+      "hLegacy": 8.9
+    }
+  },
+  "dirtySpans": [
+    [25.43, 26.3],
+    [52.81, 54.05],
+    [76.51, 77.21],
+    [25.53, 26.07],
+    [37.8, 37.8],
+    [52.8, 52.83],
+    [53.4, 53.93],
+    [75.87, 76.03],
+    [76.63, 77.13],
+    [81.1, 81.17],
+    [81.63, 82.17],
+    [83.17, 83.17]
+  ],
+  "a3DirtySpans": [[16, 17.97]],
+  "runInventory": [
+    {
+      "window": "W1",
+      "span": [1.9, 13.6],
+      "settledPlateaus": [
+        {
+          "t0": 1.9,
+          "t1": 3.3,
+          "frames": 43,
+          "level": 2.2,
+          "dirty": false
+        },
+        {
+          "t0": 3.33,
+          "t1": 4.3,
+          "frames": 30,
+          "level": 11.6,
+          "dirty": false
+        },
+        {
+          "t0": 4.33,
+          "t1": 5.27,
+          "frames": 29,
+          "level": 22.5,
+          "dirty": false
+        },
+        {
+          "t0": 5.3,
+          "t1": 6.27,
+          "frames": 30,
+          "level": 34.1,
+          "dirty": false
+        },
+        {
+          "t0": 6.3,
+          "t1": 7.23,
+          "frames": 29,
+          "level": 45.7,
+          "dirty": false
+        },
+        {
+          "t0": 7.4,
+          "t1": 8.13,
+          "frames": 23,
+          "level": 55.1,
+          "dirty": false
+        },
+        {
+          "t0": 8.33,
+          "t1": 9.43,
+          "frames": 34,
+          "level": 67.4,
+          "dirty": false
+        },
+        {
+          "t0": 9.47,
+          "t1": 10.3,
+          "frames": 26,
+          "level": 66.7,
+          "dirty": false
+        },
+        {
+          "t0": 10.33,
+          "t1": 11.57,
+          "frames": 38,
+          "level": 67.4,
+          "dirty": false
+        },
+        {
+          "t0": 11.6,
+          "t1": 12.57,
+          "frames": 30,
+          "level": 79,
+          "dirty": false
+        },
+        {
+          "t0": 12.6,
+          "t1": 13.57,
+          "frames": 30,
+          "level": 89.9,
+          "dirty": false
+        }
+      ],
+      "ladder": [
+        {
+          "creditAtSec": 3.33,
+          "from": 2.2,
+          "to": 11.6,
+          "delta": 9.4,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 4.33,
+          "from": 11.6,
+          "to": 22.5,
+          "delta": 10.9,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 5.3,
+          "from": 22.5,
+          "to": 34.1,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 6.3,
+          "from": 34.1,
+          "to": 45.7,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 7.4,
+          "from": 45.7,
+          "to": 55.1,
+          "delta": 9.4,
+          "kind": "OBSCURED",
+          "gapFrames": 4,
+          "reason": "gap overshoots the after-level (flash/ramp excursion)"
+        },
+        {
+          "creditAtSec": 8.33,
+          "from": 55.1,
+          "to": 67.4,
+          "delta": 12.3,
+          "kind": "CLEAN",
+          "gapFrames": 5,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 9.47,
+          "from": 67.4,
+          "to": 66.7,
+          "delta": -0.7,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 10.33,
+          "from": 66.7,
+          "to": 67.4,
+          "delta": 0.7,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 11.6,
+          "from": 67.4,
+          "to": 79,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 12.6,
+          "from": 79,
+          "to": 89.9,
+          "delta": 10.9,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        }
+      ]
+    },
+    {
+      "window": "W2",
+      "span": [24.6, 37.83],
+      "settledPlateaus": [
+        {
+          "t0": 24.6,
+          "t1": 24.97,
+          "frames": 12,
+          "level": 2.2,
+          "dirty": false
+        },
+        {
+          "t0": 25,
+          "t1": 25.37,
+          "frames": 12,
+          "level": 1.4,
+          "dirty": false
+        },
+        {
+          "t0": 26.27,
+          "t1": 26.6,
+          "frames": 11,
+          "level": 6.5,
+          "dirty": false
+        },
+        {
+          "t0": 26.63,
+          "t1": 27.37,
+          "frames": 23,
+          "level": 17.4,
+          "dirty": false
+        },
+        {
+          "t0": 27.6,
+          "t1": 28.23,
+          "frames": 20,
+          "level": 28.3,
+          "dirty": false
+        },
+        {
+          "t0": 28.3,
+          "t1": 28.57,
+          "frames": 9,
+          "level": 28.3,
+          "dirty": false
+        },
+        {
+          "t0": 28.6,
+          "t1": 29.3,
+          "frames": 22,
+          "level": 39.9,
+          "dirty": false
+        },
+        {
+          "t0": 29.33,
+          "t1": 29.53,
+          "frames": 7,
+          "level": 40.6,
+          "dirty": false
+        },
+        {
+          "t0": 29.57,
+          "t1": 30.37,
+          "frames": 25,
+          "level": 51.4,
+          "dirty": false
+        },
+        {
+          "t0": 30.57,
+          "t1": 32.3,
+          "frames": 53,
+          "level": 62.3,
+          "dirty": false
+        },
+        {
+          "t0": 32.33,
+          "t1": 33.9,
+          "frames": 48,
+          "level": 63,
+          "dirty": false
+        },
+        {
+          "t0": 33.93,
+          "t1": 34.37,
+          "frames": 14,
+          "level": 74.6,
+          "dirty": false
+        },
+        {
+          "t0": 34.4,
+          "t1": 35.73,
+          "frames": 41,
+          "level": 73.9,
+          "dirty": false
+        },
+        {
+          "t0": 35.77,
+          "t1": 36.4,
+          "frames": 20,
+          "level": 74.6,
+          "dirty": false
+        },
+        {
+          "t0": 36.83,
+          "t1": 37.77,
+          "frames": 29,
+          "level": 89.9,
+          "dirty": false
+        }
+      ],
+      "ladder": [
+        {
+          "creditAtSec": 25,
+          "from": 2.2,
+          "to": 1.4,
+          "delta": -0.8,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 26.27,
+          "from": 1.4,
+          "to": 6.5,
+          "delta": 5.1,
+          "kind": "OBSCURED",
+          "gapFrames": 26,
+          "reason": "gap frames overlap a dirty span"
+        },
+        {
+          "creditAtSec": 26.63,
+          "from": 6.5,
+          "to": 17.4,
+          "delta": 10.9,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 27.6,
+          "from": 17.4,
+          "to": 28.3,
+          "delta": 10.9,
+          "kind": "CLEAN",
+          "gapFrames": 6,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 28.3,
+          "from": 28.3,
+          "to": 28.3,
+          "delta": 0,
+          "kind": "WOBBLE",
+          "gapFrames": 1,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 28.6,
+          "from": 28.3,
+          "to": 39.9,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 29.33,
+          "from": 39.9,
+          "to": 40.6,
+          "delta": 0.7,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 29.57,
+          "from": 40.6,
+          "to": 51.4,
+          "delta": 10.8,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 30.57,
+          "from": 51.4,
+          "to": 62.3,
+          "delta": 10.9,
+          "kind": "CLEAN",
+          "gapFrames": 5,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 32.33,
+          "from": 62.3,
+          "to": 63,
+          "delta": 0.7,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 33.93,
+          "from": 63,
+          "to": 74.6,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 34.4,
+          "from": 74.6,
+          "to": 73.9,
+          "delta": -0.7,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 35.77,
+          "from": 73.9,
+          "to": 74.6,
+          "delta": 0.7,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 36.83,
+          "from": 74.6,
+          "to": 89.9,
+          "delta": 15.3,
+          "kind": "CLEAN",
+          "gapFrames": 12,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        }
+      ]
+    },
+    {
+      "window": "W3",
+      "span": [48.8, 61.07],
+      "settledPlateaus": [
+        {
+          "t0": 48.8,
+          "t1": 49.8,
+          "frames": 31,
+          "level": 2.2,
+          "dirty": false
+        },
+        {
+          "t0": 49.83,
+          "t1": 50.3,
+          "frames": 15,
+          "level": 5.8,
+          "dirty": false
+        },
+        {
+          "t0": 50.33,
+          "t1": 50.77,
+          "frames": 14,
+          "level": 6.5,
+          "dirty": false
+        },
+        {
+          "t0": 50.8,
+          "t1": 51.77,
+          "frames": 30,
+          "level": 17.4,
+          "dirty": false
+        },
+        {
+          "t0": 51.8,
+          "t1": 52.77,
+          "frames": 30,
+          "level": 29,
+          "dirty": false
+        },
+        {
+          "t0": 52.9,
+          "t1": 53.13,
+          "frames": 8,
+          "level": 37,
+          "dirty": true
+        },
+        {
+          "t0": 53.57,
+          "t1": 53.87,
+          "frames": 10,
+          "level": 100,
+          "dirty": true
+        },
+        {
+          "t0": 54.07,
+          "t1": 54.43,
+          "frames": 12,
+          "level": 51.4,
+          "dirty": false
+        },
+        {
+          "t0": 54.5,
+          "t1": 54.73,
+          "frames": 8,
+          "level": 51.4,
+          "dirty": false
+        },
+        {
+          "t0": 54.77,
+          "t1": 58.07,
+          "frames": 100,
+          "level": 63,
+          "dirty": false
+        },
+        {
+          "t0": 58.1,
+          "t1": 59.07,
+          "frames": 30,
+          "level": 74.6,
+          "dirty": false
+        },
+        {
+          "t0": 59.1,
+          "t1": 60.03,
+          "frames": 29,
+          "level": 84.8,
+          "dirty": false
+        },
+        {
+          "t0": 60.07,
+          "t1": 61.03,
+          "frames": 30,
+          "level": 96.4,
+          "dirty": false
+        }
+      ],
+      "ladder": [
+        {
+          "creditAtSec": 49.83,
+          "from": 2.2,
+          "to": 5.8,
+          "delta": 3.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 50.33,
+          "from": 5.8,
+          "to": 6.5,
+          "delta": 0.7,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 50.8,
+          "from": 6.5,
+          "to": 17.4,
+          "delta": 10.9,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 51.8,
+          "from": 17.4,
+          "to": 29,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 52.9,
+          "from": 29,
+          "to": 37,
+          "delta": 8,
+          "kind": "OBSCURED",
+          "gapFrames": 3,
+          "reason": "endpoint plateau overlaps a dirty span (after)"
+        },
+        {
+          "creditAtSec": 53.57,
+          "from": 37,
+          "to": 100,
+          "delta": 63,
+          "kind": "OBSCURED",
+          "gapFrames": 12,
+          "reason": "endpoint plateau overlaps a dirty span (before)"
+        },
+        {
+          "creditAtSec": 54.07,
+          "from": 100,
+          "to": 51.4,
+          "delta": -48.6,
+          "kind": "DROP",
+          "gapFrames": 5,
+          "reason": "gauge fell inside a refill window — render artifact"
+        },
+        {
+          "creditAtSec": 54.5,
+          "from": 51.4,
+          "to": 51.4,
+          "delta": 0,
+          "kind": "WOBBLE",
+          "gapFrames": 1,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 54.77,
+          "from": 51.4,
+          "to": 63,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 58.1,
+          "from": 63,
+          "to": 74.6,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 59.1,
+          "from": 74.6,
+          "to": 84.8,
+          "delta": 10.2,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 60.07,
+          "from": 84.8,
+          "to": 96.4,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        }
+      ]
+    },
+    {
+      "window": "W4",
+      "span": [72.13, 83.2],
+      "settledPlateaus": [
+        {
+          "t0": 72.13,
+          "t1": 72.9,
+          "frames": 24,
+          "level": 2.2,
+          "dirty": false
+        },
+        {
+          "t0": 72.93,
+          "t1": 73.3,
+          "frames": 12,
+          "level": 8.7,
+          "dirty": false
+        },
+        {
+          "t0": 73.33,
+          "t1": 73.87,
+          "frames": 17,
+          "level": 9.4,
+          "dirty": false
+        },
+        {
+          "t0": 73.9,
+          "t1": 74.83,
+          "frames": 29,
+          "level": 25.4,
+          "dirty": false
+        },
+        {
+          "t0": 74.87,
+          "t1": 75.83,
+          "frames": 30,
+          "level": 40.6,
+          "dirty": false
+        },
+        {
+          "t0": 76.2,
+          "t1": 76.4,
+          "frames": 7,
+          "level": 49.3,
+          "dirty": false
+        },
+        {
+          "t0": 76.87,
+          "t1": 77.07,
+          "frames": 7,
+          "level": 100,
+          "dirty": true
+        },
+        {
+          "t0": 77.2,
+          "t1": 77.8,
+          "frames": 19,
+          "level": 63,
+          "dirty": false
+        },
+        {
+          "t0": 77.83,
+          "t1": 79.3,
+          "frames": 45,
+          "level": 74.6,
+          "dirty": false
+        },
+        {
+          "t0": 79.33,
+          "t1": 80.37,
+          "frames": 32,
+          "level": 73.9,
+          "dirty": false
+        },
+        {
+          "t0": 80.53,
+          "t1": 81.03,
+          "frames": 16,
+          "level": 74.6,
+          "dirty": false
+        },
+        {
+          "t0": 81.23,
+          "t1": 81.43,
+          "frames": 7,
+          "level": 83.3,
+          "dirty": false
+        },
+        {
+          "t0": 81.63,
+          "t1": 82.13,
+          "frames": 16,
+          "level": 100,
+          "dirty": true
+        },
+        {
+          "t0": 82.37,
+          "t1": 83.13,
+          "frames": 24,
+          "level": 96.4,
+          "dirty": false
+        }
+      ],
+      "ladder": [
+        {
+          "creditAtSec": 72.93,
+          "from": 2.2,
+          "to": 8.7,
+          "delta": 6.5,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 73.33,
+          "from": 8.7,
+          "to": 9.4,
+          "delta": 0.7,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 73.9,
+          "from": 9.4,
+          "to": 25.4,
+          "delta": 16,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 74.87,
+          "from": 25.4,
+          "to": 40.6,
+          "delta": 15.2,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 76.2,
+          "from": 40.6,
+          "to": 49.3,
+          "delta": 8.7,
+          "kind": "OBSCURED",
+          "gapFrames": 10,
+          "reason": "gap frames overlap a dirty span"
+        },
+        {
+          "creditAtSec": 76.87,
+          "from": 49.3,
+          "to": 100,
+          "delta": 50.7,
+          "kind": "OBSCURED",
+          "gapFrames": 13,
+          "reason": "endpoint plateau overlaps a dirty span (after)"
+        },
+        {
+          "creditAtSec": 77.2,
+          "from": 100,
+          "to": 63,
+          "delta": -37,
+          "kind": "DROP",
+          "gapFrames": 3,
+          "reason": "gauge fell inside a refill window — render artifact"
+        },
+        {
+          "creditAtSec": 77.83,
+          "from": 63,
+          "to": 74.6,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 79.33,
+          "from": 74.6,
+          "to": 73.9,
+          "delta": -0.7,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 80.53,
+          "from": 73.9,
+          "to": 74.6,
+          "delta": 0.7,
+          "kind": "WOBBLE",
+          "gapFrames": 4,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 81.23,
+          "from": 74.6,
+          "to": 83.3,
+          "delta": 8.7,
+          "kind": "OBSCURED",
+          "gapFrames": 5,
+          "reason": "gap frames overlap a dirty span"
+        },
+        {
+          "creditAtSec": 81.63,
+          "from": 83.3,
+          "to": 100,
+          "delta": 16.7,
+          "kind": "OBSCURED",
+          "gapFrames": 5,
+          "reason": "endpoint plateau overlaps a dirty span (after)"
+        },
+        {
+          "creditAtSec": 82.37,
+          "from": 100,
+          "to": 96.4,
+          "delta": -3.6,
+          "kind": "DROP",
+          "gapFrames": 6,
+          "reason": "gauge fell inside a refill window — render artifact"
+        }
+      ]
+    },
+    {
+      "window": "A3",
+      "span": [7.7, 19.4],
+      "settledPlateaus": [
+        {
+          "t0": 7.7,
+          "t1": 9.1,
+          "frames": 43,
+          "level": 2.2,
+          "dirty": false
+        },
+        {
+          "t0": 9.23,
+          "t1": 10.07,
+          "frames": 26,
+          "level": 11.6,
+          "dirty": false
+        },
+        {
+          "t0": 10.1,
+          "t1": 11.07,
+          "frames": 30,
+          "level": 22.5,
+          "dirty": false
+        },
+        {
+          "t0": 11.1,
+          "t1": 12.03,
+          "frames": 29,
+          "level": 34.1,
+          "dirty": false
+        },
+        {
+          "t0": 12.07,
+          "t1": 13.03,
+          "frames": 30,
+          "level": 45.7,
+          "dirty": false
+        },
+        {
+          "t0": 13.07,
+          "t1": 13.8,
+          "frames": 23,
+          "level": 55.8,
+          "dirty": false
+        },
+        {
+          "t0": 14.03,
+          "t1": 15.97,
+          "frames": 59,
+          "level": 67.4,
+          "dirty": false
+        },
+        {
+          "t0": 16,
+          "t1": 16.67,
+          "frames": 21,
+          "level": 66.7,
+          "dirty": true
+        },
+        {
+          "t0": 17.37,
+          "t1": 17.7,
+          "frames": 11,
+          "level": 100,
+          "dirty": true
+        },
+        {
+          "t0": 18,
+          "t1": 18.33,
+          "frames": 11,
+          "level": 79,
+          "dirty": false
+        },
+        {
+          "t0": 18.37,
+          "t1": 18.97,
+          "frames": 19,
+          "level": 89.9,
+          "dirty": false
+        },
+        {
+          "t0": 19,
+          "t1": 19.33,
+          "frames": 11,
+          "level": 89.1,
+          "dirty": false
+        }
+      ],
+      "ladder": [
+        {
+          "creditAtSec": 9.23,
+          "from": 2.2,
+          "to": 11.6,
+          "delta": 9.4,
+          "kind": "CLEAN",
+          "gapFrames": 3,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 10.1,
+          "from": 11.6,
+          "to": 22.5,
+          "delta": 10.9,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 11.1,
+          "from": 22.5,
+          "to": 34.1,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 12.07,
+          "from": 34.1,
+          "to": 45.7,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 13.07,
+          "from": 45.7,
+          "to": 55.8,
+          "delta": 10.1,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 14.03,
+          "from": 55.8,
+          "to": 67.4,
+          "delta": 11.6,
+          "kind": "CLEAN",
+          "gapFrames": 6,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 16,
+          "from": 67.4,
+          "to": 66.7,
+          "delta": -0.7,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        },
+        {
+          "creditAtSec": 17.37,
+          "from": 66.7,
+          "to": 100,
+          "delta": 33.3,
+          "kind": "OBSCURED",
+          "gapFrames": 20,
+          "reason": "endpoint plateau overlaps a dirty span (before)"
+        },
+        {
+          "creditAtSec": 18,
+          "from": 100,
+          "to": 79,
+          "delta": -21,
+          "kind": "DROP",
+          "gapFrames": 8,
+          "reason": "gauge fell inside a refill window — render artifact"
+        },
+        {
+          "creditAtSec": 18.37,
+          "from": 79,
+          "to": 89.9,
+          "delta": 10.9,
+          "kind": "CLEAN",
+          "gapFrames": 0,
+          "reason": "settled before- and after-plateaus, monotone gap"
+        },
+        {
+          "creditAtSec": 19,
+          "from": 89.9,
+          "to": 89.1,
+          "delta": -0.8,
+          "kind": "WOBBLE",
+          "gapFrames": 0,
+          "reason": "sub-threshold level change (render wobble), not a credit"
+        }
+      ]
+    }
+  ],
+  "departureClassification": {
+    "rule": "DEPARTING <=> |delta - median_all| > radius; symmetric; stated in render-grid units; references no hypothesis value",
+    "pool": "every CLEAN non-opener, non-clipped credit not inside a dirty span, derived mechanically from the trace ladder",
+    "solo2": {
+      "medianAll": 11.6,
+      "medianAllExcludingW1": 11.6,
+      "n": 22,
+      "primaryRadiusPp": 2.175,
+      "sensitivityRadiusPp": 1.45,
+      "atPrimaryRadius": [
+        {
+          "label": "W1c2@4.33",
+          "creditAtSec": 4.33,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W1c3@5.30",
+          "creditAtSec": 5.3,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W1c4@6.30",
+          "creditAtSec": 6.3,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W1c6@8.33",
+          "creditAtSec": 8.33,
+          "value": 12.3,
+          "distancePp": 0.7000000000000011,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W1c7@11.60",
+          "creditAtSec": 11.6,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W1c8@12.60",
+          "creditAtSec": 12.6,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c2@26.63",
+          "creditAtSec": 26.63,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c3@27.60",
+          "creditAtSec": 27.6,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c4@28.60",
+          "creditAtSec": 28.6,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c5@29.57",
+          "creditAtSec": 29.57,
+          "value": 10.8,
+          "distancePp": 0.7999999999999989,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c6@30.57",
+          "creditAtSec": 30.57,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c7@33.93",
+          "creditAtSec": 33.93,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c8@36.83",
+          "creditAtSec": 36.83,
+          "value": 15.3,
+          "distancePp": 3.700000000000001,
+          "departing": true,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c2@50.80",
+          "creditAtSec": 50.8,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c3@51.80",
+          "creditAtSec": 51.8,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c6@54.77",
+          "creditAtSec": 54.77,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c7@58.10",
+          "creditAtSec": 58.1,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c8@59.10",
+          "creditAtSec": 59.1,
+          "value": 10.2,
+          "distancePp": 1.4000000000000004,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c9@60.07",
+          "creditAtSec": 60.07,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W4c2@73.90",
+          "creditAtSec": 73.9,
+          "value": 16,
+          "distancePp": 4.4,
+          "departing": true,
+          "ambiguous": false
+        },
+        {
+          "label": "W4c3@74.87",
+          "creditAtSec": 74.87,
+          "value": 15.2,
+          "distancePp": 3.5999999999999996,
+          "departing": true,
+          "ambiguous": false
+        },
+        {
+          "label": "W4c6@77.83",
+          "creditAtSec": 77.83,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W4p7(smeared)",
+          "creditAtSec": null,
+          "value": [8, 8.7],
+          "distancePp": [2.9000000000000004, 3.5999999999999996],
+          "departing": true,
+          "ambiguous": false
+        }
+      ],
+      "atSensitivityRadius": [
+        {
+          "label": "W1c2@4.33",
+          "creditAtSec": 4.33,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W1c3@5.30",
+          "creditAtSec": 5.3,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W1c4@6.30",
+          "creditAtSec": 6.3,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W1c6@8.33",
+          "creditAtSec": 8.33,
+          "value": 12.3,
+          "distancePp": 0.7000000000000011,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W1c7@11.60",
+          "creditAtSec": 11.6,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W1c8@12.60",
+          "creditAtSec": 12.6,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c2@26.63",
+          "creditAtSec": 26.63,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c3@27.60",
+          "creditAtSec": 27.6,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c4@28.60",
+          "creditAtSec": 28.6,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c5@29.57",
+          "creditAtSec": 29.57,
+          "value": 10.8,
+          "distancePp": 0.7999999999999989,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c6@30.57",
+          "creditAtSec": 30.57,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c7@33.93",
+          "creditAtSec": 33.93,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W2c8@36.83",
+          "creditAtSec": 36.83,
+          "value": 15.3,
+          "distancePp": 3.700000000000001,
+          "departing": true,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c2@50.80",
+          "creditAtSec": 50.8,
+          "value": 10.9,
+          "distancePp": 0.6999999999999993,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c3@51.80",
+          "creditAtSec": 51.8,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c6@54.77",
+          "creditAtSec": 54.77,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c7@58.10",
+          "creditAtSec": 58.1,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c8@59.10",
+          "creditAtSec": 59.1,
+          "value": 10.2,
+          "distancePp": 1.4000000000000004,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W3c9@60.07",
+          "creditAtSec": 60.07,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W4c2@73.90",
+          "creditAtSec": 73.9,
+          "value": 16,
+          "distancePp": 4.4,
+          "departing": true,
+          "ambiguous": false
+        },
+        {
+          "label": "W4c3@74.87",
+          "creditAtSec": 74.87,
+          "value": 15.2,
+          "distancePp": 3.5999999999999996,
+          "departing": true,
+          "ambiguous": false
+        },
+        {
+          "label": "W4c6@77.83",
+          "creditAtSec": 77.83,
+          "value": 11.6,
+          "distancePp": 0,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "W4p7(smeared)",
+          "creditAtSec": null,
+          "value": [8, 8.7],
+          "distancePp": [2.9000000000000004, 3.5999999999999996],
+          "departing": true,
+          "ambiguous": false
+        }
+      ]
+    },
+    "a3": {
+      "medianAll": 11.25,
+      "n": 6,
+      "atPrimaryRadius": [
+        {
+          "label": "A3c2@10.10",
+          "creditAtSec": 10.1,
+          "value": 10.9,
+          "distancePp": 0.34999999999999964,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "A3c3@11.10",
+          "creditAtSec": 11.1,
+          "value": 11.6,
+          "distancePp": 0.34999999999999964,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "A3c4@12.07",
+          "creditAtSec": 12.07,
+          "value": 11.6,
+          "distancePp": 0.34999999999999964,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "A3c5@13.07",
+          "creditAtSec": 13.07,
+          "value": 10.1,
+          "distancePp": 1.1500000000000004,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "A3c6@14.03",
+          "creditAtSec": 14.03,
+          "value": 11.6,
+          "distancePp": 0.34999999999999964,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "A3c8@18.37",
+          "creditAtSec": 18.37,
+          "value": 10.9,
+          "distancePp": 0.34999999999999964,
+          "departing": false,
+          "ambiguous": false
+        }
+      ],
+      "atSensitivityRadius": [
+        {
+          "label": "A3c2@10.10",
+          "creditAtSec": 10.1,
+          "value": 10.9,
+          "distancePp": 0.34999999999999964,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "A3c3@11.10",
+          "creditAtSec": 11.1,
+          "value": 11.6,
+          "distancePp": 0.34999999999999964,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "A3c4@12.07",
+          "creditAtSec": 12.07,
+          "value": 11.6,
+          "distancePp": 0.34999999999999964,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "A3c5@13.07",
+          "creditAtSec": 13.07,
+          "value": 10.1,
+          "distancePp": 1.1500000000000004,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "A3c6@14.03",
+          "creditAtSec": 14.03,
+          "value": 11.6,
+          "distancePp": 0.34999999999999964,
+          "departing": false,
+          "ambiguous": false
+        },
+        {
+          "label": "A3c8@18.37",
+          "creditAtSec": 18.37,
+          "value": 10.9,
+          "distancePp": 0.34999999999999964,
+          "departing": false,
+          "ambiguous": false
+        }
+      ]
+    },
+    "departingPrimary": [
+      "W2c8@36.83",
+      "W4c2@73.90",
+      "W4c3@74.87",
+      "W4p7(smeared)"
+    ],
+    "departingSensitivity": [
+      "W2c8@36.83",
+      "W4c2@73.90",
+      "W4c3@74.87",
+      "W4p7(smeared)"
+    ],
+    "a3DepartingPrimary": [],
+    "a3DepartingSensitivity": [],
+    "membershipIdenticalAcrossRadii": true,
+    "a3MembershipIdenticalAcrossRadii": true
+  },
+  "controls": {
+    "a_traceEventsVsMontage": {
+      "perRun": [
+        {
+          "run": "W2:26.27->33.93(6p)",
+          "pulls": 6,
+          "montageDecrements": 6,
+          "matches": true
+        },
+        {
+          "run": "W3:50.33->51.80(2p)",
+          "pulls": 2,
+          "montageDecrements": 2,
+          "matches": true
+        },
+        {
+          "run": "W3:54.50->60.07(4p)",
+          "pulls": 4,
+          "montageDecrements": 4,
+          "matches": true
+        },
+        {
+          "run": "W4:77.20->77.83(1p)",
+          "pulls": 1,
+          "montageDecrements": 1,
+          "matches": true
+        }
+      ],
+      "allMatch": true,
+      "perWindowTotals": [
+        {
+          "window": "W2",
+          "montagePullCount": 9,
+          "montageCellDecrements": 9,
+          "traceCreditTransitions": 8
+        },
+        {
+          "window": "W3",
+          "montagePullCount": 10,
+          "montageCellDecrements": 10,
+          "traceCreditTransitions": 9
+        },
+        {
+          "window": "W4",
+          "montagePullCount": 9,
+          "montageCellDecrements": 9,
+          "traceCreditTransitions": 8
+        }
+      ]
+    },
+    "b_burstDotDisjoint": {
+      "fullInstantsFromTrace": [13.6, 37.83, 61.07, 83.2],
+      "castInstantsDerived": [14, 38.23, 61.47, 83.6],
+      "dotWindows": [
+        [14, 24],
+        [38.23, 48.23],
+        [61.47, 71.47],
+        [83.6, 93.6]
+      ],
+      "perRun": [
+        {
+          "run": "W2:26.27->33.93(6p)",
+          "span": [26.27, 33.93],
+          "overlappingDotWindows": [],
+          "clean": true
+        },
+        {
+          "run": "W3:50.33->51.80(2p)",
+          "span": [50.33, 51.8],
+          "overlappingDotWindows": [],
+          "clean": true
+        },
+        {
+          "run": "W3:54.50->60.07(4p)",
+          "span": [54.5, 60.07],
+          "overlappingDotWindows": [],
+          "clean": true
+        },
+        {
+          "run": "W4:77.20->77.83(1p)",
+          "span": [77.2, 77.83],
+          "overlappingDotWindows": [],
+          "clean": true
+        }
+      ],
+      "allClean": true
+    },
+    "c_questionBFalseEventRate": {
+      "source": "docs/probe-data/anis-star-solo2-gauge.json result.pooled / result.jointPooledWithOldBasis (carried, NOT re-derived)",
+      "bindingThreshold": 1.41,
+      "quietBins": 492,
+      "falseEventBins": 0,
+      "wilsonUpper95OneSidedSolo2": 0.0055,
+      "wilsonUpper95OneSidedJoint": 0.0045,
+      "maxPositiveDeltaInQuietBins": 0.7
+    }
+  },
+  "E1": {
+    "formula": "residual = 100 - postOpenerLevel - sum(departing credits as rendered); m = K - 1 - nAnomalous; P in [residual/m, residual/(m-1)). postOpenerLevel absorbs baseline + opener exactly, which removes the baseline/opener split ambiguity.",
+    "postOpenerLevelMechanicalCrossCheck": {
+      "W1": 11.6,
+      "W2": 6.5,
+      "W3": 6.5,
+      "W4": 9.4,
+      "A3": 11.6
+    },
+    "solo2": [
+      {
+        "window": "W1",
+        "K": 9,
+        "kCue": "game-driven",
+        "kCueEvidence": "green-full state at 13.60 in the trace",
+        "postOpenerLevel": 11.6,
+        "anomalies": [],
+        "montageVerified": false,
+        "nAnomalous": 0,
+        "m": 8,
+        "residualCapacity": {
+          "lo": 88.4,
+          "hi": 88.4
+        },
+        "interval": {
+          "lo": 11.05,
+          "hi": 12.62857142857143
+        },
+        "excludesHModel": true,
+        "exclusionMarginPp": 0.662,
+        "exclusionMarginColumns": 0.91356,
+        "wellPosed": true,
+        "note": "reader-only pull count (montage.W1 absent) — descriptive; may NOT be counted in clause 1(ii)"
+      },
+      {
+        "window": "W2",
+        "K": 9,
+        "kCue": "game-driven",
+        "kCueEvidence": "green-full state at 37.83 in the trace; montage 9 pulls open->green-full",
+        "postOpenerLevel": [6.5, 7.2],
+        "anomalies": [15.3],
+        "montageVerified": true,
+        "nAnomalous": 1,
+        "m": 7,
+        "residualCapacity": {
+          "lo": 77.5,
+          "hi": 78.2
+        },
+        "interval": {
+          "lo": 11.071428571428571,
+          "hi": 13.033333333333333
+        },
+        "excludesHModel": true,
+        "exclusionMarginPp": 0.683429,
+        "exclusionMarginColumns": 0.943131,
+        "wellPosed": true,
+        "note": "post-opener plateau 6.5 overlaps the committed exclusion span by one bin, so it enters as the artifact-declared settle interval [6.5,7.2] per [NR4]"
+      },
+      {
+        "window": "W3",
+        "K": 10,
+        "kCue": "game-driven",
+        "kCueEvidence": "green-full state at 61.07 in the trace; montage 10 pulls open->green-full",
+        "postOpenerLevel": 6.5,
+        "anomalies": [],
+        "montageVerified": true,
+        "nAnomalous": 0,
+        "m": 9,
+        "residualCapacity": {
+          "lo": 93.5,
+          "hi": 93.5
+        },
+        "interval": {
+          "lo": 10.38888888888889,
+          "hi": 11.6875
+        },
+        "excludesHModel": true,
+        "exclusionMarginPp": 0.000889,
+        "exclusionMarginColumns": 0.001227,
+        "wellPosed": true,
+        "note": "post-opener level read mechanically from a 14-frame settled plateau (50.33-50.77)"
+      },
+      {
+        "window": "W4",
+        "K": 9,
+        "kCue": "game-driven",
+        "kCueEvidence": "green-full state at 83.20 in the trace (NOT the rendered 100.0 at 81.63, which is offCurve-flagged 81.63-82.17); montage 9 pulls open->green-full",
+        "postOpenerLevel": 9.4,
+        "anomalies": [16, 15.2, [8, 8.7]],
+        "montageVerified": true,
+        "nAnomalous": 3,
+        "m": 5,
+        "residualCapacity": {
+          "lo": 50.699999999999996,
+          "hi": 51.39999999999999
+        },
+        "interval": {
+          "lo": 10.139999999999999,
+          "hi": 12.849999999999998
+        },
+        "excludesHModel": false,
+        "exclusionMarginPp": -0.248,
+        "exclusionMarginColumns": -0.34224,
+        "wellPosed": true,
+        "note": "three departing credits, one of them an interval; the resulting E1 interval is reported and its discriminating power assessed separately"
+      }
+    ],
+    "a3": {
+      "window": "A3",
+      "K": 9,
+      "kCue": "game-driven",
+      "kCueEvidence": "green-full state at 19.40 in the 30 fps trace (19.38 at 60 fps); countingCrossCheck ammo count 9 pulls from empty",
+      "postOpenerLevel": 11.6,
+      "anomalies": [],
+      "montageVerified": true,
+      "nAnomalous": 0,
+      "m": 8,
+      "residualCapacity": {
+        "lo": 88.4,
+        "hi": 88.4
+      },
+      "interval": {
+        "lo": 11.05,
+        "hi": 12.62857142857143
+      },
+      "excludesHModel": true,
+      "exclusionMarginPp": 0.662,
+      "exclusionMarginColumns": 0.91356,
+      "wellPosed": true,
+      "note": "independent footage, independently self-calibrated bar lock"
+    }
+  },
+  "E2": {
+    "formula": "P_run = (level_after_last_pull - level_before_first_pull) / pulls_in_run",
+    "solo2Runs": [
+      {
+        "window": "W2",
+        "label": "W2:26.27->33.93(6p)",
+        "pulls": 6,
+        "levelBefore": 6.5,
+        "levelAfter": 74.6,
+        "tBefore": 26.27,
+        "tAfter": 33.93,
+        "beforeFrames": 11,
+        "afterFrames": 14,
+        "conditionalStart": true,
+        "pHat": 11.35,
+        "seQuant": 0.04933,
+        "binsInRun": 230,
+        "meanHeight": 40.55,
+        "creditInstants": [26.63, 27.6, 28.6, 29.57, 30.57, 33.93]
+      },
+      {
+        "window": "W3",
+        "label": "W3:50.33->51.80(2p)",
+        "pulls": 2,
+        "levelBefore": 6.5,
+        "levelAfter": 29,
+        "tBefore": 50.33,
+        "tAfter": 51.8,
+        "beforeFrames": 14,
+        "afterFrames": 30,
+        "conditionalStart": false,
+        "pHat": 11.25,
+        "seQuant": 0.14799,
+        "binsInRun": 44,
+        "meanHeight": 17.75,
+        "creditInstants": [50.8, 51.8]
+      },
+      {
+        "window": "W3",
+        "label": "W3:54.50->60.07(4p)",
+        "pulls": 4,
+        "levelBefore": 51.4,
+        "levelAfter": 96.4,
+        "tBefore": 54.5,
+        "tAfter": 60.07,
+        "beforeFrames": 8,
+        "afterFrames": 30,
+        "conditionalStart": true,
+        "pHat": 11.25,
+        "seQuant": 0.073995,
+        "binsInRun": 167,
+        "meanHeight": 73.9,
+        "creditInstants": [54.77, 58.1, 59.1, 60.07]
+      },
+      {
+        "window": "W4",
+        "label": "W4:77.20->77.83(1p)",
+        "pulls": 1,
+        "levelBefore": 63,
+        "levelAfter": 74.6,
+        "tBefore": 77.2,
+        "tAfter": 77.83,
+        "beforeFrames": 19,
+        "afterFrames": 45,
+        "conditionalStart": true,
+        "pHat": 11.6,
+        "seQuant": 0.29598,
+        "binsInRun": 19,
+        "meanHeight": 68.8,
+        "creditInstants": [77.83]
+      }
+    ],
+    "w1RunsDescriptive": [
+      {
+        "window": "W1",
+        "label": "W1:3.33->6.30(3p)",
+        "pulls": 3,
+        "levelBefore": 11.6,
+        "levelAfter": 45.7,
+        "tBefore": 3.33,
+        "tAfter": 6.3,
+        "beforeFrames": 30,
+        "afterFrames": 29,
+        "conditionalStart": false,
+        "pHat": 11.366667,
+        "seQuant": 0.09866,
+        "binsInRun": 89,
+        "meanHeight": 28.650000000000002,
+        "creditInstants": [4.33, 5.3, 6.3]
+      },
+      {
+        "window": "W1",
+        "label": "W1:7.40->12.60(3p)",
+        "pulls": 3,
+        "levelBefore": 55.1,
+        "levelAfter": 89.9,
+        "tBefore": 7.4,
+        "tAfter": 12.6,
+        "beforeFrames": 23,
+        "afterFrames": 30,
+        "conditionalStart": true,
+        "pHat": 11.6,
+        "seQuant": 0.09866,
+        "binsInRun": 156,
+        "meanHeight": 72.5,
+        "creditInstants": [8.33, 11.6, 12.6]
+      }
+    ],
+    "a3Runs": [
+      {
+        "window": "A3",
+        "label": "A3:9.23->14.03(5p)",
+        "pulls": 5,
+        "levelBefore": 11.6,
+        "levelAfter": 67.4,
+        "tBefore": 9.23,
+        "tAfter": 14.03,
+        "beforeFrames": 26,
+        "afterFrames": 59,
+        "conditionalStart": false,
+        "pHat": 11.16,
+        "seQuant": 0.059196,
+        "binsInRun": 144,
+        "meanHeight": 39.5,
+        "creditInstants": [10.1, 11.1, 12.07, 13.07, 14.03]
+      },
+      {
+        "window": "A3",
+        "label": "A3:18.00->18.37(1p)",
+        "pulls": 1,
+        "levelBefore": 79,
+        "levelAfter": 89.9,
+        "tBefore": 18,
+        "tAfter": 18.37,
+        "beforeFrames": 11,
+        "afterFrames": 19,
+        "conditionalStart": true,
+        "pHat": 10.9,
+        "seQuant": 0.29598,
+        "binsInRun": 11,
+        "meanHeight": 84.45,
+        "creditInstants": [18.37]
+      }
+    ],
+    "pooled": {
+      "solo2Lenient": {
+        "k": 4,
+        "runs": [
+          "W2:26.27->33.93(6p)",
+          "W3:50.33->51.80(2p)",
+          "W3:54.50->60.07(4p)",
+          "W4:77.20->77.83(1p)"
+        ],
+        "pooled": 11.319298,
+        "seQuantPooled": 0.039204,
+        "empiricalScatter": 0.082601,
+        "questionBInflation": 0.293193,
+        "sePooled": 0.293193,
+        "seDriver": "question-B-inflation",
+        "ci95": {
+          "lo": 10.744639,
+          "hi": 11.893957
+        },
+        "excludesHModel": true,
+        "scatterOverQuantRatio": 2.107
+      },
+      "solo2Strict": {
+        "k": 3,
+        "runs": [
+          "W2:26.63->33.93(5p,strict)",
+          "W3:50.33->51.80(2p)",
+          "W3:54.77->60.07(3p,strict)"
+        ],
+        "pooled": 11.347368,
+        "seQuantPooled": 0.048014,
+        "empiricalScatter": 0.089367,
+        "questionBInflation": 0.338771,
+        "sePooled": 0.338771,
+        "seDriver": "question-B-inflation",
+        "ci95": {
+          "lo": 10.683377,
+          "hi": 12.01136
+        },
+        "excludesHModel": true,
+        "scatterOverQuantRatio": 1.8613
+      },
+      "a3Lenient": {
+        "k": 2,
+        "runs": ["A3:9.23->14.03(5p)", "A3:18.00->18.37(1p)"],
+        "pooled": 11.15,
+        "seQuantPooled": 0.058046,
+        "empiricalScatter": 0.13,
+        "questionBInflation": 0.178392,
+        "sePooled": 0.178392,
+        "seDriver": "question-B-inflation",
+        "ci95": {
+          "lo": 10.800351,
+          "hi": 11.499649
+        },
+        "excludesHModel": true,
+        "scatterOverQuantRatio": 2.2396
+      },
+      "a3Strict": {
+        "k": 1,
+        "runs": ["A3:9.23->14.03(5p)"],
+        "pooled": 11.16,
+        "seQuantPooled": 0.059196,
+        "empiricalScatter": null,
+        "questionBInflation": 0.182736,
+        "sePooled": 0.182736,
+        "seDriver": "question-B-inflation",
+        "ci95": {
+          "lo": 10.801837,
+          "hi": 11.518163
+        },
+        "excludesHModel": true,
+        "scatterOverQuantRatio": null
+      }
+    },
+    "seConstruction": "SE_pooled = max(inverse-variance pool of SE_quant, empirical scatter sd/sqrt(k), Question-B inflation). The inflation term = EVENT_MIN_PP x (wilsonUpper95 x binsInRun) / pulls, inverse-variance weighted across runs — the packet mandated the term but did not pin its formula; this construction is the driver-chosen conservative one and is disclosed as such."
+  },
+  "E3": {
+    "lenient": {
+      "k": 4,
+      "distinctHeights": 4,
+      "slope": 0.002689,
+      "seSlope": 0.00404,
+      "df": 2,
+      "tCrit": 4.303,
+      "ci95": {
+        "lo": -0.014693,
+        "hi": 0.020071
+      },
+      "containsZero": true,
+      "statement": "no detected non-linearity (underpowered: 4 runs at 4 distinct heights) — [R6] may NOT be cited as positive evidence that the bar is linear"
+    },
+    "strict": {
+      "k": 3,
+      "distinctHeights": 3,
+      "slope": -0.002113,
+      "seSlope": 0.004521,
+      "df": 1,
+      "tCrit": 12.706,
+      "ci95": {
+        "lo": -0.059562,
+        "hi": 0.055336
+      },
+      "containsZero": true,
+      "statement": "no detected non-linearity (underpowered: 3 runs at 3 distinct heights) — [R6] may NOT be cited as positive evidence that the bar is linear"
+    }
+  },
+  "decisionRuleApplication": {
+    "basis": "solo2 LENIENT pool (the reading that uses the most data); STRICT reported alongside",
+    "pooledE2": 11.319298,
+    "ci95": {
+      "lo": 10.744639,
+      "hi": 11.893957
+    },
+    "windowsExcludingHModel": ["W2", "W3"],
+    "contributingE1Intervals": [
+      {
+        "window": "W2",
+        "interval": {
+          "lo": 11.071428571428571,
+          "hi": 13.033333333333333
+        }
+      },
+      {
+        "window": "W3",
+        "interval": {
+          "lo": 10.38888888888889,
+          "hi": 11.6875
+        }
+      },
+      {
+        "window": "W4",
+        "interval": {
+          "lo": 10.139999999999999,
+          "hi": 12.849999999999998
+        }
+      }
+    ],
+    "crossRecordingE1Intersection": {
+      "lo": 11.071428571428571,
+      "hi": 11.6875
+    },
+    "a3CiOverlapsSolo2Ci": true,
+    "e1DirectionRelativeToHModel": "above",
+    "e2DirectionRelativeToHModel": "above",
+    "clauseSelectedByTheRuleAsWritten": {
+      "clause": 1,
+      "name": "MEASURED-ELEVATED",
+      "legs": {
+        "i": true,
+        "ii": true,
+        "iii": true,
+        "iv": true
+      },
+      "allClauseConditions": {
+        "clause5_instrumentGateFailed": false,
+        "clause1": true,
+        "clause2": false,
+        "clause3": false,
+        "clause1_i_ciExcludesHModel": true,
+        "clause1_ii_twoMontageWindowsExclude": true,
+        "clause1_iii_ciIntersectsEveryContributingE1": true,
+        "clause1_iv_a3AgreesInMagnitude": true,
+        "clause3_ciDisjointFromEveryWindow": false,
+        "clause3_e3SlopeExcludesZero": false,
+        "clause3_e1AndE2OppositeDirections": false,
+        "clause4_fewerThanTwoEligibleMontageWindows": false
+      }
+    },
+    "clauseUnderTheStrictPool": {
+      "clause": 1,
+      "name": "MEASURED-ELEVATED",
+      "legs": {
+        "i": true,
+        "ii": true,
+        "iii": true,
+        "iv": true
+      },
+      "allClauseConditions": {
+        "clause5_instrumentGateFailed": false,
+        "clause1": true,
+        "clause2": false,
+        "clause3": false,
+        "clause1_i_ciExcludesHModel": true,
+        "clause1_ii_twoMontageWindowsExclude": true,
+        "clause1_iii_ciIntersectsEveryContributingE1": true,
+        "clause1_iv_a3AgreesInMagnitude": true,
+        "clause3_ciDisjointFromEveryWindow": false,
+        "clause3_e3SlopeExcludesZero": false,
+        "clause3_e1AndE2OppositeDirections": false,
+        "clause4_fewerThanTwoEligibleMontageWindows": false
+      }
+    },
+    "reachability": {
+      "definition": "clause 2 fires only if the CI contains 10.388; at the achieved point estimate that needs a half-width >= |pooled - 10.388|",
+      "neededHalfWidthPp": 0.931298,
+      "neededCiWidthPp": 1.862596,
+      "achievedHalfWidthPp": 0.574658,
+      "achievedCiWidthPp": 1.149317,
+      "clause2Reachable": false,
+      "neededSePooled": 0.475152
+    },
+    "fragility": {
+      "clause1iiRestsOn": ["W2", "W3"],
+      "perWindowExclusionMargin": [
+        {
+          "window": "W2",
+          "marginPp": 0.683429,
+          "marginColumns": 0.943131,
+          "excludes": true
+        },
+        {
+          "window": "W3",
+          "marginPp": 0.000889,
+          "marginColumns": 0.001227,
+          "excludes": true
+        },
+        {
+          "window": "W4",
+          "marginPp": -0.248,
+          "marginColumns": -0.34224,
+          "excludes": false
+        }
+      ],
+      "w3OneColumnSensitivity": {
+        "asRendered": {
+          "interval": {
+            "lo": 10.38888888888889,
+            "hi": 11.6875
+          },
+          "excludes": true
+        },
+        "oneColumnHigher": {
+          "interval": {
+            "lo": 10.31111111111111,
+            "hi": 11.6
+          },
+          "excludes": false
+        },
+        "oneColumnLower": {
+          "interval": {
+            "lo": 10.466666666666667,
+            "hi": 11.775
+          },
+          "excludes": true
+        }
+      },
+      "ifW3DidNotExclude": {
+        "clause": 4,
+        "name": "INCONCLUSIVE-LOG",
+        "note": "solo #2 would then carry ONE excluding montage-verified window, and clause 1(ii) needs two"
+      },
+      "ifA3CountedAsAMontageVerifiedWindow": {
+        "clause": 1,
+        "name": "MEASURED-ELEVATED",
+        "note": "the packet's clause 1(ii) does not say whether the A3 window may be counted there; both readings are reported. A3's E1 excludes 10.388 with 0.66 pp (0.91 column) of margin."
+      }
+    }
+  },
+  "sensitivities": {
+    "dirtySpanBoundaryReading": {
+      "primary": "read-point: a settled plateau is dirty iff the frame 6 after its first lies in a dirty span (the frame [R4] reads the endpoint at)",
+      "alternative": "any-frame: a plateau overlapping a dirty span at ANY frame is dirty; this removes W2 6.5 (overlaps by 2 bins) and W4 63.0 (1 bin), i.e. it removes W4 entirely and shortens W2 to 5 pulls",
+      "alternativeRuns": [
+        {
+          "label": "W2:26.63->33.93(5p)",
+          "pulls": 5,
+          "pHat": 11.44,
+          "conditionalStart": true
+        },
+        {
+          "label": "W3:50.33->51.80(2p)",
+          "pulls": 2,
+          "pHat": 11.25,
+          "conditionalStart": false
+        },
+        {
+          "label": "W3:54.50->60.07(4p)",
+          "pulls": 4,
+          "pHat": 11.25,
+          "conditionalStart": true
+        }
+      ],
+      "alternativePool": {
+        "k": 3,
+        "runs": [
+          "W2:26.63->33.93(5p)",
+          "W3:50.33->51.80(2p)",
+          "W3:54.50->60.07(4p)"
+        ],
+        "pooled": 11.355556,
+        "seQuantPooled": 0.044122,
+        "empiricalScatter": 0.063333,
+        "questionBInflation": 0.318989,
+        "sePooled": 0.318989,
+        "seDriver": "question-B-inflation",
+        "ci95": {
+          "lo": 10.730337,
+          "hi": 11.980774
+        },
+        "excludesHModel": true,
+        "scatterOverQuantRatio": 1.4354
+      }
+    },
+    "boundaryColumnAttribution": {
+      "rule": "a mid-plateau one-column WOBBLE is attributed to neither adjacent credit; run endpoints use the settled plateau immediately adjacent to the credit",
+      "note": "the packet pre-committed W2p7 = 11.6 / W2p6 = 10.9 (the artifact table). Every wobble at issue is INTERIOR to a run, so E2 telescopes over it and the opposite attribution changes no E2, E1 or pooled value; it changes only the per-pull delta list feeding the classification median, which stays 11.6 either way."
+    },
+    "a3RawOverTrueCalibration": {
+      "field": "anis-star-solo-a3-gauge-reread.json series30fps.calibration.rawOverTrue = 1.064",
+      "anchor": "maiden-ice-rose (a DIFFERENT unit and recording)",
+      "applied": false,
+      "why": "the packet pins both estimators on RENDERED values; this field is a standing gain claim (H0-a) carried from another recording and is reported, not applied",
+      "ifApplied": "dividing rendered levels by 1.064 scales E2 down by the same factor and moves E1 the OTHER way (the [R1] algebra) — the exact signature clause 3 names"
+    }
+  },
+  "candidateCheck": {
+    "declaredCandidatePp": 3.71,
+    "provenance": "fitted after the fact on n=3 credits from one recording (probe-runs.md 8094-8101); not evidence, not a prior result; neither estimator uses it",
+    "residuals": [
+      {
+        "anomalyRenderedPp": 15.3,
+        "minusPooledE2": 3.9807,
+        "minusCandidatePp": 0.2707,
+        "withinOneColumn": true
+      },
+      {
+        "anomalyRenderedPp": 16,
+        "minusPooledE2": 4.6807,
+        "minusCandidatePp": 0.9707,
+        "withinOneColumn": false
+      },
+      {
+        "anomalyRenderedPp": 15.2,
+        "minusPooledE2": 3.8807,
+        "minusCandidatePp": 0.1707,
+        "withinOneColumn": true
+      }
+    ],
+    "downwardDeparture": {
+      "renderedInterval": [8, 8.7],
+      "minusPooledE2": [-3.3193, -2.6193],
+      "note": "a deficit, not an excess; a candidate that explains only upward departures is explicitly incomplete"
+    }
+  }
+}
