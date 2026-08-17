@@ -110,10 +110,13 @@ her `flatPerTrigger` row; and Snow White: Heavy Arms' Seven Dwarves volley credi
 **Liberalio's per-shot sequence is the fourth and is NOT credited today** (audit 2026-08-17,
 `scripts/census-gauge-subhits.ts`): her `skill1` rider "Deals 40.5% … **Activates 5 times**"
 is modeled as one aggregated `flatDamage` of 202.5 with no `gaugeHits`, so the engine credits
-1 impact per full charge where the kit delivers 6 (1 bullet + 5 sub-hits) — a shortfall of
-4 × 5.6 = 22.4% of the bar per charge. The 2026-08-14 census counted her as covered by
-citing "§7's ×6", a value deleted on 2026-07-26 as a WEAPON misread (`hitsPerShot` = 1) and
-never relocated to the rider the kit actually puts it on. Proposed fix + full sizing:
+1 impact per full charge where the kit's wording delivers five. Crediting all five was TESTED
+2026-08-17 and returned **INCONCLUSIVE (2-of-2 judges, LOG — nothing enacted)**: it moves both
+scored comps' refill toward the measured tape without overshooting any measured Full-Burst count,
+but leaves iron sweep below and T5 above a `liberalio`-free control band, so no single per-sub-hit
+value reconciles both. The 2026-08-14 census counted her as covered by citing "§7's ×6", a value
+deleted on 2026-07-26 as a WEAPON misread (`hitsPerShot` = 1) — and see §7's ⚠: `rl3` cannot
+re-credit that 6 on the rider either. Full result + what would settle it:
 `docs/handoffs/2026-08-17-liberalio-gauge-credit-audit.md`. Ein's open 0.7x team-fight residual (open-questions U8) is
 therefore no longer attributable to the orb by default. The blablalink/synergy-API `burstGaugePerShot` column was **dropped as a
 gauge source** — its semantics vary per unit (helm's 5.6 is her TARGET value, takina's
@@ -210,8 +213,12 @@ both `fullChargeBonus` 250, the modal value across the roster.
 ## 5. What generates besides bullets
 
 - **Skill-damage hits**: every skill/additional-damage impact generates the caster's
-  flat target per-shot value (NO focus/charge bonus — maiden's rider measured exactly
-  364 while her weapon shots measured 910). Engine: `skillGauge()` on flatDamage procs;
+  flat target per-shot value, divided by `hitsPerShot` (SG: /10), with NO focus/charge
+  bonus. Anchor: `maiden-ice-rose`'s rider sub-step measured **3.45%** against her modeled
+  targetPerTrigger 364 (3.64%) while her weapon shots measured 910 — flat and
+  un-focus-multiplied, so the SHAPE is confirmed, but it is **not exact**: the −5.2%
+  residual is open (open-questions U28). Her `hitsPerShot` is 1, so this anchor cannot
+  distinguish "per trigger" from "per projectile". Engine: `skillGauge()` on flatDamage procs;
   a sequential multi-hit `flatDamage` carries `gaugeHits` to credit skillGauge once per
   sub-hit while keeping the damage instance aggregated.
 - **DoT ticks** generate per tick (wiki3 measured Haran's S1 DoT at 290/tick ≈ her SR
@@ -274,10 +281,10 @@ both `fullChargeBonus` 250, the modal value across the roster.
 
 ## 6. The two solo measurements (docs/probes/tb2, test 3)
 
-| Solo vs raid boss | Observed                                        | Model                                                      |
-| ----------------- | ----------------------------------------------- | ---------------------------------------------------------- |
-| Maiden: Ice Rose  | 12.55%/pull in two sub-steps: +9.1% then +3.45% | weapon 364×2.5 = 910 + rider 364 (skill-gen, flat) — exact |
-| Takina            | ~14%/shot, full in ~8 shots incl. reload pause  | 560×2.5 = 1400 — exact                                     |
+| Solo vs raid boss | Observed                                        | Model                                                                                                                           |
+| ----------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Maiden: Ice Rose  | 12.55%/pull in two sub-steps: +9.1% then +3.45% | weapon 364×2.5 = 910 exact + rider modeled 364 (3.64%) vs measured 3.45% — flat/un-focused CONFIRMED, magnitude −5.2% off (U28) |
+| Takina            | ~14%/shot, full in ~8 shots incl. reload pause  | 560×2.5 = 1400 — exact                                                                                                          |
 
 The earlier maiden recording vs the NEUTRAL practice target measured the same 910+345
 per pull — the practice target counts as a stage target too (target column applies).
@@ -299,14 +306,27 @@ The mismatches decode into exact kit mechanics rather than noise:
 - **Helm**: rl3 59.73 = 8.4 + 3 × **14.31 flat per shot** — matches the arena data's
   `fixed_add 14.31` independently; now modeled (`flatPerTrigger`, no boss doubling, no
   focus bonus). She is a major generation battery in every fight she's in.
-- **Liberalio**: rl3 33.6 = 2 triggers × **6 impacts** × 2.8 base — exact and integral (her
-  90f/1.5s charge gives exactly 2 triggers in the 3s window). The 6 is **1 bullet + the 5
-  sub-hits of her `skill1` rider** ("Deals 40.5% … Activates 5 times"), NOT 6 weapon hits:
-  her weapon is `hitsPerShot` 1, which is why the ×6 applied to the per-trigger row was
-  deleted as a misread on 2026-07-26. **It has never been re-credited on the rider**, so the
-  engine still generates 1 impact per charge instead of 6 — see §2 and the audit handoff
-  `docs/handoffs/2026-08-17-liberalio-gauge-credit-audit.md`. This is the only unit whose
-  multi-hit line is per-shot triggered, so `rl3` corroborates its hit count directly.
+- **Liberalio**: the old "rl3 33.6 = 2 triggers × 6 volley hits × 2.8" reading is **deleted, not
+  relocated**. The ×6 applied to her per-trigger row was refuted on 2026-07-26 (`hitsPerShot` is 1;
+  `c12fcf4e`), and an attempt on 2026-08-17 to re-credit the same 6 as "1 bullet + the 5 sub-hits of
+  her `skill1` rider" **cannot be supported by `rl3` either** — see the ⚠ below. Her rider's gauge
+  credit is a live measurement-gated question, NOT an rl3 result:
+  `docs/handoffs/2026-08-17-liberalio-gauge-credit-audit.md`.
+
+> ⚠ **`rl3` CANNOT be decomposed into impacts-per-trigger (verified 2026-08-17).** It is one scalar
+> over (window length × cadence × per-impact energy × impacts), so solving for impacts needs two
+> externally-fixed choices this doc makes inconsistently: the **basis** (a factor of 2 — §7 says base,
+> `src/skills/overrides/helm.json`'s worked example only balances on target, `ein`'s orb term is
+> target while her weapon term is base) and the **pull count** (rl3's implied count omits the 22f SR
+> bolt recovery and disagrees with our datamined cadence in every charge case). `liberalio`'s 33.6
+> fits 6, 3, or 12 impacts per trigger equally well. Use `rl3` to FLAG that a unit has extra
+> non-weapon generation and to BOUND its magnitude in base-units — never as the confirming leg for a
+> per-unit gauge constant. Two further traps: the "±15% for 74 of 101 units" figure below is
+> **prose-only** (no committed instrument computes it; an independent re-derivation got 61/108), and
+> **`helm`'s rl3 changed upstream from 59.73 to 8.4 on 2026-07-31** (`fda93643`), so every worked
+> example resting on 59.73 — including the one in §2 and in `data/gauge-per-shot.json` — cites a value
+> no longer in the tree, and that arithmetic never balanced anyway (8.4 + 42.93 = 51.33, not 59.73).
+
 - **Standard launchers**: uniformly rl3 = 4 shots (not 3) — their opener's first charge
   completes during battle start; a comparison artifact, not a data problem.
 - **Jill**: matches once her real 150 rpm cadence is used.

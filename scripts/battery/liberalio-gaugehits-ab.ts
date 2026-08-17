@@ -28,24 +28,30 @@
 // damage-validated reading). `docs/data/burst-gauge.md` §5 credits burst gauge PER skill-damage
 // impact at the caster's target per-trigger value, so an aggregated multi-hit needs
 // `flatDamage.gaugeHits` to declare its count. Hers is absent, so the engine credits 1 impact per
-// full charge where the kit delivers 6 (1 bullet + 5 sub-hits) — a gauge-only defect, invisible in
-// damage totals. Independent count check: rl3 33.6 = 2 triggers × 6 impacts × 2.8 base, exact.
+// full charge where the kit's wording delivers five — a gauge-only defect, invisible in damage
+// totals (damage is bit-identical between arms; see --neutrality).
 //
-// WHY IT IS NOT SHIPPED, AND WHY THIS SCRIPT EXISTS INSTEAD. Two MEASURED observables disagree
-// about crediting all five, so the fix is sized here rather than defaulted on (the `nbo`
-// swap-cadence precedent, QUEUE.md item 5):
-//   * Full-Burst COUNTS move toward measured on all four of her comps, none overshooting.
-//   * Refill-from-zero drops BELOW the measured refill on the same footage.
-// That is the compensating-errors shape (memory: "for interacting timing/gauge corrections, gather
-// the FULL measured timeline and land them together") — a real credit can still be the wrong
-// magnitude if something else in these comps over-generates and was cancelling it. Whoever settles
-// it should pin the refill ESTIMATOR first: the third-arm run's own follow-up (i) is that a control
-// must pin how its quantity is measured, not just its tolerance, and every detection on this thread
-// is estimator-conditional.
+// WHY IT IS NOT SHIPPED. Tested 2026-08-17 through /scientific-method and returned INCONCLUSIVE at
+// 2-of-2 (decision LOG, nothing enacted) — full entry in docs/handoffs/scientific-method-harness.md.
+// Crediting all five moves BOTH scored comps' refill toward the measured tape and lifts Full-Burst
+// counts without overshooting any measured count, but leaves iron sweep BELOW and T5 ABOVE a
+// `liberalio`-free control band, so no single per-sub-hit value reconciles both.
 //
-// The four comps below are exactly the four `disabled: true` comps in scripts/regression.ts — the
-// set of comps containing `liberalio` and the set disabled for the burst-generation FB shortfall
-// coincide perfectly, which is why a per-unit defect in her model is the natural suspect.
+// ⚠ TWO CLAIMS THIS HEADER USED TO MAKE, BOTH REFUTED 2026-08-17 — do not reinstate them:
+//   1. "rl3 33.6 = 2 triggers x 6 impacts x 2.8 base, exact" was cited as independent confirmation of
+//      the 5-sub-hit count. It is DEGENERATE — rl3 is one scalar and both the basis and the pull count
+//      are free, so 33.6 fits 6, 3 or 12 impacts equally. It confirms nothing here.
+//   2. "Refill-from-zero drops BELOW the measured refill" rested on the literals in
+//      scripts/tests/gauge-cycle-decomp.test.ts titled "measured 4.43 / 3.56 / 3.71". Those are NOT
+//      footage measurements — they are that instrument's own 2026-08-04 sim output re-labelled
+//      "measured" (git show 2a8b869d). The real bar-paint footage refill is 2.342 / 1.75-1.82 /
+//      2.09-2.11s, i.e. the sim refills TOO SLOWLY, and this arm moves it TOWARD the tape.
+//
+// The four comps below are exactly the four `disabled: true` comps in scripts/regression.ts. That is
+// MEMBERSHIP, not mechanism: docs/fb-count-matrix.md:61-73 records NINE comps carrying this error
+// class with FIVE seating no `liberalio`, and the harness log stamps it "general, board-wide
+// charge-B3 gauge-fill-tempo gap — NOT liberalio-specific". Her presence is perfectly confounded with
+// the flag (docs/probe-runs.md:7444), so the coincidence is not evidence about her.
 import { COMPS, decomposeCycles, run } from '../experiment.js';
 // `OverrideFile` lives in src/skills/index.ts, NOT src/skills/types.ts (which exports `EffectDef`).
 // The original import pointed at types.js, where the name does not exist — `tsc -p tsconfig.json`
@@ -464,8 +470,12 @@ if (process.argv.includes('--json')) {
     );
   }
   console.log(
-    '\nFull-Burst counts are the arm that IMPROVES. The refill-from-zero counter-signal lives in\n' +
-      'scripts/tests/gauge-cycle-decomp.test.ts — run it under this arm to see it (it goes RED:\n' +
-      'refill drops to ~2.2-2.9s against measured 3.56-4.43s).'
+    '\nFB counts move toward measured and never exceed it. For the SCORED result use --residual:\n' +
+      'refill is compared against the committed bar-paint fixtures (real 2.342 / 1.75-1.82 /\n' +
+      '2.09-2.11s), where the arm moves both scored comps TOWARD the tape. The 2026-08-17 verdict\n' +
+      'was INCONCLUSIVE (iron below / T5 above a liberalio-free control band) — nothing enacted;\n' +
+      'see docs/handoffs/scientific-method-harness.md.\n' +
+      'NOTE: gauge-cycle-decomp.test.ts goes RED under this arm, but its "measured 4.43/3.56/3.71"\n' +
+      'titles are relabelled 2026-08-04 SIM output, not footage — those bands are drift-guards.'
   );
 }

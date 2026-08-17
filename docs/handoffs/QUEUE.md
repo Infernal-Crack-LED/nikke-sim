@@ -93,23 +93,49 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `basePerTrigger` 140 × 2.5 focus × 1.06 aura = 3.71%. Next step is a gated re-run of the
      counting rule with that hypothesis declared in the packet, so anomalous windows become
      CLASSIFIABLE instead of premise-violating.
-   - **⇒ `liberalio` GAUGE-CREDIT AUDIT — DONE 2026-08-17, defect FOUND, magnitude OPEN.**
+   - **⇒ `liberalio` GAUGE-CREDIT AUDIT — CLOSED as LOG 2026-08-17. Defect FOUND, magnitude
+     INCONCLUSIVE at 2-of-2. Nothing enacted.**
      **→ Handoff: [2026-08-17-liberalio-gauge-credit-audit.md](2026-08-17-liberalio-gauge-credit-audit.md)**
-     Her datamine row is EXACT (refutes the per-unit-datamine hypothesis). The defect is that her
-     `skill1` rider's kit-literal **5 sub-hits are credited as 1 gauge impact** — no
-     `flatDamage.gaugeHits` — costing 22.4% of the bar per full charge. Count confirmed
-     independently and exactly by `rl3` 33.6 = 2 triggers × 6 impacts × 2.8 base. She sits in
-     EXACTLY the four `disabled: true` comps and no others, so the confounding is perfect.
-     **NOT enacted:** crediting all five improves FB counts on all four comps (none overshooting)
-     but drops refill-from-zero to 2.2–2.9s against measured 3.56–4.43s, turning 17 battery
-     assertions red — several measured-truth anchors. That is the compensating-errors shape, so the
-     MAGNITUDE needs `/scientific-method` with the **refill estimator pre-registered** (this is
-     follow-up (i) below, now load-bearing). Sizing arm:
-     `npx tsx scripts/battery/liberalio-gaugehits-ab.ts`; census:
-     `npx tsx scripts/census-gauge-subhits.ts`.
-   - **Batched `gaugeHits` follow-up (findings-only, small):** `cinderella` (burst, N=10, 4.0%/cast),
-     `eve` (burst, N=6, 2.0%), `julia` (burst, N=5, 1.6%) also aggregate a multi-hit without
-     `gaugeHits`. All once-per-cast, so none can carry the FB shortfall.
+     · decision log: `scientific-method-harness.md` (2026-08-17).
+     Her datamine row is EXACT (refutes the per-unit-datamine hypothesis that opened this thread).
+     The defect: her `skill1` rider says "Activates 5 times" but the aggregated 202.5 `flatDamage`
+     carries no `gaugeHits`, so the engine credits ONE gauge impact per full charge. Crediting all
+     five moves BOTH scored comps' refill TOWARD the measured tape and lifts FB counts without
+     overshooting any measured count, but leaves iron sweep below and T5 above a `liberalio`-free
+     control band ⇒ no single per-sub-hit value reconciles both. Controls byte-identical, damage
+     bit-identical. **`npx tsx scripts/battery/liberalio-gaugehits-ab.ts --residual`** reproduces it;
+     census `npx tsx scripts/census-gauge-subhits.ts`.
+     **Three things this run KILLED — do not rebuild reasoning on them:**
+     (a) the "measured 4.43 / 3.56 / 3.71" refill literals in `gauge-cycle-decomp.test.ts` are
+     relabelled 2026-08-04 SIM output, not footage (4 independent legs); the real bar-paint tape is
+     2.342 / 1.75–1.82 / 2.09–2.11s, so **the sim refills TOO SLOWLY, including on the
+     `liberalio`-free PI2 control (~44% slow)**; (b) `rl3` cannot be decomposed into
+     impacts-per-trigger (degenerate — 33.6 fits 6, 3 or 12 equally), so it never corroborated the
+     5-sub-hit count; (c) her presence in exactly the four disabled comps is MEMBERSHIP, not
+     mechanism — already stamped "NOT liberalio-specific" with 5 of the 9 affected comps seating
+     no `liberalio`.
+     **NEXT, in priority order:** (1) ⚑ PREREQUISITE for any future enactment — the credit-schedule
+     reconstruction (`scripts/battery/fb-count-matrix.ts:2502-2509`) never reads `gaugeHits` and
+     under-counts a carrier by (N−1)/impact; (2) the settling measurement is a
+     `maiden-ice-rose`-style hand read of her per-pull gauge sub-steps (the comp-level estimator
+     structurally cannot separate a reduced per-sub-hit value from the general gap); (3) a second
+     committed fill trace on a `liberalio`-free stamped-class comp with a clean bundle, which
+     converts a reproduced split into an affirmative REJECT.
+   - **Batched `gaugeHits` follow-up (findings-only, small):** `cinderella` (burst, N=10),
+     `eve` (burst, N=6), `julia` (burst, N=5) also aggregate a multi-hit without `gaugeHits`. All
+     once-per-cast, so none can carry the FB shortfall — and the 2026-08-17 run gives no support for
+     crediting them at full value either.
+   - **Test-hygiene follow-up:** retitle `gauge-cycle-decomp.test.ts`'s "measured" bands as sim
+     drift-guards, and note its `PI2 < T5` assert is contradicted by measurement regardless of any
+     arm (real T5 1.75–1.82s < real PI2 2.09–2.11s). Do NOT blanket-`--update`: of 19 reds under the
+     arm, ZERO are measured-anchored, 4 are child-process harness artifacts, 15 genuine.
+   - **Ledger gap:** the 2026-08-15 `snow-white-heavy-arms` per-sub-hit enactment (`4d60a624`) has no
+     `docs/DECISIONS.md` entry and landed 49 min after a probe-runs entry reading "FINDINGS ONLY —
+     nothing enacted. Enactment is an engine touch and owner-gated."
+   - **⚑ Protected-path correction pending owner approval:** the comment directly above `skillGauge()`
+     in `src/engine/sim.ts` claims the `maiden-ice-rose` rider "measured exactly her target per-shot
+     value, 364". The cited probe records **3.45%** vs a modeled 3.64% (U28's −5.2% residual).
+     `docs/data/burst-gauge.md` §5/§6 corrected 2026-08-17; the engine comment was not touched.
    - Second, lower priority: settle
      the clean-bin-time vs full-window denominator on a fixture with known ground truth, which would
      turn the standing MAR caveat into a measured bias bound — every detection in this thread is

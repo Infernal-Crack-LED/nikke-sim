@@ -417,20 +417,20 @@ describe('liberalio — kit spec', () => {
   });
 
   describe('L3b — the rider credits ONE gauge impact per full charge (KNOWN GAP, measurement-gated)', () => {
-    // The kit's "Activates 5 times" is one aggregated damage instance of 202.5 but FIVE physical
-    // impacts, and `docs/data/burst-gauge.md` §5 credits gauge per skill-damage impact at the
-    // caster's target per-trigger value with no focus bonus (measured on `maiden-ice-rose`'s rider
-    // at exactly 364). An aggregated multi-hit therefore needs `flatDamage.gaugeHits` to declare
-    // its count — and HERS DELIBERATELY DOES NOT CARRY IT (audit 2026-08-17).
+    // The kit's "Activates 5 times" is one aggregated damage instance of 202.5 but five physical
+    // impacts by that wording, and `docs/data/burst-gauge.md` §5 credits gauge per skill-damage
+    // impact at `targetPerTrigger / hitsPerShot` with no focus bonus (her hitsPerShot is 1, so the
+    // U28 divisor question does not reach her). An aggregated multi-hit therefore needs
+    // `flatDamage.gaugeHits` to declare its count — and HERS DELIBERATELY DOES NOT CARRY IT.
     //
-    // This group pins the SHIPPED state (1 credit) so it cannot drift silently in either
-    // direction, and pins what the fix would move. It is NOT an endorsement of 1: the count
-    // evidence is strong (kit-literal, and rl3 33.6 = 2 triggers × 6 impacts × 2.8 base — exact,
-    // 1 bullet + 5 sub-hits), but crediting all five pushes refill-from-zero BELOW the measured
-    // refill on the same footage while improving Full-Burst counts, so two measured observables
-    // disagree about the magnitude (the compensating-errors shape). Whoever settles it flips the
-    // shipped side and this group's expectation together.
-    // Sizing arm: scripts/battery/liberalio-gaugehits-ab.ts.
+    // This group pins the SHIPPED state (1 credit) so it cannot drift silently in either direction,
+    // and pins what the fix would move. It is NOT an endorsement of 1: crediting all five was tested
+    // 2026-08-17 via /scientific-method and returned INCONCLUSIVE at 2-of-2 (decision LOG — see
+    // docs/handoffs/scientific-method-harness.md). It moves both scored comps' refill TOWARD the
+    // measured tape and lifts FB counts without overshooting any measured count, but leaves iron
+    // sweep below and T5 above a `liberalio`-free control band, so no single per-sub-hit value
+    // reconciles both. Whoever settles it flips the shipped side and this group's expectation
+    // together. Sizing arm: scripts/battery/liberalio-gaugehits-ab.ts --residual.
     const libBase = unitOf(noBurstGaugeBase, 'liberalio');
     const libFive = unitOf(noBurstGaugeFive, 'liberalio');
 

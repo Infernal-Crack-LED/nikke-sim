@@ -8,9 +8,12 @@
 //   npx tsx scripts/census-gauge-subhits.ts --rl3        # the rl3 impact-count reconciliation
 //   npx tsx scripts/census-gauge-subhits.ts --json       # machine-readable rows
 //
-// WHY THIS EXISTS. `docs/data/burst-gauge.md` §5: "every skill/additional-damage impact generates
-// the caster's flat target per-shot value" — measured on `maiden-ice-rose`'s rider (exactly 364,
-// her target value, no focus bonus). The engine keeps a sequential multi-hit as ONE aggregated
+// WHY THIS EXISTS. `docs/data/burst-gauge.md` §5: every skill/additional-damage impact generates the
+// caster's `targetPerTrigger / hitsPerShot`, with no focus bonus. Anchor: `maiden-ice-rose`'s rider
+// sub-step measured 3.45% vs her modeled 3.64% (targetPerTrigger 364) — flat and un-focus-multiplied
+// is CONFIRMED, the magnitude is −5.2% off and open (U28). Do NOT cite this anchor as "exactly 364";
+// that overstates it (the engine comment at src/engine/sim.ts:1583-1584 does, and is wrong).
+// The engine keeps a sequential multi-hit as ONE aggregated
 // damage instance to preserve tuned totals, so the HIT COUNT has to be carried separately: that is
 // `flatDamage.gaugeHits` (src/skills/types.ts), which fires `skillGauge()` N times
 // (src/engine/sim.ts, the `case 'flatDamage'` gaugeHits loop). Omitting it on a genuinely
@@ -273,12 +276,18 @@ if (has('--skipped')) {
 }
 
 if (has('--rl3')) {
-  // The synergy `rl3` column decodes as gauge generated in the first ~3s of an arena opener, at
-  // BASE (non-boss) per-shot values (docs/data/burst-gauge.md §7). Dividing it by the unit's BASE
-  // per-trigger value therefore yields the number of generating IMPACTS in that window — a count
-  // that is independent of our datamine, so it cross-checks a sub-hit claim.
+  // ⚠ THIS MODE IS A FLAG, NOT A CONFIRMATION (verified 2026-08-17 — read this before citing it).
+  // `rl3` is ONE scalar over (window length x cadence x per-impact energy x impacts), so dividing it
+  // out does NOT identify impacts-per-trigger: both the BASIS (a factor of 2 — burst-gauge.md §7 says
+  // base, helm.json's worked example only balances on target) and the PULL COUNT (rl3's implied count
+  // omits the 22f SR bolt recovery and disagrees with our datamined cadence in every charge case) are
+  // free. `liberalio`'s 33.6 fits 6, 3 or 12 impacts per trigger equally well. What the column CAN do
+  // is flag that a unit generates more than its plain weapon class predicts, and bound that excess in
+  // base-units. Never use it as the confirming leg for a per-unit gauge constant.
   console.log(
-    'rl3 impact-count reconciliation — rl3 / basePerTrigger% = generating impacts per ~3s opener\n'
+    'rl3 impact-count reconciliation — FLAG ONLY, not a confirmation (see the header note).\n' +
+      'rl3 / basePerTrigger% = base-value impact-EQUIVALENTS per ~3s opener; the split into\n' +
+      'pulls x impacts-per-pull is NOT identified by this column.\n'
   );
   console.log(
     `${'slug'.padEnd(24)} ${'wpn'.padEnd(4)} ${'rl3'.padStart(7)} ${'base%'.padStart(6)} ${'impacts'.padStart(8)}  kit sub-hits`
