@@ -162,13 +162,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      floor against the guard spec first). **Noise-floor input NOW AVAILABLE from the solo #2
      measurement (492 primary / 597 pooled quiet bins, zero false events, Wilson 0.55%/0.45%)
      — the C4 deficit is resolved at 3.3× margin.** Still open, re-ranked: (2) ~~a pre-registered
-     noise-corrected ceiling test~~ **DRAFTED 2026-08-16 — pre-op packet at
-     `docs/handoffs/2026-08-16-noise-corrected-ceiling-preop-packet.md`; arithmetic shows the
-     correction is negligible at the measured falseRate (0.55%/0.45% Wilson upper removes only
-     ~2.4 of 80 event bins); the ceiling excess survives by 10.7% margin, robust up to
-     f ≈ 2.3% (4× the input). R1 fires: DETECTION "H-C-candidate excess survives noise
-     correction." Classification stays MIXED/INCONCLUSIVE (closure 0.2579 stands). Awaiting
-     `/scientific-method` gate or owner acceptance.** (3) ~~source-hunt the excess
+     noise-corrected ceiling test~~ **COMPUTED 2026-08-16, owner-accepted (no /scientific-method
+     gate — arithmetic is trivial):** pre-op packet at
+     `docs/handoffs/2026-08-16-noise-corrected-ceiling-preop-packet.md`; artifact at
+     `docs/probe-data/noise-corrected-ceiling-iron-sweep-2026-08-16.json`. R1 fires: DETECTION
+     "H-C-candidate excess survives noise correction." Correction removes ~2.4 of 80 bins
+     (3%); corrected rate 4.576/s (primary) / 4.601/s (pooled) — both 10.7–11.3% above the
+     4.1325 threshold. Robust to falseRate up to 2.3% (4× measured input). Classification
+     stays MIXED/INCONCLUSIVE (closure 0.2579 stands).** (3) ~~source-hunt the excess
      event instants~~ **ANALYZED 2026-08-16 (`scripts/probe/source-hunt.ts`): the excess is a
      PERVASIVE RATE EXCESS, not clustered at visual causes. 82 events across 10 real windows
      (~23s total), only 13 sim credits fall within those windows, 76.8% of events >0.5s from

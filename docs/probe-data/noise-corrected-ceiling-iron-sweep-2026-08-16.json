@@ -1,0 +1,157 @@
+{
+  "_note": "Noise-corrected ceiling test on iron sweep (run G). Pre-op packet: docs/handoffs/2026-08-16-noise-corrected-ceiling-preop-packet.md. Measurement-only — no engine change, no classification re-issue, no enactment. The arm's classification stays MIXED/INCONCLUSIVE (closure residual 0.2579 > 0.25 stands). This is a DETECTION: the ceiling excess survives noise correction.",
+  "decision": "R1 (excess survives correction)",
+  "stamp": "H-C-candidate event-rate excess survives noise correction — observed, not noise-manufactured at any plausible falseRate",
+  "inputs": {
+    "E": 80,
+    "E_provenance": "docs/probe-data/fill-trace-habc-classification.json, iron sweep (run G) arm, pooled.eventBins",
+    "Q": 429,
+    "Q_provenance": "usableCleanBins (509) minus credit-in-usable bins (80); C4 packet P1 confirmed",
+    "T": 16.9667,
+    "T_provenance": "clean-bin-time denominator (sum of per-window clean-bin durations); classification artifact",
+    "C_ceiling": 3.5935,
+    "C_ceiling_provenance": "simCeiling() on iron sweep credit schedule; per-unit: d-killer-wife 0.7317, liberalio 0.6667, maxwell 0.7317, milk-blooming-bunny 0.7317, takina 0.7317",
+    "ceilingFactor": 1.15,
+    "threshold": 4.1325,
+    "threshold_derivation": "1.15 × 3.5935"
+  },
+  "falseRate": {
+    "primary": {
+      "f": 0.0055,
+      "quietBins": 492,
+      "falseEvents": 0,
+      "wilsonUpper95OneSided": 0.0055,
+      "provenance": "docs/probe-data/anis-star-solo2-gauge.json, Question B primary basis"
+    },
+    "pooled": {
+      "f": 0.0045,
+      "quietBins": 597,
+      "falseEvents": 0,
+      "wilsonUpper95OneSided": 0.0045,
+      "provenance": "docs/probe-data/anis-star-solo2-gauge.json, Question B pooled (joint) basis"
+    }
+  },
+  "indifferencePoints": {
+    "reStampCutoff": 0.02304,
+    "reStampCutoff_derivation": "f such that (E − f·Q)/T = threshold: (80 − 4.1325×16.9667)/429 = 9.887/429",
+    "shelveCutoff": 0.04436,
+    "shelveCutoff_derivation": "f such that (E − f·Q)/T = ceiling: (80 − 3.5935×16.9667)/429 = 19.030/429"
+  },
+  "results": {
+    "primary": {
+      "correction": 2.3595,
+      "correction_derivation": "0.0055 × 429",
+      "correctedRate": 4.576,
+      "correctedRate_derivation": "(80 − 2.3595) / 16.9667",
+      "vsThreshold": "+10.7%",
+      "vsCeiling": "+27.4%",
+      "band": "R1"
+    },
+    "pooled": {
+      "correction": 1.9305,
+      "correction_derivation": "0.0045 × 429",
+      "correctedRate": 4.601,
+      "correctedRate_derivation": "(80 − 1.9305) / 16.9667",
+      "vsThreshold": "+11.3%",
+      "vsCeiling": "+28.1%",
+      "band": "R1"
+    }
+  },
+  "marBand": {
+    "cleanBinTime_raw": {
+      "rate": 4.7151,
+      "vsThreshold": "+14.1%",
+      "vsCeiling": "+31.2%"
+    },
+    "cleanBinTime_correctedPrimary": {
+      "rate": 4.576,
+      "vsThreshold": "+10.7%",
+      "vsCeiling": "+27.4%"
+    },
+    "cleanBinTime_correctedPooled": {
+      "rate": 4.601,
+      "vsThreshold": "+11.3%",
+      "vsCeiling": "+28.1%"
+    },
+    "fullWindowDuration": {
+      "rate": 3.387,
+      "vsThreshold": "−18.0%",
+      "vsCeiling": "−5.7%"
+    },
+    "note": "The excess exists only under the clean-bin-time estimator. Under full-window-duration (23.618s), no excess. The clean-bin-time estimator is principled (bridgedMass proves events in excluded spans) but its MAR assumption is the load-bearing caveat."
+  },
+  "sensitivityTable": [
+    {
+      "f": 0.0045,
+      "label": "pooled Wilson upper",
+      "correction": 1.93,
+      "correctedRate": 4.601,
+      "vsThreshold": "+11.3%",
+      "band": "R1"
+    },
+    {
+      "f": 0.0055,
+      "label": "primary Wilson upper",
+      "correction": 2.36,
+      "correctedRate": 4.576,
+      "vsThreshold": "+10.7%",
+      "band": "R1"
+    },
+    {
+      "f": 0.01,
+      "correction": 4.29,
+      "correctedRate": 4.462,
+      "vsThreshold": "+8.0%",
+      "band": "R1"
+    },
+    {
+      "f": 0.02,
+      "correction": 8.58,
+      "correctedRate": 4.21,
+      "vsThreshold": "+1.9%",
+      "band": "R1"
+    },
+    {
+      "f": 0.02304,
+      "label": "R1/R3 indifference",
+      "correction": 9.88,
+      "correctedRate": 4.132,
+      "vsThreshold": "0.0%",
+      "band": "boundary"
+    },
+    {
+      "f": 0.03,
+      "correction": 12.87,
+      "correctedRate": 3.957,
+      "vsThreshold": "−4.2%",
+      "band": "R3"
+    },
+    {
+      "f": 0.04436,
+      "label": "R3/R2 indifference",
+      "correction": 19.03,
+      "correctedRate": 3.594,
+      "vsThreshold": "—",
+      "band": "boundary"
+    },
+    {
+      "f": 0.05,
+      "correction": 21.45,
+      "correctedRate": 3.451,
+      "vsThreshold": "—",
+      "band": "R2"
+    }
+  ],
+  "controls": {
+    "c1_artifactReplay": "iron arm numbers read from committed fill-trace-habc-classification.json, cross-checked by habc-classification.test.ts (8/8 green)",
+    "c2_falseRateProvenance": "falseRate read from committed anis-star-solo2-gauge.json; solo #2 cleared its own basis floors (492/597 vs 150/180 floors, 3.3× margin) and instrument self-checks",
+    "c3_arithmeticCheck": "indifference points derived by two independent algebraic paths (solving for f in inequality; direct substitution) — identical values"
+  },
+  "caveats": [
+    "Classification stays MIXED/INCONCLUSIVE (closure residual 0.2579 > 0.25; binding 2026-08-15 blind post-op ruling)",
+    "n=1 comp (iron sweep only); T5 ceiling was cap-saturated (30/s), H-C detector structurally n=1",
+    "MAR-denominator dependence: excess exists only under clean-bin-time estimator; under full-window-duration no excess",
+    "Correction magnitude is negligible (~2.4 of 80 bins); the excess is robust to falseRate values up to 2.3% (4.2× the measured input)",
+    "Solo→team noise transfer: falseRate measured on solo footage; team footage may differ but solo bounds conservatively (solo clip is noisier)"
+  ]
+}
