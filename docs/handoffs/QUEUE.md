@@ -59,16 +59,34 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > exist. Take them top-down. The numbered threads below (1–5) stay as the reference detail and are
 > mostly footage-gated — do NOT start there.
 >
-> **N1. `anis-star` solo magnitude residual — pre-registered re-run.** NOT footage-gated (the
-> existing recording has four windows; the blocker was hypothesis discrimination, not window count).
-> The 2026-08-17 source hunt narrowed it hard: W4p2 (+16.0), W4p3 (+15.2) and the steady W4p4
-> (+11.6) did the IDENTICAL damage increment 480,330, refuting extra-hits, charge-level
-> (`fullChargeBonus` 250) and crit/core — so the excess is gauge-specific. Artifact:
-> `docs/probe-data/anis-star-anomaly-source-hunt-2026-08-17.json`. **DO:** `/scientific-method` with
-> the candidate DECLARED in the packet — one extra `basePerTrigger` 140 × 2.5 focus × 1.06 aura =
-> 3.71%. ⚑ That figure was fitted AFTER the fact on n=3 and is NOT evidence; declaring it up front is
-> what makes the anomalous windows CLASSIFIABLE instead of premise-violating. Do not let it enter as
-> a conclusion.
+> **N1. DONE 2026-08-17 — LOG with a SPLIT 2-of-2; superseded by N1b below.** The pre-registered
+> re-run ran (packet + deliverable + `docs/probe-data/anis-star-solo-magnitude-2026-08-17.json`,
+> instrument `scripts/probe/gauge-magnitude.ts` + pin). Record:
+> `docs/handoffs/scientific-method-harness.md` 2026-08-17. Nothing enacted. Two things to carry:
+> the declared 3.71 candidate rests on `basePerTrigger`, which the premise gate proved
+> **ENGINE-INERT** (`sim.ts` never reads it) — so it could only ever describe a NEW mechanism, never
+> a mis-set constant; and the run measured the classified-steady credit at **11.32 / 11.15** on two
+> independently-calibrated recordings, both excluding the shipped 10.388.
+>
+> **N1b. ⛔ BLOCKING PREREQUISITE — a render-scale calibration read on `anis-star`'s own solo bar.**
+> This is the one measurement that settles the magnitude question, and until it exists **no further
+> magnitude run is worth starting** (a third would re-fight the same argument). A3's own
+> `series30fps.calibration` block carries `rawOverTrue = 1.064` — a standing instrument-gain claim
+> anchored on `maiden-ice-rose`. Applied, it drags the measured 11.32 down to ~10.64 with a CI that
+> CONTAINS the shipped 10.388, i.e. the whole elevation could be reader gain. The 2026-08-17 run's
+> pre-registered gain test looks for a gain SIGNATURE in the data (absent) and has no leg for a gain
+> CONSTANT already written down elsewhere in the tree. **DO:** apply the `maiden-ice-rose`-anchored
+> calibration method to `docs/probes/solo/anis-star-solo.mov` directly and confirm or refute
+> `rawOverTrue ≈ 1.064` for THIS bar. Footage-free (recording on disk).
+>
+> **N1c. Owner ruling wanted (cheap, no work attached).** The 2-of-2 split turned on one question:
+> may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg when the same
+> packet has demoted that recording's E1 as already-on-record and non-falsifying? Driver said no
+> (⇒ INCONCLUSIVE), blind Fable said yes in the spirit of the rule (⇒ ACCEPT-narrowed). Both struck
+> the W3 window independently — its "exclusion" margin was 0.0012 of a render column. Also flagged
+> for the harness template: the clause-2 **reachability wording is degenerate as drafted** (it makes
+> clause 1 unsatisfiable in all possible worlds) and should be fixed before another packet inherits
+> it.
 >
 > **N2. A SECOND `liberalio`-free fill trace — this is what decides the `liberalio` question.** Also
 > NOT footage-gated, contrary to how it was first filed: the recording is on disk. **Use `N5
