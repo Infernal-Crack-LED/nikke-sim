@@ -3836,8 +3836,392 @@ function noiseSolo2Cli(): void {
   process.stdout.write(`wrote ${path}\n`);
 }
 
+// ---------------------------------------------------------------------------
+// solo-rate: per-trigger gauge credit off a SOLO fill trace
+// ---------------------------------------------------------------------------
+//
+// A solo Burst-III unit makes ZERO full bursts (there is no Burst I to open the chain), so its
+// bar fills once, monotonically, and then sits full — one clean uninterrupted generating window
+// with no drain side and no rider/FB confounds. That makes the per-trigger credit readable
+// directly as the STEP SIZE between consecutive shots, which is what this subcommand extracts.
+//
+// The statistic that matters is not just the mean. Under PER-TRIGGER crediting every step must be
+// the SAME value (the datamined column), so the only step-to-step spread allowed is the bar's own
+// column quantization. Under PER-LANDED crediting (the U40 owner ruling for SG) the step scales
+// with how many pellets landed that pull, so the spread exceeds quantization. `varianceRatio`
+// below is that test: ~1 means constant-credit is viable, >>1 means it is not.
+export interface SoloRateStep {
+  t: number;
+  fill: number;
+  deltaFromPrev: number | null;
+  gapFromPrev: number | null;
+  acrossReload: boolean;
+  saturated: boolean;
+}
+export interface SoloRateResult {
+  label: string;
+  window: [number, number];
+  barWidthPx: number;
+  rawOverTrue: number;
+  cadencePerSec: number;
+  dataminedColumnPct: number | null;
+  steps: SoloRateStep[];
+  counted: number[];
+  excludedSteps: number[];
+  meanRaw: number;
+  sdRaw: number;
+  minRaw: number;
+  maxRaw: number;
+  meanTrue: number;
+  ratioToColumn: number | null;
+  quantSd: number;
+  varianceRatio: number;
+  observedCadencePerSec: number | null;
+}
+
+/**
+ * Extract per-trigger gauge credit steps from a solo gauge-fill trace.
+ *
+ * `dominantChain` is reused (same tolerance as the off-curve pass) to drop the bright-flash
+ * excursions that spike a solo bar to 100 and back — the documented reader artifact — before any
+ * step is measured. Steps whose preceding gap exceeds `reloadGapFactor / cadence` are recorded but
+ * EXCLUDED from the statistics: a step spanning a reload can carry credit from shots the trace
+ * could not resolve, so it is not a single-trigger observation.
+ */
+export function soloRate(opts: {
+  series: SoloSeries;
+  barWidthPx: number;
+  rawOverTrue: number;
+  window: [number, number];
+  cadencePerSec: number;
+  dataminedColumnPct?: number | null;
+  label?: string;
+  minStepPct?: number;
+  reloadGapFactor?: number;
+  mergeGapFactor?: number;
+}): SoloRateResult {
+  const {
+    series,
+    barWidthPx,
+    rawOverTrue,
+    window,
+    cadencePerSec,
+    dataminedColumnPct = null,
+    label = '',
+    reloadGapFactor = 1.6,
+    mergeGapFactor = 0.5,
+  } = opts;
+  const columnPct = 100 / barWidthPx;
+  // Default: half a column above the quantization floor, so a genuine credit is never missed but
+  // a single-column reader wobble is not promoted into a "step".
+  const minStep = opts.minStepPct ?? columnPct * 1.5;
+
+  const inWin = series.reads.filter(
+    (r) =>
+      r.t >= window[0] &&
+      r.t <= window[1] &&
+      r.fillRaw !== null &&
+      (r.state === 'filling' || r.state === 'full')
+  );
+  if (inWin.length === 0) {
+    throw new Error(`solo-rate: no usable reads in window ${window.join(':')}`);
+  }
+  const chain = dominantChain(
+    inWin.map((r) => r.fillRaw!),
+    NS_OFFCURVE_TOL
+  );
+  const clean = inWin.filter((_r, i) => chain.has(i));
+
+  const steps: SoloRateStep[] = [];
+  let level: number | null = null;
+  let lastT: number | null = null;
+  clean.forEach((r) => {
+    const f = r.fillRaw!;
+    if (level === null) {
+      level = f;
+      lastT = r.t;
+      steps.push({
+        t: r.t,
+        fill: f,
+        deltaFromPrev: null,
+        gapFromPrev: null,
+        acrossReload: false,
+        saturated: false,
+      });
+      return;
+    }
+    if (f >= level + minStep) {
+      const gap = r.t - (lastT as number);
+      const prev = steps[steps.length - 1];
+      // MERGE a sub-cadence rise into the step it belongs to. The bar repaints over 2-3 frames, so
+      // one trigger's credit can surface as two adjacent rises; counting them separately would
+      // manufacture two undersized steps and inflate the spread the variance test reads.
+      if (gap < mergeGapFactor / cadencePerSec && prev.deltaFromPrev !== null) {
+        prev.deltaFromPrev = round(prev.deltaFromPrev + (f - level));
+        prev.fill = f;
+        level = f;
+        return;
+      }
+      steps.push({
+        t: r.t,
+        fill: f,
+        deltaFromPrev: round(f - level),
+        gapFromPrev: round(gap),
+        acrossReload: gap > reloadGapFactor / cadencePerSec,
+        // A step that lands ON the cap is TRUNCATED: the bar stopped at 100 with credit to spare,
+        // so its measured size is a lower bound on the real one, never the credit itself.
+        saturated: f >= 100 - columnPct,
+      });
+      level = f;
+      lastT = r.t;
+    }
+  });
+
+  const usable = (s: SoloRateStep): boolean =>
+    s.deltaFromPrev !== null && !s.acrossReload && !s.saturated;
+  const counted = steps.filter(usable).map((s) => s.deltaFromPrev as number);
+  const excluded = steps
+    .filter((s) => s.deltaFromPrev !== null && (s.acrossReload || s.saturated))
+    .map((s) => s.deltaFromPrev as number);
+  if (counted.length === 0) {
+    throw new Error('solo-rate: no intra-magazine steps found');
+  }
+  const mean = counted.reduce((a, b) => a + b, 0) / counted.length;
+  const variance =
+    counted.length > 1
+      ? counted.reduce((a, b) => a + (b - mean) ** 2, 0) / (counted.length - 1)
+      : 0;
+  const sd = Math.sqrt(variance);
+  // Each endpoint of a step is column-quantized: uniform error over one column, sd col/sqrt(12).
+  // A step is a DIFFERENCE of two such reads, so its quantization sd is that times sqrt(2).
+  const quantSd = (columnPct / Math.sqrt(12)) * Math.SQRT2;
+  // Observed cadence from the intra-magazine step gaps — an independent check that the steps found
+  // really are one-per-trigger and not a merged or split reading.
+  const gaps = steps
+    .filter(
+      (s) =>
+        s.gapFromPrev !== null &&
+        !s.acrossReload &&
+        // A merged remnant at the window edge carries a sub-cadence gap that is not a real
+        // trigger interval; including it would bias the cadence check high.
+        s.gapFromPrev >= mergeGapFactor / cadencePerSec
+    )
+    .map((s) => s.gapFromPrev as number);
+  const meanGap = gaps.length
+    ? gaps.reduce((a, b) => a + b, 0) / gaps.length
+    : null;
+
+  const meanTrue = mean / rawOverTrue;
+  return {
+    label,
+    window,
+    barWidthPx,
+    rawOverTrue,
+    cadencePerSec,
+    dataminedColumnPct,
+    steps,
+    counted: counted.map((v) => round(v)),
+    excludedSteps: excluded.map((v) => round(v)),
+    meanRaw: round(mean),
+    sdRaw: round(sd),
+    minRaw: round(Math.min(...counted)),
+    maxRaw: round(Math.max(...counted)),
+    meanTrue: round(meanTrue),
+    ratioToColumn:
+      dataminedColumnPct === null || dataminedColumnPct === 0
+        ? null
+        : round(meanTrue / dataminedColumnPct),
+    quantSd: round(quantSd),
+    varianceRatio: round((sd / quantSd) ** 2),
+    observedCadencePerSec: meanGap ? round(1 / meanGap) : null,
+  };
+}
+
+export interface SoloMagRateResult {
+  label: string;
+  window: [number, number];
+  barWidthPx: number;
+  rawOverTrue: number;
+  magSize: number;
+  dataminedColumnPct: number | null;
+  plateaus: { tStart: number; tEnd: number; level: number }[];
+  perMagRaw: number[];
+  meanPerMagRaw: number;
+  sdPerMagRaw: number;
+  perShotRaw: number;
+  perShotTrue: number;
+  ratioToColumn: number | null;
+  observedCycleSec: number | null;
+}
+
+/**
+ * Per-MAGAZINE credit off a solo fill trace, for weapons whose per-shot credit is below the
+ * reader's resolution. An AR credits ~0.9% per shot at 12 shots/s — about one bar column every
+ * 1.25 shots at 30fps, so individual triggers are not separable. The magazine IS separable: the
+ * reload is a hard multi-second plateau, and the fill DELTA between two consecutive plateaus is
+ * exactly one magazine's worth of credit, read from two clean stationary levels rather than from a
+ * slope through a moving one.
+ */
+export function soloMagRate(opts: {
+  series: SoloSeries;
+  barWidthPx: number;
+  rawOverTrue: number;
+  window: [number, number];
+  magSize: number;
+  dataminedColumnPct?: number | null;
+  label?: string;
+  plateauMinSec?: number;
+}): SoloMagRateResult {
+  const {
+    series,
+    barWidthPx,
+    rawOverTrue,
+    window,
+    magSize,
+    dataminedColumnPct = null,
+    label = '',
+    plateauMinSec = 0.8,
+  } = opts;
+  const columnPct = 100 / barWidthPx;
+  const inWin = series.reads.filter(
+    (r) =>
+      r.t >= window[0] &&
+      r.t <= window[1] &&
+      r.fillRaw !== null &&
+      (r.state === 'filling' || r.state === 'full')
+  );
+  const chain = dominantChain(
+    inWin.map((r) => r.fillRaw!),
+    NS_OFFCURVE_TOL
+  );
+  const clean = inWin.filter((_r, i) => chain.has(i));
+
+  // A plateau = a maximal run of reads sitting within one column of each other for >= plateauMinSec.
+  const plateaus: { tStart: number; tEnd: number; level: number }[] = [];
+  let run: SoloRead[] = [];
+  const flush = (): void => {
+    if (run.length < 2) {
+      return;
+    }
+    const span = run[run.length - 1].t - run[0].t;
+    if (span >= plateauMinSec) {
+      plateaus.push({
+        tStart: round(run[0].t),
+        tEnd: round(run[run.length - 1].t),
+        level: round(Math.max(...run.map((r) => r.fillRaw!))),
+      });
+    }
+  };
+  clean.forEach((r) => {
+    if (run.length === 0) {
+      run = [r];
+      return;
+    }
+    if (Math.abs(r.fillRaw! - run[0].fillRaw!) <= columnPct) {
+      run.push(r);
+    } else {
+      flush();
+      run = [r];
+    }
+  });
+  flush();
+
+  if (plateaus.length < 2) {
+    throw new Error(
+      `solo-rate --mag: need >=2 reload plateaus in the window, found ${plateaus.length}`
+    );
+  }
+  const perMag: number[] = [];
+  for (let i = 1; i < plateaus.length; i += 1) {
+    perMag.push(round(plateaus[i].level - plateaus[i - 1].level));
+  }
+  const mean = perMag.reduce((a, b) => a + b, 0) / perMag.length;
+  const sd =
+    perMag.length > 1
+      ? Math.sqrt(
+          perMag.reduce((a, b) => a + (b - mean) ** 2, 0) / (perMag.length - 1)
+        )
+      : 0;
+  const cycles: number[] = [];
+  for (let i = 1; i < plateaus.length; i += 1) {
+    cycles.push(plateaus[i].tStart - plateaus[i - 1].tStart);
+  }
+  const perShotRaw = mean / magSize;
+  const perShotTrue = perShotRaw / rawOverTrue;
+  return {
+    label,
+    window,
+    barWidthPx,
+    rawOverTrue,
+    magSize,
+    dataminedColumnPct,
+    plateaus,
+    perMagRaw: perMag,
+    meanPerMagRaw: round(mean),
+    sdPerMagRaw: round(sd),
+    perShotRaw: round(perShotRaw),
+    perShotTrue: round(perShotTrue),
+    ratioToColumn:
+      dataminedColumnPct === null || dataminedColumnPct === 0
+        ? null
+        : round(perShotTrue / dataminedColumnPct),
+    observedCycleSec: cycles.length
+      ? round(cycles.reduce((a, b) => a + b, 0) / cycles.length)
+      : null,
+  };
+}
+
+function soloRateCli(): void {
+  const tracePath = arg('trace');
+  if (!tracePath) {
+    throw new Error(
+      'usage: fill-trace-compare.ts solo-rate --trace <gauge-fill solo trace json> ' +
+        '--window <t0:t1> (--cadence <shots/s> | --mag <rounds per magazine>) ' +
+        '[--column <datamined targetPerTrigger>] [--label <name>] [--artifact <out json>]\n' +
+        '  --cadence: per-TRIGGER step read (weapons whose per-shot credit clears the bar column).\n' +
+        '  --mag:     per-MAGAZINE plateau read (fast weapons whose per-shot credit does not).'
+    );
+  }
+  const doc = JSON.parse(readFileSync(tracePath, 'utf8')) as SoloSeries & {
+    bar?: { widthPx?: number };
+    calibration?: { rawOverTrue?: number };
+  };
+  const win = (arg('window') ?? '').split(':').map(Number);
+  if (win.length !== 2 || win.some((v) => !Number.isFinite(v))) {
+    throw new Error('--window <t0:t1> is required');
+  }
+  const columnRaw = arg('column');
+  const magRaw = arg('mag');
+  const cadence = Number(arg('cadence'));
+  if (!magRaw && (!Number.isFinite(cadence) || cadence <= 0)) {
+    throw new Error('one of --cadence <shots/s> or --mag <rounds> is required');
+  }
+  const common = {
+    series: doc,
+    barWidthPx: doc.bar?.widthPx ?? 138,
+    rawOverTrue: doc.calibration?.rawOverTrue ?? 1.064,
+    window: [win[0], win[1]] as [number, number],
+    // gauge-per-shot.json stores energy out of 10000; the bar is 100%, so /100 gives percent.
+    dataminedColumnPct: columnRaw ? Number(columnRaw) / 100 : null,
+    label: arg('label') ?? tracePath,
+  };
+  const result = magRaw
+    ? soloMagRate({ ...common, magSize: Number(magRaw) })
+    : soloRate({ ...common, cadencePerSec: cadence });
+  const artifact = arg('artifact');
+  if (artifact) {
+    writeFileSync(artifact, `${JSON.stringify(result, null, 1)}\n`);
+    process.stdout.write(`wrote ${artifact}\n`);
+  }
+  process.stdout.write(`${JSON.stringify(result, null, 1)}\n`);
+}
+
 function main(): void {
   const mode = process.argv[2];
+  if (mode === 'solo-rate') {
+    soloRateCli();
+    return;
+  }
   if (mode === 'noise-solo') {
     noiseSoloCli();
     return;

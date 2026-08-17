@@ -1059,3 +1059,47 @@ packet `docs/handoffs/closed/2026-08-16-anis-star-solo2-blind-postop-packet.md` 
 `docs/handoffs/closed/2026-08-16-anis-star-solo2-blind-postop-result.json` (kimi-code/k3,
 ACCEPT HIGH); replay pin `scripts/tests/probe/noise-solo2.test.ts` (5/5 GREEN); tooling
 extension `scripts/probe/fill-trace-compare.ts` noise-solo2 subcommand (+243 lines).
+
+## 2026-08-16 — Noise-corrected ceiling test on iron sweep (run G) → LOG, R1 DETECTION (owner-accepted, no gate)
+
+**Outcome: LOG, branch R1 (excess survives correction).** Judge-ranked item (2) of the
+2026-08-15 classification run. **Ran outside the two-gate harness by owner acceptance** — the
+statistic is arithmetic over two already-committed, already-gated artifacts (the classification
+artifact and the solo #2 noise floor), introduces no new measurement, and has no enactable
+surface. Recorded here because it is a pre-registered run against a written packet and belongs
+in the harness trail regardless of which gate path it took.
+
+Corrected rate **4.576/s** (primary, f = 0.55%) / **4.601/s** (pooled, f = 0.45%) against the
+pre-committed 4.1325/s threshold — +10.7% / +11.3%. The correction removes ~2.4 of 80 event
+bins; R1 holds up to f = 2.304%, 4.2× the measured input. Stamp: _H-C-candidate event-rate
+excess survives noise correction — observed, not noise-manufactured at any plausible falseRate._
+
+**What it does and does not settle.** It closes the SECOND of the two grounds on which the
+2026-08-15 blind post-op judge struck "H-C mass present" (the C4 noise gate lacking power — at
+iron's credit fraction a quiet false-event rate of 4.2–6.9% could reproduce the whole margin;
+the measured rate is 0.45–0.55%). It does not touch the FIRST ground: the closure residual
+0.2579 > 0.25 stands, so the arm's classification remains MIXED/INCONCLUSIVE. Per harness
+lesson 1 from that run, a failed closure clause cannot be re-scoped after the fact, and this
+run was written to respect that — it was pre-committed as a DETECTION-only run.
+
+**Artifacts:** packet `docs/handoffs/2026-08-16-noise-corrected-ceiling-preop-packet.md`;
+verdict-free artifact `docs/probe-data/noise-corrected-ceiling-iron-sweep-2026-08-16.json`;
+commit `8621d670`; record `docs/probe-runs.md` (2026-08-16 noise-corrected-ceiling entry).
+
+**Harness lessons:**
+
+1. **A packet clause that mutates another run's GENERATED artifact is a defect in the packet, not
+   a task for the executor.** §G directed rewriting `observedCeilingExcess` in
+   `fill-trace-habc-classification.json`. That string is produced by the classifier itself
+   (`scripts/probe/fill-trace-compare.ts:2188`) and pinned by
+   `scripts/tests/probe/habc-classification.test.ts:184` — editing it desyncs the artifact from
+   its instrument (a `classify` re-run silently reverts it), breaks the pin, and attributes a
+   later downstream reading to the earlier run's own output. **A downstream run cross-references
+   an upstream artifact; it never edits one.** Clause marked SUPERSEDED in the packet; the
+   cross-reference went into this run's own artifact. Future packets: when a deliverable says
+   "update field X of artifact Y", check whether Y is generator-produced before writing it in.
+2. **An owner-accepted no-gate run still owes its paperwork.** This run landed its artifact and
+   QUEUE update on 2026-08-16 but its probe-runs entry, harness-log entry and packet status line
+   went unwritten for a day — leaving the packet reading "pre-op DRAFT — awaiting Fable pre-op
+   judge review" while its result was already committed and being cited downstream. Skipping the
+   gate removes the JUDGES, not the RECORD.

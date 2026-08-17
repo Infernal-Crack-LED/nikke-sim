@@ -1,0 +1,222 @@
+{
+  "_note": "AR + SG solo gauge-bar reads \u2014 the last two never-bar-checked weapon families. MEASUREMENT ONLY, verdict-free: no engine change, no constant change, no enactment. Closes the avenue-3 residue of docs/handoffs/2026-08-14-burst-generation-remaining-avenues.md (SMG + MG were bar-validated 2026-08-15; AR and SG were the remainder). NO NEW FOOTAGE was required \u2014 both reads run on recordings already in the tree.",
+  "date": "2026-08-17",
+  "recordings": {
+    "scarlet": {
+      "path": "docs/probes/ar-sg-smg/scarlet ar.MP4",
+      "identity": "Scarlet (AR/Electric/Burst III/Attacker), SOLO \u2014 Battle Records screenshot docs/probes/ar-sg-smg/scarlet ar.jpg shows one unit + 4 EMPTY SLOT, Total Battle Time 03:00",
+      "geometry": "1206x2622 @60fps rotation-90 = 2622x1206 post-rotation, identical to the 2026-08-15 solo clips"
+    },
+    "drake": {
+      "path": "docs/probes/ar-sg-smg/drake sg.MP4",
+      "identity": "Drake (SG/Fire/Burst III/Attacker), SOLO \u2014 Battle Records screenshot docs/probes/ar-sg-smg/drake sg.jpg reads 'III Drake, LV.400' + 4 EMPTY SLOT, Total Battle Time 03:00",
+      "geometry": "same as above"
+    }
+  },
+  "whySoloBurstIIIIsTheCleanBasis": "A solo Burst III unit makes ZERO full bursts \u2014 no Burst I exists to open the chain (the standing burst-eligibility fact). The bar therefore fills ONCE, monotonically, and then sits full: one uninterrupted generating window with no drain side, no chain zeroing, no FB gauge lock, and no rider/teammate credit to disentangle. Both traces show exactly that shape.",
+  "barGeometry": {
+    "locked": {
+      "borderRow": 501,
+      "x0": 2474,
+      "x1": 2612,
+      "widthPx": 138
+    },
+    "provenance": "SELF-CALIBRATED independently on the scarlet clip (gauge-fill.py --calib-frame 600 over a crop=400:60:2222:470 frame set locked borderRow 31, x0 252, x1 390 in crop coords = 501 / 2474 / 2612 absolute). That is byte-identical to the solo bar geometry hand-verified on three DIFFERENT recordings on 2026-08-15 \u2014 an independent re-derivation of the HUD geometry on a separate recording session, not a reuse of the prior value.",
+    "drakeNote": "Self-calibration MIS-LOCKED at 158px on the drake clip when the calib frame landed on her full GREEN bar; re-run with the explicit --bar escape hatch. Same failure class as the 2026-08-15 mis-lock note \u2014 always pass --bar, or a calib frame taken mid-FILL."
+  },
+  "results": {
+    "scarlet_AR_perMagazine": {
+      "label": "scarlet (Scarlet, AR, solo)",
+      "window": [9, 29],
+      "barWidthPx": 138,
+      "rawOverTrue": 1.064,
+      "magSize": 20,
+      "dataminedColumnPct": 0.9,
+      "plateaus": [
+        {
+          "tStart": 9.03,
+          "tEnd": 11.77,
+          "level": 11.6
+        },
+        {
+          "tStart": 13.97,
+          "tEnd": 16.1,
+          "level": 31.9
+        },
+        {
+          "tStart": 17.63,
+          "tEnd": 20.27,
+          "level": 51.4
+        },
+        {
+          "tStart": 21.8,
+          "tEnd": 24.5,
+          "level": 70.3
+        },
+        {
+          "tStart": 26.13,
+          "tEnd": 28,
+          "level": 89.9
+        }
+      ],
+      "perMagRaw": [20.3, 19.5, 18.9, 19.6],
+      "meanPerMagRaw": 19.575,
+      "sdPerMagRaw": 0.5737,
+      "perShotRaw": 0.9788,
+      "perShotTrue": 0.9199,
+      "ratioToColumn": 1.0221,
+      "observedCycleSec": 4.275
+    },
+    "drake_SG_perTrigger": {
+      "label": "drake (Drake, SG, solo)",
+      "window": [8.6, 17.8],
+      "barWidthPx": 138,
+      "rawOverTrue": 1.064,
+      "cadencePerSec": 1.5,
+      "dataminedColumnPct": 9,
+      "steps": [
+        {
+          "t": 8.6,
+          "fill": 5.8,
+          "deltaFromPrev": null,
+          "gapFromPrev": null,
+          "acrossReload": false,
+          "saturated": false
+        },
+        {
+          "t": 8.67,
+          "fill": 13.8,
+          "deltaFromPrev": 8,
+          "gapFromPrev": 0.07,
+          "acrossReload": false,
+          "saturated": false
+        },
+        {
+          "t": 9.33,
+          "fill": 21.7,
+          "deltaFromPrev": 7.9,
+          "gapFromPrev": 0.66,
+          "acrossReload": false,
+          "saturated": false
+        },
+        {
+          "t": 10,
+          "fill": 29,
+          "deltaFromPrev": 7.3,
+          "gapFromPrev": 0.67,
+          "acrossReload": false,
+          "saturated": false
+        },
+        {
+          "t": 10.67,
+          "fill": 37,
+          "deltaFromPrev": 8,
+          "gapFromPrev": 0.67,
+          "acrossReload": false,
+          "saturated": false
+        },
+        {
+          "t": 11.33,
+          "fill": 45.7,
+          "deltaFromPrev": 8.7,
+          "gapFromPrev": 0.66,
+          "acrossReload": false,
+          "saturated": false
+        },
+        {
+          "t": 12,
+          "fill": 54.3,
+          "deltaFromPrev": 8.6,
+          "gapFromPrev": 0.67,
+          "acrossReload": false,
+          "saturated": false
+        },
+        {
+          "t": 12.67,
+          "fill": 61.6,
+          "deltaFromPrev": 7.3,
+          "gapFromPrev": 0.67,
+          "acrossReload": false,
+          "saturated": false
+        },
+        {
+          "t": 15.07,
+          "fill": 69.6,
+          "deltaFromPrev": 8,
+          "gapFromPrev": 2.4,
+          "acrossReload": true,
+          "saturated": false
+        },
+        {
+          "t": 15.73,
+          "fill": 76.1,
+          "deltaFromPrev": 6.5,
+          "gapFromPrev": 0.66,
+          "acrossReload": false,
+          "saturated": false
+        },
+        {
+          "t": 16.4,
+          "fill": 85.5,
+          "deltaFromPrev": 9.4,
+          "gapFromPrev": 0.67,
+          "acrossReload": false,
+          "saturated": false
+        },
+        {
+          "t": 17.07,
+          "fill": 94.9,
+          "deltaFromPrev": 9.4,
+          "gapFromPrev": 0.67,
+          "acrossReload": false,
+          "saturated": false
+        },
+        {
+          "t": 17.73,
+          "fill": 100,
+          "deltaFromPrev": 5.1,
+          "gapFromPrev": 0.66,
+          "acrossReload": false,
+          "saturated": true
+        }
+      ],
+      "counted": [8, 7.9, 7.3, 8, 8.7, 8.6, 7.3, 6.5, 9.4, 9.4],
+      "excludedSteps": [8, 5.1],
+      "meanRaw": 8.11,
+      "sdRaw": 0.9362,
+      "minRaw": 6.5,
+      "maxRaw": 9.4,
+      "meanTrue": 7.6222,
+      "ratioToColumn": 0.8469,
+      "quantSd": 0.2958,
+      "varianceRatio": 10.0159,
+      "observedCadencePerSec": 1.5015
+    }
+  },
+  "readings": {
+    "AR": "VALIDATED. scarlet's datamined targetPerTrigger 90 (0.90 %/shot) reproduces at 0.9199 %/shot bias-adjusted \u2014 ratio to column 1.0221, i.e. +2.2%. Read per MAGAZINE (20 rounds) because a 0.9 %/shot credit at 12 shots/s is below the reader's per-trigger resolution (one 0.72pp bar column per 1.25 shots at 30fps); the four magazine deltas are 20.3 / 19.5 / 18.9 / 19.6 pp, sd 0.57pp.",
+    "SG": "The per-trigger credit reads 0.847 of the datamined column, and is NOT CONSTANT. drake's datamined targetPerTrigger 900 (9.00 %/trigger, i.e. all 10 pellets landing) reads 7.6222 %/trigger bias-adjusted over 10 clean intra-magazine steps; individual steps run 6.5-9.4 raw. varianceRatio 10.02 = the step-to-step variance is ~10x what the bar's own column quantization permits.",
+    "whatTheSGVarianceMeans": "This is an INDEPENDENT MECHANICAL CORROBORATION of the U40 owner ruling (a missed SG pellet generates NO gauge; SG gauge credits per LANDED pellet). Under per-TRIGGER crediting every pull must credit the same value, so the only admissible step-to-step spread is reader quantization (varianceRatio ~1). Observed 10.02 refutes that directly, on an instrument \u2014 the gauge bar \u2014 that no prior SG work used. The mean ratio 0.847 is then the mean landed-pellet fraction over the window, which is a per-unit quantity, not a re-derivation of the datamined column."
+  },
+  "controls": {
+    "c1_cadence": "drake's detected step gaps average 0.666s -> observedCadencePerSec 1.5015 vs her datamined rate_of_fire 90rpm = 1.5/s. The steps found ARE one-per-trigger, not merged or split.",
+    "c2_magazineStructure": "drake's first magazine is exactly 9 credited triggers (7.13-12.67s at 0.667s) = her datamined max_ammo 9, followed by a hard reload plateau. scarlet's plateau cycle is 4.275s vs her datamined 20 rounds / 12 per s + 2.30s reload = 3.967s, with the 0.31s remainder covered by her datamined spot_first_delay + spot_last_delay (20+20). Both weapons' ammo/cadence structure is reproduced from the trace alone, independent of the gauge question.",
+    "c3_independentGeometry": "see barGeometry.provenance \u2014 the 138px lock re-derived from scratch on this session's footage.",
+    "c4_readerBias": "Both numbers are divided by the committed rawOverTrue 1.064 (the maiden-ice-rose anchor bias carried in the trace's own calibration block), the same treatment the 2026-08-15 SMG/MG reads used."
+  },
+  "caveats": [
+    "n=1 recording per family; one unit per family. Neither is a class-wide claim.",
+    "drake is NOT in docs/probe-data/per-unit-sg-landing.json (which covers noir, isabel, guilty, brid-silent-track, dorothy-serendipity, soda-twinkling-bunny), so her 0.847 has no per-unit landing figure to be scored against; the four measured units' mid-band ratio-to-table spread is 0.92-1.00.",
+    "The drake window sits in the boss's opening 'mid' band (docs/data/range-data.md: starts mid, near at ~2:27), so this is a single-band read \u2014 the landing fraction is band-dependent by construction and no band comparison is available from one fill window.",
+    "The SG finding CORROBORATES an already-settled owner ruling; it enacts nothing and overturns nothing.",
+    "MEASUREMENT, not enactment: neither the AR nor the SG row is changed by this run."
+  ],
+  "commands": {
+    "frames": "ffmpeg -v error -i \"docs/probes/ar-sg-smg/<clip>\" -vf \"fps=30,crop=400:60:2222:470\" -t <sec> <dir>/f%05d.png",
+    "readerScarlet": "scripts/probe/.venv/bin/python scripts/probe/gauge-fill.py --frames <dir> --fps 30 --calib-frame 600 --out docs/probe-data/scarlet-ar-solo-gauge-trace.json",
+    "readerDrake": "scripts/probe/.venv/bin/python scripts/probe/gauge-fill.py --frames <dir> --fps 30 --bar 19:31:252:390 --out docs/probe-data/drake-sg-solo-gauge-trace.json",
+    "analysisScarlet": "npx tsx scripts/probe/fill-trace-compare.ts solo-rate --trace docs/probe-data/scarlet-ar-solo-gauge-trace.json --window 9.0:29.0 --mag 20 --column 90",
+    "analysisDrake": "npx tsx scripts/probe/fill-trace-compare.ts solo-rate --trace docs/probe-data/drake-sg-solo-gauge-trace.json --window 8.6:17.8 --cadence 1.5 --column 900",
+    "replayPin": "npx vitest run scripts/tests/probe/solo-rate.test.ts"
+  }
+}
