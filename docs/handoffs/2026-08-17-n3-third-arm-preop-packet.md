@@ -8,7 +8,8 @@
 > BEFORE any real-side number for this arm is computed. The sim-side ceiling (5.13/s) and the
 > instrument self-checks were computed before this packet and are cited as inputs, not results.
 
-Status: pre-op **DRAFT** — awaiting Fable pre-op judge review.
+Status: pre-op **APPROVED-WITH-REVISIONS** (Fable, 2026-08-17) → **all 7 revisions executed**,
+resubmitted for confirmation. Revision log at §J.
 
 ## A. Premise-gate disposition (step 0 — four fresh-context verifiers, each blind)
 
@@ -128,6 +129,15 @@ detector is non-vacuous?
 
 All commands already exist and are committed; no new statistic is written.
 
+0. **Power pre-check (footage-free, ALREADY RUN — see §E.2b).**
+   `npx tsx scripts/probe/fill-trace-compare.ts arm-power --classification
+docs/probe-data/fill-trace-habc-classification.json --ref-comp "iron sweep (run G)"
+--ref-full-window-sec 23.618 --candidate-schedule
+docs/probe-data/credit-schedule-n3-scarlet-liberalio-iron.json --candidate-comp "N3
+scarlet/liberalio iron" --shared liberalio --candidate-sim-refill-sec 38.1`
+   → `discriminates: false`, `separationSigmas: 0.9848`. Committed subcommand; its output is an
+   INPUT to this packet, not a result of the run.
+
 1. **Frames.** `ffmpeg -v error -i "docs/probes/714 noon/3.mp4" -vf "fps=60,crop=280:70:2342:465"`
    into `fine/`, and `fps=5` into `lock/` for the widget lock. (Crop and lock geometry already
    validated on this recording: the team bar locks at 134px, rows 491–498, x 2477–2610 absolute —
@@ -150,17 +160,87 @@ docs/probe-data/credit-schedule-n3-scarlet-liberalio-iron.json --comp "N3 scarle
 
 ## E. Predictions
 
-**E.1 Non-discriminating (necessary, not sufficient).** N3's real event-bin rate is some number
-against the 5.90/s threshold. "The number is above threshold" alone does not separate H1 from R1.
+> **Revision note (pre-op R1/R2/R3).** The first draft of this section claimed E.2 discriminated H1
+> from R1. **That claim was WRONG and is withdrawn.** The pre-op judge's correction: a
+> `liberalio`-specific defect also produces a same-order share in a second comp, so "R1 makes no
+> prediction about the share" was false. The corrected section below adds the sim-side rival test
+> the judge specified (E.2b), computes its power, and reports the answer honestly: **it does not
+> discriminate either.** The numbers below were computed BEFORE any N3 real-side number exists,
+> from two already-committed artifacts, by the committed subcommand
+> `fill-trace-compare.ts arm-power` (see §D step 0).
 
-**E.2 The DISCRIMINATING prediction — cross-arm ceiling-normalised excess.** If a general unmodeled
-source exists (H1), the excess should scale with the comp's own ceiling rather than being a fixed
-absolute rate. Iron's excess share of rate is **0.2379** (pre-registered from the committed
-artifact). Pre-commit: **H1 predicts N3's `hcShareOfRate` lands in [0.10, 0.40]** — the same order
-as iron's. A rate that clears 5.90/s but with a share outside that interval (e.g. barely over, or
-enormously over) is evidence the two excesses are not the same phenomenon, and is recorded as such.
-R1 makes no prediction about the share, which is exactly why the share — not the raw pass/fail — is
-the discriminator this plan rests on.
+**E.1 Threshold test (necessary, not sufficient).** N3's noise-corrected event-bin rate against the
+5.90/s threshold (= 1.15 × 5.1301). Above-threshold alone separates H1+R1 jointly from H0; it does
+NOT separate H1 from R1.
+
+**E.2 Replication-magnitude band (same-vs-different phenomenon only).** Iron's `hcShareOfRate` is
+**0.2379** (committed artifact). Pre-registered rule, stated as a principle rather than hand-picked
+bounds: **N3's share must land within ×2 either way of iron's**, i.e. **[0.11895, 0.47580]**.
+Inside ⇒ the two excesses are the same magnitude class. Outside ⇒ recorded as not-the-same-
+phenomenon. **R1 SURVIVES a pass here** — this band does not touch it.
+
+_Power of the band (harness lesson 2 — size margins against noise):_ at the expected event count
+(§E.2b) the sampling sd on the share is ≈ **0.056–0.063**. The band's LOWER edge sits ~1.0σ (under
+the R1 prediction) to ~2.1σ (under H1) below the expected value, so it is genuinely failable low.
+The UPPER edge sits ~4.2–4.7σ above and is effectively unreachable — **the upper bound is very
+nearly vacuous and is not claimed as a live test.** An H0-like outcome (share ≈ 0) fails the band
+low, but R-C already covers that, so the band's only independent work is catching an
+implausibly-large excess.
+
+**E.2b The sim-side rival test the pre-op judge specified — and its verdict: UNDERPOWERED.**
+Both rivals predict an N3 rate, from committed inputs only:
+
+- **H1 (excess scales with the comp's own generation ceiling):** ratio = 5.1301/3.5935 = **1.4276**
+  ⇒ predicted rate **6.7313/s**, share 0.2379.
+- **R1 (excess IS the shared unit's contribution):** `liberalio`'s max credit rate is **0.6667/s in
+  BOTH comps** (minGap 90f in each), so ratio = **1.0000** ⇒ predicted rate **6.2517/s**, share
+  0.1794. (Her ceiling SHARE differs — 0.1855 in iron, 0.1300 in N3 — but her absolute rate does
+  not, which is what R1 keys on.)
+
+**Separation: 0.4796/s = 7.39% of rate. Expected event bins ≈ 178** (carrying iron's clean-bin
+fraction 0.7184 onto N3's 38.1s sim refill total ⇒ T ≈ 27.37s). Poisson 1σ on the rate =
+**0.487/s**. **Separation = 0.98σ.** A 2σ separation would need **733 event bins — 4.1× what this
+arm can supply.**
+
+⇒ **Pre-committed consequence, per revision 1(c): this run does NOT discriminate H1 from R1, and no
+outcome of it will.** Both predicted rates are reported against the observed one for the record, but
+neither will be stamped as favoured, and no branch keys off which is closer. The R1-resolving work
+is named in §H instead. This is stated here, before the run, so it cannot be quietly re-litigated
+after a number lands near one prediction.
+
+**E.3 Pre-committed CLOSURE DIAGNOSTIC** (this is what stops a null run from being worthless).
+For BOTH arms — iron sweep from its committed artifact, N3 from this run — report the closure
+residual as-specified AND recomputed with `bridgedMass` excluded from `sumRealDelta`.
+Pre-committed readings:
+
+- Both fail as-specified and BOTH drop below 0.25 with bridged mass excluded ⇒ **the closure clause
+  is bridged-mass-driven (R2 supported)**; both arms' clause verdicts are instrument artifacts, and
+  a properly pre-committed bridged-mass-corrected statistic becomes the named next step. A finding
+  about the INSTRUMENT, never stamped as a game claim.
+- Both fail and neither drops ⇒ **R2 refuted**; the closure failures are real.
+- Split ⇒ inconclusive on R2; both numbers reported verbatim, nothing claimed.
+
+**E.3 PEEK DECLARATION (pre-op revision 4).** Iron's `bridgedMassTotal` is present in the committed
+artifact, so iron's corrected residual is computable today. **It has NOT been computed as of this
+packet's finalisation, and the driver commits to not computing it until the work step, so that both
+halves of the diagnostic are genuinely pre-registered.** If it had been computed, disclosing the
+number here would be mandatory and the iron half would be pre-registration theater. The post-op
+judge should hold this line: any iron-side closure number appearing in the deliverable must be dated
+to the work step.
+
+**E.4 Rate-convention pin (pre-op revision 3) — no post-hoc choice of estimator.**
+
+- **Branch evaluation (R-A/R-C/R-D) uses the NOISE-CORRECTED rate at falseRate = 0.55%** (the
+  primary Wilson 95% one-sided upper from the 2026-08-16 solo #2 measurement — the same primary the
+  2026-08-16 iron run used). The pooled 0.45% figure is reported as corroboration only and never
+  decides a branch.
+- **E.2's share comparison is RAW-vs-RAW.** The instrument computes `hcShareOfRate` from the raw
+  pooled `realEventBinsPerSec` (`fill-trace-compare.ts:2174`), and iron's comparator 0.2379 is a raw
+  figure; comparing a corrected N3 share against a raw iron share would be a mixed convention.
+- **E.2b's predicted rates are RAW** (derived from iron's raw 4.7151/s), so the observed rate quoted
+  against them is raw.
+- Every rate in the deliverable is labelled `raw` or `corrected@0.55%`; an unlabelled rate is a
+  defect.
 
 **E.3 The pre-committed CLOSURE DIAGNOSTIC (this is what stops a null run from being worthless).**
 For BOTH arms — iron sweep from its committed artifact, N3 from this run — report the closure
@@ -206,6 +286,19 @@ not a post-hoc rescue.
   primary / 0.45% pooled) as a noise correction to N3's event-bin rate, exactly as the 2026-08-16
   run did for iron, and report corrected as well as raw. Stated limitation: that falseRate was
   measured on SOLO footage; it bounds team noise conservatively but was not measured on this arm.
+- **C7 (MAR sanity diagnostic — pre-op revision 6; DESCRIPTIVE, no verdict attaches).** The standing
+  caveat that the iron excess exists ONLY under the clean-bin-time denominator (it vanishes under
+  full-window-duration) is the largest "artifact that looks like a result" risk in this method.
+  Report, per window: the bridged-increment count and mass, the dropped-bin fraction, and **whether
+  bridge episodes co-occur with high fill activity** (test: mean sim credit rate inside bridged
+  spans vs outside). If the reader preferentially loses lock during FAST fills, the clean-bin
+  estimator is biased UPWARD and both arms' detections inherit that bias. This feeds the standing
+  caveat with a number instead of a shrug. It stamps nothing.
+- **C8 (manual-step witness — pre-op revision 5).** The artifact MUST record: the full `--sim-only`
+  output, the `--o-shift`/`--s-shift` values actually passed, and the `e-min` actually used. P3(ii)
+  established that omitting the shifts silently yields base bands and that `--e-min` has no floor
+  guard, so these are unenforced discipline constraints — **a constraint the artifact does not
+  witness is unverifiable at post-op.** An artifact missing any of the three is itself a defect.
 
 ## G. Pre-committed decision rule
 
@@ -215,19 +308,26 @@ not a post-hoc rescue.
   `cleanBinCoverage` ≥ 0.6, `CLS_MAX_RHO_DISPERSION` ≤ 0.6). Fail ⇒ **CANNOT-MEASURE**.
 - **B2:** C1, C3, C4 and C5 must all pass. Any failure ⇒ **BASIS-BROKEN**, not a result.
 - **B3:** C2 must leave ≥ 4 usable cycles. Fewer ⇒ **BASIS-BROKEN**.
+- **B3/C2 PRECEDENCE (pre-op revision 7).** These two clauses can disagree: with ~10 cycles, 3
+  failed cycles trips C2's ">2 cycles fail" rule while still leaving 7 usable and passing B3.
+  **The STRICTER clause binds: C2.** More than 2 cycles failing the 15.0 ± 0.5s check ⇒
+  BASIS-BROKEN, regardless of how many cycles remain. Fixed here so the outcome is not choosable
+  after the numbers land.
 - **A basis failure is never "the effect is absent."** It is reported as a broken basis, explicitly
   distinguished from H0.
 
 **Branches (evaluated only if B1–B3 pass), in priority order:**
 
-- **R-A (excess reproduces, same magnitude class):** N3's noise-corrected event-bin rate > 5.90/s
-  AND `hcShareOfRate` ∈ [0.10, 0.40] ⇒ stamp **"H-C-candidate excess reproduces on a second
-  non-vacuous arm"** — with the mandatory caveat that R1 is NOT excluded (both arms seat
-  `liberalio`) and the arm's own classification remains whatever the closure clause makes it.
-  LOG-class. No engine change, no constant change.
-- **R-B (excess present but off-magnitude):** rate > 5.90/s AND share outside [0.10, 0.40] ⇒
-  **INCONCLUSIVE on generality** — report both shares verbatim; the two excesses are not
-  established as the same phenomenon.
+- **R-A (excess reproduces, same magnitude class):** N3's `corrected@0.55%` rate > 5.90/s AND its
+  RAW `hcShareOfRate` ∈ [0.11895, 0.47580] ⇒ stamp **"H-C-candidate excess reproduces on a second
+  non-vacuous arm THAT SHARES `liberalio` WITH THE FIRST"** — the shared-unit clause is part of the
+  stamp text, not a caveat appended to it, because R1 is unexcludable by construction (§E.2b) and a
+  stamp that reads as generality would misrepresent the run. The arm's own classification remains
+  whatever the closure clause makes it. LOG-class; no engine or constant change.
+- **R-B (excess present but off-magnitude):** `corrected@0.55%` rate > 5.90/s AND raw share outside
+  [0.11895, 0.47580] ⇒ **INCONCLUSIVE on replication** — report both shares verbatim; the two
+  excesses are not established as the same magnitude class. Note the band's upper edge is ~4σ away
+  and effectively unreachable, so in practice this branch fires only on a share below 0.11895.
 - **R-C (no excess):** noise-corrected rate ≤ 5.13/s (the raw ceiling) ⇒ stamp **"the iron-sweep
   H-C-candidate excess does NOT reproduce on a second non-vacuous arm"**. This is the falsification
   clause: it weakens the iron finding's generality and is to be recorded as such even though it is
@@ -244,9 +344,17 @@ be conflated after the numbers land.
 
 ## H. What this run CANNOT establish
 
-- **It cannot exclude R1.** Both arms seat `liberalio`; a positive result reproduces the excess on a
-  comp sharing the suspect unit and does not demonstrate generality across rosters. Any stamp must
-  say this in its own words, not in a footnote.
+- **It cannot exclude R1, and E.2b does not narrow it either.** Both arms seat `liberalio`. The
+  sim-side rival test predicts 6.7313/s (H1) vs 6.2517/s (R1) — a 0.98σ separation at the expected
+  ~178 event bins, needing 4.1× more data to reach 2σ. **No outcome of this run bears on R1.** At
+  absolute best this shows a same-order excess appears in a second comp _that shares `liberalio`
+  with the first_. Any stamp must say that in its body, not a footnote.
+- **⇒ THE NAMED R1-RESOLVING FOLLOW-UP** (recorded here so it is not lost when this run logs):
+  (a) a direct audit of `liberalio`'s gauge-credit model — her datamine was once **6× off**
+  (`c12fcf4e`), so the prior that another factor lurks there is not small, and this is achievable
+  with no footage; or (b) an owner-recorded `liberalio`-free session on a slow-weapon roster, which
+  the 2026-08-17 feasibility screen showed does not exist among current comps. (a) is strictly
+  cheaper and should be attempted first.
 - **It cannot classify either arm.** Iron's closure residual 0.2579 stands; N3's branch will be
   whatever its own closure clause makes it.
 - **It cannot establish a mechanism** — which source, in which unit, by what primitive.
@@ -261,7 +369,51 @@ be conflated after the numbers land.
 ## I. Deliverable
 
 A verdict-free JSON artifact `docs/probe-data/n3-third-arm-classification-2026-08-17.json`: the arm's
-full `classifyArm` output, all six control results, the noise-corrected rate at both falseRate
-inputs, the §E.3 closure diagnostic for both arms, the branch that fired, and the pre-registered
+full `classifyArm` output, **all EIGHT control results (C1-C8)**, every rate labelled `raw` or
+`corrected@0.55%` per §E.4, the noise-corrected rate at both falseRate inputs, the §E.3 closure
+diagnostic for both arms **with the date each half was computed** (§E.3 peek declaration), the C7 MAR
+co-occurrence numbers, the C8 manual-step witness (`--sim-only` output, shifts passed, e-min used),
+the committed `arm-power` output from §D step 0, the branch that fired, and the pre-registered
 thresholds alongside the observed values. Plus: the reflagged trace + tempo fixture committed, a
 replay pin extending `scripts/tests/probe/`, a `docs/probe-runs.md` entry, and a harness-log entry.
+
+## J. Revision log — pre-op APPROVED-WITH-REVISIONS (Fable, 2026-08-17)
+
+All seven executed before resubmission. Where a revision changed a CLAIM rather than adding a
+check, the original claim is struck in place above rather than deleted.
+
+1. **E.2's discrimination claim was WRONG — withdrawn.** The judge showed R1 _does_ predict a
+   same-order share, so the band never separated H1 from R1. Added **E.2b**, the sim-side rival
+   test the judge specified, and computed its power with a new committed subcommand
+   (`fill-trace-compare.ts arm-power`): H1 predicts 6.7313/s, R1 predicts 6.2517/s, separation
+   **0.98σ** at ~178 expected event bins; 2σ would need 733 (4.1×). **Per revision 1(c) the packet
+   now states plainly that this run does not discriminate R1 at all**, and §H names the
+   R1-resolving follow-up instead.
+2. **The [0.10, 0.40] band was arbitrary — replaced** by the principled "within ×2 of iron's
+   0.2379" ⇒ **[0.11895, 0.47580]**, with the sampling sd (≈0.056–0.063) stated and the band's
+   asymmetry disclosed: failable low at ~1–2σ, upper edge ~4.2–4.7σ away and **effectively
+   vacuous**.
+3. **Rate convention pinned (§E.4):** branches use `corrected@0.55%`; E.2's share comparison is
+   raw-vs-raw (the instrument computes `hcShareOfRate` from the raw pooled rate at
+   `fill-trace-compare.ts:2174`, and iron's 0.2379 is raw); E.2b's predictions are raw. Unlabelled
+   rates in the deliverable are a defect.
+4. **E.3 peek declaration added:** iron's bridged-mass-excluded residual **has NOT been computed**
+   as of finalisation, and the driver commits to not computing it until the work step. The post-op
+   judge is asked to hold this line.
+5. **C8 added** — the artifact must witness the `--sim-only` output, the shifts passed, and `e-min`.
+6. **C7 added** — MAR sanity diagnostic: per-window bridged/dropped-bin fractions plus a
+   bridge-vs-fill-activity co-occurrence test, descriptive only.
+7. **B3/C2 precedence fixed** — the stricter clause (C2, ">2 cycles fail") binds, so the basis
+   outcome is not choosable after the numbers land.
+
+**Judge's non-blocking risk flags, carried:** the O/S filtered-vs-unfiltered pool bias (P3 iii)
+touches the H-A/H-B branches — if the deliverable narrates an H-A/H-B lean, the post-op judge should
+discount it on that ground; and reproduction power is unquantified in the sense that a marginal miss
+lands in R-D rather than R-C, resolving nothing about generality.
+
+**Judge's cost/benefit ruling:** run it, after revisions. The footage is in hand, every command is
+committed, the feasibility screen shows no `liberalio`-free non-vacuous arm exists, and the run has
+yield in both directions — R-C is a genuine falsifier and E.3 settles the R2 instrument question for
+both arms regardless of branch. The judge also named the cheap partial: **E.3 + E.2b alone need zero
+new frames** (iron artifact + committed schedules) but cannot reach R-C, which is where the value
+sits.

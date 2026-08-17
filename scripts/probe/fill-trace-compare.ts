@@ -4256,6 +4256,207 @@ function ceilingCli(): void {
   process.stdout.write(`${JSON.stringify(out, null, 1)}\n`);
 }
 
+/**
+ * arm-power: PRE-REGISTRATION power analysis for adding a classification arm.
+ *
+ * Answers, before any frame is extracted, whether a candidate arm can actually SEPARATE the two
+ * rival explanations of an excess seen on a reference arm:
+ *   - "the excess scales with the comp's own generation ceiling" (a general source), vs
+ *   - "the excess is one shared unit's contribution" (a per-unit defect posing as a general law).
+ *
+ * Both rivals predict a rate for the candidate arm. The question is whether those predictions are
+ * further apart than the sampling noise on the event count that will be measured. Event bins are
+ * counts, so the leading term is Poisson: sd(rate)/rate = 1/sqrt(E). If the separation is under
+ * ~2 sigma the arm cannot discriminate, and running it anyway buys a number that cannot mean what
+ * the plan wants it to mean. Reporting that BEFORE the run is the whole point.
+ */
+export interface ArmPowerResult {
+  sharedSlug: string;
+  reference: {
+    comp: string;
+    ceiling: number;
+    rate: number;
+    excess: number;
+    sharedUnitRate: number;
+    sharedUnitCeilingShare: number;
+  };
+  candidate: {
+    comp: string;
+    ceiling: number;
+    sharedUnitRate: number;
+    sharedUnitCeilingShare: number;
+    estimatedCleanBinTimeSec: number;
+  };
+  predictions: {
+    scalesWithCeiling: {
+      ratio: number;
+      rate: number;
+      share: number;
+      sdShare: number;
+    };
+    scalesWithSharedUnit: {
+      ratio: number;
+      rate: number;
+      share: number;
+      sdShare: number;
+    };
+  };
+  power: {
+    rateSeparation: number;
+    rateSeparationPctOfRate: number;
+    expectedEventBins: number;
+    oneSigmaRate: number;
+    separationSigmas: number;
+    eventBinsFor2Sigma: number;
+    shortfallFactor: number;
+    discriminates: boolean;
+  };
+}
+
+export function armPower(opts: {
+  sharedSlug: string;
+  refComp: string;
+  refCeilingPerUnit: { slug: string; maxRatePerSec: number }[];
+  refRate: number;
+  refCleanBinTimeSec: number;
+  refFullWindowSec: number;
+  candComp: string;
+  candCeilingPerUnit: { slug: string; maxRatePerSec: number }[];
+  candSimRefillSec: number;
+}): ArmPowerResult {
+  const sum = (u: { maxRatePerSec: number }[]): number =>
+    u.reduce((a, b) => a + b.maxRatePerSec, 0);
+  const of = (
+    u: { slug: string; maxRatePerSec: number }[],
+    slug: string
+  ): number => u.find((x) => x.slug === slug)?.maxRatePerSec ?? 0;
+
+  const refCeil = sum(opts.refCeilingPerUnit);
+  const candCeil = sum(opts.candCeilingPerUnit);
+  const refShared = of(opts.refCeilingPerUnit, opts.sharedSlug);
+  const candShared = of(opts.candCeilingPerUnit, opts.sharedSlug);
+  const refExcess = opts.refRate - refCeil;
+
+  // The candidate's clean-bin-time denominator is not knowable before the read; estimate it by
+  // carrying the reference arm's clean-bin FRACTION onto the candidate's sim refill total. This
+  // is an estimate and is labelled as one — it sets the expected event count, not any verdict.
+  const cleanFrac = opts.refCleanBinTimeSec / opts.refFullWindowSec;
+  const candT = opts.candSimRefillSec * cleanFrac;
+
+  const mk = (
+    ratio: number
+  ): { ratio: number; rate: number; share: number; sdShare: number } => {
+    const rate = candCeil + refExcess * ratio;
+    const e = rate * candT;
+    const sdRate = rate / Math.sqrt(e);
+    return {
+      ratio: round(ratio),
+      rate: round(rate),
+      share: round((rate - candCeil) / rate),
+      sdShare: round((candCeil / rate ** 2) * sdRate),
+    };
+  };
+  const pCeil = mk(candCeil / refCeil);
+  const pShared = mk(candShared / refShared);
+
+  const sep = Math.abs(pCeil.rate - pShared.rate);
+  const midRate = (pCeil.rate + pShared.rate) / 2;
+  const eMid = midRate * candT;
+  const sigma = midRate / Math.sqrt(eMid);
+  const sigmas = sep / sigma;
+  // E such that sd(rate) = sep/2, i.e. a 2-sigma separation.
+  const eFor2Sigma = (midRate / (sep / 2)) ** 2;
+
+  return {
+    sharedSlug: opts.sharedSlug,
+    reference: {
+      comp: opts.refComp,
+      ceiling: round(refCeil),
+      rate: round(opts.refRate),
+      excess: round(refExcess),
+      sharedUnitRate: round(refShared),
+      sharedUnitCeilingShare: round(refShared / refCeil),
+    },
+    candidate: {
+      comp: opts.candComp,
+      ceiling: round(candCeil),
+      sharedUnitRate: round(candShared),
+      sharedUnitCeilingShare: round(candShared / candCeil),
+      estimatedCleanBinTimeSec: round(candT),
+    },
+    predictions: { scalesWithCeiling: pCeil, scalesWithSharedUnit: pShared },
+    power: {
+      rateSeparation: round(sep),
+      rateSeparationPctOfRate: round((sep / midRate) * 100),
+      expectedEventBins: Math.round(eMid),
+      oneSigmaRate: round(sigma),
+      separationSigmas: round(sigmas),
+      eventBinsFor2Sigma: Math.round(eFor2Sigma),
+      shortfallFactor: round(eFor2Sigma / eMid),
+      discriminates: sigmas >= 2,
+    },
+  };
+}
+
+function armPowerCli(): void {
+  const clsPath = arg('classification');
+  const candPath = arg('candidate-schedule');
+  const shared = arg('shared');
+  const refName = arg('ref-comp');
+  const candName = arg('candidate-comp');
+  if (!clsPath || !candPath || !shared || !refName || !candName) {
+    throw new Error(
+      'usage: fill-trace-compare.ts arm-power --classification <habc artifact> ' +
+        '--ref-comp <name> --candidate-schedule <credit-schedule json> --candidate-comp <name> ' +
+        '--shared <slug shared by both arms> --candidate-sim-refill-sec <n>'
+    );
+  }
+  const cls = JSON.parse(readFileSync(clsPath, 'utf8')) as {
+    arms: Record<
+      string,
+      {
+        ceiling: { perUnit: { slug: string; maxRatePerSec: number }[] };
+        branch: { realEventBinsPerSec: number };
+        pooled: { usableCleanBins: number };
+      }
+    >;
+  };
+  const refArm = cls.arms[refName];
+  if (!refArm) {
+    throw new Error(
+      `arm-power: no arm "${refName}" — have: ${Object.keys(cls.arms).join(', ')}`
+    );
+  }
+  const rawCand = JSON.parse(readFileSync(candPath, 'utf8')) as
+    SimSchedule | SimSchedule[];
+  const cand = Array.isArray(rawCand) ? rawCand[0] : rawCand;
+  const candPerUnit = simCeiling(cand).perUnit.map((u) => ({
+    slug: u.slug,
+    maxRatePerSec: u.maxRatePerSec,
+  }));
+  // Reference clean-bin-time = usableCleanBins x binSec (the classification's own convention);
+  // full-window duration is the MAR-alternative denominator carried alongside it.
+  const refT = refArm.pooled.usableCleanBins * CLS_BIN_SEC;
+  const refFull = Number(arg('ref-full-window-sec'));
+  const result = armPower({
+    sharedSlug: shared,
+    refComp: refName,
+    refCeilingPerUnit: refArm.ceiling.perUnit,
+    refRate: refArm.branch.realEventBinsPerSec,
+    refCleanBinTimeSec: refT,
+    refFullWindowSec: Number.isFinite(refFull) ? refFull : refT,
+    candComp: candName,
+    candCeilingPerUnit: candPerUnit,
+    candSimRefillSec: Number(arg('candidate-sim-refill-sec')),
+  });
+  const artifact = arg('artifact');
+  if (artifact) {
+    writeFileSync(artifact, `${JSON.stringify(result, null, 1)}\n`);
+    process.stdout.write(`wrote ${artifact}\n`);
+  }
+  process.stdout.write(`${JSON.stringify(result, null, 1)}\n`);
+}
+
 function main(): void {
   const mode = process.argv[2];
   if (mode === 'solo-rate') {
@@ -4264,6 +4465,10 @@ function main(): void {
   }
   if (mode === 'ceiling') {
     ceilingCli();
+    return;
+  }
+  if (mode === 'arm-power') {
+    armPowerCli();
     return;
   }
   if (mode === 'noise-solo') {

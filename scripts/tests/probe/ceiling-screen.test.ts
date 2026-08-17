@@ -17,6 +17,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  armPower,
   simCeiling,
   type SimSchedule,
 } from '../../probe/fill-trace-compare.js';
@@ -79,6 +80,56 @@ describe('ceiling screen: which comps can host the H-C detector (2026-08-17)', (
       'soda-twinkling-bunny',
       'trina',
     ]);
+  });
+
+  it('arm-power: N3 CANNOT discriminate a general source from a liberalio-specific one', () => {
+    // Pre-registration power analysis cited by the 2026-08-17 third-arm pre-op packet §E.2b.
+    // liberalio is seated in BOTH arms at the same max credit rate (0.6667/s, minGap 90f), so the
+    // two rivals predict rates only ~7% apart — under the Poisson noise on the event count this
+    // arm can supply. The packet's honesty rests on this number; if the inputs or the statistic
+    // move, the packet's "does not discriminate" claim must be re-derived, not assumed.
+    const cls = JSON.parse(
+      readFileSync(
+        'docs/probe-data/fill-trace-habc-classification.json',
+        'utf8'
+      )
+    ) as {
+      arms: Record<
+        string,
+        {
+          ceiling: { perUnit: { slug: string; maxRatePerSec: number }[] };
+          branch: { realEventBinsPerSec: number };
+          pooled: { usableCleanBins: number };
+        }
+      >;
+    };
+    const iron = cls.arms['iron sweep (run G)'];
+    const r = armPower({
+      sharedSlug: 'liberalio',
+      refComp: 'iron sweep (run G)',
+      refCeilingPerUnit: iron.ceiling.perUnit,
+      refRate: iron.branch.realEventBinsPerSec,
+      refCleanBinTimeSec: iron.pooled.usableCleanBins / 30,
+      refFullWindowSec: 23.618,
+      candComp: 'N3 scarlet/liberalio iron',
+      candCeilingPerUnit: simCeiling(loadSchedule(N3)).perUnit.map((u) => ({
+        slug: u.slug,
+        maxRatePerSec: u.maxRatePerSec,
+      })),
+      candSimRefillSec: 38.1,
+    });
+    // liberalio's ABSOLUTE credit rate is identical across the two arms — this is why the
+    // shared-unit rival predicts a ratio of exactly 1 and the two predictions sit so close.
+    expect(r.reference.sharedUnitRate).toBeCloseTo(0.6667, 4);
+    expect(r.candidate.sharedUnitRate).toBeCloseTo(0.6667, 4);
+    expect(r.predictions.scalesWithSharedUnit.ratio).toBeCloseTo(1, 4);
+    expect(r.predictions.scalesWithCeiling.ratio).toBeCloseTo(1.4276, 3);
+    expect(r.predictions.scalesWithCeiling.rate).toBeCloseTo(6.7313, 3);
+    expect(r.predictions.scalesWithSharedUnit.rate).toBeCloseTo(6.2517, 3);
+    // THE load-bearing assertion: under 2 sigma => the arm cannot separate the rivals.
+    expect(r.power.separationSigmas).toBeCloseTo(0.9848, 3);
+    expect(r.power.discriminates).toBe(false);
+    expect(r.power.eventBinsFor2Sigma).toBe(733);
   });
 
   it('the artifact reports the same two ceilings it is cited for', () => {
