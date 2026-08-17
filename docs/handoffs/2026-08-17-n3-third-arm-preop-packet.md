@@ -8,8 +8,10 @@
 > BEFORE any real-side number for this arm is computed. The sim-side ceiling (5.13/s) and the
 > instrument self-checks were computed before this packet and are cited as inputs, not results.
 
-Status: pre-op **APPROVED-WITH-REVISIONS** (Fable, 2026-08-17) → **all 7 revisions executed**,
-resubmitted for confirmation. Revision log at §J.
+Status: pre-op **APPROVED** (Fable, 2026-08-17, on resubmission after all 7 revisions were
+executed). Two editorial fixes applied post-approval per the confirming review — a duplicated §E.3
+deleted, and the §D staging note + §E.3 solo reading added; neither needed another cycle.
+Revision log at §J. **Cleared to run.**
 
 ## A. Premise-gate disposition (step 0 — four fresh-context verifiers, each blind)
 
@@ -138,6 +140,18 @@ scarlet/liberalio iron" --shared liberalio --candidate-sim-refill-sec 38.1`
    → `discriminates: false`, `separationSigmas: 0.9848`. Committed subcommand; its output is an
    INPUT to this packet, not a result of the run.
 
+**Staging (pre-op confirmation, 2026-08-17).** Three work steps, run in order but NOT gated on each
+other: **W1** = iron's E.3 half (zero new frames, from the committed artifact); **W2** = the frame
+extraction + tempo fixture + team trace; **W3** = the N3 classify + all controls. **W2 is NOT
+conditional on W1's outcome.** The driver proposed gating it and the pre-op judge refuted the
+premise: the closure clause does not feed the rate detector — bridged increments are DROPPED from
+the event census, so they inflate `sumRealDelta`/`massCorrReal`, never `realEventBinsPerSec`. There
+is therefore no W1 outcome under which the N3 rate test becomes worthless. Separately, the expensive
+artifacts (frames, trace, fixture) are statistic-INDEPENDENT and survive any future statistic
+revision; only the cheap classify stage would ever re-run. W3 runs as pre-registered regardless of
+W1, and if W1 supports R2 that queues a SEPARATELY pre-committed corrected-statistic pass — it never
+amends W3 mid-flight.
+
 1. **Frames.** `ffmpeg -v error -i "docs/probes/714 noon/3.mp4" -vf "fps=60,crop=280:70:2342:465"`
    into `fine/`, and `fps=5` into `lock/` for the widget lock. (Crop and lock geometry already
    validated on this recording: the team bar locks at 134px, rows 491–498, x 2477–2610 absolute —
@@ -220,6 +234,18 @@ Pre-committed readings:
 - Both fail and neither drops ⇒ **R2 refuted**; the closure failures are real.
 - Split ⇒ inconclusive on R2; both numbers reported verbatim, nothing claimed.
 
+**The three readings above are a PAIRED reading and fire ONLY once BOTH halves exist.** Because the
+halves now arrive at different times (§D staging), the iron half also carries its own
+pre-committed SOLO reading, so harness lesson 3 cannot bite when it lands alone:
+
+- iron's corrected residual **< 0.25** ⇒ "iron's closure failure is bridged-mass-consistent, R2
+  live";
+- iron's corrected residual **≥ 0.25** ⇒ "iron's closure failure survives the correction, R2
+  weakened on that arm".
+
+Neither solo reading stamps anything about N3, about the paired diagnostic, or about either arm's
+branch.
+
 **E.3 PEEK DECLARATION (pre-op revision 4).** Iron's `bridgedMassTotal` is present in the committed
 artifact, so iron's corrected residual is computable today. **It has NOT been computed as of this
 packet's finalisation, and the driver commits to not computing it until the work step, so that both
@@ -241,24 +267,6 @@ to the work step.
   against them is raw.
 - Every rate in the deliverable is labelled `raw` or `corrected@0.55%`; an unlabelled rate is a
   defect.
-
-**E.3 The pre-committed CLOSURE DIAGNOSTIC (this is what stops a null run from being worthless).**
-For BOTH arms — iron sweep from its committed artifact, N3 from this run — report the closure
-residual as-specified AND the same residual recomputed with `bridgedMass` excluded from
-`sumRealDelta`. Pre-committed readings:
-
-- Both arms fail closure as-specified, and BOTH drop below 0.25 with bridged mass excluded ⇒
-  **the closure clause is bridged-mass-driven (R2 supported)**; the clause's verdicts on both arms
-  are instrument artifacts and a properly pre-committed bridged-mass-corrected statistic becomes the
-  named next step. This is a finding about the INSTRUMENT and is stamped as such, never as a game claim.
-- Both fail as-specified and neither drops below with the correction ⇒ **R2 refuted**; the closure
-  failures are real and the statistic's MIXED/INCONCLUSIVE verdicts stand.
-- Split (one drops, one does not) ⇒ inconclusive on R2; report both numbers verbatim, claim nothing.
-
-This diagnostic is DESCRIPTIVE and pre-registered. It does NOT re-issue, void, or amend either arm's
-branch — harness lesson 1 (a failed closure clause may not be re-scoped onto a sub-reading after the
-fact) binds, and the whole reason it is written down here, before any N3 number exists, is so it is
-not a post-hoc rescue.
 
 ## F. Controls
 
@@ -417,3 +425,28 @@ yield in both directions — R-C is a genuine falsifier and E.3 settles the R2 i
 both arms regardless of branch. The judge also named the cheap partial: **E.3 + E.2b alone need zero
 new frames** (iron artifact + committed schedules) but cannot reach R-C, which is where the value
 sits.
+
+## K. Post-approval editorial fixes (2026-08-17, no re-review required)
+
+- **Duplicate §E.3 deleted.** The pre-revision draft's copy had survived below the new §E.4, and the
+  two copies differed in wording — a BLIND post-op judge reading both could have treated the
+  difference as meaningful. Packet hygiene, not method.
+- **§D staging note added (W1/W2/W3), with the driver's own proposal REFUTED in place.** The driver
+  proposed gating the expensive extraction on iron's E.3 half, reasoning that if the closure clause
+  turned out to be an instrument artifact the N3 arm ought to run under a corrected statistic. The
+  pre-op judge refuted the premise: **the closure clause does not feed the rate detector.** Bridged
+  increments are DROPPED from the event census, so they inflate `sumRealDelta`/`massCorrReal` and
+  never `realEventBinsPerSec` — the path R-C/R-A actually read. There is no W1 outcome that makes
+  the N3 rate test worthless. Second reason the gate was unnecessary: the expensive artifacts
+  (frames, trace, tempo fixture) are statistic-INDEPENDENT; only the cheap classify stage would ever
+  re-run under a revised statistic, so the sunk-cost scenario the gate was meant to avoid mostly
+  cannot occur. Staged for information, not for gating.
+- **§E.3 solo reading for the iron half added.** Because the two halves now land at different times,
+  the paired three-way table alone would have left harness lesson 3 exposed (a variant reading
+  assembled after the fact). The iron half now carries its own pre-committed one-line reading, and
+  the paired table is explicitly marked as firing only once both halves exist.
+
+**Confirming review also verified independently:** the H1 prediction 4.7151 × 5.1301/3.5935 =
+6.7313/s, the R1 prediction 5.1301 + 1.1216 = 6.2517/s, the Poisson σ √178/27.37 ≈ 0.487/s ⇒ 0.98σ,
+the delta-method share sds (0.0551 / 0.0639 against the packet's stated 0.056–0.063), and the band
+edge distances (~1.0σ/2.1σ low, ~4.2σ/4.7σ high). All reproduce.
