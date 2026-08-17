@@ -2,7 +2,7 @@
 // the Dev page and shared footer render straight from these values.
 
 // each social is a rounded tile with the brand's official mark; `round` makes
-// the tile a circle (Discord-style avatar) for Maiden's bot picture.
+// the tile a circle (Discord-style avatar) for a bot's profile picture.
 export type SocialIcon =
   | { kind: 'brand'; name: 'discord' | 'x' | 'github' }
   | { kind: 'img'; src: string; round?: boolean };
@@ -28,6 +28,21 @@ export const dev = {
     addToServer:
       'https://discord.com/discovery/applications/1523719703950790946',
   },
+  // the GFL2-side companion bot, kept here so both sites cross-link
+  helen: {
+    name: 'Helen',
+    blurb:
+      'A Girls’ Frontline 2: Exilium info & team-building Discord bot that serves up doll kits, weapon data, and shareable squad cards on demand. Works in any GFL2-oriented server.',
+    addToServer:
+      'https://discord.com/discovery/applications/1538690317363191922',
+  },
+  // the sister site — the two share a brand mark, so they cross-link
+  refittingroom: {
+    name: 'Refitting Room',
+    url: 'https://refittingroom.app',
+    blurb:
+      'My other game tool: a Girls’ Frontline 2: Exilium squad planner. Browse dolls and weapons, filter by class, phase, and weapon type, and assemble a team — all running in the browser.',
+  },
   // Google Form the community submits test fights through — collects the fight
   // metadata plus the damage screenshot + full-fight video as file uploads
   // (Forms drops the files into a Drive folder automatically). Replace the
@@ -43,6 +58,20 @@ export const socials: Social[] = [
     href: 'https://discord.com/discovery/applications/1523719703950790946',
     brand: '#0b0e14',
     icon: { kind: 'img', src: '/maiden.gif' },
+  },
+  {
+    label: 'Helen',
+    href: dev.helen.addToServer,
+    brand: '#0b0e14',
+    icon: { kind: 'img', src: '/helen.png' },
+  },
+  // The sister site. This is a logo, not an avatar — it already ships as a
+  // full-bleed dark square, so it fills the tile the same way the others do.
+  {
+    label: 'refittingroom.app',
+    href: dev.refittingroom.url,
+    brand: '#101216',
+    icon: { kind: 'img', src: '/refittingroom-icon.png' },
   },
   {
     label: 'Discord',

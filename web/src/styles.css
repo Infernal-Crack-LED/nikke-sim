@@ -1806,6 +1806,18 @@ footer {
   height: 100%;
   object-fit: cover;
 }
+/* Seven tiles at 44px + 12px gaps need 380px of row, which overflows a 390px
+   phone and drops the last link onto a line of its own. Tighten both so the
+   whole set stays on one row. */
+@media (max-width: 640px) {
+  .social-row {
+    gap: 8px;
+  }
+  .social-tile {
+    width: 40px;
+    height: 40px;
+  }
+}
 /* accessible label kept in the DOM but visually hidden */
 .sr-only {
   position: absolute;
@@ -1914,6 +1926,14 @@ footer {
   object-fit: cover;
   border: 2px solid var(--border);
   background: var(--panel2);
+}
+/* A logo, not a bot avatar: rounded square, contained with a little air, and
+   the page background behind it so the mark keeps its own edges. */
+.dev-callout-avatar.square {
+  border-radius: 14px;
+  object-fit: contain;
+  padding: 10px;
+  background: var(--bg);
 }
 .dev-callout-body h2 {
   margin: 2px 0 8px;

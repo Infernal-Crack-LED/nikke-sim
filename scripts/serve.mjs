@@ -137,7 +137,7 @@ export let TAB_META = {
   dev: {
     title: 'Meet the Dev — NIKKE Solo Raid Sim',
     label: 'Dev',
-    desc: 'About the developer behind the NIKKE Solo Raid Sim and the Maiden Discord bot.',
+    desc: 'About the developer behind the NIKKE Solo Raid Sim, the Refitting Room GFL2 squad planner, and the Maiden and Helen Discord bots.',
   },
   'patch-notes': {
     title: 'Patch Notes — NIKKE Solo Raid Sim Changelog',

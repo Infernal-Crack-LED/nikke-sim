@@ -216,6 +216,12 @@ await shot('builder-pull', {
   },
 });
 
+// Meet the dev — the project callouts (round bot avatars + the square sister-site
+// logo) and the social footer, at both widths: the callout is a flex row that
+// stacks on mobile, and the footer tile row is where a newly added link wraps.
+await shot('dev-desktop', { path: '/dev', width: 1180 });
+await shot('dev-mobile', { path: '/dev', width: 390 });
+
 await browser.close();
 stopServer();
 console.log('wrote:\n' + shots.join('\n'));
