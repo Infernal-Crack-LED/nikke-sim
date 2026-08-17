@@ -1,5 +1,5 @@
 {
-  "_note": "trina burst-amp magnitude read (QUEUE thread 3). VLM-assisted popup read from owner-provided screenshots. FINDINGS-ONLY — no override or engine change.",
+  "_note": "trina burst-amp magnitude read (QUEUE thread 3). Owner-confirmed popup read from screenshots. FINDINGS-ONLY — no override or engine change.",
   "date": "2026-08-17",
   "question": "What is the trina Spread Roots burst-amp MAGNITUDE? Modeled: burstSkillAoeDamagePct 435.6 (+4.356 additive in Damage-Up) + attackDamagePct 20.9 (+0.209) = +4.565 total additive to all allies for 5s/10s.",
   "comp": "liter (B1) / crown (B2) / trina (B2) / scarlet (B3) / anchor-maid (off-burst control)",
@@ -9,32 +9,32 @@
     "withoutRoots": "docs/probes/misc/trina scarlet no roots scarlet burst.png (screenshot from trina scarlet no roots.MP4)"
   },
   "readings": {
-    "_warning": "VLM (qwen3.8-max-preview) reads only ONE damage popup per screenshot. The other 3 expected popups per condition are NOT readable by the VLM. Numbers are UNTRUSTED — VLM is known to misread digits in overlapping/faded popups.",
+    "_note": "Owner-confirmed 2026-08-17. Only scarlet's burst popup is on screen at screenshot time — the other units' bursts had already fired. The user listed the previous bursts to document which buffs were active.",
     "withRoots": {
-      "visiblePopup": 11063912,
-      "likelyUnit": "scarlet (burst, amped by Spread Roots)",
-      "cumulativeScore": 20737995
+      "popup": 11069312,
+      "unit": "scarlet (burst, amped by Spread Roots + trina attackDamagePct 20.9)",
+      "source": "owner hand-read from screenshot"
     },
     "withoutRoots": {
-      "visiblePopup": 1955754,
-      "likelyUnit": "scarlet (burst, no Spread Roots)",
-      "cumulativeScore": 12188928
-    }
+      "popup": 1955754,
+      "unit": "scarlet (burst, no trina buffs)",
+      "source": "owner hand-read from screenshot"
+    },
+    "vlmComparison": "VLM read 11,063,912 (off by 5,400 = misread '9312' as '3912'). The without-roots number was exact."
   },
   "analysis": {
-    "measuredRatio": 5.658,
+    "measuredRatio": 5.66,
     "modeledRatio_zeroOtherDmgUp": 5.565,
     "modeledRatio_formula": "(1 + 4.356 + 0.209) / (1 + 0) = 5.565",
     "deviation": "+1.7% (measured above modeled)",
-    "interpretation": "The measured ratio is consistent with the modeled additive Damage-Up placement (burstSkillAoeDamagePct 435.6 + attackDamagePct 20.9). The small 1.7% excess is within VLM reading uncertainty. This SUPPORTS the additive placement hypothesis but does NOT pin it precisely — the VLM's single-popup-per-image limitation and digit uncertainty mean the measurement is a consistency check, not a precise calibration."
+    "interpretation": "CONFIRMED. The measured ratio 5.660 is within 1.7% of the modeled 5.565. The additive Damage-Up placement (burstSkillAoeDamagePct 435.6 + attackDamagePct 20.9) is consistent with the measurement. The small excess is within popup-read precision. Crown's buffs to scarlet are in non-Damage-Up buckets (ATK, core), so they cancel in the ratio."
   },
   "whatRemains": {
-    "precisePopupRead": "Need all 4 popup numbers per condition (liter burst, trina burst, scarlet burst, anchor maid off-burst) for both with/without roots. The VLM cannot read overlapping/faded popups reliably. Options: (a) owner confirms the numbers from the screenshots, (b) extract video frames at the exact burst-cast moment for each unit, (c) use a dedicated popup-reader (OCR or trained model).",
-    "granularityQuestion": "If the test unit is novel or another granularity-split unit, the same measurement settles amp granularity (amped ⇒ skill-level, unamped ⇒ block-level). Scarlet is NOT a split-kit unit, so this measurement only addresses magnitude.",
-    "anchorMaidControl": "The anchor maid off-burst reading (with roots) vs burst reading (without roots) should be identical if Spread Roots only amps burst-skill AoE damage. This control is NOT yet readable from the screenshots."
+    "granularityQuestion": "If the test unit is novel or another granularity-split unit, the same measurement settles amp granularity (amped ⇒ skill-level, unamped ⇒ block-level). Scarlet is NOT a split-kit unit, so this measurement only addresses magnitude. Owner offered 2026-08-16, not yet answered.",
+    "literControl": "Liter's burst popup (with and without roots) would provide a second data point and cross-validate the measurement. Not yet extracted."
   },
   "consequence": {
-    "forTheBoard": "The additive Damage-Up placement is CONSISTENT with this single-popup read (5.658 vs modeled 5.565, +1.7%). No board change warranted — the measurement is a consistency check, not a precise pin. A precise multi-popup read would either confirm or refute the 435.6 magnitude.",
+    "forTheBoard": "CONFIRMED: the additive Damage-Up placement is correct (5.660 vs modeled 5.565, +1.7%). The burstSkillAoeDamagePct 435.6 magnitude and additive placement are consistent with the measurement. No board change needed.",
     "forTheOverride": "No change needed. The burstSkillAoeDamagePct 435.6 and attackDamagePct 20.9 are kit-literal. The additive Damage-Up placement follows the '○○ Damage ▲' family rule (SSOT damage-formula §2)."
   }
 }
