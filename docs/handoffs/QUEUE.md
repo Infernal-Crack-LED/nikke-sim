@@ -93,23 +93,23 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `basePerTrigger` 140 × 2.5 focus × 1.06 aura = 3.71%. Next step is a gated re-run of the
      counting rule with that hypothesis declared in the packet, so anomalous windows become
      CLASSIFIABLE instead of premise-violating.
-   - **Third classification arm — FOOTAGE ASK RETIRED 2026-08-17, run is GATED-PENDING.** The
-     judge-ranked step (4) "a third comp with a non-vacuous ceiling" needs no recording:
-     `N3 scarlet/liberalio iron` screens **non-vacuous at 5.13/s** (vs iron's 3.59; every other
-     comp saturates the 30/s bin cap) and its recording already exists and reads —
-     `docs/probes/714 noon/3.mp4`, team bar locking at the documented 134px geometry. Screen +
-     verdicts: `docs/probe-data/ceiling-screen-2026-08-17.json`, pin
-     `scripts/tests/probe/ceiling-screen.test.ts`, subcommand
-     `fill-trace-compare.ts ceiling --schedule <json>`. **Next step is a `/scientific-method`
-     pre-op packet** pre-registering the arm, window map, thresholds and decision branches — the
-     classification itself is the gated surface, not the feasibility. (`misc B3s` SG fence also
-     lifted, by commit `a4d08e19`, but that arm is cap-saturated at 94.5/s and stays unusable;
-     `N5 snowwhite-HA fire` is non-vacuous at 15.87/s but too low-power to be a peer candidate.)
-     **Two premise corrections from the step-0 gate (2026-08-17), both binding on that packet:**
-     (i) N3 reads **9 sim vs 10 measured**, NOT 10 vs 10 — it carries a −1 FB gap of the same sign
-     as the other `liberalio`-seated disabled comps, so "independent, no rotation gap" is NOT a
-     property it has; (ii) N3 and iron sweep (run G) **both seat `liberalio`**, so they are not
-     roster-independent arms and a shared-unit confound has to be addressed in the packet.
+   - **⇒ `liberalio` GAUGE-CREDIT AUDIT — the dominant open item on this thread, and FOOTAGE-FREE.**
+     Named by both the pre-op and blind post-op judges of the 2026-08-17 third-arm run as the only
+     route at the rival that run provably could not touch. She is the SHARED unit of both
+     non-vacuous arms (iron sweep and N3), her burst-gauge datamine was once **6× off**
+     (`c12fcf4e`, 2026-07-26 — the correction that created this entire shortfall thread), and both
+     arms' excess is consistent with a per-unit defect in her model. Second, lower priority: settle
+     the clean-bin-time vs full-window denominator on a fixture with known ground truth, which would
+     turn the standing MAR caveat into a measured bias bound — every detection in this thread is
+     currently estimator-conditional.
+   - **Third-arm run LANDED 2026-08-17 → LOG.** Two open follow-ups only (the rest is in
+     `docs/probe-runs.md` + the harness log, do not re-narrate here):
+     (i) **future packets must PIN A CONTROL'S ESTIMATOR, not just its tolerance** — C2 bound on
+     "FB duration 15.0 ± 0.5s" without saying how to measure one, and the branch flipped between
+     four defensible readings; (ii) **every detection on this thread is ESTIMATOR-CONDITIONAL** —
+     under the full-window denominator N3 reads 11.0% BELOW its own ceiling (iron: 5.7%), and C7's
+     bridge-vs-activity ratios run OPPOSITE on the two arms (0.757 vs 1.357), so the estimator's
+     behaviour has no mechanism.
    - **Probe tooling follow-ups (achievable without footage):**
      (i) `gauge-fill.py` without `--bar` self-calibrates onto a dark terrain edge on solo footage
      — always pass `--bar` + the maiden fixture gate (/skill-maintenance candidate);

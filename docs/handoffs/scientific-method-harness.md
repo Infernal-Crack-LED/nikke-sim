@@ -1103,3 +1103,72 @@ commit `8621d670`; record `docs/probe-runs.md` (2026-08-16 noise-corrected-ceili
    went unwritten for a day — leaving the packet reading "pre-op DRAFT — awaiting Fable pre-op
    judge review" while its result was already committed and being cited downstream. Skipping the
    gate removes the JUDGES, not the RECORD.
+
+## 2026-08-17 — third classification arm `N3 scarlet/liberalio iron` → LOG (driver ACCEPT MEDIUM + blind post-op ACCEPT MEDIUM)
+
+**Outcome: LOG.** 2-of-2 ACCEPT, both MEDIUM. Judge-ranked step (4) of the 2026-08-15 run, on
+existing footage (`docs/probes/714 noon/3.mp4`). The accepted claim: under the clean-bin-time
+convention the H-C-candidate event-rate excess is OBSERVED on a second non-vacuous arm — raw
+6.7208/s, corrected 6.5927/s vs a 5.8996/s threshold — **on an arm that shares `liberalio` with the
+first**, which is part of the stamp rather than a caveat. Full record + reservations:
+`docs/probe-runs.md` 2026-08-17 third-arm entry. Artifacts: packet
+`docs/handoffs/2026-08-17-n3-third-arm-preop-packet.md`, pre-blind driver review
+`docs/handoffs/2026-08-17-n3-third-arm-driver-review.md`, verdict-free artifact
+`docs/probe-data/n3-third-arm-classification-2026-08-17.json`, pin
+`scripts/tests/probe/n3-third-arm.test.ts` (15/15).
+
+**The gates earned their keep at every stage, and every catch was against the DRIVER:**
+
+- **Step 0 refuted two of the driver's founding premises.** N3's full-burst count (the driver had
+  landed a stale "10 sim vs 10 measured" hours earlier; it is 9 vs 10) and its Full Burst duration
+  (15.0s, not the 10s baseline — which would have mis-placed every window boundary by half a
+  window). The FB-count refutation also killed the driver's stated REASON for choosing N3: it is not
+  an independent arm, and it shares `liberalio` with iron sweep.
+- **Step 1 refuted the driver's central methodological claim.** The cross-arm share band was
+  asserted to discriminate a general source from a `liberalio`-specific defect. It does not — a
+  per-unit defect also produces a same-order share. The judge specified the sim-side rival test; the
+  driver built it as a committed subcommand (`fill-trace-compare.ts arm-power`), computed its power,
+  and found **0.98σ** — provably underpowered — then rewrote the packet to lead with "no outcome
+  bears on R1."
+- **The confirming review refuted the driver's SEQUENCING proposal.** The driver wanted to gate the
+  expensive extraction on the cheap closure diagnostic; the judge showed the closure clause does not
+  feed the rate detector at all (bridged increments are DROPPED from the event census, so they move
+  `sumRealDelta`, never `realEventBinsPerSec`), and that the costly artifacts are
+  statistic-independent anyway.
+- **The blind post-op struck a vacuous test the driver had twice failed to notice** (lesson 2 below).
+
+**Harness lessons:**
+
+1. **A pre-committed control without a PINNED ESTIMATOR is not executable.** C2 bound the run to
+   "Full Burst duration = 15.0 ± 0.5s" but never said how to measure one off the trace. The
+   drain-bar renderer under-renders by a measured ~1.3s, so four defensible estimators exist and the
+   branch FLIPS between them (2 PASS / 2 BASIS-BROKEN). The driver correctly refused to choose after
+   seeing the outcomes; the blind judge resolved it only on grounds internal to the committed
+   calibration fixtures and independent of the branch. **Future packets pin the estimator, not just
+   the tolerance** — and prefer the paint-anchored one (calibration sd 0.0062s vs the render side's
+   0.263s).
+2. **A pre-registered band can be VACUOUS BY IMPLICATION — check independence, not just power.** The
+   E.2 share band's lower edge is mathematically implied by the threshold test (passing the
+   threshold forces share ≥ 1 − ceiling/threshold = 0.1304 > the band's 0.11895), and its upper edge
+   was already conceded vacuous. So R-A's "AND share in band" conjunct had zero content and R-B was
+   unreachable. The driver missed this TWICE: the original bounds were arbitrary, and the revision
+   that made them principled shipped a power analysis computing sd around the predicted share while
+   ignoring that the band and the threshold are not independent. **Sizing a margin against noise is
+   not enough; check whether the clause can fail at all given the other clauses.**
+3. **Verify a diagnostic is SENSITIVE to the correction it proposes, before pre-registering it.** The
+   E.3 closure diagnostic could never have worked: `oEff` and `rho` are both proportional to
+   `sumRealDelta`, so `|oEff·S − rho|/rho` is scale-invariant and the internally consistent
+   "exclude bridged mass" variant is a mathematical no-op (the other variant corrects one side of a
+   ratio but not the other). **Bridged mass cannot drive the closure residual by construction** — R2
+   was an arithmetic misunderstanding dressed as a hypothesis. One minute of algebra at packet time
+   would have caught it.
+4. **Its clauses also presupposed a state that did not obtain** — all three required both arms to
+   fail closure; N3 passes. The genuine datum that survived: closure and the rate excess DISSOCIATE,
+   weakly favouring instrument-artifact over game-mechanism for iron's closure failure.
+
+**Standing consequence for the thread:** every detection here remains ESTIMATOR-CONDITIONAL — under
+the full-window denominator N3 reads 11.0% BELOW its own ceiling (iron: 5.7% below) — and C7's
+bridge-vs-activity ratios run OPPOSITE on the two arms, so the estimator's behaviour has no
+mechanism. The named next step is the footage-free `liberalio` gauge-credit audit: she is the shared
+unit of both arms, her datamine was once 6× off, and she is the only route at the rival this run
+provably cannot touch.

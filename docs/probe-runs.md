@@ -8184,3 +8184,93 @@ iron sweep's rotation gap — what it offers is an INDEPENDENT ceiling test.
 it said "five slow-firing units — SR / RL / charge / AR, no MG and no SMG". Including AR was wrong
 — AR scores 12/s per unit, so two AR carriers plus three slow units already reach ~26/s and leave
 the detector no room.
+
+---
+
+## 2026-08-17 — Third classification arm `N3 scarlet/liberalio iron`: the H-C-candidate excess is OBSERVED on a second non-vacuous arm — one that SHARES `liberalio` with the first
+
+Judge-ranked step (4) of the 2026-08-15 classification run, executed under `/scientific-method`.
+**Outcome: LOG** — driver ACCEPT MEDIUM + blind post-op ACCEPT MEDIUM (2-of-2 ACCEPT, neither HIGH,
+so LOG not IMPLEMENT; the packet pre-registered LOG-class at every branch regardless). Packet
+`docs/handoffs/2026-08-17-n3-third-arm-preop-packet.md`; driver review (written pre-blind)
+`docs/handoffs/2026-08-17-n3-third-arm-driver-review.md`; artifact
+`docs/probe-data/n3-third-arm-classification-2026-08-17.json`; pin
+`scripts/tests/probe/n3-third-arm.test.ts` (15/15). **NO NEW FOOTAGE** — `docs/probes/714 noon/3.mp4`
+was already in the tree.
+
+**The accepted claim (blind judge's words, condensed).** Under the pre-registered clean-bin-time
+convention, N3's real event-bin rate — raw **6.7208/s**, noise-corrected **6.5927/s** at the 0.55%
+Wilson bound — exceeds 1.15 × its sim credit ceiling (threshold 5.8996/s) by ~12%, same sign and
+same order as iron sweep's. The excess is observed on a second non-vacuous arm **that shares
+`liberalio` with the first** — the shared-unit clause is part of the stamp, not a footnote.
+Secondarily: this recording's Full Bursts are ~15s, and an unextended 10s Full Burst is positively
+excluded on every cycle by the calibration-free bracket (min lower bound 12.78s), corroborating
+`soda-twinkling-bunny`'s `fullBurstExtend` and refuting rival R3.
+
+**Nothing about H1-vs-R1 is established, by construction.** `liberalio`'s max credit rate is
+0.6667/s in BOTH arms, so the general-source and shared-unit rivals predicted 6.7313 vs 6.2517/s —
+0.98σ apart pre-run, and **0.59σ realised** (69 event bins against the 178 assumed). The observed
+raw 6.7208 sits 0.0105 from one prediction; at σ = 0.81/s that is meaningless and no branch keyed
+off it. This was pre-committed before the run precisely so it could not be re-litigated afterwards.
+
+**Three strikes applied to the deliverable's framing (blind judge):**
+
+1. **The E.2 replication-magnitude band carried ZERO independent content and is struck as a passed
+   test.** Its lower edge is mathematically implied by the threshold test: passing the threshold
+   forces raw share ≥ 1 − 5.1301/5.8996 = 0.1304 > the band's 0.11895, and the upper edge was
+   already conceded vacuous. Branch R-B was structurally unreachable. The near-identity of shares
+   (N3 0.2367 vs iron 0.2379) is a consistent OBSERVATION, not a survived test. This is a defect in
+   the packet, twice over: the original bounds were arbitrary, and the revision that made them
+   "principled" was accompanied by a power analysis that computed the sd around the predicted share
+   without noticing that the band and the threshold are not independent.
+2. **"exactly the 5.0s extension" overstated** — the ladder residual is 6.684 − 1.867 = **4.817s**,
+   not 5.0. Supportable phrasing: consistent with the +5s extension at the ~5s scale.
+3. **No clean C2 pass.** The recorded verdict is "purpose satisfied, R3 refuted; the ±0.5s point
+   test UNADJUDICABLE due to an unpinned estimator" — not a control pass.
+
+**The C2 estimator defect (the run's main harness lesson).** C2 was pre-committed as binding but the
+packet never pinned HOW to measure a Full Burst duration off the trace. The drain-bar renderer
+under-renders (a true 10.0s FB reads a median 8.69s / 8.755s on two committed fixtures), so four
+defensible estimators exist and **the branch flips on the choice** — bracket and paint-calibrated
+PASS, render-calibrated and literal BASIS-BREAK. The driver deliberately did NOT choose (choosing
+after seeing which way each sends the verdict is the 2026-08-15 failure mode). The blind judge
+resolved it on grounds internal to the committed calibration data and independent of the branch
+outcome: C2-iv self-refutes (it would stamp BASIS-BROKEN on a fixture known to be 10.0s); C2-iii
+rests on a calibration 42× looser (sd 0.263s vs the paint estimator's 0.0062s) with every cycle
+tail-stitched and guard 3B cap-saturated; and C2's actual purpose — excluding a 10s-vs-15s
+half-window mis-map — is settled by all four readings.
+
+**Reservations riding with this entry:**
+
+- **The excess is ESTIMATOR-CONDITIONAL, and worse here than on iron.** Under the full-window
+  denominator N3 reads 4.5641/s — **11.0% BELOW its own ceiling** (iron: 5.7% below). Every
+  detection in this thread exists only under the clean-bin-time convention.
+- **C7's bridge-vs-fill-activity ratios run OPPOSITE on the two arms** (N3 0.757, iron 1.357), so
+  nobody has a mechanism for the estimator's behaviour. It cuts both ways: N3's bridges sit on
+  slower-than-modeled fill, so that bias cannot explain N3's excess, while leaving iron's more
+  exposed.
+- **The E.3 closure diagnostic was doubly defective by design and its promised yield evaporated.**
+  All three paired clauses presupposed both arms failing closure — N3 PASSES (0.0533) where iron
+  failed (0.2579). And variant (b), the internally consistent correction, is algebraically identical
+  to the as-specified residual on every arm: `oEff` and `rho` are both proportional to
+  `sumRealDelta`, so `|oEff·S − rho|/rho` is scale-invariant. **Bridged mass cannot drive the closure
+  residual by construction**, so R2 was never a live hypothesis. The one genuine datum: closure and
+  the rate excess DISSOCIATE (N3 passes closure while showing the excess), which weakly favours
+  instrument-artifact over game-mechanism for iron's closure failure — an observation, not a stamp.
+- **F5:** real 9 refill windows vs sim 8; window 8 dropped at 53.7% coverage, window 9 unpaired.
+  2 of 9 real windows contribute nothing to the pooled statistic, and the −1 FB gap is carried.
+- C6's falseRate was measured on SOLO footage — conservative but not same-regime for a 5-unit bar;
+  the 6.4× / 12.4× indifference margins keep the risk small.
+
+**Controls:** C1 PASS (per-unit `gaugeGenerated` and FB count byte-identical across all five
+elements + forced-neutral, `totalDamage` moving as positive control — the boss-element premise,
+prose-only per the step-0 gate, cannot reach a gauge statistic); C3 PASS (10 measured FBs, sim 9);
+C4 PASS (ceiling replays at 5.1301/s); C5 PASS (3/3 self-checks, `unreconstructed` empty); C6 PASS
+(and the instrument reproduces the whole 2026-08-16 iron artifact); C7 reported; C8 PASS (shifts
+0.0303/0 and e-min 1.5 witnessed in the artifact).
+
+**Named next step, unchanged and now the dominant one:** the footage-free **`liberalio` gauge-credit
+audit**. She is the shared unit of both arms, her datamine was once 6× off (`c12fcf4e` — the
+correction that created this whole shortfall thread), and she is the only route at the rival this
+run provably cannot touch. Second: settle the clean-bin vs full-window denominator on a fixture with
+known ground truth, which would convert the standing MAR caveat into a measured bias bound.
