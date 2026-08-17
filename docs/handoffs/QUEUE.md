@@ -179,18 +179,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      Datamined `reloadFrames 62` matches measured 61f (within 1 frame / 1.6%). The recon was
      measuring the reload ANIMATION only (49f = 0.817s), not the full cycle — the remaining 12f
      is dead time between animation end and first shot. No override change needed.
-   - **`mihara-bonding-chain` — LOCALIZED (2026-08-17, findings-only).** Ensnaring primitive
+   - **`mihara-bonding-chain` — LOCALIZED v2 (2026-08-17, findings-only).** Ensnaring primitive
      landed 2026-08-13; removing the old 12-stack average revealed an over-model elsewhere in her
      kit. 1.034 → 1.179 HOT on 2 graded comps; FB count UNCHANGED at 11 vs measured 11, so it is
-     magnitude not rotation. **Localization result:** the over-model is in the sustainedDamagePct
-     buff interaction with both DoT channels. Each encoding piece is individually kit-faithful
-     (burst DoT 1001%/s correct — pool always at 20; Ensnaring live perResource correct — avg
-     13.27 stacks; sustainedDamagePct +59.98%/10s kit-literal). But both DoTs inherit the buff
-     through `flavor:"sustained"` (11 stage-3 entries × 10s = 110s buff uptime, 61%), and the
-     combined magnitude exceeds measured by 17.9%. Most likely game-mechanics explanation: the
-     game's Sustained Damage stat does NOT apply to burst-skill DoTs (or to DoTs at all).
-     **Settling measurement needed:** popup-read burst DoT ticks with and without the S2 buff
-     active, or an owner ruling on whether sustainedDamagePct applies to burst-skill DoTs.
+     magnitude not rotation. **Localization v2 (owner rulings 2026-08-17):** sustainedDamagePct
+     is correctly implemented (additive in Damage-Up, applies to both DoTs — owner confirmed).
+     The over-model is in the **stack count** — the sim's pool (avg 13.39, always reaches 20
+     before burst per DBG_UNIT trace) is likely higher than the real game's. The burst DoT's
+     fixed 1001%/s assumes 20 stacks at burst time (kit-text assumption, not measured). If the
+     real pool averages ~16, the burst DoT over-credits by ~20% → total drops ~9.3%.
+     **Settling measurement:** popup-read Ensnaring DoT ticks at a known moment, or an owner
+     ruling on whether the real pool always reaches 20 before burst.
      **→ Handoff: [2026-08-13-mihara-fit-exposure.md](2026-08-13-mihara-fit-exposure.md)**
      **→ Probe data: [mihara-overmodel-localization-2026-08-17.json](../probe-data/mihara-overmodel-localization-2026-08-17.json)**
    - **Held primitives** (F11 discipline — leave held): `moran` S1 DEF ▲/stack, `maxwell`
@@ -305,10 +304,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    Damage-Up, +1.7% deviation). The additive Damage-Up placement is CONFIRMED. The small excess
    is within popup-read precision.
    **→ Probe data: [trina-burst-amp-read-2026-08-17.json](../probe-data/trina-burst-amp-read-2026-08-17.json)**
-   Open: the GRANULARITY half (skill-level vs block-level) is separately rulable if the owner
-   knows whether a split-kit unit like `novel` gets both halves amped (offered 2026-08-16, not
-   yet answered). Liter's burst popup would provide a cross-validation data point. Carried out
-   of the now-archived burst-amp handoff.
+   **GRANULARITY RULED 2026-08-17 (owner):** block-level — the amp applies only to blocks whose
+   kit clause contains "Affects all enemies" (novel confirmed: affects-all-enemies block only).
+   Literal-only scope, matching the existing census (`census-burst-amp-scope.ts`).
+   Liter's burst popup would provide a cross-validation data point. Carried out of the
+   now-archived burst-amp handoff.
 
 4. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
    economy landing (DECISIONS) made her colder, not warmer: the faithful custom weapon fires 12
