@@ -127,7 +127,11 @@ elsewhere, per-unit quirk posing as a class law), **METHOD** (configs via `scope
 `scripts/sim/<element>.ts` — never hand-rolled; screen numbers named + anchored),
 **PREDICTIONS including a DISCRIMINATING one** (separates H1 from the confounds — "the number matches"
 is not discriminating), **CONTROLS** (and how you know the control is actually controlled),
-**pre-committed DECISION RULE** with a falsification clause.
+**pre-committed DECISION RULE** with a falsification clause — and **NO CLAUSE MAY BE CONDITIONED ON
+THE REALIZED ESTIMATE.** Before running, substitute candidate outcomes into the rule and confirm each
+clause is selectable by at least one of them. A clause that can never fire, or whose trigger is
+algebraically equivalent to another clause's, is a DRAFTING DEFECT — not a strict standard. The
+30-second substitution test catches it; discovering it after the numbers are in does not.
 
 Then invoke the `context` skill and paste the sections the plan touches (with file:line anchors) —
 this is what lets the judge assess METHOD without re-reading the repo. Spawn
@@ -261,6 +265,18 @@ less → Log.**
 
 - **Contaminating the post-op packet** voids gate #2 entirely. Build the post-op prompt from the SAVED
   pre-op packet + the deliverable — never by editing down your own analysis.
+- **A decision-rule clause conditioned on the OUTCOME is circular** (2026-08-17). A packet's
+  "reachability" clause computed the CI width a rival clause _would have needed_ from the realized
+  point estimate — making "that clause was unreachable" algebraically identical to "the primary
+  clause fired", which rendered the primary clause unsatisfiable in all possible worlds. Reachability
+  is a statement about the achieved **PRECISION** (which point estimates would have selected each
+  clause), never about where the estimate landed. Both judges caught it independently, but only
+  AFTER the run — the pre-run substitution test in step 1 is what makes it cheap.
+- **A defect in YOUR OWN packet is not a defect in the harness.** The same run reported the above as
+  an inherited template defect and filed it as an owner action item; the wording existed nowhere in
+  `.claude/**`, there was no packet template, and a same-day sibling packet had already phrased the
+  concern correctly. **Grep the shared artifact before blaming it** — misrouting a local bug to the
+  shared harness spends owner attention and leaves the real bug unfixed.
 - **A control asserted but not measured is a false premise.** The "near landing is a universal control"
   premise broke this way; control the basis via quantization-step / popup pinning and treat the control
   value as a MEASUREMENT.

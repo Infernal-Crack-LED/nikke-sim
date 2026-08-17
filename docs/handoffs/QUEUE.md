@@ -83,10 +83,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg when the same
 > packet has demoted that recording's E1 as already-on-record and non-falsifying? Driver said no
 > (⇒ INCONCLUSIVE), blind Fable said yes in the spirit of the rule (⇒ ACCEPT-narrowed). Both struck
-> the W3 window independently — its "exclusion" margin was 0.0012 of a render column. Also flagged
-> for the harness template: the clause-2 **reachability wording is degenerate as drafted** (it makes
-> clause 1 unsatisfiable in all possible worlds) and should be fixed before another packet inherits
-> it.
+> the W3 window independently — its "exclusion" margin was 0.0012 of a render column.
+>
+> ~~Also flagged for the harness template: the clause-2 reachability wording is degenerate…~~
+> **DONE 2026-08-17 — and the framing was wrong.** There was no harness-template defect: the wording
+> was in **this run's own packet**, nowhere in `.claude/**` (there is no packet template), and the
+> same-day N3 third-arm packet already phrased the concern correctly, so nothing was inheriting it.
+> The generalizable rule landed in `.claude/skills/scientific-method/SKILL.md` with owner approval:
+> **no decision-rule clause may be conditioned on the realized estimate**, plus a pre-run
+> substitution test that every clause is selectable by some admissible outcome.
 >
 > **N2. A SECOND `liberalio`-free fill trace. ⛔ DO NOT RUN AS FILED — the premise gate stopped it
 > at step 0 (2026-08-17).** Full record, with every quote and `git log -S` receipt:

@@ -1308,7 +1308,15 @@ green-full cue.
    achieved width" is logically equivalent to "clause 1(i) satisfied", which would make clause 1
    unsatisfiable in all possible worlds. **Both judges independently identified this and repaired it
    the same way** (design-intent reading: clause 2 _was_ reachable — any pooled estimate in
-   [9.81, 10.96] would have selected it). It is a harness template defect, not a run defect.
+   [9.81, 10.96] would have selected it). ~~It is a harness template defect, not a run defect.~~
+   **SUPERSEDED (2026-08-17) — disregard that last sentence.** Verified after the fact: the wording
+   exists nowhere in `.claude/**`, and there is no packet template — `SKILL.md` said only
+   "**pre-committed DECISION RULE** with a falsification clause". **The defect was authored in THIS
+   run's own packet**, so it is a run defect after all. Nor was it spreading: the same-day
+   `2026-08-17-n3-third-arm-preop-packet.md` states the identical concern correctly
+   ("R-C is a real, reachable outcome that this run can produce"). The durable fix landed as a
+   generalized rule in `SKILL.md` step 1 + Gotchas (owner-approved 2026-08-17): **no decision-rule
+   clause may be conditioned on the realized estimate**, enforced by a pre-run substitution test.
 
 **Where the two judges split.** The blind judge granted **A3's window as a substitute clause-1(ii)
 leg** (its `K` is human-ammo-verified, not reader-only) and accepted on W2 + A3. The driver rejects
@@ -1355,8 +1363,15 @@ basis (datamine + comp-level FB pins), which no solo observable touches — the 
 2. **Owner ruling wanted on the split:** may an out-of-sample recording's E1 window carry a
    clause-1(ii) leg when the packet has demoted that same E1 as already-on-record? Driver says no,
    blind judge says yes in the spirit of the rule.
-3. **Harness template fix:** the clause-2 reachability wording is defective as drafted and should be
-   corrected wherever it is reused, before the next packet inherits it.
+3. ~~**Harness template fix:** the clause-2 reachability wording is defective as drafted and should be
+   corrected wherever it is reused, before the next packet inherits it.~~
+   **SUPERSEDED (2026-08-17) — CLOSED, and the premise was wrong.** There was no template to fix:
+   the wording existed nowhere in `.claude/**`, and the same-day N3 third-arm packet already stated
+   the concern correctly, so nothing was inheriting it. What DID generalize is the underlying rule,
+   now landed in `SKILL.md` (owner-approved): **no decision-rule clause may be conditioned on the
+   realized estimate**, plus a pre-run substitution test that each clause is selectable by some
+   admissible outcome. Recorded as a lesson about the diagnosis, not just the bug: "a defect in my
+   own packet" was reported as "a defect in the shared harness" without checking the shared harness.
 4. **Pin the Question-B SE formula.** It dominates the CI (7.5× quantization) under a driver-chosen
    formula. Nothing turned on it here (both the conservative and near-zero readings exclude 10.388),
    but the next packet should pin it rather than leave it to the work step.
