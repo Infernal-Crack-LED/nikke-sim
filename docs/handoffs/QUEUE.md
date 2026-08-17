@@ -161,13 +161,36 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      BOTH the floor and the Wilson clause in one pass, and any new packet must power-check its
      floor against the guard spec first). **Noise-floor input NOW AVAILABLE from the solo #2
      measurement (492 primary / 597 pooled quiet bins, zero false events, Wilson 0.55%/0.45%)
-     — the C4 deficit is resolved at 3.3× margin.** Still open, re-ranked: (2) a pre-registered
-     noise-corrected ceiling test (subtract falseRate × quietBins — the falseRate input is now
-     measured; this needs its OWN pre-op); (3) source-hunt the excess
-     event instants (clustered-at-visual-cause supports H-C, scattered refutes); (4) a third comp
-     with a non-vacuous ceiling (T5's was cap-saturated — the H-C detector was effectively n=1);
-     (5) a symmetric-E_min statistic as its OWN pre-op (T5's O/S were structurally
-     uninterpretable with the one-sided threshold).
+     — the C4 deficit is resolved at 3.3× margin.** Still open, re-ranked: (2) ~~a pre-registered
+     noise-corrected ceiling test~~ **DRAFTED 2026-08-16 — pre-op packet at
+     `docs/handoffs/2026-08-16-noise-corrected-ceiling-preop-packet.md`; arithmetic shows the
+     correction is negligible at the measured falseRate (0.55%/0.45% Wilson upper removes only
+     ~2.4 of 80 event bins); the ceiling excess survives by 10.7% margin, robust up to
+     f ≈ 2.3% (4× the input). R1 fires: DETECTION "H-C-candidate excess survives noise
+     correction." Classification stays MIXED/INCONCLUSIVE (closure 0.2579 stands). Awaiting
+     `/scientific-method` gate or owner acceptance.** (3) ~~source-hunt the excess
+     event instants~~ **ANALYZED 2026-08-16 (`scripts/probe/source-hunt.ts`): the excess is a
+     PERVASIVE RATE EXCESS, not clustered at visual causes. 82 events across 10 real windows
+     (~23s total), only 13 sim credits fall within those windows, 76.8% of events >0.5s from
+     any sim credit, 56.1% >2s away. Within-window CV 0.5–1.3 (uniform-to-moderate, ~200–400ms
+     spacing). No burst-cast clustering. REFUTES H-C (distinct hidden source); supports H-A/H-B
+     (general per-hit rate or hit count too low).** (4) ~~a third comp
+     with a non-vacuous ceiling~~ **AUDITED 2026-08-16 — STRUCTURALLY IMPOSSIBLE with existing
+     footage:** every filmed comp except iron sweep has ≥1 fast-cadence unit (AR/MG/SMG/SG)
+     whose minGap is 1–5 frames (rate 12–60/s), saturating the 30/s bin cap. Iron sweep is
+     uniquely all-SR (minGaps 82–90f, sum 3.6/s — the only non-vacuous ceiling). The H-C
+     detector is structurally n=1; resolving requires new footage of an all-slow-cadence comp.
+     (5) ~~a symmetric-E_min statistic as its OWN pre-op~~ **ANALYZED 2026-08-16 —
+     DIRECTION DETERMINED, no pre-op needed:** iron sweep is already symmetric by construction
+     (all 179 sim credits ≥5.6, zero below E_min=1.5; symmetric thresholding changes nothing).
+     T5 wind-weak has 92.2% of sim credits below E_min (cinderella-crystal-wave MG 1167×0.106,
+     nayuta SMG 801×0.212); symmetric E_min at credit level drops sim gauge from 1275.59 to
+     982.08 (77% survives) — making S even COLDER, not warmer. The original asymmetric test was
+     already generous to the sim side. The "T5 uninterpretable" problem is NOT caused by
+     asymmetric thresholding — it's structural (MG/SMG units contribute via many tiny hits
+     that aggregate below the per-event threshold by design). No symmetric-E_min variant
+     resolves this; the fix is a bin-level aggregation (not credit-level) which is the existing
+     sim-side computation. Pre-op not warranted.**
    - **Recording asks (owner):** ≥60s solo `anis-star` scope-lock re-record — **LANDED
      2026-08-16** (2-of-2 ACCEPT HIGH, driver + blind kimi-code/k3). Question A:
      **INCONCLUSIVE-LOG** — the ≥2-window counting rule cannot fire (anomalous-magnitude
@@ -212,11 +235,20 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      candidate — was re-modeled 2026-08-16 as the owner-confirmed 15s pulse (DECISIONS entry;
      each application credits her 5.6 bar-%), and the comp still reads 11 FBs on 100% of seeds
      (only ~2–3 of her ~11 applications land inside generating windows ≈ a sixth of one bar).
-     The `iron sweep (run G)` regression comp stays disabled. Remaining leads: audit the other
+     The `iron sweep (run G)` regression comp stays disabled. Remaining leads: ~~audit the other
      four kits (`d-killer-wife`/`milk-blooming-bunny`/`maxwell`/`liberalio`) for
-     re-apply-encoded-as-passive or mixed-block shapes whose applications should credit (the
+     re-apply-encoded-as-passive or mixed-block shapes whose applications should credit~~
+     **AUDITED 2026-08-16 — ALL FOUR CLEAN (no missing application-gauge credits):**
+     `d-killer-wife` burst is a mixed block (`flatDamage 269.28` + `targetStatus 'Wipe Out' 10s`)
+     — `isGeneratingApplication()` correctly rejects it (the `.every()` check fails on
+     `flatDamage`); also timing-disqualified (`burstCast` inside FB lock). `milk-blooming-bunny`
+     has no enemy debuffs at all (S1 self `gainPierce`, S2 DoT via `skillGauge`). `maxwell` burst
+     is self `weaponSwap`; S1 buffs allies — no enemy-targeted debuff effects. `liberalio` S1
+     `flatDamage 202.5` generates via `skillGauge` (not application gauge); all other effects are
+     self/ally buffs. The iron-sweep FB shortfall is NOT explained by missing application-gauge
+     credits from any seated unit. (The
      H-A team-context route was CLOSED by owner ruling 2026-08-16 — no team-scaling credit
-     mechanism exists — so encoding audits and the anis-star U28 divisor read are what remain).
+     mechanism exists — so the anis-star U28 divisor read is what remains of the encoding audit path.)
      Also open: ~~⚑ four live-credit
      units carry class-modal (not datamined) gauge rows — `eunhwa`/`ludmilla`/
      `sakura-suzuhara`/`signal`~~ **RESOLVED 2026-08-16:** datamine re-pull found `eunhwa`
