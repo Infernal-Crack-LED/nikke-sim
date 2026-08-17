@@ -150,13 +150,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 >   (`93426b0d`): all three now derived from committed artifacts the test already loads. The
 >   candSimRefillSec shift (38.1 → exact schedule sum 38.2) moves separationSigmas 0.9848 → 0.9861.
 >
-> **N6 (new, from the N3 landing — findings-only, reported not acted on).** The sibling
-> `--refill-starvation` and `--multihit-crediting` folds in `scripts/battery/fb-count-matrix.ts`
-> count damage **instances** as gauge-eligible hits, so they carry the SAME (N−1) `gaugeHits`
-> blindness N3 just fixed in the credit-schedule fold — latent for the same reason, and now the only
-> remaining instance of that defect class in the file. Also: `docs/fb-count-matrix.md`'s generated
-> tables have drifted from a fresh run (e.g. T5's buzzer state reads "opened 173.5s" vs the doc's
-> 179.2s).
+> ~~**N6 (new, from the N3 landing — findings-only, reported not acted on).**~~ **DONE 2026-08-17.**
+> Findings artifact: `docs/probe-data/n6-gaugehits-blindness-audit-2026-08-17.json`. Three findings:
+> (1) **refill-starvation** — code pattern is wrong (counts damage instances, not gauge sub-hits)
+> but LATENT: only 2 comps audited (iron sweep + T5), neither seats a gaugeHits carrier. Zero output
+> impact. (2) **gauge-sources** — same pattern, LIVE on `N5 snowwhite-HA fire` (seats
+> snow-white-heavy-arms gaugeHits 5/10), but the census's purpose is path verification not total
+> counting, so the under-count may be acceptable. Owner call on whether to fix. (3)
+> **multihit-crediting** — NO defect: reads engine `gaugeGenerated` amounts, does not count damage
+> instances. The QUEUE's original description ("both folds count damage instances") was inaccurate
+> for this fold. Also: `docs/fb-count-matrix.md` buzzer-state table regenerated (4 comps drifted:
+> T1, misc B3s, T5, soda-tb — rotation timing changed from engine updates, per-unit gauge amounts
+> byte-identical).
 >
 > Also unblocked but lower value: `mihara-bonding-chain`'s fit exposure (thread 1 — localize the
 > over-model, do not restore the 12-stack average); the clean-bin-time vs full-window denominator
@@ -303,15 +308,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    uncharged shots where the old estimate fired 7 that inherited her SR ×2.5 `chargeMultiplier`.
    Her swap window is therefore ruled OUT as the explanation. The largest remaining ⚑ in her file is
    the **S2 uptime-average** — `damageTakenPct` 3.36 = 10.09 × 5/15 and ally `trueDamagePct` 93.66 =
-   140.49 × 10/15 — where the **15s cooldown is COMMUNITY-sourced (Prydwen), not in the kit prose**.
-   If the real cooldown is shorter, both values are under-credited roughly proportionally. Recipe is
-   already written in her override caveats: read the real skill2 cooldown + pulse shape from a
-   focused `takina` recording and rescale. She has ONE recorded fight (PG iron sweep), so this needs
-   footage before anything is changed — evidence-proportionality, not a re-fit.
-   **Cheaper substitute (offered to owner 2026-08-16, not yet answered): a cooldown is
-   config-independent, so the owner observing her skill-2 pulse rhythm in ANY casual play — no
-   scope lock, no recording — replaces the footage ask for the CD value itself** (the pulse
-   SHAPE would still benefit from footage, but the CD is the load-bearing number).
+   140.49 × 10/15 — where the **15s cooldown is now OWNER-CONFIRMED by in-game test (2026-08-17)**.
+   The community-sourced value was correct, so the S2-CD hypothesis is REFUTED — the 0.579 cold
+   residual must have a different source. She has ONE recorded fight (PG iron sweep), so further
+   diagnosis needs footage before anything is changed — evidence-proportionality, not a re-fit.
    _(Body restored 2026-08-13: nine lines were dropped from this item by the archive commit
    `80c9f041`; recovered verbatim from `d3314ca3`.)_
 
@@ -334,3 +334,4 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    −47 / −50 before. **RECIPE:** one isolated nbo-solo scope-lock recording — count rounds fired
    inside a single 7s burst window and watch the ammo counter. That settles cadence, hits-per-pull
    and belt size in one go. Sizing arm: `npx tsx scripts/battery/nbo-swap-cadence-ab.ts`.
+   **AWAITING FOOTAGE** (owner does not own nbo; requested from a friend, 2026-08-17).

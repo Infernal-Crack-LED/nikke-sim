@@ -1,0 +1,65 @@
+{
+  "_note": "N6 findings — gaugeHits blindness in refill-starvation and gauge-sources folds. QUEUE N6 (2026-08-17). Code audit, no engine or override was changed.",
+  "date": "2026-08-17",
+  "question": "Do the --refill-starvation and --multihit-crediting folds carry the same gaugeHits blindness that was fixed in the credit-schedule fold?",
+  "findings": {
+    "refillStarvation": {
+      "verdict": "LATENT — code pattern is wrong, but no gaugeHits carrier is seated in any audited comp",
+      "defect": "The hit-counting loop (fb-count-matrix.ts ~line 430) counts every damage event with bucket 'skill'/'burst' as ONE gauge-eligible hit. A flatDamage with gaugeHits: N fires skillGauge N times but emits only ONE damage event, so the fold counts 1 hit where the engine credited N gauge impacts.",
+      "affectedQuantities": [
+        "hits[] per bucket (under-counted by (N-1) per gaugeHits impact)",
+        "gaugePerHit (inflated — denominator too small)",
+        "first1sRatio (biased if a gaugeHits carrier fires early in a refill window)",
+        "tailRate (under-counted)"
+      ],
+      "auditedComps": ["iron sweep (run G)", "T5 wind-weak"],
+      "auditedCompsHaveCarrier": false,
+      "note": "Only comps with measuredPeriodSec defined are audited (2 of 9). Neither seats snow-white-heavy-arms, eve, or little-mermaid (the three gaugeHits carriers). The defect has zero output impact on current results."
+    },
+    "gaugeSources": {
+      "verdict": "LIVE — N5 snowwhite-HA fire seats snow-white-heavy-arms (gaugeHits 5/10)",
+      "defect": "Same counting pattern (fb-count-matrix.ts ~line 1210): counts damage events as unlocked impacts. snow-white-heavy-arms reports 52 unlocked impacts but each S1(b) volley fires gaugeHits 5, so the actual gauge-credit count is higher. The census correctly reports that the emission PATH is present, but under-counts the number of gauge credits the path delivers.",
+      "affectedQuantities": [
+        "unlockedImpacts (under-counted for gaugeHits carriers)",
+        "perUnitUnlockedImpacts (under-counted for the carrier unit)"
+      ],
+      "magnitude": "snow-white-heavy-arms: 52 counted impacts vs an unknown true gauge-credit count (depends on the volley/AoE ratio during refill windows). The census's PURPOSE is path verification (is the emission kind present?), not total counting, so the under-count may be acceptable for its stated goal.",
+      "note": "The gauge-sources audit runs on ALL 9 OFF comps, not just the 2 with measuredPeriodSec."
+    },
+    "multihitCrediting": {
+      "verdict": "NO DEFECT — reads engine gaugeGenerated, does not count damage instances",
+      "explanation": "The multihit-crediting fold (fb-count-matrix.ts ~line 1508) calls run() and reads res.units[].gaugeGenerated, totalDamage, pulls. It compares gauge AMOUNTS between baseline and trigger arms, never counting events. The gaugeHits fix in the engine is upstream of this fold and flows through correctly.",
+      "correctionToQueue": "QUEUE N6's description states 'the sibling --refill-starvation and --multihit-crediting folds count damage instances as gauge-eligible hits.' This is accurate for --refill-starvation but NOT for --multihit-crediting. The multihit fold is clean."
+    }
+  },
+  "fixScope": {
+    "refillStarvation": "Import or inline skillGaugeHits() from the credit-schedule fold and multiply per-event hit counts. Low urgency (latent).",
+    "gaugeSources": "Same fix. Higher urgency (live on N5) but the census's purpose is path verification, not total counting, so the under-count may be acceptable. Owner call.",
+    "multihitCrediting": "No fix needed.",
+    "docDrift": "docs/fb-count-matrix.md buzzer-state table regenerated 2026-08-17 (4 comps drifted: T1, misc B3s, T5, soda-tb). Per-unit gauge/60f values byte-identical — only rotation timing changed from engine updates between the doc's last regen (991f3e45) and now."
+  },
+  "docDrift": {
+    "lastRegen": "991f3e45 (2026-08-16)",
+    "lastDocEdit": "2d4dd117 (2026-08-17) — only updated the status table, not the buzzer-state table",
+    "driftedComps": {
+      "T1 wind-weak": { "doc": "2.90s / 177.1s", "fresh": "3.50s / 176.5s" },
+      "misc B3s (run I order)": {
+        "doc": "0.90s / 179.1s",
+        "fresh": "1.40s / 178.6s"
+      },
+      "T5 wind-weak": { "doc": "179.2s / 0.80s", "fresh": "173.5s / 6.50s" },
+      "soda-tb control": {
+        "doc": "169.7s / 10.30s",
+        "fresh": "168.4s / 11.60s"
+      }
+    },
+    "stableComps": [
+      "iron sweep (run G)",
+      "N3 scarlet/liberalio iron",
+      "N1 rapi/quency wind",
+      "N2 modernia wind",
+      "N5 snowwhite-HA fire"
+    ],
+    "cause": "Engine changes between 991f3e45 and 2d4dd117 (takina S2 re-model, nbo swap cadence, application-gauge scope widening, buff gauge crediting, gauge cluster fixes) altered rotation timing without changing per-unit gauge amounts."
+  }
+}
