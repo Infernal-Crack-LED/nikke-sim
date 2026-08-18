@@ -124,6 +124,9 @@ multiplier (focus-only; middle slot by default) — ×2.5 for the 250-family (th
 alice 3.5× (measured), cinderella 2.0× (owner-confirmed TRUE 2026-07-29, `charFixes.focusChargeMult`),
 scarlet-black-shadow 1.5× (measured); vesti-tactical-upgrade pinned to the flat 2.5×
 (`PENDING_TEAM_ISOLATION` — sim-supported since 2026-08-01, her 200 column still unmeasured).
+**anis-star** carries a second focus-gated term: `baseGaugeProb` 0.25 adds
+`(0.25 × 140/100) × 2.5 × 1.06 = 0.9275%` extra gauge per focused shot (engine-live since
+2026-08-18; `data/gauge-per-shot.json` → `gaugePerShot()` in `sim.ts`).
 Burst-cast damage lands **before** Full Burst — it misses the +50% FB major and FB-entry
 auras, but buffs live at cast (incl. allies' same-rotation burst-granted buffs) still apply. Full-burst
 counts are cooldown/chain arithmetic — deterministic run-to-run except at boss-transition/chain

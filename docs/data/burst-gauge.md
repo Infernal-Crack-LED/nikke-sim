@@ -181,6 +181,16 @@ both `fullChargeBonus` 250, the modal value across the roster.
     opener and an effective ≈2.2× was a repeated reading error and is RETRACTED — there is no
     open dispute on this value.
     Full record: `docs/DECISIONS.md` 2026-07-29 entries.
+- **baseGaugeProb (2026-08-18):** a second focus-gated credit term alongside `fullChargeBonus`.
+  For units carrying `baseGaugeProb > 0` in `data/gauge-per-shot.json`, the engine's
+  `gaugePerShot()` adds `(baseGaugeProb × basePerTrigger / 100)` to the per-trigger value
+  **before** the focus multiplier applies. The focused-shot credit becomes:
+  `(targetPerTrigger/100 + baseGaugeProb × basePerTrigger/100) × focusMult × aura`.
+  Currently live for **anis-star only** (`baseGaugeProb` 0.25, `basePerTrigger` 140): the game
+  credits an extra `basePerTrigger × focus × aura` on ~25% of focused charge shots (pre-register
+  re-run E4 PASS, owner ruling 9 pulls ≥ 11.11%/pull). Modeled as a per-shot expected value
+  (deterministic, not Monte Carlo); only fires for the camera-focused unit (`u.idx === focusIdx`)
+  on charge weapons (SR/RL, `isCharge` gate). → DECISIONS 2026-08-18.
 - **Instrument note (2026-07-29):** the burst-gauge widget's `solo`/`bar` HUD crop
   (`142x12 @ 2470,488`) is a continuous fill-percentage reader **on solo/near-solo footage**
   (committed: `scripts/probe/gauge-fill.py` + anchor fixture/vitest) — this corrects/scopes the

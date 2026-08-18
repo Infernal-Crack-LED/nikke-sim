@@ -171,6 +171,17 @@ const noDotRun = run(NOB1, { 'anis-star': noDot });
 const STALL = ['anis-star', 'ada', 'helm'] as const;
 const stallBase = run(STALL);
 const stallNoDot = run(STALL, { 'anis-star': noDot });
+/** G6 focused stall runs: anis-star as the camera-focus target on the stall fixture (no B2). */
+const focusedStall = (() => {
+  const events: SimEvent[] = [];
+  const res = runComp({
+    slugs: [...STALL],
+    bossElement: 'Fire',
+    focusSlug: 'anis-star',
+    cfg: { onEvent: (e) => events.push(e) },
+  });
+  return { events, totals: totals(res), res };
+})();
 
 // ---- readers ----------------------------------------------------------------------------------
 const dmg = (evs: SimEvent[]) =>
@@ -521,6 +532,34 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
       // tick per cast, no boundary imprecision). If this trips, the engine's skillGauge
       // divisor or hitsPerShot handling has drifted from the gauge-per-shot.json row.
       expect(perImpact).toBeCloseTo(2.8 * 1.06, 6);
+    });
+
+    it('G6 — baseGaugeProb focused weapon credit: per-cast gauge delta pins the engine path', () => {
+      // G4/G5 pin the skillGauge path (dot ticks, 2.8 × aura). G6 pins the WEAPON path
+      // (gaugePerShot → addGauge) that the baseGaugeProb 0.25 enactment (2026-08-18)
+      // changed. gaugeGenerated only counts UNLOCKED gauge (addGauge early-returns for
+      // stage ≠ 0). In the stall fixture, unfocused weapon gauge is zero (all shots fire
+      // during the chain lock) but focused weapon gauge is non-zero — the higher per-shot
+      // credit from baseGaugeProb fills the bar faster, creating unlocked windows at chain
+      // boundaries where weapon shots generate gauge.
+      //
+      // The per-cast delta between focused and unfocused stall gaugeGenerated equals the
+      // focused weapon-shot credit: (targetPerTrigger/100 + baseGaugeProb × basePerTrigger/100)
+      // × focusMult × aura = (2.8 + 0.25 × 1.4) × 2.5 × 1.06 = 8.3475.
+      const fCasts = anisBursts(focusedStall.events).length;
+      const ufCasts = anisBursts(stallBase.events).length;
+      expect(fCasts).toBeGreaterThan(0);
+      expect(ufCasts).toBeGreaterThan(0);
+      const fGauge = unitOf(focusedStall.res, 'anis-star').gaugeGenerated;
+      const ufGauge = unitOf(stallBase.res, 'anis-star').gaugeGenerated;
+      // Focused generates strictly more gauge (baseGaugeProb is doing work)
+      expect(fGauge).toBeGreaterThan(ufGauge);
+      // Per-cast delta pins the focused weapon credit × escaped shots per cycle.
+      // Empirically 2 weapon shots escape the chain lock per stall cycle at the
+      // focused credit (8.3475 each), so the per-cast delta ≈ 2 × 8.3475 = 16.695.
+      // Re-derive (don't re-pin): if this trips, the baseGaugeProb path or the
+      // stall boundary dynamics changed — re-run and understand before re-pinning.
+      expect((fGauge - ufGauge) / fCasts).toBeCloseTo(16.736, 1);
     });
   });
 });

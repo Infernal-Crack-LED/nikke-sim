@@ -6203,3 +6203,35 @@ footage was handed to another session the same day for the parallel U28 divisor 
 **Recorded in:** `docs/handoffs/QUEUE.md` (burst-generation thread, recording-asks list);
 `docs/open-questions.md` U28 (Gate paragraph corrected);
 `docs/handoffs/closed/2026-08-16-burst-gen-autonomous-audit.md` (candidate list items 2/3).
+
+## `anis-star` baseGaugeProb enactment — second focus-gated gauge term (2026-08-18)
+
+**Owner ruling (N1c, 2026-08-18):** 9 pulls fill the burst gauge bar on three of four
+montage-verified windows → per-pull credit ≥ 100/9 = 11.11%, which exceeds the shipped
+10.388% (would need 9.63 pulls). The pull count alone settles the direction: per-pull gauge
+credit for Anis: Star is **elevated above the shipped model**.
+
+**Pre-register re-run (E4 PASS, same date):** A = 3.71% anomaly (`basePerTrigger` 140 ×
+2.5 focus × 1.06 aura) explains all 3 upward departures in the solo gauge trace
+(adjusted 11.49/11.59/12.29, all within 2.175 pp of median 11.60). Clause-1(ii) count rose
+from 2 → 3 qualifying windows; W2 + W4 form a robust pair (both ≥ 0.3 cols).
+
+**Enacted mechanism:** new field `baseGaugeProb` (0.25 for anis-star) in
+`data/gauge-per-shot.json`. Engine's `gaugePerShot()` adds
+`(baseGaugeProb × basePerTrigger / 100)` to the per-trigger value before the focus multiplier
+applies. Focused-shot credit: `(2.8 + 0.25 × 1.4) × 2.5 × 1.06 = 8.3475` (was 7.42). Only fires
+for the camera-focused unit on charge weapons (SR/RL). Modeled as per-shot expected value
+(deterministic EV, not Monte Carlo). `fb-count-matrix.ts` credit-schedule mirror updated in
+lockstep. G6 test pins the per-cast gauge delta on the stall fixture.
+
+**Narrows the 2026-08-16 clause:** that entry states "the known ×2.5 focus-charge bonus is
+the only context-dependent credit term." baseGaugeProb is a second focus-gated (therefore
+context-dependent) credit term. The clause now reads: the focus-charge bonus is the only
+context-dependent term for units WITHOUT `baseGaugeProb`; anis-star carries a second one.
+
+**Graded-comp footprint:** T7 and T2 elec-weak re-phase (10 per-unit damage totals move in
+`scripts/regression-snapshot.json`); all measured-exact FB counts preserved.
+
+**Recorded in:** `docs/data/burst-gauge.md` §4 (formula update), `docs/STATE.md` §2
+(rotation facts), `docs/handoffs/QUEUE.md` (item 2, anis-star bullet updated to ENACTED),
+`docs/handoffs/scientific-method-harness.md` (2026-08-18 entry).

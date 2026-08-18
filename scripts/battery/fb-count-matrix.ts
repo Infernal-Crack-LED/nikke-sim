@@ -2424,7 +2424,7 @@ export function creditScheduleFor(
     const basePer =
       (row as { basePerTrigger?: number } | undefined)?.basePerTrigger ?? 0;
     const baseExtra =
-      baseProb > 0 && idx === focusIdx && basePer > 0
+      baseProb > 0 && idx === focusIdx && basePer
         ? (baseProb * basePer) / 100
         : 0;
     return (per + baseExtra) * (idx === focusIdx ? focusMult : 1.0) + flat;
