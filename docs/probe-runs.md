@@ -7912,7 +7912,7 @@ not systematic map lag — harness lesson recorded.
 
 ## 2026-08-16 — Noise-corrected ceiling test on iron sweep (run G): the ceiling excess survives noise correction (R1 DETECTION)
 
-Plan of record: `docs/handoffs/2026-08-16-noise-corrected-ceiling-preop-packet.md`
+Plan of record: `docs/handoffs/closed/2026-08-16-noise-corrected-ceiling-preop-packet.md`
 (pre-registered: every threshold, constant and decision clause fixed BEFORE the corrected rate
 was computed). Artifact:
 `docs/probe-data/noise-corrected-ceiling-iron-sweep-2026-08-16.json` (verdict-free). Commit
@@ -8192,8 +8192,8 @@ the detector no room.
 Judge-ranked step (4) of the 2026-08-15 classification run, executed under `/scientific-method`.
 **Outcome: LOG** — driver ACCEPT MEDIUM + blind post-op ACCEPT MEDIUM (2-of-2 ACCEPT, neither HIGH,
 so LOG not IMPLEMENT; the packet pre-registered LOG-class at every branch regardless). Packet
-`docs/handoffs/2026-08-17-n3-third-arm-preop-packet.md`; driver review (written pre-blind)
-`docs/handoffs/2026-08-17-n3-third-arm-driver-review.md`; artifact
+`docs/handoffs/closed/2026-08-17-n3-third-arm-preop-packet.md`; driver review (written pre-blind)
+`docs/handoffs/closed/2026-08-17-n3-third-arm-driver-review.md`; artifact
 `docs/probe-data/n3-third-arm-classification-2026-08-17.json`; pin
 `scripts/tests/probe/n3-third-arm.test.ts` (15/15). **NO NEW FOOTAGE** — `docs/probes/714 noon/3.mp4`
 was already in the tree.
@@ -8283,8 +8283,8 @@ known ground truth, which would convert the standing MAR caveat into a measured 
 2-of-2** (driver INCONCLUSIVE/HIGH, blind post-op ACCEPT-narrowed/MEDIUM) — the split is an owner
 escalation, recorded not resolved. Full record:
 `docs/handoffs/scientific-method-harness.md` (2026-08-17 entry). Packet / deliverable / artifact:
-`docs/handoffs/2026-08-17-anis-star-solo-magnitude-preop-packet.md`,
-`docs/handoffs/2026-08-17-anis-star-solo-magnitude-work-deliverable.md`,
+`docs/handoffs/closed/2026-08-17-anis-star-solo-magnitude-preop-packet.md`,
+`docs/handoffs/closed/2026-08-17-anis-star-solo-magnitude-work-deliverable.md`,
 `docs/probe-data/anis-star-solo-magnitude-2026-08-17.json`.
 
 **Footage:** no new recording. Re-analysis of `docs/probes/solo/anis-star-solo.mov` (solo #2) and

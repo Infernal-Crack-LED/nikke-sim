@@ -117,7 +117,7 @@ but leaves iron sweep below and T5 above a `liberalio`-free control band, so no 
 value reconciles both. The 2026-08-14 census counted her as covered by citing "§7's ×6", a value
 deleted on 2026-07-26 as a WEAPON misread (`hitsPerShot` = 1) — and see §7's ⚠: `rl3` cannot
 re-credit that 6 on the rider either. Full result + what would settle it:
-`docs/handoffs/2026-08-17-liberalio-gauge-credit-audit.md`. Ein's open 0.7x team-fight residual (open-questions U8) is
+`docs/handoffs/closed/2026-08-17-liberalio-gauge-credit-audit.md`. Ein's open 0.7x team-fight residual (open-questions U8) is
 therefore no longer attributable to the orb by default. The blablalink/synergy-API `burstGaugePerShot` column was **dropped as a
 gauge source** — its semantics vary per unit (helm's 5.6 is her TARGET value, takina's
 2.8 is her BASE, trina's 14.4 is her target ×2, a2's 15.6 matches nothing datamined).
@@ -321,7 +321,7 @@ The mismatches decode into exact kit mechanics rather than noise:
   `c12fcf4e`), and an attempt on 2026-08-17 to re-credit the same 6 as "1 bullet + the 5 sub-hits of
   her `skill1` rider" **cannot be supported by `rl3` either** — see the ⚠ below. Her rider's gauge
   credit is a live measurement-gated question, NOT an rl3 result:
-  `docs/handoffs/2026-08-17-liberalio-gauge-credit-audit.md`.
+  `docs/handoffs/closed/2026-08-17-liberalio-gauge-credit-audit.md`.
 
 > ⚠ **`rl3` CANNOT be decomposed into impacts-per-trigger (verified 2026-08-17).** It is one scalar
 > over (window length × cadence × per-impact energy × impacts), so solving for impacts needs two

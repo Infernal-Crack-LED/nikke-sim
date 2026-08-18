@@ -1082,7 +1082,7 @@ the measured rate is 0.45–0.55%). It does not touch the FIRST ground: the clos
 lesson 1 from that run, a failed closure clause cannot be re-scoped after the fact, and this
 run was written to respect that — it was pre-committed as a DETECTION-only run.
 
-**Artifacts:** packet `docs/handoffs/2026-08-16-noise-corrected-ceiling-preop-packet.md`;
+**Artifacts:** packet `docs/handoffs/closed/2026-08-16-noise-corrected-ceiling-preop-packet.md`;
 verdict-free artifact `docs/probe-data/noise-corrected-ceiling-iron-sweep-2026-08-16.json`;
 commit `8621d670`; record `docs/probe-runs.md` (2026-08-16 noise-corrected-ceiling entry).
 
@@ -1112,8 +1112,8 @@ convention the H-C-candidate event-rate excess is OBSERVED on a second non-vacuo
 6.7208/s, corrected 6.5927/s vs a 5.8996/s threshold — **on an arm that shares `liberalio` with the
 first**, which is part of the stamp rather than a caveat. Full record + reservations:
 `docs/probe-runs.md` 2026-08-17 third-arm entry. Artifacts: packet
-`docs/handoffs/2026-08-17-n3-third-arm-preop-packet.md`, pre-blind driver review
-`docs/handoffs/2026-08-17-n3-third-arm-driver-review.md`, verdict-free artifact
+`docs/handoffs/closed/2026-08-17-n3-third-arm-preop-packet.md`, pre-blind driver review
+`docs/handoffs/closed/2026-08-17-n3-third-arm-driver-review.md`, verdict-free artifact
 `docs/probe-data/n3-third-arm-classification-2026-08-17.json`, pin
 `scripts/tests/probe/n3-third-arm.test.ts` (15/15).
 
@@ -1275,8 +1275,8 @@ from the focus-matched arm). Even under H1 every seated comp still undershoots i
 **Outcome: LOG. The 2-of-2 did NOT close — this is the designed owner escalation, surfaced not
 resolved.** Measurement-only packet; **nothing enacted**, no `src/engine/**`, `data/**` or override
 file touched. QUEUE item N1. Packet:
-`docs/handoffs/2026-08-17-anis-star-solo-magnitude-preop-packet.md`. Deliverable:
-`docs/handoffs/2026-08-17-anis-star-solo-magnitude-work-deliverable.md`. Artifact:
+`docs/handoffs/closed/2026-08-17-anis-star-solo-magnitude-preop-packet.md`. Deliverable:
+`docs/handoffs/closed/2026-08-17-anis-star-solo-magnitude-work-deliverable.md`. Artifact:
 `docs/probe-data/anis-star-solo-magnitude-2026-08-17.json`. Instrument:
 `scripts/probe/gauge-magnitude.ts` + pin `scripts/tests/probe/gauge-magnitude.test.ts` (19/19).
 
@@ -1313,7 +1313,7 @@ green-full cue.
    exists nowhere in `.claude/**`, and there is no packet template — `SKILL.md` said only
    "**pre-committed DECISION RULE** with a falsification clause". **The defect was authored in THIS
    run's own packet**, so it is a run defect after all. Nor was it spreading: the same-day
-   `2026-08-17-n3-third-arm-preop-packet.md` states the identical concern correctly
+   `docs/handoffs/closed/2026-08-17-n3-third-arm-preop-packet.md` states the identical concern correctly
    ("R-C is a real, reachable outcome that this run can produce"). The durable fix landed as a
    generalized rule in `SKILL.md` step 1 + Gotchas (owner-approved 2026-08-17): **no decision-rule
    clause may be conditioned on the realized estimate**, enforced by a pre-run substitution test.
@@ -1392,7 +1392,7 @@ least 11.11% per shot." The pull count alone settles the direction — per-pull 
 
 **Open item 1 (render-scale calibration) — superseded by the anomaly recovery approach.**
 Instead of calibrating the bar scale, the 2026-08-18 re-run
-(`docs/handoffs/2026-08-18-anis-star-pre-register-rerun-work-deliverable.md`) pre-registered the
+(`docs/handoffs/closed/2026-08-18-anis-star-pre-register-rerun-work-deliverable.md`) pre-registered the
 anomaly value A = 3.71% and tested whether subtracting it from departing pulls recovers them as
 steady data points. E4 PASS: all 3 upward departures recover. The recovered E1 now has **3
 qualifying windows** (W2, W3, W4 — up from 2), with W2+W4 forming a robust pair (both ≥ 0.3
@@ -1406,7 +1406,7 @@ render columns). Clause 1 (MEASURED-ELEVATED) confirmed with strengthened eviden
 2026-08-17 `liberalio` gauge-credit LOG verdict stands.
 
 **What the run was.** QUEUE item N2, blocker 2: apply the pinned conversion rule
-(`docs/handoffs/2026-08-18-n2-conversion-rule-proposal.md`) to a second liberalio-free control's
+(`docs/handoffs/closed/2026-08-18-n2-conversion-rule-proposal.md`) to a second liberalio-free control's
 residual. Second control: N1 rapi/quency wind (boss Wind), traced from existing recording
 (`docs/probes/N/n1_rapi_quency_wind.mp4`). Fill-trace pipeline: ffmpeg crop → gauge-fill.py
 (team mode, magenta drain-bar lock, 134 px bar) → fill-trace-compare.ts spans → 13 windows,
@@ -1425,7 +1425,7 @@ settling measurement remains a per-pull gauge sub-step hand read (QUEUE priority
 
 **Files.** `scripts/battery/liberalio-gaugehits-ab.ts` (N1 added to `MEASURED_REFILL`),
 `docs/probe-data/fill-trace-n1-rapi-quency-wind-windows.json` (N1 fixture, NEW),
-`docs/handoffs/2026-08-18-n2-conversion-rule-result.md` (verdict record).
+`docs/handoffs/closed/2026-08-18-n2-conversion-rule-result.md` (verdict record).
 
 ## 2026-08-18 — `anis-star` baseGaugeProb enactment → IMPLEMENT
 

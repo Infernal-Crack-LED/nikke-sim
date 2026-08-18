@@ -17,7 +17,7 @@
 > `docs/open-questions.md` (single U-numbering — move it to `docs/answered-questions.md` with the
 > answer inline, no new A-number).
 >
-> **Last audited 2026-08-17** — every claim below was re-verified against the tree (branch merge
+> **Last audited 2026-08-18** — every claim below was re-verified against the tree (branch merge
 > state, file/symbol existence, test skips, doc paths). Landed narration deleted; dangling pointers
 > repaired.
 
@@ -54,62 +54,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
-> **NEXT UP — UNBLOCKED AND ORDERED (refreshed 2026-08-18).** Every item here is
-> footage-FREE: it runs against footage or fixtures ALREADY on disk, with instruments that already
-> exist. Take them top-down. The numbered threads below stay as the reference detail and are
-> mostly footage-gated — do NOT start there.
+> **Autonomous queue — empty as of 2026-08-18.** The lower-value notes below are not ordered work;
+> take them only if the owner adds one to the queue. The numbered threads below stay as reference
+> detail and are mostly footage-gated — do NOT start there.
 >
-> **1. `anis-star` pre-register re-run (thread 2) — COMPLETE (2026-08-18).**
-> **→ Work deliverable: `docs/handoffs/2026-08-18-anis-star-pre-register-rerun-work-deliverable.md`.**
-> **→ Artifact: `docs/probe-data/anis-star-e4-recovery-2026-08-18.json`.**
-> E4 PASS: A = 3.71 % explains all 3 upward departures (adjusted 11.49/11.59/12.29, all within
-> 2.175 pp of median 11.60). Clause 1 (MEASURED-ELEVATED) confirmed with strengthened evidence:
-> clause-1(ii) count rose from 2 → 3 windows (W4 now excludes 10.388 at 0.348 cols). W2 + W4
-> form a robust pair (both ≥ 0.3 cols) even if W3's razor-thin margin is disputed. E2 barely
-> moved (recovered runs have low weight from SE_A). Measurement only — no enactment.
->
-> **2. N2 blocker 2 — conversion rule APPLIED → SPREAD / INCONCLUSIVE (2026-08-18).**
-> **→ Result: `docs/handoffs/2026-08-18-n2-conversion-rule-result.md`.**
-> **→ Proposal (pinned rule): `docs/handoffs/2026-08-18-n2-conversion-rule-proposal.md`.**
-> Second control: N1 rapi/quency wind (R₂ = 0.903, δ₂ = 0.083). First control: PI2 (R₁ = 0.442,
-> δ₁ = 0.071). Δ = 0.461, δ_C = 0.165 → Δ > δ_C → SPREAD → INCONCLUSIVE. The estimator varies
-> too much across comps (N1 residual is 2× PI2's) to form a coherent control band. The
-> `liberalio` gauge-credit finding (LOG 2026-08-17) stays LOG — nothing enacted. The
-> comp-level estimator structurally cannot separate a reduced per-sub-hit value from the general
-> fill-tempo gap; the settling measurement is a per-pull hand read.
->
-> **3. N1c — OWNER RULED (2026-08-18).** Procedural dispute is moot: 9 pulls fill the bar on
-> three of four montage-verified windows → per-pull credit ≥ 100/9 = 11.11 %, which exceeds the
-> shipped 10.388 % (would need 9.63 pulls). The pull count alone settles the direction — the
-> clause-1(ii) machinery was over-engineering for a question the ammo counter already answered.
-> Per-pull gauge credit for Anis: Star is **elevated above the shipped model** (measurement, not
-> enactment — nothing changes in the engine). The pre-register re-run (item 1) now pins the
-> exact value and the anomaly mechanism, not the direction.
->
-> **N2. A SECOND `liberalio`-free fill trace — COMPLETE (2026-08-18), SPREAD → INCONCLUSIVE.**
-> Full record: `docs/handoffs/2026-08-17-n2-second-control-premise-gate.md` (premise gate),
-> `docs/handoffs/2026-08-18-n2-conversion-rule-proposal.md` (pinned rule),
-> `docs/handoffs/2026-08-18-n2-conversion-rule-result.md` (verdict). Summary:
->
-> - ~~**Blocker 1 — N3 gates N2.**~~ **CLEARED 2026-08-17** by the `gaugeHits` credit-schedule fix
->   (`2d4dd117`): the carrier seat now reconstructs at 1080.352 = engine, residual 0, was 463.008.
-> - ~~**Blocker 2 — conversion rule unpinned.**~~ **CLEARED 2026-08-18**: rule pinned numerically
->   (Δ = |R₁−R₂|, δ_C = 2×max(δ₁,δ₂), CLUSTER/SPREAD branches, no middle zone), applied to the N1
->   control trace, yielded SPREAD → INCONCLUSIVE.
-> - ~~**Blocker 3 — N5 is the wrong control.**~~ **BYPASSED 2026-08-18**: N1 rapi/quency wind
->   traced instead (no `fullBurstExtend` carrier, no `liberalio`, boss Wind).
->
-> Also corrected there: N5 has **no fill-trace bundle at all** (so "clean bundle" was a hoped-for
-> outcome, not a property); "measured FB 12/12" is splash-scan notation, **not** sim 12 / real 12
-> (measured is 12, sim reads 13); and T5's "1.75–1.82" is **not** an uncertainty interval but one
-> measurement under two window-inclusion choices.
->
-> **What CONFIRMED and is reusable:** the bar-paint chain is sound — iron 2.342 / T5 1.817 (readable)
-> / PI2 2.0915 all recompute exactly from raw 60fps reads (36/36 per-window identical), and the chain
-> applies to new footage (precedent: `fill-trace-n3-scarlet-liberalio-iron.json`). The handoff lists
-> its per-recording requirements, its five gates, and its documented failure modes.
-> ⚑ `docs/probes/**` is GITIGNORED — a fresh worktree has no media, so run this in the main tree (or
-> symlink the probe dir).
+> _Empty as of 2026-08-18 — all unblocked items landed or archived to `docs/handoffs/closed/`._
 >
 > Also unblocked but lower value: `mihara-bonding-chain`'s fit exposure (thread 1 — localize the
 > over-model, do not restore the 12-stack average); the clean-bin-time vs full-window denominator
@@ -141,44 +90,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      missing application-gauge credits). H-A team-context route CLOSED by owner ruling. The
      `anis-star` U28 divisor read is what remains of the encoding audit path.
      `iron sweep (run G)` regression comp stays disabled.
-   - **`anis-star` solo magnitude residual — ENACTED (2026-08-18).** Pre-register re-run
-     confirmed clause 1: A = 3.71% (`basePerTrigger` 140 × 2.5 focus × 1.06 aura) explains all 3
-     upward departures (E4 PASS). Direction settled by owner ruling (9 pulls ≥ 11.11%/pull).
-     **Enacted:** `baseGaugeProb: 0.25` added to `gauge-per-shot.json`; `sim.ts` `gaugePerShot()`
-     now credits `(baseGaugeProb × basePerTrigger / 100) × focusMult × aura` on focused shots —
-     a per-shot average of 0.35 gauge credit (0.25 × 140/100 × 2.5 × 1.06). `fb-count-matrix.ts`
-     credit-schedule mirror updated in lockstep. All 4666 tests green after re-pinning
-     refill-starvation, focus-columns, gauge-source-census, and board-hash-parity artifacts.
-     **→ `docs/handoffs/2026-08-18-anis-star-pre-register-rerun-work-deliverable.md`** (measurement).
-   - **⇒ `liberalio` GAUGE-CREDIT AUDIT — CLOSED as LOG 2026-08-17. Defect FOUND, magnitude
-     INCONCLUSIVE at 2-of-2. Nothing enacted.**
-     **→ Handoff: [2026-08-17-liberalio-gauge-credit-audit.md](2026-08-17-liberalio-gauge-credit-audit.md)**
-     · decision log: `scientific-method-harness.md` (2026-08-17).
-     Her datamine row is EXACT (refutes the per-unit-datamine hypothesis that opened this thread).
-     The defect: her `skill1` rider says "Activates 5 times" but the aggregated 202.5 `flatDamage`
-     carries no `gaugeHits`, so the engine credits ONE gauge impact per full charge. Crediting all
-     five moves BOTH scored comps' refill TOWARD the measured tape and lifts FB counts without
-     overshooting any measured count, but leaves iron sweep below and T5 above a `liberalio`-free
-     control band ⇒ no single per-sub-hit value reconciles both. Controls byte-identical, damage
-     bit-identical. **`npx tsx scripts/battery/liberalio-gaugehits-ab.ts --residual`** reproduces it;
-     census `npx tsx scripts/census-gauge-subhits.ts`.
-     **Three things this run KILLED — do not rebuild reasoning on them:**
-     (a) the "measured 4.43 / 3.56 / 3.71" refill literals in `gauge-cycle-decomp.test.ts` are
-     relabelled 2026-08-04 SIM output, not footage (4 independent legs); the real bar-paint tape is
-     2.342 / 1.75–1.82 / 2.09–2.11s, so **the sim refills TOO SLOWLY, including on the
-     `liberalio`-free PI2 control (~44% slow)**; (b) `rl3` cannot be decomposed into
-     impacts-per-trigger (degenerate — 33.6 fits 6, 3 or 12 equally), so it never corroborated the
-     5-sub-hit count; (c) her presence in exactly the four disabled comps is MEMBERSHIP, not
-     mechanism — already stamped "NOT liberalio-specific" with 5 of the 9 affected comps seating
-     no `liberalio`.
-     **NEXT, in priority order:** (1) ~~PREREQUISITE — the credit-schedule reconstruction never reads
-     `gaugeHits`~~ **DONE 2026-08-17**: it now credits per sub-hit, pinned on `N5 snowwhite-HA fire`
-     by `scripts/tests/battery/credit-schedule.test.ts`; (2) the settling measurement is a
-     `maiden-ice-rose`-style hand read of her per-pull gauge sub-steps (the comp-level estimator
-     structurally cannot separate a reduced per-sub-hit value from the general gap); (3) a second
-     committed fill trace on a `liberalio`-free stamped-class comp — **NEXT UP N2, and NOT
-     footage-gated: `N5 snowwhite-HA fire`'s recording is already on disk** — which converts a
-     reproduced split into an affirmative REJECT.
    - **Batched `gaugeHits` follow-up (findings-only, small):** `cinderella` (burst, N=10),
      `eve` (burst, N=6), `julia` (burst, N=5) also aggregate a multi-hit without `gaugeHits`. All
      once-per-cast, so none can carry the FB shortfall — and the 2026-08-17 run gives no support for
@@ -187,11 +98,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      the clean-bin-time vs full-window denominator on a fixture with known ground truth, which would
      turn the standing MAR caveat into a measured bias bound — every detection in this thread is
      currently estimator-conditional.
-   - **Third-arm run LANDED 2026-08-17 → LOG.** Two open follow-ups only (the rest is in
-     `docs/probe-runs.md` + the harness log, do not re-narrate here):
-     (i) **future packets must PIN A CONTROL'S ESTIMATOR, not just its tolerance** — C2 bound on
-     "FB duration 15.0 ± 0.5s" without saying how to measure one, and the branch flipped between
-     four defensible readings; (ii) **every detection on this thread is ESTIMATOR-CONDITIONAL** —
+   - **Third-arm follow-up (i):** future packets must **PIN A CONTROL'S ESTIMATOR**, not just its
+     tolerance — C2 bound on "FB duration 15.0 ± 0.5s" without saying how to measure one, and the
+     branch flipped between four defensible readings.
+   - **Third-arm follow-up (ii):** every detection on this thread is **ESTIMATOR-CONDITIONAL** —
      under the full-window denominator N3 reads 11.0% BELOW its own ceiling (iron: 5.7%), and C7's
      bridge-vs-activity ratios run OPPOSITE on the two arms (0.757 vs 1.357), so the estimator's
      behaviour has no mechanism.
@@ -202,10 +112,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    - **`--gauge-sources` census under-counts** gaugeHits sub-hits (LIVE on N5 snowwhite-HA
      fire); census purpose is path verification not total counting — owner call whether to fix.
      → `n6-gaugehits-blindness-audit-2026-08-17.json`
-   - **T1 wind-weak v2 PROCESSED 2026-08-16** — 13 FBs confirmed (scan.ts, 2nd detector
-     corroborated), per-unit totals from Battle Records screenshot. Result:
-     `docs/probes/misc/t1-wind-weak-v2-result.md`. Confirms the existing "windweak t257 13fb"
-     probe; comp remains disabled in regression (sim 11-12 FBs vs measured 13, engine shortfall).
    - **`ein` U8 0.7× team residual** — findings-only (N2); stage1→2 real 33f/32f vs modeled 30f
      (runs AGAINST the gap).
 
