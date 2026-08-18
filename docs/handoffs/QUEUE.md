@@ -96,7 +96,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      denominators against an independently known true rate, flagging biased clean-sets or a
      full-window denominator that is closer to truth. Still pending: run the validator against a
      real fixture with known ground truth (solo anchor / ammo-counter count) to turn the standing
-     MAR caveat into a measured bias bound.
+     MAR caveat into a measured bias bound. Note: the full-window denominator remains
+     estimator-conditional — C7's bridge-vs-activity ratios run OPPOSITE on the two arms (0.757 vs
+     1.357), so the estimator's behaviour has no mechanism.
    - **Probe tooling — `read-ammo.ts`** reads 0/851 frames on text-label HUD ("AMMO / NNN") —
      needs a text-label digit reader path.
    - **`scan.ts` `--debug-dir` (~line 184)** has the bare-flag-silently-skipped pattern fixed

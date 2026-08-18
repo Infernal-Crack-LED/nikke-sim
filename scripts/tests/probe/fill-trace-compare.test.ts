@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   analyzeComp,
+  CLS_BIN_SEC,
   decisionRule,
   fbDuration,
   isClean,
@@ -276,9 +277,9 @@ describe('fbDuration — C2 control estimator is pinned', () => {
     expect(res.test!.perCycleCanonicalInBand).not.toBeNull();
   });
 
-  it('rejects an invalid --estimator value at the CLI level', () => {
-    // The exported function validates the estimator inside the CLI helper; exercise it indirectly
-    // by checking the type narrows correctly and bracket mode keeps the canonical estimate null.
+  it("'bracket' estimator keeps the canonical estimate null and falls back to the bracket check", () => {
+    // The exported function accepts the same estimator values as the CLI; bracket mode is the
+    // assumption-free fallback when no calibrated point estimate is wanted.
     const res = fbDuration({
       fx: fixture,
       fixturePath: 'docs/probe-data/tempo-cycle-u8-g-iron-sweep.json',
@@ -313,6 +314,8 @@ describe('validateCleanBinDenominator — ground-truth fixture bias check', () =
       eventBins,
       usableCleanBins,
       sumRealDurationSec: durSec,
+      realEventBinsPerSec:
+        eventBins / Math.max(1e-9, usableCleanBins * CLS_BIN_SEC),
     }) as const;
 
   it('passes when clean-bin-time rate matches the known true rate', () => {

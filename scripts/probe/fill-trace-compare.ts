@@ -4893,9 +4893,10 @@ export interface FbDurationResult {
     tolSec: number;
     band: [number, number];
     /**
-     * Which estimator is canonical for the control verdict. Pre-op packets MUST pin this; the
-     * default is 'paint' because it is ~10x tighter than the render-calibrated reading and is
-     * unbiased on the committed calibration fixtures.
+     * Which estimator is canonical for the control verdict. Pre-op packets MUST pin this. The
+     * default is 'paint' when a calibration arm is supplied (it is ~25-43x tighter than the
+     * render-calibrated reading on the committed iron/N3 fixtures; docs/probe-runs.md:8239), and
+     * 'bracket' otherwise.
      */
     estimator: 'paint' | 'rendered' | 'midpoint' | 'bracket';
     perCycleBracketContainsExpect: boolean[];
@@ -4993,8 +4994,9 @@ export function fbDuration(opts: {
   tolSec?: number;
   /**
    * Which calibrated estimate is canonical for the control verdict. Future pre-op packets MUST pin
-   * this explicitly. The default 'paint' is chosen because the paint-calibrated estimator is
-   * ~10x tighter than the render-calibrated one and unbiased on committed calibration fixtures.
+   * this explicitly. The default is 'paint' when a calibration arm is supplied (it is ~25-43x
+   * tighter than the render-calibrated reading on the committed iron/N3 fixtures;
+   * docs/probe-runs.md:8239), and 'bracket' otherwise.
    */
   estimator?: 'paint' | 'rendered' | 'midpoint' | 'bracket';
 }): FbDurationResult {
@@ -5049,8 +5051,18 @@ export function fbDuration(opts: {
       : null;
     // Default control estimator: paint when calibration is available (so a calibrated point
     // estimate exists), otherwise bracket (the only assumption-free check without a calibration arm).
-    const estimator: 'paint' | 'rendered' | 'midpoint' | 'bracket' =
-      opts.estimator ?? (calibration ? 'paint' : 'bracket');
+    const requested = opts.estimator ?? (calibration ? 'paint' : 'bracket');
+    if (
+      !calibration &&
+      (requested === 'paint' ||
+        requested === 'rendered' ||
+        requested === 'midpoint')
+    ) {
+      throw new Error(
+        `fbDuration: estimator '${requested}' requires a calibration arm (opts.calib)`
+      );
+    }
+    const estimator = requested;
     let perCycleCanonicalEstimate: number[] | null = null;
     if (estimator === 'rendered') {
       perCycleCanonicalEstimate = calRendered;
@@ -5239,38 +5251,51 @@ export interface DenominatorValidation {
   tolerancePct: number;
   /** clean-bin-time rate is within tolerance of the known true rate */
   cleanBinTimePasses: boolean;
-  /** full-window rate is NOT closer to true than clean-bin-time (anti-cheat guard) */
+  /**
+   * full-window rate is NOT materially closer to truth than clean-bin-time (anti-cheat guard).
+   * A small margin breaks exact ties so the guard does not pass vacuously when the two biases
+   * are equal.
+   */
   fullWindowNotCloser: boolean;
   robust: boolean;
 }
+
+/** Margin for fullWindowNotCloser, in percentage points, so exact ties do not pass. */
+const FULL_WINDOW_MARGIN_PCT = 0.5;
 
 export function validateCleanBinDenominator(opts: {
   comp: string;
   pooled: Pick<
     ClsPooled,
-    'eventBins' | 'usableCleanBins' | 'sumRealDurationSec'
+    | 'eventBins'
+    | 'usableCleanBins'
+    | 'sumRealDurationSec'
+    | 'realEventBinsPerSec'
   >;
   knownTrueRatePerSec: number;
   tolerancePct?: number;
 }): DenominatorValidation {
   const E = opts.pooled.eventBins;
-  const U = opts.pooled.usableCleanBins;
-  const T = U * CLS_BIN_SEC;
-  const cleanBinRate = E / T;
-  const fullWindowRate = E / opts.pooled.sumRealDurationSec;
+  const cleanBinRate = Number.isFinite(opts.pooled.realEventBinsPerSec)
+    ? opts.pooled.realEventBinsPerSec
+    : NaN;
+  const durSec = opts.pooled.sumRealDurationSec;
+  const fullWindowRate =
+    Number.isFinite(durSec) && durSec > 0 ? E / durSec : NaN;
   const trueRate = opts.knownTrueRatePerSec;
   const tolerancePct = opts.tolerancePct ?? 10;
   const bias = (r: number): number =>
-    Number.isFinite(trueRate) && trueRate !== 0
+    Number.isFinite(trueRate) && trueRate !== 0 && Number.isFinite(r)
       ? round(((r - trueRate) / trueRate) * 100, 2)
       : NaN;
   const cleanBias = bias(cleanBinRate);
   const fullBias = bias(fullWindowRate);
-  const cleanPasses = Math.abs(cleanBias) <= tolerancePct;
+  const cleanPasses =
+    Number.isFinite(cleanBias) && Math.abs(cleanBias) <= tolerancePct;
+  const finiteBiases = Number.isFinite(cleanBias) && Number.isFinite(fullBias);
   const fullNotCloser =
-    !Number.isFinite(cleanBias) ||
-    !Number.isFinite(fullBias) ||
-    Math.abs(fullBias) >= Math.abs(cleanBias);
+    finiteBiases &&
+    Math.abs(fullBias) >= Math.abs(cleanBias) + FULL_WINDOW_MARGIN_PCT;
   return {
     comp: opts.comp,
     knownTrueRatePerSec: round(trueRate, 4),
@@ -5281,7 +5306,7 @@ export function validateCleanBinDenominator(opts: {
     tolerancePct,
     cleanBinTimePasses: cleanPasses,
     fullWindowNotCloser: fullNotCloser,
-    robust: cleanPasses && fullNotCloser,
+    robust: cleanPasses && fullNotCloser && finiteBiases,
   };
 }
 

@@ -114,12 +114,12 @@ echo "→ dispatching $(basename "$PACKET") to $MODEL ($MODE mode) …" >&2
 #                 --max-turns 3 gives recovery room if a tool attempt slips
 #                 through.
 #   code-review — READ-ONLY tools (Read,Grep,Glob,Bash; Write/Edit excluded)
-#                 and --max-turns 12 so the reviewer can read callers and run
+#                 and --max-turns 40 so the reviewer can read callers and run
 #                 typecheck/tests before answering.
 # NOTE: --bare breaks OAuth/keychain auth, so we don't use it.
 CLAUDE_ARGS=(--model "$MODEL" --output-format json)
 if [[ "$MODE" == "code-review" ]]; then
-  CLAUDE_ARGS+=(--max-turns 12 --allowedTools "Read,Grep,Glob,Bash")
+  CLAUDE_ARGS+=(--max-turns 40 --allowedTools "Read,Grep,Glob,Bash")
 else
   CLAUDE_ARGS+=(--max-turns 3 --allowedTools "DISABLED")
 fi
