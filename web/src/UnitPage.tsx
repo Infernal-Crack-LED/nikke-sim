@@ -34,7 +34,7 @@ import {
   chargeLatencyFrames,
 } from '../../src/infographics/core/tableData';
 import type { TableCardData } from '../../src/infographics/core/tableCard';
-import { loadDpsChart, rankedFor } from './dpschartData';
+import { loadDpsChart, compareIn } from './dpschartData';
 import { manifestThumbUrl } from './portraitManifest';
 import {
   ICON_BY_BURST,
@@ -378,7 +378,10 @@ interface Standing {
 }
 // The unit's place in the two Solo headline cells the Nikke card's rank tiles
 // use (unitCardData's NEUTRAL_CELL / ELEWEAK_CELL) — so the page text and the
-// hero card agree. Lazy: dpschart.json is a large build artifact.
+// hero card agree. That includes the card's SCOPES: neutral ranks the whole
+// board, elemental-advantage ranks within the unit's own element (owner,
+// 2026-08-18), which is what `element` here selects. Lazy: dpschart.json is a
+// large build artifact.
 interface DpsState {
   neutral: Standing | null;
   eleweak: Standing | null;
@@ -389,7 +392,7 @@ interface DpsState {
   // boards", which is a statement about the unit rather than about the fetch.
   unavailable: boolean;
 }
-function useDpsStanding(slug: string | null): DpsState {
+function useDpsStanding(slug: string | null, element?: string): DpsState {
   const [state, setState] = useState<DpsState>({
     neutral: null,
     eleweak: null,
@@ -403,23 +406,25 @@ function useDpsStanding(slug: string | null): DpsState {
     let live = true;
     const standing = (
       art: Awaited<ReturnType<typeof loadDpsChart>>,
-      cellId: string
+      cellId: string,
+      ele?: string
     ): Standing | null => {
       const cell = parseCellId(cellId);
       if (!cell) {
         return null;
       }
-      const pop = rankedFor(art, cell);
-      // The plain row, never a variant profile — a profiled unit appears twice.
-      const row = pop.find((e) => e.slug === slug && e.profile == null);
-      return row ? { rank: row.rank, total: pop.length } : null;
+      // compareIn targets the PLAIN row (a profiled unit appears twice) and, with
+      // an element, ranks within that element's population — the same lookup the
+      // /dpschart compare selector uses.
+      const row = compareIn(art, cell, slug, ele ?? null);
+      return row ? { rank: row.rank, total: row.total } : null;
     };
     loadDpsChart()
       .then((art) => {
         if (live) {
           setState({
             neutral: standing(art, NEUTRAL_CELL),
-            eleweak: standing(art, ELEWEAK_CELL),
+            eleweak: standing(art, ELEWEAK_CELL, element),
             loaded: true,
             unavailable: false,
           });
@@ -438,7 +443,7 @@ function useDpsStanding(slug: string | null): DpsState {
     return () => {
       live = false;
     };
-  }, [slug]);
+  }, [slug, element]);
   return state;
 }
 
@@ -461,7 +466,7 @@ export function UnitPage({ slug }: { slug: string | null }) {
     [slug]
   );
   const cardUrl = useUnitCardUrl(character ? slug : null, unitImageUrl(slug));
-  const dps = useDpsStanding(character ? slug : null);
+  const dps = useDpsStanding(character ? slug : null, character?.element);
 
   useEffect(() => {
     const pathname = window.location.pathname;
@@ -657,7 +662,8 @@ export function UnitPage({ slug }: { slug: string | null }) {
                     #{dps.eleweak.rank}
                     <span className="muted"> of {dps.eleweak.total}</span>
                   </b>{' '}
-                  against a boss weak to her element
+                  among {character.element} units, against a boss weak to her
+                  element
                 </li>
               )}
               {dps.neutral && (

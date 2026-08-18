@@ -42,7 +42,7 @@ export const fmtMagnitude = (n: number): string =>
 // as "w/ X"); the DPS chart's variant profiles (src/dpschart/matrix.ts
 // CHART_VARIANTS) are a per-unit BUILD/rotation choice, not a teammate, so they
 // need an explicit short label here rather than falling through to "w/ <id>".
-const PROFILE_LABELS: Record<string, string> = {
+export const PROFILE_LABELS: Record<string, string> = {
   'with-2mg': 'w/ 2 MG',
   'with-1mg': 'w/ 1 MG',
   'with-mg': 'w/ MG',

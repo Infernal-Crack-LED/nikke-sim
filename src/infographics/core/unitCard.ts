@@ -404,7 +404,7 @@ function tileAdvances(tile: RankTile, big: boolean): number[] {
   if (tile.profileChip) {
     sublines.push(big ? 21 : 15);
   }
-  if (tile.defaultRank != null) {
+  if (tile.altRank != null) {
     sublines.push(0); // last line advances nothing
   }
   if (sublines.length) {
@@ -443,9 +443,9 @@ function drawTile(
   ctx.textAlign = 'center';
 
   ctx.fillStyle = TEXT_SECONDARY;
-  ctx.font = `700 ${big ? 15 : 11}px ${FONT}`;
+  ctx.font = tileTitleFont(big);
   ctx.fillText(
-    fitText(ctx, tile.title.toUpperCase(), r.w - 16),
+    fitText(ctx, tile.title.toUpperCase(), r.w - TILE_TITLE_PAD),
     cx,
     r.y + (big ? 24 : 18)
   );
@@ -476,11 +476,14 @@ function drawTile(
   let y = numeralY + adv[ai++];
   ctx.fillStyle = TEXT_PRIMARY;
   ctx.font = `700 ${big ? 22 : 15}px ${FONT}`;
-  ctx.fillText(fitText(ctx, tile.value ?? '', r.w - 12), cx, y);
+  // Same budget as the sub-lines below it — one constant, not a second copy.
+  ctx.fillText(fitText(ctx, tile.value ?? '', r.w - TILE_SUB_PAD), cx, y);
 
-  // Dual rank (§8a ruling 14): the PROFILED rank is the single large numeral
-  // above; the profile chip and the muted default rank sit below. Two numerals
-  // of equal weight would compete and neither would read at timeline scale.
+  // Dual rank (§8a ruling 14): the HEADLINE rank is the single large numeral
+  // above (unitCardData.leadRow picks which of the unit's two rows that is); its
+  // chip and the muted OTHER rank ('#15 SR', '#12 default') sit below. Two
+  // numerals of equal weight would compete and neither would read at timeline
+  // scale.
   // Text is fitted at DRAW time, after its own font is set — measuring a
   // 400/11px sub-line against the 700/15px value font truncates it early.
   const sublines: { text: string; fill: string; font: string }[] = [];
@@ -495,14 +498,14 @@ function drawTile(
     sublines.push({
       text: tile.profileChip,
       fill: '#8fb4ff',
-      font: `700 ${big ? 15 : 11}px ${FONT}`,
+      font: tileChipFont(big),
     });
   }
-  if (tile.defaultRank != null) {
+  if (tile.altRank != null) {
     sublines.push({
-      text: `#${tile.defaultRank} default`,
+      text: tileAltLine(tile),
       fill: TEXT_DIM,
-      font: `400 ${big ? 14 : 10}px ${FONT}`,
+      font: tileAltFont(big),
     });
   }
   if (sublines.length) {
@@ -511,12 +514,56 @@ function drawTile(
   sublines.forEach((ln, i) => {
     ctx.fillStyle = ln.fill;
     ctx.font = ln.font;
-    ctx.fillText(fitText(ctx, ln.text, r.w - 12), cx, y);
+    ctx.fillText(fitText(ctx, ln.text, r.w - TILE_SUB_PAD), cx, y);
     if (i < sublines.length - 1) {
       y += adv[ai++];
     }
   });
   ctx.textAlign = 'left';
+}
+
+// ---- tile-title geometry (exported: a title that doesn't fit is TRUNCATED, and
+// the landscape tile is the tightest text slot on the card — ~111px of budget at
+// 11px bold. The ele-adv tile's title carries the unit's element, so the longest
+// element name is what decides whether that label survives; unit-card-layout's
+// title-fit case measures against THESE, not a copy of them.)
+
+export const TILE_TITLE_PAD = 16; // horizontal padding inside a tile, both sides
+export const tileTitleFont = (big: boolean): string =>
+  `700 ${big ? 15 : 11}px ${FONT}`;
+
+// The sub-lines under the numeral (value, profile chip, '#6 SR' alt rank) have
+// their own budget and their own fonts. The alt line is the one that grew: it
+// used to read '#12 default' on every board and now carries a profile label, so
+// the longest label in the vocabulary is what decides whether it survives.
+export const TILE_SUB_PAD = 12;
+export const tileChipFont = (big: boolean): string =>
+  `700 ${big ? 15 : 11}px ${FONT}`;
+export const tileAltFont = (big: boolean): string =>
+  `400 ${big ? 14 : 10}px ${FONT}`;
+export const tileAltLine = (tile: RankTile): string =>
+  `#${tile.altRank} ${tile.altChip ?? 'default'}`;
+
+// The right-hand (tiles + notes) column on the landscape card.
+const rightColumnWidth = (): number => {
+  const innerW = UNIT_CARD_W - PAD * 2;
+  return innerW - Math.round(innerW * LEFT_COL_FRAC) - COL_GUTTER;
+};
+
+// One rank tile's width. Landscape tiles sit in the right column, portrait tiles
+// span the full content width; both rows are `count` tiles with TILE_GAP between.
+export function rankTileWidth(
+  variant: UnitCardVariant,
+  count = 3
+): { width: number; big: boolean } {
+  const row =
+    variant === 'twitter'
+      ? UNIT_CARD_PORTRAIT_W - PAD_P * 2
+      : rightColumnWidth();
+  return {
+    width: (row - TILE_GAP * (count - 1)) / count,
+    big: variant === 'twitter',
+  };
 }
 
 function drawTiles(
@@ -691,7 +738,7 @@ function drawBarChart(
     const by = y + barH - barH * 0.72;
     const bh = barH * 0.72;
 
-    ctx.globalAlpha = row.isDefaultAppendix ? 0.45 : 1;
+    ctx.globalAlpha = row.isAppendix ? 0.45 : 1;
     if (row.segments) {
       // Sustain is a 3-segment split (heal / shield / lifesteal) drawn inside
       // one track — a single-colour sustain bar loses the composition that
@@ -970,7 +1017,7 @@ export function drawUnitCard(ctx: Canvas2DLike, d: UnitCardData): void {
 
   const innerW = W - PAD * 2;
   const leftW = Math.round(innerW * LEFT_COL_FRAC);
-  const rightW = innerW - leftW - COL_GUTTER;
+  const rightW = rightColumnWidth();
   const rightX = PAD + leftW + COL_GUTTER;
 
   // The two gaps below the title absorb the taller title art: the bar charts are

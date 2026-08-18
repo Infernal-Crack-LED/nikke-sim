@@ -50,12 +50,13 @@ const haveBoards = !!(
 );
 
 // DPS-chart variant units (src/dpschart/matrix.ts CHART_VARIANTS, landed
-// 2026-07-29): their own card headlines the PROFILED row (see findHits/
-// headline in unitCardData.ts), which is not necessarily the row at their
-// raw array position — so a plain "rank == array index + 1" check only holds
-// for a non-variant slug. Tests below that sample "the #1 unit" or "unit at
-// array index i" skip past a variant landing on that boundary instead of
-// asserting a rank that dpsTile deliberately doesn't report for it.
+// 2026-07-29): they occupy TWO rows on every DPS cell, and their own card
+// headlines the DEFAULT one (see findHits/leadRow in unitCardData.ts), which is
+// not necessarily the row at a given array position — so a plain "rank == array
+// index + 1" check only holds for a non-variant slug. Tests below that sample
+// "the #1 unit" or "unit at array index i" skip past a variant landing on that
+// boundary instead of asserting a rank that dpsTile deliberately doesn't report
+// for it.
 const DPS_VARIANT_SLUGS = [
   'cinderella-crystal-wave',
   'bready',
@@ -132,9 +133,10 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
       expect(rh.burst, 'red-hood should still be the Λ unit').toBe('Λ');
       const model = build('red-hood');
       expect(model.burstIsLambda).toBe(true);
+      // the ele-adv tile NAMES its pool — it ranks within red-hood's own element
       expect(model.tiles.map((t) => t.title)).toEqual([
         'Neutral DPS',
-        'Ele. Adv. DPS',
+        'Ele. Adv. · Iron',
         'Burst Gen',
       ]);
     }
@@ -146,7 +148,7 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
       const model = build('red-hood');
       expect(model.charts.map((c) => c.title)).toEqual([
         'Neutral DPS',
-        'Ele. Adv. DPS',
+        'Ele. Adv. · Iron',
       ]);
     }
   );
@@ -272,7 +274,7 @@ describe('buildUnitCardData — values mirror the site (ruling 1)', () => {
     () => {
       const top = dpschart.cells[NEUTRAL_CELL][0][0];
       if (DPS_VARIANT_SLUGS.includes(top)) {
-        return; // its own card headlines its profiled row instead — see above
+        return; // its own card headlines its default row instead — see above
       }
       const model = build(top);
       expect(model.tiles[0].rank).toBe(1);
@@ -283,25 +285,84 @@ describe('buildUnitCardData — values mirror the site (ruling 1)', () => {
     }
   );
 
+  it.runIf(haveBoards)('neutral ranks match the artifact index', () => {
+    const rows = dpschart.cells[NEUTRAL_CELL];
+    // sample across the board, not just the top
+    for (const i of [0, 1, Math.floor(rows.length / 2), rows.length - 1]) {
+      const slug = rows[i][0];
+      if (!characters.characters[slug] || DPS_VARIANT_SLUGS.includes(slug)) {
+        continue;
+      }
+      const model = build(slug);
+      expect(model.tiles[0].rank, `${slug} ${NEUTRAL_CELL}`).toBe(i + 1);
+    }
+  });
+
+  // The ele-adv tile ranks within the unit's OWN element, so its rank is NOT the
+  // raw array index. Checked as PROPERTIES of the result rather than by re-running
+  // the builder's own filter-then-index: a rank is "how many same-element rows beat
+  // her, plus one", a pool is "how many same-element rows exist", and every row the
+  // chart draws is same-element. A filter or an index that drifted would break at
+  // least one of the three; restating filter+indexOf would have validated the code
+  // against itself.
   it.runIf(haveBoards)(
-    'ranks match the artifact index for both DPS cells',
+    'ele-adv ranks are within the unit’s own element',
     () => {
-      for (const [cell, tileIdx] of [
-        [NEUTRAL_CELL, 0],
-        [ELEWEAK_CELL, 1],
-      ] as const) {
-        const rows = dpschart.cells[cell];
-        // sample across the board, not just the top
-        for (const i of [0, 1, Math.floor(rows.length / 2), rows.length - 1]) {
-          const slug = rows[i][0];
-          if (
-            !characters.characters[slug] ||
-            DPS_VARIANT_SLUGS.includes(slug)
-          ) {
-            continue;
-          }
-          const model = build(slug);
-          expect(model.tiles[tileIdx].rank, `${slug} ${cell}`).toBe(i + 1);
+      const rows: [string, number, string | null][] =
+        dpschart.cells[ELEWEAK_CELL];
+      const elementsOf = (slug: string): string[] => {
+        const u = dpschart.units[slug];
+        return u ? (u.elements ?? [u.element]) : [];
+      };
+      let checked = 0;
+      for (const i of [
+        0,
+        1,
+        Math.floor(rows.length / 3),
+        Math.floor(rows.length / 2),
+        rows.length - 1,
+      ]) {
+        const slug = rows[i][0];
+        const c = characters.characters[slug];
+        if (!c) {
+          continue;
+        }
+        const mine = rows.filter((r) => elementsOf(r[0]).includes(c.element));
+        const own = mine.find((r) => r[0] === slug && !r[2])!;
+        const better = mine.filter((r) => r[1] > own[1]).length;
+
+        const tile = build(slug).tiles[1];
+        expect(tile.rank, `${slug} ele-adv rank`).toBe(better + 1);
+        expect(tile.population, `${slug} ele-adv pool`).toBe(mine.length);
+        // the pool really is narrower than the whole board, else every case here
+        // would pass just as well against an unfiltered population
+        expect(mine.length, `${slug} ele-adv pool`).toBeLessThan(rows.length);
+        checked++;
+      }
+      expect(
+        checked,
+        'no sampled ele-adv rows resolved to a character'
+      ).toBeGreaterThan(0);
+    }
+  );
+
+  it.runIf(haveBoards)(
+    'every row the ele-adv chart draws shares the unit’s element',
+    () => {
+      for (const slug of Object.keys(characters.characters)) {
+        const c = characters.characters[slug];
+        if (!isDpsSet(c.burst)) {
+          continue;
+        }
+        const chart = build(slug, {
+          neighbourRows: NEIGHBOUR_ROWS_PORTRAIT,
+        }).charts[1];
+        for (const row of chart.rows) {
+          const u = dpschart.units[row.slug];
+          expect(
+            u ? (u.elements ?? [u.element]) : [],
+            `${slug} ele-adv chart drew ${row.slug}`
+          ).toContain(c.element);
         }
       }
     }
@@ -371,8 +432,9 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
       expect(tile.title).toBe('Team Buffs');
       expect(tile.profileChip).toBe('w/ Healer');
       expect(tile.rank).not.toBeNull();
-      expect(tile.defaultRank).not.toBeNull();
-      expect(tile.rank!).toBeLessThan(tile.defaultRank!);
+      expect(tile.altRank).not.toBeNull();
+      expect(tile.altChip).toBe('default');
+      expect(tile.rank!).toBeLessThan(tile.altRank!);
     }
   );
 
@@ -381,11 +443,11 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
     () => {
       const model = build('crown');
       const chart = model.charts[0];
-      const appendix = chart.rows.filter((r) => r.isDefaultAppendix);
+      const appendix = chart.rows.filter((r) => r.isAppendix);
       expect(appendix).toHaveLength(1);
       // it is LAST by construction, even though its rank is worse than the row
       // above it — that is intended, not a sorting bug.
-      expect(chart.rows[chart.rows.length - 1].isDefaultAppendix).toBe(true);
+      expect(chart.rows[chart.rows.length - 1].isAppendix).toBe(true);
       expect(appendix[0].slug).toBe('crown');
       // It is labelled 'default' by its chip, which the renderer draws as a pill
       // AFTER the name (it used to be a 'default · ' prefix on the name text).
@@ -417,9 +479,7 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
         }))
         .filter(({ slug, chart }) => {
           const own = chart?.rows.filter((r) => r.slug === slug) ?? [];
-          return (
-            own.length === 2 && !chart!.rows.some((r) => r.isDefaultAppendix)
-          );
+          return own.length === 2 && !chart!.rows.some((r) => r.isAppendix);
         });
 
       // If no unit on today's boards has both rows inside the window, the property
@@ -447,19 +507,62 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
   );
 
   // Variant profiles landed on the DPS chart 2026-07-29 (src/dpschart/matrix.ts
-  // CHART_VARIANTS) — cinderella-crystal-wave (Snipe), bready (Distributed),
+  // CHART_VARIANTS) — cinderella-crystal-wave (Snipe/SR), bready (Distributed),
   // diesel-winter-sweets (Bursts Second). Every OTHER B3 still carries none.
+  //
+  // A DPS variant is an ALTERNATE BUILD of the unit, not a comp it is played in,
+  // so the DEFAULT row is the headline here (owner, 2026-08-18) — the inverse of
+  // the comp-profiled boards above. The variant survives as the muted secondary.
   it.runIf(haveBoards)(
-    'a DPS-chart variant unit carries a profile chip + default rank, like the other boards',
+    'a DPS-chart variant unit headlines its DEFAULT row, with the variant as the secondary',
     () => {
       for (const slug of DPS_VARIANT_SLUGS) {
         const model = build(slug);
         for (const idx of [0, 1]) {
           const tile = model.tiles[idx];
-          expect(tile.profileChip, `${slug} tile ${idx}`).not.toBeNull();
-          expect(tile.defaultRank, `${slug} tile ${idx}`).not.toBeNull();
-          expect(tile.rank, `${slug} tile ${idx}`).not.toBeNull();
+          const cell: [string, number, string | null][] =
+            dpschart.cells[idx === 0 ? NEUTRAL_CELL : ELEWEAK_CELL];
+          const plain = cell.find((r) => r[0] === slug && !r[2])!;
+          const variant = cell.find((r) => r[0] === slug && r[2])!;
+          expect(plain, `${slug} has a default row`).toBeTruthy();
+          expect(variant, `${slug} has a variant row`).toBeTruthy();
+
+          // WHICH row leads, stated without rebuilding the builder's pool: the
+          // headline outranks the secondary exactly when the DEFAULT build
+          // out-damages the variant. (It doesn't always — bready's variant row
+          // sits above her default one, and her card still leads with default.)
+          expect(tile.rank! < tile.altRank!, `${slug} tile ${idx} order`).toBe(
+            plain[1] > variant[1]
+          );
+          // the headline IS the default row, and says so
+          expect(tile.profileChip, `${slug} tile ${idx}`).toBe('default');
+          expect(tile.altChip, `${slug} tile ${idx}`).toBeTruthy();
+          expect(tile.altChip, `${slug} tile ${idx}`).not.toBe('default');
         }
+        // Rank arithmetic for the whole-board tile, as a count of who beats her
+        // (the ele-adv tile's is covered by the element-pool property above).
+        const neutral: [string, number, string | null][] =
+          dpschart.cells[NEUTRAL_CELL];
+        const own = neutral.find((r) => r[0] === slug && !r[2])!;
+        expect(model.tiles[0].rank, `${slug} neutral rank`).toBe(
+          neutral.filter((r) => r[1] > own[1]).length + 1
+        );
+      }
+    }
+  );
+
+  it.runIf(haveBoards)(
+    "cinderella-crystal-wave's card reads her MG default, not her SR variant",
+    () => {
+      // The owner-reported bug (2026-08-18): her card headlined the Snipe/SR
+      // rank while MG is her default mode, so the numeral disagreed with both
+      // the weapon icon on the same card and the site's own default row.
+      const model = build('cinderella-crystal-wave');
+      expect(model.weapon).toBe('MG');
+      for (const idx of [0, 1]) {
+        expect(model.tiles[idx].profileChip).toBe('default');
+        expect(model.tiles[idx].altChip).toBe('SR');
+        expect(model.tiles[idx].rank!).toBeLessThan(model.tiles[idx].altRank!);
       }
     }
   );
@@ -477,7 +580,7 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
         expect(model.tiles[1].profileChip, slug).toBeNull();
         for (const chart of model.charts) {
           expect(
-            chart.rows.every((r) => !r.isDefaultAppendix),
+            chart.rows.every((r) => !r.isAppendix),
             slug
           ).toBe(true);
         }

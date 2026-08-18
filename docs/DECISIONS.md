@@ -6235,3 +6235,60 @@ context-dependent term for units WITHOUT `baseGaugeProb`; anis-star carries a se
 **Recorded in:** `docs/data/burst-gauge.md` §4 (formula update), `docs/STATE.md` §2
 (rotation facts), `docs/handoffs/QUEUE.md` (item 2, anis-star bullet updated to ENACTED),
 `docs/handoffs/scientific-method-harness.md` (2026-08-18 entry).
+
+## Unit cards headline the DEFAULT build on the DPS chart, not the variant row (2026-08-18)
+
+**Owner ruling (2026-08-18):** the `cinderella-crystal-wave` unit card was showing her **SR
+(Snipe) rank** as its headline numeral when **MG is her default mode**; it must show the default
+instead. Her card therefore read a mid-board rank beside an MG weapon icon, and disagreed with
+the site's own DPS chart, where the default row is the one a reader lands on.
+
+**Root cause:** `unitCardData.ts` had ONE headline rule — "the profiled row when it exists, else
+the plain one" (plan §8a, written when only the comp boards carried profiles; the module's own
+comment still said "dpschart has no profile concept at all"). When DPS-chart variants landed
+2026-07-29 (`src/dpschart/matrix.ts` CHART_VARIANTS) they inherited that rule silently.
+
+**The distinction now encoded** (`leadRow`, `src/infographics/core/unitCardData.ts`):
+
+- a **comp profile** (bufferchart / sustain / burst CDR / burst gen — 'w/ Healer', 'w/ 2 MG') is
+  the same build measured in the comp it is played in → the **profiled** row leads, unchanged;
+- a **DPS-chart variant** (Cinderella: Crystal Wave's Snipe/SR, Bready's Distributed,
+  Diesel: Winter Sweets' bursts-second) is an **alternate build/rotation of the unit**, and each
+  variant's own player-facing note names the plain row as the default → the **default** row leads.
+
+Nothing is dropped either way: the other row stays as the muted secondary line (`altRank`/
+`altChip` — '#6 SR' where it used to read '#12 default') and as the dimmed appended bar row, and
+both of a unit's rows now carry a chip so two rows of the same name never read as a duplicate.
+Rendered check: her card now reads **#2 · default** with **#6 SR** beneath, on both DPS tiles.
+
+**Scope:** all three DPS-variant units' cards, since the rule is per-BOARD, not per-unit. Comp
+boards render byte-identically (the golden fixture is `crown`, a comp-profiled unit, and it is
+unchanged). Pinned by `scripts/tests/share/unit-card-data.test.ts` (the variant-headline case
+plus a named ccw regression case); `verify.sh` green.
+
+## Elemental-advantage rank is ranked WITHIN the unit's own element (2026-08-18)
+
+**Owner ruling (2026-08-18):** the unit card's Ele. Adv. tile must rank a unit against her own
+element only — Electric with Electric, Iron with Iron — not against the whole B3 board.
+
+**Why it was wrong as a cross-element ordering:** the eleweak cell simulates EVERY unit against a
+boss weak to THAT unit's code, so a cross-element ordering of it compares each unit under a
+different boss. The question the tile actually answers — "how does she do when the boss is weak to
+her?" — only has a comparable answer inside one element.
+
+**Membership rule:** the site's existing element filter, unchanged (`web/src/dpschartData.ts`
+`chartBars`, and the per-element chart jobs in `scripts/build-infographics.ts`) — a unit counts for
+every code in its `elements` list, its own plus any its kit grants, so a unit that grants itself a
+second code appears on both elements' cards. The rel-score denominator is that pool's #1, which is
+also what the site's element-filtered charts normalize against (`dpsChart.ts` `topDps`).
+
+**Label:** the tile and chart title name the pool — `Ele. Adv. · Iron`. 'DPS' is dropped from this
+one title (the neutral tile keeps it): the landscape tile header affords ~111px at 11px bold and
+`ELE. ADV. DPS · ELECTRIC` overran it by 19px, so the ellipsis would have eaten the element — the
+part that changed. `scripts/tests/share/unit-card-layout.test.ts` now measures every element's
+title against the renderer's own tile geometry and font, so a longer label can't silently truncate.
+
+**Kept in lockstep:** `web/src/UnitPage.tsx`'s DPS-standing line, which exists so the page text and
+the hero card agree — it reads the same element-scoped lookup (`compareIn(art, cell, slug,
+element)`) and now says "#1 of 12 among Electric units, against a boss weak to her element". The
+neutral standing is unchanged on both surfaces: neutral has no element to scope to.

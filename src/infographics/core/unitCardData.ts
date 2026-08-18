@@ -119,11 +119,13 @@ export interface RankTile {
   population: number | null; // board size, for a '#3 of 40' reading
   value: string | null; // the board's own displayed number, formatted
   sub: string | null; // sub-label under the value
-  // Comp profile (plan §8a). When set, `rank` is the PROFILED rank (the headline
-  // number) and `defaultRank` is the same unit's no-profile rank, rendered as a
-  // muted sub-line. Only bufferchart / sustain / burstgen carry profiles at all.
+  // Profile chip for the HEADLINE row (plan §8a) — null when the headline is the
+  // unit's plain no-profile row. `altRank`/`altChip` are its OTHER row on the
+  // same board (see leadRow for which of the two leads), rendered as a muted
+  // sub-line: '#12 default' on a comp-profiled board, '#15 SR' on the DPS chart.
   profileChip: string | null;
-  defaultRank: number | null;
+  altRank: number | null;
+  altChip: string | null;
 }
 
 export interface BarRow {
@@ -134,9 +136,10 @@ export interface BarRow {
   label: string; // the board's formatted value
   rank: number | null;
   isUnit: boolean; // this card's unit — drawn highlighted
-  // The appended no-profile row (plan §8a): out of rank order BY CONSTRUCTION,
-  // drawn below the last neighbour and visually separated.
-  isDefaultAppendix: boolean;
+  // The unit's appended SECOND row (plan §8a) — its no-profile row on a
+  // comp-profiled board, its variant row on the DPS chart: out of rank order BY
+  // CONSTRUCTION, drawn below the last neighbour and visually separated.
+  isAppendix: boolean;
   profileChip: string | null;
   qualified: boolean; // burst CDR: '*' marker, detail goes to the notes panel
   // Sustain only — the heal/shield/lifesteal split the site draws as three
@@ -188,8 +191,7 @@ export interface UnitCardModel {
 // ---- board lookup helpers ----------------------------------------------------
 
 // A unit occupies TWO rows in a profiled board (one `profile: <id>`, one null),
-// so every lookup returns both. `profiled` is the headline; `plain` is the
-// default-comp row appended below the neighbours.
+// so every lookup returns both; `leadRow` decides which of them leads.
 interface Hit<R> {
   row: R;
   index: number;
@@ -226,8 +228,36 @@ function findHits<R extends unknown[]>(
   return out;
 }
 
-// The headline row: the profiled one when it exists, else the plain one.
-const headline = <R>(h: BoardHits<R>): Hit<R> | null => h.profiled ?? h.plain;
+// WHICH of a unit's two rows is the headline depends on what the profile MEANS:
+//
+//   • A COMP profile (bufferchart / sustain / burst CDR / burst gen — 'w/ Healer',
+//     'w/ 2 MG') is the same build of the unit measured in the comp it is played
+//     in, so the profiled row is the one worth leading with (plan §8a).
+//   • A DPS-CHART VARIANT (src/dpschart/matrix.ts CHART_VARIANTS — Cinderella:
+//     Crystal Wave's Snipe/SR, Bready's Distributed, Diesel: Winter Sweets'
+//     bursts-second) is an ALTERNATE build/rotation of the unit, and its own note
+//     names the plain row as the default. The card leads with that DEFAULT row
+//     (owner, 2026-08-18: her card headlined the SR rank when MG is her default).
+//
+// Either way the other row stays on the card as the muted secondary, so nothing
+// is lost — only which number is the big one.
+type Lead<R> = { lead: Hit<R>; alt: Hit<R> | null };
+
+function leadRow<R>(
+  h: BoardHits<R>,
+  prefer: 'profiled' | 'plain' = 'profiled'
+): Lead<R> | null {
+  const lead =
+    prefer === 'plain' ? (h.plain ?? h.profiled) : (h.profiled ?? h.plain);
+  if (!lead) {
+    return null;
+  }
+  return { lead, alt: lead === h.profiled ? h.plain : h.profiled };
+}
+
+// Chip text for one row: its profile label, or 'default' for the no-profile row.
+const chipFor = <R>(hit: Hit<R>): string =>
+  hit.profile ? profileLabel(hit.profile) : DEFAULT_CHIP;
 
 // The generic buffer board as the card ranks over it. Off-board units are gone
 // from the artifact at the source (scripts/build-bufferchart.ts), so this is a
@@ -249,34 +279,85 @@ const unrankedTile = (title: string): RankTile => ({
   value: null,
   sub: null,
   profileChip: null,
-  defaultRank: null,
+  altRank: null,
+  altChip: null,
 });
+
+// The rank/chip half of every tile — identical on all five boards, so the
+// headline/secondary rule lives in ONE place and a board can't drift from it.
+const tileRanks = <R>(
+  l: Lead<R>,
+  hits: BoardHits<R>
+): Pick<
+  RankTile,
+  'rank' | 'population' | 'profileChip' | 'altRank' | 'altChip'
+> => ({
+  rank: l.lead.index + 1,
+  population: hits.entries.length,
+  // Both rows are chipped whenever the unit HAS two — the tile quotes two ranks,
+  // and an unlabelled headline beside '#15 SR' doesn't say which build it is. A
+  // unit with a single row keeps a bare tile.
+  profileChip: l.lead.profile
+    ? profileLabel(l.lead.profile)
+    : l.alt
+      ? DEFAULT_CHIP
+      : null,
+  altRank: l.alt ? l.alt.index + 1 : null,
+  altChip: l.alt ? chipFor(l.alt) : null,
+});
+
+// A DPS cell's population as the card ranks over it. With `element` set the pool
+// is only that element's carries — the elemental-advantage board answers "how
+// does she do against a boss weak to HER code", and a cross-element ordering of
+// that question compares each unit under a different boss (owner, 2026-08-18).
+//
+// Membership is the site's own element-filter rule (web/src/dpschartData.ts
+// chartBars, scripts/build-infographics.ts's per-element chart jobs): a unit
+// counts for every element in its `elements` list — its own code plus any its kit
+// grants — so a unit that grants itself a second code appears on both elements'
+// cards. Rows whose unit is missing from the artifact's meta are dropped, exactly
+// as the pre-rendered element charts drop them.
+function dpsPopulation(
+  art: DpsArtifactLike | null | undefined,
+  cellId: string,
+  element?: string | null
+): [string, number, string | null][] | undefined {
+  const cell = art?.cells?.[cellId];
+  if (!cell || !element) {
+    return cell;
+  }
+  return cell.filter(([s]) => {
+    const u = art?.units?.[s];
+    return u ? (u.elements ?? [u.element]).includes(element) : false;
+  });
+}
 
 function dpsTile(
   title: string,
   art: DpsArtifactLike | null | undefined,
   cellId: string,
-  slug: string
+  slug: string,
+  element?: string | null
 ): RankTile {
-  const cell = art?.cells?.[cellId];
+  const cell = dpsPopulation(art, cellId, element);
   const hits = findHits(cell, slug, 2);
-  const hit = headline(hits);
-  if (!hit || !cell?.length) {
+  // 'plain': a DPS-chart profile is a build variant, so the DEFAULT row leads.
+  const l = leadRow(hits, 'plain');
+  if (!l || !cell?.length) {
     return unrankedTile(title);
   }
   const top = cell[0][1];
-  const dps = hit.row[1] as number;
+  const dps = l.lead.row[1] as number;
   return {
     title,
-    rank: hit.index + 1,
-    population: hits.entries.length,
-    // rel-score vs the population #1 — the site's own DPS label (dpsChart.ts
-    // relScore). NOT a raw DPS number: the boards are normalized, and a raw
-    // number would imply a precision the card can't stand behind.
+    ...tileRanks(l, hits),
+    // rel-score vs the POPULATION #1 — the site's own DPS label (dpsChart.ts
+    // relScore against `topDps`, which on an element-filtered chart is that
+    // element's #1, not the board's). NOT a raw DPS number: the boards are
+    // normalized, and a raw number would imply a precision the card can't stand
+    // behind.
     value: (top > 0 ? dps / top : 0).toFixed(3),
     sub: 'rel. to #1',
-    profileChip: hit.profile ? profileLabel(hit.profile) : null,
-    defaultRank: hit.profile && hits.plain ? hits.plain.index + 1 : null,
   };
 }
 
@@ -285,19 +366,16 @@ function burstGenTile(
   slug: string
 ): RankTile {
   const hits = findHits(art?.entries, slug, 4);
-  const hit = headline(hits);
-  if (!hit) {
+  const l = leadRow(hits);
+  if (!l) {
     return unrankedTile('Burst Gen');
   }
-  const [, gaugePerSec, gaugeTotal, fullBursts] = hit.row;
+  const [, gaugePerSec, gaugeTotal, fullBursts] = l.lead.row;
   return {
     title: 'Burst Gen',
-    rank: hit.index + 1,
-    population: hits.entries.length,
+    ...tileRanks(l, hits),
     value: `${gaugePerSec.toFixed(2)}%/s`,
     sub: `${(gaugeTotal / 100).toFixed(1)} bars · ${fullBursts.toFixed(1)} FB`,
-    profileChip: hit.profile ? profileLabel(hit.profile) : null,
-    defaultRank: hit.profile && hits.plain ? hits.plain.index + 1 : null,
   };
 }
 
@@ -308,19 +386,16 @@ function bufferTile(
   // The site's default view is the generic board (SupportRankings.tsx
   // useState('generic')); the card mirrors that default.
   const hits = findHits(bufferBoardRows(art), slug, 3);
-  const hit = headline(hits);
-  if (!hit) {
+  const l = leadRow(hits);
+  if (!l) {
     return unrankedTile('Team Buffs');
   }
-  const added = hit.row[1];
+  const added = l.lead.row[1];
   return {
     title: 'Team Buffs',
-    rank: hit.index + 1,
-    population: hits.entries.length,
+    ...tileRanks(l, hits),
     value: `${added >= 0 ? '+' : '−'}${Math.abs(added).toFixed(1)}%`,
     sub: 'team DMG',
-    profileChip: hit.profile ? profileLabel(hit.profile) : null,
-    defaultRank: hit.profile && hits.plain ? hits.plain.index + 1 : null,
   };
 }
 
@@ -329,19 +404,16 @@ function sustainTile(
   slug: string
 ): RankTile {
   const hits = findHits(art?.entries, slug, 6);
-  const hit = headline(hits);
-  if (!hit) {
+  const l = leadRow(hits);
+  if (!l) {
     return unrankedTile('Sustain');
   }
-  const [, totalHp, totalPct] = hit.row;
+  const [, totalHp, totalPct] = l.lead.row;
   return {
     title: 'Sustain',
-    rank: hit.index + 1,
-    population: hits.entries.length,
+    ...tileRanks(l, hits),
     value: fmtMagnitude(totalHp),
     sub: `${totalPct.toFixed(0)}% of max HP`,
-    profileChip: hit.profile ? profileLabel(hit.profile) : null,
-    defaultRank: hit.profile && hits.plain ? hits.plain.index + 1 : null,
   };
 }
 
@@ -350,20 +422,17 @@ function burstCdrTile(
   slug: string
 ): RankTile {
   const hits = findHits(art?.entries, slug, 5);
-  const hit = headline(hits);
-  if (!hit) {
+  const l = leadRow(hits);
+  if (!l) {
     return unrankedTile('Burst CDR');
   }
-  const [, cdr, ramp, condition, selfCdr] = hit.row;
+  const [, cdr, ramp, condition, selfCdr] = l.lead.row;
   const qualified = !!(ramp || condition || selfCdr != null);
   return {
     title: 'Burst CDR',
-    rank: hit.index + 1,
-    population: hits.entries.length,
+    ...tileRanks(l, hits),
     value: `${cdr.toFixed(1)}s`,
     sub: `per 20s FB${qualified ? ' *' : ''}`,
-    profileChip: hit.profile ? profileLabel(hit.profile) : null,
-    defaultRank: hit.profile && hits.plain ? hits.plain.index + 1 : null,
   };
 }
 
@@ -408,67 +477,82 @@ function dpsChartRows(
   art: DpsArtifactLike | null | undefined,
   cellId: string,
   slug: string,
-  each: number
+  each: number,
+  element?: string | null
 ): BarChart {
-  const cell = art?.cells?.[cellId];
+  const cell = dpsPopulation(art, cellId, element);
   if (!cell?.length) {
     return emptyChart(title);
   }
   const hits = findHits(cell, slug, 2);
   const top = cell[0][1];
-  return boardChart(title, hits, each, (row, i, isUnit) => {
-    const [s, dps, profile] = row as [string, number, string | null];
-    const meta = art?.units?.[s];
-    const rel = top > 0 ? dps / top : 0;
-    return {
-      slug: s,
-      name: meta?.name ?? s,
-      element: meta?.element ?? '',
-      value: rel,
-      label: rel.toFixed(3),
-      rank: i + 1,
-      isUnit: isUnit && s === slug,
-      isDefaultAppendix: false,
-      profileChip: profile ? profileLabel(profile) : null,
-      qualified: false,
-    };
-  });
+  return boardChart(
+    title,
+    hits,
+    each,
+    (row, i, isUnit) => {
+      const [s, dps, profile] = row as [string, number, string | null];
+      const meta = art?.units?.[s];
+      const rel = top > 0 ? dps / top : 0;
+      return {
+        slug: s,
+        name: meta?.name ?? s,
+        element: meta?.element ?? '',
+        value: rel,
+        label: rel.toFixed(3),
+        rank: i + 1,
+        isUnit: isUnit && s === slug,
+        isAppendix: false,
+        profileChip: profile ? profileLabel(profile) : null,
+        qualified: false,
+      };
+    },
+    // The DEFAULT build leads on this board; the variant is the appendix.
+    'plain'
+  );
 }
 
-// Chip text for the unit's own no-profile row (see boardChart).
+// Chip text for the unit's own no-profile row (see chipFor / boardChart).
 const DEFAULT_CHIP = 'default';
 
-// Shared shape for the three profiled boards: build the neighbourhood around the
-// HEADLINE row, then append the unit's default (no-profile) row below the last
-// neighbour if it exists and isn't already in the window (plan §8a — it is out
-// of rank order by construction, and that is intended).
+// Shared shape for every profiled board: build the neighbourhood around the
+// HEADLINE row (leadRow — profiled on the comp boards, default on the DPS
+// chart), then append the unit's OTHER row below the last neighbour if it exists
+// and isn't already in the window (plan §8a — it is out of rank order by
+// construction, and that is intended).
 function boardChart<R extends unknown[]>(
   title: string,
   hits: BoardHits<R>,
   each: number,
-  toRow: (row: R, index: number, isUnit: boolean) => BarRow
+  toRow: (row: R, index: number, isUnit: boolean) => BarRow,
+  prefer: 'profiled' | 'plain' = 'profiled'
 ): BarChart {
-  const hit = headline(hits);
-  if (!hit) {
+  const l = leadRow(hits, prefer);
+  if (!l) {
     return emptyChart(title);
   }
   const indexed = hits.entries.map((row, i) => ({ row, i }));
-  const window = neighbourhood(indexed, hit.index, each);
-  const rows = window.map((w) => toRow(w.row, w.i, w.i === hit.index));
-  if (hits.profiled && hits.plain) {
-    // The unit's no-profile standing is labelled 'default' WHEREVER it lands.
-    // A wide enough neighbourhood pulls it into the window in rank order (the
-    // portrait variant does exactly this), and there it is neither appended nor
-    // out of order — but it is still the same unit twice, so without the chip it
-    // reads as a duplicate row. Only the APPENDED copy gets isDefaultAppendix,
-    // which is what dims it; an in-window one is an ordinary row.
-    const inWindow = window.findIndex((w) => w.i === hits.plain!.index);
+  const window = neighbourhood(indexed, l.lead.index, each);
+  const rows = window.map((w) => toRow(w.row, w.i, w.i === l.lead.index));
+  if (l.alt) {
+    // BOTH of the unit's rows are chipped — the same unit appearing twice with
+    // one row unlabelled reads as a duplicate. toRow already chips a profiled
+    // row; this adds 'default' to the no-profile one, whichever of the two leads.
+    rows[window.findIndex((w) => w.i === l.lead.index)].profileChip = chipFor(
+      l.lead
+    );
+    // The second standing is chipped WHEREVER it lands. A wide enough
+    // neighbourhood pulls it into the window in rank order (the portrait variant
+    // does exactly this), and there it is neither appended nor out of order.
+    // Only the APPENDED copy gets isAppendix, which is what dims it; an in-window
+    // one is an ordinary row.
+    const inWindow = window.findIndex((w) => w.i === l.alt!.index);
     if (inWindow >= 0) {
-      rows[inWindow].profileChip = DEFAULT_CHIP;
+      rows[inWindow].profileChip = chipFor(l.alt);
     } else {
-      const appendix = toRow(hits.plain.row, hits.plain.index, false);
-      appendix.isDefaultAppendix = true;
-      appendix.profileChip = DEFAULT_CHIP;
+      const appendix = toRow(l.alt.row, l.alt.index, false);
+      appendix.isAppendix = true;
+      appendix.profileChip = chipFor(l.alt);
       rows.push(appendix);
     }
   }
@@ -503,7 +587,7 @@ function bufferChart(
       label: `${added >= 0 ? '+' : '−'}${Math.abs(added).toFixed(1)}%`,
       rank: i + 1,
       isUnit: isUnit && s === slug,
-      isDefaultAppendix: false,
+      isAppendix: false,
       profileChip: profile ? profileLabel(profile) : null,
       qualified: false,
     };
@@ -526,7 +610,7 @@ function sustainChart(
       label: fmtMagnitude(totalHp),
       rank: i + 1,
       isUnit: isUnit && s === slug,
-      isDefaultAppendix: false,
+      isAppendix: false,
       profileChip: profile ? profileLabel(profile) : null,
       qualified: false,
       // Split as FRACTIONS of the row's own total, so the renderer can lay the
@@ -565,7 +649,7 @@ function burstCdrChart(
       label: `${cdr.toFixed(1)}s`,
       rank: i + 1,
       isUnit: isUnit && s === slug,
-      isDefaultAppendix: false,
+      isAppendix: false,
       profileChip: profile ? profileLabel(profile) : null,
       qualified: !!(ramp || condition || selfCdr != null),
     };
@@ -627,6 +711,19 @@ const tagLabel = (label: string): string =>
 export const isDpsSet = (burst: string): boolean =>
   burst === 'III' || burst === 'Λ';
 
+// The elemental-advantage tile/chart ranks the unit against her OWN element only,
+// so the label names that pool — a bare '#3' over a same-element board would read
+// as a whole-roster placement. Same separator as the site's element-filtered
+// chart title (build-infographics.ts: `<cell> · <Element> only`).
+//
+// 'DPS' is dropped from this one, unlike 'Neutral DPS': the landscape tile header
+// affords ~111px at 11px bold, and 'ELE. ADV. DPS · ELECTRIC' overruns it by 19px
+// — the ellipsis would eat the element, which is the part that changed. The
+// shorter form clears the longest element name, and unit-card-layout.test.ts
+// measures every element against the real tile geometry.
+export const eleAdvTitle = (element: string): string =>
+  element ? `Ele. Adv. · ${element}` : 'Ele. Adv. DPS';
+
 export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
   const c = src.character;
   const slug = c.slug;
@@ -641,7 +738,13 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
   if (dpsSet) {
     tiles = [
       dpsTile('Neutral DPS', src.dpschart, NEUTRAL_CELL, slug),
-      dpsTile('Ele. Adv. DPS', src.dpschart, ELEWEAK_CELL, slug),
+      dpsTile(
+        eleAdvTitle(c.element),
+        src.dpschart,
+        ELEWEAK_CELL,
+        slug,
+        c.element
+      ),
       burstGenTile(src.burstgen, slug),
     ];
   } else {
@@ -661,19 +764,30 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
   // Burst gen is a tile only — it never gets a chart.
   const charts: BarChart[] = [];
   if (dpsSet) {
-    // The B3 DPS bars can never carry a profile: dpschart has no profile
-    // concept at all. Worth knowing — the headline cards need none of §8a.
+    // DPS rows DO carry profiles — build variants (CHART_VARIANTS), not comps —
+    // so these charts run the same leadRow/appendix machinery as the comp boards,
+    // only with the DEFAULT row leading. (This comment used to say dpschart had
+    // no profile concept at all; it was true when written, went stale when the
+    // variants landed 2026-07-29, and is what let the wrong row headline
+    // Cinderella: Crystal Wave's card until 2026-08-18 — see DECISIONS.)
     charts.push(
       dpsChartRows('Neutral DPS', src.dpschart, NEUTRAL_CELL, slug, nb),
-      dpsChartRows('Ele. Adv. DPS', src.dpschart, ELEWEAK_CELL, slug, nb)
+      dpsChartRows(
+        eleAdvTitle(c.element),
+        src.dpschart,
+        ELEWEAK_CELL,
+        slug,
+        nb,
+        c.element
+      )
     );
   } else {
     // Ruling 13 as written: "sustain if present, else burst CDR if present".
     // Presence is a plain board lookup again — the sustain board no longer lists
     // units at 0 (scripts/build-sustain.ts filters them), so being ON it is the
     // same statement as having sustain, and burst CDR has never carried a zero.
-    const hasSustain = !!headline(findHits(src.sustain?.entries, slug, 6));
-    const hasCdr = !!headline(findHits(src.burstcdr?.entries, slug, 5));
+    const hasSustain = !!leadRow(findHits(src.sustain?.entries, slug, 6));
+    const hasCdr = !!leadRow(findHits(src.burstcdr?.entries, slug, 5));
     // No second chart → spend the freed height on more neighbours in the
     // surviving one, never on whitespace (§6c lever 1).
     const each = hasSustain || hasCdr ? nb : nbSolo;
@@ -687,9 +801,9 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
 
   // --- footnotes: qualifier detail, since a card has no hover (§8) ---
   const footnotes: string[] = [];
-  const cdrHit = headline(findHits(src.burstcdr?.entries, slug, 5));
+  const cdrHit = leadRow(findHits(src.burstcdr?.entries, slug, 5));
   if (cdrHit) {
-    const [, , ramp, condition, selfCdr] = cdrHit.row;
+    const [, , ramp, condition, selfCdr] = cdrHit.lead.row;
     if (condition) {
       footnotes.push(`* ${condition}`);
     }
