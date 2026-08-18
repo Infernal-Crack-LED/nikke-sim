@@ -1382,3 +1382,20 @@ basis (datamine + comp-level FB pins), which no solo observable touches — the 
 6. **Unexplained and reported-not-used:** the +547,955 damage step at the W4 opener (a third
    magnitude, 14.1% above tier A) and the W4 rendered-100.0-at-81.63 vs green-full-at-83.20 gap with
    two pulls in between. Neither entered any estimator; neither has an explanation.
+
+### 2026-08-18 follow-on — pre-register re-run closes this entry's open items 1 and 2
+
+**Open item 2 (owner ruling on the split) — RESOLVED by owner ruling + re-run.**
+Owner ruled (2026-08-18): "she takes 9 shots to go from 0–100% burst gauge, so it has to be at
+least 11.11% per shot." The pull count alone settles the direction — per-pull credit ≥ 100/9 =
+11.11% > 10.388%. The procedural dispute (may A3's E1 carry a clause-1(ii) leg?) is moot.
+
+**Open item 1 (render-scale calibration) — superseded by the anomaly recovery approach.**
+Instead of calibrating the bar scale, the 2026-08-18 re-run
+(`docs/handoffs/2026-08-18-anis-star-pre-register-rerun-work-deliverable.md`) pre-registered the
+anomaly value A = 3.71% and tested whether subtracting it from departing pulls recovers them as
+steady data points. E4 PASS: all 3 upward departures recover. The recovered E1 now has **3
+qualifying windows** (W2, W3, W4 — up from 2), with W2+W4 forming a robust pair (both ≥ 0.3
+render columns). Clause 1 (MEASURED-ELEVATED) confirmed with strengthened evidence.
+
+**Open items 3–6** are carried forward unchanged (item 3 was already closed above).

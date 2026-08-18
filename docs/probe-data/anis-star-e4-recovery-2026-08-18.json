@@ -1,0 +1,214 @@
+{
+  "run": "anis-star-pre-register-rerun",
+  "date": "2026-08-18",
+  "baseline": "docs/probe-data/anis-star-solo-magnitude-2026-08-17.json",
+  "packet": "docs/handoffs/2026-08-18-anis-star-pre-register-rerun-preop-packet.md",
+  "anomalyValue": {
+    "A": 3.71,
+    "tolerance": 0.72,
+    "source": "basePerTrigger 140 × 2.5 focus × 1.06 aura"
+  },
+  "departureRadius": 2.175,
+  "medianAll": 11.6,
+  "E4": {
+    "pass": true,
+    "upward": [
+      {
+        "id": "W2p8",
+        "rendered": 15.3,
+        "adjusted": 11.59,
+        "deviation": -0.01,
+        "recovered": true
+      },
+      {
+        "id": "W4p2",
+        "rendered": 16,
+        "adjusted": 12.29,
+        "deviation": 0.69,
+        "recovered": true
+      },
+      {
+        "id": "W4p3",
+        "rendered": 15.2,
+        "adjusted": 11.49,
+        "deviation": -0.11,
+        "recovered": true
+      }
+    ],
+    "downward": {
+      "id": "W4p7",
+      "rendered": [8, 8.7],
+      "adjusted": [11.71, 12.41],
+      "recovered": true
+    }
+  },
+  "E1_recovered": {
+    "windows": [
+      {
+        "window": "W2",
+        "K": 9,
+        "nUp": 1,
+        "nDown": 0,
+        "R_lo": 89.09,
+        "R_hi": 89.79,
+        "mLo": 8,
+        "mHi": 7,
+        "P_lo": 11.1363,
+        "P_hi": 12.8271,
+        "excludes": true,
+        "margin": 0.7483,
+        "marginCols": 1.0327
+      },
+      {
+        "window": "W3",
+        "K": 10,
+        "nUp": 0,
+        "nDown": 0,
+        "R_lo": 93.5,
+        "R_hi": 93.5,
+        "mLo": 9,
+        "mHi": 8,
+        "P_lo": 10.3889,
+        "P_hi": 11.6875,
+        "excludes": true,
+        "margin": 0.0009,
+        "marginCols": 0.0012
+      },
+      {
+        "window": "W4",
+        "K": 9,
+        "nUp": 2,
+        "nDown": 1,
+        "R_lo": 74.48,
+        "R_hi": 75.18,
+        "mLo": 7,
+        "mHi": 6,
+        "P_lo": 10.64,
+        "P_hi": 12.53,
+        "excludes": true,
+        "margin": 0.252,
+        "marginCols": 0.3478
+      }
+    ],
+    "W4_caseB": {
+      "R": 83.18,
+      "mLo": 8,
+      "mHi": 7,
+      "P_lo": 10.3975,
+      "P_hi": 11.8829,
+      "excludes": true,
+      "margin": 0.0095,
+      "marginCols": 0.0131
+    },
+    "qualifyingWindows": ["W2", "W3", "W4"],
+    "clause1iiCount": 3
+  },
+  "E2_recovered": {
+    "allRuns": [
+      {
+        "window": "W2",
+        "from": 26.27,
+        "to": 33.93,
+        "pulls": 6,
+        "P_hat": 11.35,
+        "conditional": true,
+        "SE_quant": 0.04933,
+        "weight": 410.9393873033455,
+        "QB_inflation": 0.29727499999999996
+      },
+      {
+        "window": "W3",
+        "from": 50.33,
+        "to": 51.8,
+        "pulls": 2,
+        "P_hat": 11.25,
+        "conditional": true,
+        "SE_quant": 0.14799,
+        "weight": 45.65993192259394,
+        "QB_inflation": 0.11632499999999998
+      },
+      {
+        "window": "W3",
+        "from": 54.5,
+        "to": 60.07,
+        "pulls": 4,
+        "P_hat": 11.25,
+        "conditional": true,
+        "SE_quant": 0.073995,
+        "weight": 182.63972769037576,
+        "QB_inflation": 0.08530499999999999
+      },
+      {
+        "window": "W4",
+        "from": 77.2,
+        "to": 77.83,
+        "pulls": 1,
+        "P_hat": 11.6,
+        "conditional": true,
+        "SE_quant": 0.29598,
+        "weight": 11.414982980648485,
+        "QB_inflation": 1.2950849999999998
+      },
+      {
+        "window": "W2p8",
+        "from": 74.6,
+        "to": 89.9,
+        "pulls": 1,
+        "P_hat": 11.59,
+        "conditional": true,
+        "SE_quant": 0.778307,
+        "weight": 1.6508139382515414,
+        "QB_inflation": 0.4497899999999999
+      },
+      {
+        "window": "W4e",
+        "from": 9.4,
+        "to": 40.6,
+        "pulls": 2,
+        "P_hat": 11.89,
+        "conditional": true,
+        "SE_quant": 0.530133,
+        "weight": 3.5581997225422612,
+        "QB_inflation": 0.07367249999999999
+      }
+    ],
+    "pooled": {
+      "P_hat": 11.3231,
+      "SE_quant": 0.039048,
+      "SE_scatter": 0.102775,
+      "SE_QB": 0.296765,
+      "SE_pooled": 0.296765,
+      "dominant": "Question-B",
+      "CI_lo": 10.7414,
+      "CI_hi": 11.9047,
+      "excludes": true
+    },
+    "original": {
+      "P_hat": 11.319,
+      "SE_pooled": 0.293,
+      "CI_lo": 10.745,
+      "CI_hi": 11.894
+    }
+  },
+  "E3_recovered": {
+    "mean": 11.4883,
+    "sd": 0.2517,
+    "nRuns": 6
+  },
+  "decisionRule": {
+    "clause": 1,
+    "legs": {
+      "i": true,
+      "ii": 3,
+      "iii": true,
+      "iv": true
+    }
+  },
+  "summary": {
+    "clause": "MEASURED-ELEVATED",
+    "recoveryEffect": "E1 strengthened: clause 1(ii) count rose from 2 to 3 (W4 now excludes 10.388 at 0.348 cols). E2 barely moved (recovered runs have low weight from SE_A).",
+    "keyFinding": "A=3.71% explains all 3 upward departures AND gives W4 a 0.252 pp exclusion margin under E1. W2+W4 form a robust pair even if W3's razor-thin margin is disputed.",
+    "measurementOnly": true,
+    "fragility": "W3 margin unchanged at 0.0012 cols. E2 CI barely changed (0.297 vs 0.293 SE). Recovery runs contribute weight 5.2/655.9 (0.8%) to E2 pool."
+  }
+}

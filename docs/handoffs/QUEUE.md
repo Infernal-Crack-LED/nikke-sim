@@ -59,14 +59,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > exist. Take them top-down. The numbered threads below stay as the reference detail and are
 > mostly footage-gated — do NOT start there.
 >
-> **1. `anis-star` pre-register re-run (thread 2) — DRAFT PACKET AWAITING PRE-OP JUDGE.**
-> **→ `docs/handoffs/2026-08-18-anis-star-pre-register-rerun-preop-packet.md`.**
-> Delta packet over the 2026-08-17 run: pre-registers A = 3.71 % as a testable anomaly value,
-> adds E4 recovery test (subtract A from departing pulls → test if they rejoin the steady
-> family), and recomputes E1/E2 with recovered pulls (tighter intervals, longer runs). All
-> three upward departures predicted to recover (adjusted values 11.49/11.59/12.29, all within
-> the 3-column radius of median 11.60). If E4 passes, clause-1(ii) window count may recover
-> (W4 gains pulls). Footage-free — uses the committed 2026-08-17 artifacts.
+> **1. `anis-star` pre-register re-run (thread 2) — COMPLETE (2026-08-18).**
+> **→ Work deliverable: `docs/handoffs/2026-08-18-anis-star-pre-register-rerun-work-deliverable.md`.**
+> **→ Artifact: `docs/probe-data/anis-star-e4-recovery-2026-08-18.json`.**
+> E4 PASS: A = 3.71 % explains all 3 upward departures (adjusted 11.49/11.59/12.29, all within
+> 2.175 pp of median 11.60). Clause 1 (MEASURED-ELEVATED) confirmed with strengthened evidence:
+> clause-1(ii) count rose from 2 → 3 windows (W4 now excludes 10.388 at 0.348 cols). W2 + W4
+> form a robust pair (both ≥ 0.3 cols) even if W3's razor-thin margin is disputed. E2 barely
+> moved (recovered runs have low weight from SE_A). Measurement only — no enactment.
 >
 > **2. N2 blocker 2 — conversion rule PINNED (proposal, awaiting owner approval).**
 > **→ `docs/handoffs/2026-08-18-n2-conversion-rule-proposal.md`.** Clustering statistic Δ = |R₁−R₂|;
@@ -148,19 +148,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      missing application-gauge credits). H-A team-context route CLOSED by owner ruling. The
      `anis-star` U28 divisor read is what remains of the encoding audit path.
      `iron sweep (run G)` regression comp stays disabled.
-   - **`anis-star` solo magnitude residual — OPEN.** 10.39 vs ≥ ~10.96 exclusion bound returned
-     INCONCLUSIVE-LOG from solo #2: the ≥2-window counting rule could not fire because the three
-     anomalous credits (+15.2–16.0%) violated the steady premise in W2 and W4. **NOT
-     footage-gated after all — the existing recording has four windows; the blocker was
-     hypothesis discrimination, not window count.**
-     **Source-hunt 2026-08-17 (`docs/probe-data/anis-star-anomaly-source-hunt-2026-08-17.json`)
-     narrowed it: W4p2 (+16.0), W4p3 (+15.2) and the steady W4p4 (+11.6) did the IDENTICAL damage
-     increment 480,330, so extra-hits, charge-level (`fullChargeBonus` 250) and crit/core are all
-     refuted — the excess is gauge-specific.** Candidate to PRE-REGISTER next (arithmetic fit,
-     n=3, fitted after the fact — not evidence yet): the anomalous pulls credit one extra
-     `basePerTrigger` 140 × 2.5 focus × 1.06 aura = 3.71%. Next step is a gated re-run of the
-     counting rule with that hypothesis declared in the packet, so anomalous windows become
-     CLASSIFIABLE instead of premise-violating.
+   - **`anis-star` solo magnitude residual — MEASURED-ELEVATED (2026-08-18).** Pre-register
+     re-run confirmed clause 1: A = 3.71% (`basePerTrigger` 140 × 2.5 focus × 1.06 aura) explains
+     all 3 upward departures (E4 PASS), and clause-1(ii) now has 3 qualifying windows (W2, W3, W4)
+     with W2+W4 forming a robust pair. Direction settled by owner ruling (9 pulls ≥ 11.11%/pull).
+     **→ `docs/handoffs/2026-08-18-anis-star-pre-register-rerun-work-deliverable.md`.**
+     Measurement only — `basePerTrigger` is engine-inert; enacting the anomaly mechanism requires
+     a separate `/scientific-method` run.
    - **⇒ `liberalio` GAUGE-CREDIT AUDIT — CLOSED as LOG 2026-08-17. Defect FOUND, magnitude
      INCONCLUSIVE at 2-of-2. Nothing enacted.**
      **→ Handoff: [2026-08-17-liberalio-gauge-credit-audit.md](2026-08-17-liberalio-gauge-credit-audit.md)**
