@@ -1418,8 +1418,11 @@ export function runSim(
   // observed ~1.42x vs predicted 1.5x (fullChargeBonus 150) — both within ~5% of their
   // per-unit datamined value and clearly off the flat 2.5x (which would read 14.0%/shot for
   // alice, observed 20.6%; 6.25%/shot for SBS, observed 3.55%). DECISIONS 2026-07-29.
-  // FOCUS_CHARGE_GEN remains the fallback for units with no datamined row (250 default,
-  // byte-identical to pre-2026-07-29 behavior) and the explicit pin for cinderella (below).
+  // FOCUS_CHARGE_GEN is NO LONGER A ROSTER FALLBACK (owner ruling 2026-08-18, re-affirming the
+  // 2026-08-12 ruling: "the gauge bonus = charge bonus on all units; get rid of the 250 fallback
+  // unless there's a good code safety reason for it"). It survives ONLY as the value of the
+  // PENDING_TEAM_ISOLATION evidence hold below — a unit with no charge bonus in either datamined
+  // column now takes UNFOCUSED_CHARGE_GEN, not this. See gaugePerShot().
   const FOCUS_CHARGE_GEN = 2.5;
   // UNFOCUSED_CHARGE_GEN — MEASURED 1.0 (test battery 3 A1/A2 pair, 2026-07-13):
   // takina UNfocused in a 2-unit fight steps the gauge +5.6-6.5%/shot (her flat 560
@@ -1503,21 +1506,42 @@ export function runSim(
     if (!isCharge) {
       return per + flat;
     }
-    // Per-unit focus multiplier is now SOURCED from characters.json chargeMultiplier
-    // (2026-08-09, gap #20 fix). data/gauge-per-shot.json's fullChargeBonus acts as an
-    // explicit override only when characters.json reports 0 (the non-charge marker for a
-    // handful of units, e.g. raven: chargeMultiplier 0 but gauge row 250 datamined).
-    // This removes the 6 synthesized class-modal rows and the 4 no-row 3.5x units
-    // (belorta/n102/yan/yuni) from silently defaulting to 2.5x.
-    // u.focusChargeMult (charFixes.focusChargeMult) and the magDumpRof/PENDING_TEAM_ISOLATION
-    // pins still take priority over both sources.
+    // THE FOCUS GAUGE BONUS IS THE UNIT'S FULL-CHARGE BONUS — one rule, every unit, NO ROSTER
+    // DEFAULT (owner ruling 2026-08-12, re-affirmed 2026-08-18: "the gauge bonus = charge bonus
+    // on all units; get rid of the 250 fallback unless there's a good code safety reason").
+    // Sourced from characters.json `chargeMultiplier`, with data/gauge-per-shot.json's
+    // `fullChargeBonus` (the datamined full_charge_burst_energy column) filling in where the
+    // character row reports 0 — the same quantity from two datamines, e.g. `raven`
+    // (chargeMultiplier 0, gauge row 250). Census of all 79 SR/RL units, 2026-08-18: 77 source
+    // straight from `chargeMultiplier` and there are exactly two exceptions, `raven` and
+    // `pascal`; scripts/tests/data/gauge-per-shot-source.test.ts holds the roster to it.
+    //
+    // WHY DROPPING THE OLD `?? 250` FALLBACK IS NOT A CODE-SAFETY LOSS: a unit with no charge
+    // bonus in EITHER column does not full-charge, so it takes no focus bonus — it falls to
+    // UNFOCUSED_CHARGE_GEN (x1.0, the measured unfocused value). `pascal` is that unit, and she
+    // is a real case rather than a hypothetical: an RL with `chargeFrames: 0` who fires without
+    // charging, to whom the class-modal default was handing a x2.5 focus bonus for a charge she
+    // never performs. A CHARGE-CAPABLE unit missing both columns would be a data hole, not a
+    // game fact — no unit is in that state today (verified across all 196 characters) and the
+    // source test fails loudly if one ever appears, which is the guard the magic default only
+    // pretended to be.
+    //
+    // Taking priority over both sources: `u.focusChargeMult` (charFixes.focusChargeMult), the
+    // per-unit override channel, set only by `cinderella` (RL/Electric, aka "cindy" — NOT
+    // `cinderella-crystal-wave`) at 2.0, which is her own chargeMultiplier/100 anyway; and
+    // PENDING_TEAM_ISOLATION, the evidence hold. The `u.magDumpRof` arm is GONE as unreachable:
+    // its sole carrier is that same `cinderella`, whose `focusChargeMult` short-circuits ahead
+    // of it (both live in src/skills/overrides/cinderella.json charFixes).
     const charMult = u.char.chargeMultiplier;
     const fcb = entry?.fullChargeBonus;
+    const chargeBonusPct = charMult > 0 ? charMult : (fcb ?? 0);
     const focusMult =
       u.focusChargeMult ??
-      (u.magDumpRof || PENDING_TEAM_ISOLATION.has(u.char.slug)
+      (PENDING_TEAM_ISOLATION.has(u.char.slug)
         ? FOCUS_CHARGE_GEN
-        : (charMult > 0 ? charMult : fcb && fcb > 0 ? fcb : 250) / 100);
+        : chargeBonusPct > 0
+          ? chargeBonusPct / 100
+          : UNFOCUSED_CHARGE_GEN);
     // basePerTrigger credit (2026-08-18, anis-star measurement): the game credits an extra
     // basePerTrigger × focus × aura on a fraction of focused charge shots. baseGaugeProb
     // (0–1) models the per-shot average; omit = 0 (no extra credit). Only fires for the

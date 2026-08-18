@@ -3,13 +3,22 @@
 // an explicit override only when characters.json reports 0 (the non-charge marker).
 //
 // This test enforces that the two sources do not silently disagree for any SR/RL unit,
-// and lists the known exceptions.
+// lists the known exceptions, and — since the engine's `?? 250` class-modal default was
+// RETIRED (owner ruling 2026-08-12, re-affirmed 2026-08-18: the gauge bonus IS the charge
+// bonus, for every unit) — carries the guard that replaced it. A unit with no bonus in
+// either column now takes x1.0, which is CORRECT for a unit that never full-charges
+// (`pascal`, chargeFrames 0) and WRONG for a charge-capable unit whose data went missing.
+// The `chargeFrames` test below is what tells those two apart, loudly, instead of a magic
+// number papering over both.
 import { describe, expect, it } from 'vitest';
 import rawData from '../../../data/characters.json' with { type: 'json' };
 import gaugeTable from '../../../data/gauge-per-shot.json' with { type: 'json' };
 
 const data = rawData as unknown as {
-  characters: Record<string, { weapon: string; chargeMultiplier: number }>;
+  characters: Record<
+    string,
+    { weapon: string; chargeMultiplier: number; chargeFrames?: number }
+  >;
 };
 const characters = data.characters;
 
@@ -62,6 +71,31 @@ describe('gauge-per-shot fullChargeBonus source', () => {
       }
     }
     expect(mismatches).toEqual([]);
+  });
+
+  it('every CHARGE-CAPABLE unit resolves a bonus from one of the two datamines', () => {
+    // THE GUARD THAT REPLACED THE RETIRED `?? 250` DEFAULT, and the reason retiring it was not
+    // a code-safety loss. `chargeFrames > 0` means the unit actually performs a full charge, so
+    // a bonus missing from BOTH columns is a data hole rather than a game fact — and the engine
+    // would hand it x1.0 silently. `chargeFrames` is exactly what separates "does not charge"
+    // from "data went missing", which the magic number could not distinguish.
+    //
+    // Today the only zero-bonus unit is `pascal` (RL/Iron), who has chargeFrames 0 and therefore
+    // correctly takes no focus bonus. Scanned across ALL characters, not just SR/RL, so a charge
+    // weapon appearing on another class cannot slip past.
+    const holes = Object.entries(characters)
+      .filter(([slug, c]) => {
+        const fcb = (
+          gaugeTable as Record<string, { fullChargeBonus?: number }>
+        )[slug]?.fullChargeBonus;
+        return (
+          (c.chargeFrames ?? 0) > 0 &&
+          !(c.chargeMultiplier > 0) &&
+          !(fcb && fcb > 0)
+        );
+      })
+      .map(([slug]) => slug);
+    expect(holes).toEqual([]);
   });
 
   it('flags no-row units with a positive chargeMultiplier so they do not fall back silently', () => {
