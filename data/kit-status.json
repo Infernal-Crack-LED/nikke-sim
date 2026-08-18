@@ -29,7 +29,8 @@
       "±15%": 10,
       "±5%": 5,
       ">15%": 10
-    }
+    },
+    "total": 185
   },
   "units": {
     "2b": {
@@ -8565,6 +8566,44 @@
       ],
       "note": "Kit-autonomy gauntlet 2026-08-18. Centi (Treasure) — slug `centi`; RL/Defender/Iron/Burst II, cd 20s, ammo 6, chargeFrames 60, reloadFrames 111, normalMult 61.3, coreMult 200, chargeMult 250, burstGaugePerShot 3.45. FROM-SCRATCH build (no shipped override existed; simSupported was false). Test-first re-derivation (scripts/tests/units/centi.test.ts, C1/C2/C-UNMODELED) — 7 assertions, all green. LINE DISPOSITIONS: (1) BURST 'Affects 5 enemy unit(s) with the lowest remaining HP. Deals 145.46% of final ATK as damage.' → burstCast → enemy flatDamage 145.46. burstCast-keyed (HER OWN Burst II cast, not fullBurstEnter); the nuke lands BEFORE the Full Burst window opens and never takes the +50% FB major (helm H7 / mica precedent). '5 lowest HP' collapses to ONE instance on the lone partless boss (anis / privaty-unkind-maid precedent). UNTAGGED for burstDesc: the 5-target selection clause is not an amp literal (owner ruling 2026-08-10). (2) BURST 'DEF ▼ 14.54% for 10 sec.' → burstCast → enemy defPct -14.54, durationSec 10. On the enemy DEF channel (bossDefNow scales cfg.bossDef by (1+Σ/100) at damage time — mica precedent). ~50% uptime (20s CD / 10s duration). The counterfactual (damageTakenPct laundering) is discriminated in the test. (3-7) All other lines UNMODELED verbatim — S1 battle-start force S2 (shield creation, offensively inert), S1 Full Charge → S2 CD ▼9.16% (CD reduction of offensively inert skill), S1 shield-destroyed heal (no shield-break model), S2 shield creation (shields don't affect damage dealt), Burst self Max HP ▲5% (no HP→ATK conversion for centi). S2b (claude-fable-5) cross-family review converged on burst nuke + DEF debuff encoding; diverged on shield/CD lines (fable: load-bearing for tandem shield consumers; driver ruling: inert at scope lock — no shield consumer exists on centi's own kit; a future tandem teammate would add its own consumer). EVIDENCE TIER: every magnitude is kit-text-literal (DATAMINED lvl-10): 145.46 / 14.54 / 10s. TIER 1: straightforward burst nuke + enemy DEF debuff; no scoped-buff, round-count, status-gate, or meta-defining mechanic. Kit-autonomy gauntlet 2026-08-18.",
       "sim": {}
+    },
+    "queen": {
+      "name": "Queen (Makoto)",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-18",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-18: GO, faithfulness 1.0 (11/11 kit lines FAITHFUL or DOCUMENTED_GAP; the two gaps — Follow Up rider, Baton Pass — are deliberate, verbatim-documented, and recipe-flagged) (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/queen.json + scripts/kit-autonomy/manual-review/queen.md."
+        ],
+        "caveats": [],
+        "unmodeled": [
+          "S1: Follow Up distributed damage rider (548.99%) — teammate-granted trigger",
+          "S2: Baton Pass ATK buff (35.2% caster ATK, stacks 3) to B3 Persona allies — no Persona state gate"
+        ]
+      },
+      "note": "queen (Queen (Makoto)) — SG / Attacker / Fire / Burst III, cd 40s, ammo 9, hitsPerShot 10, RoF 90 (instant-fire SG), SSR. A distributed-damage Attacker built around the Persona collaboration's '1 More' / 'Follow Up' chain mechanics. The '1 More' status is granted by her burst when a Wind Code enemy is present, so 'when 1 More takes effect' decomposes to burstCast + bossElementGate Wind. The S1 548.99% distributed rider on 1 More IS modeled (burstCast + Wind gate); the Follow Up rider (teammate-granted, no engine source for Follow Up in this kit) and the S2 Baton Pass team ATK buff (35.2% of caster ATK, stacks 3, to B3 Persona allies — no 'Persona state' gate primitive) remain UNMODELED. ⚑ FLAGS: (⚑1) FOLLOW UP TRIGGER — teammate-granted, no engine source; estimate = 0 in v1; recipe = engine primitive for externally-granted status trigger. (⚑2) DISTRIBUTED DAMAGE TIMING — L9 distributedDamagePct 90.01% fires at burstCast (same frame as burst nuke + 1 More rider); engine buff-ordering decides whether it applies to the same-cast nuke. (⚑3) CADENCE TUPLE — RoF 90 / ammo 9 / reloadFrames 111 shipped datamine; SG instant-fire default; est = class-default; recipe = focus video. TIER 2 (bossElementGate status-gate + partial Persona trigger decomposition). Kit-autonomy gauntlet 2026-08-18.",
+      "simSupported": true,
+      "boardRow": null,
+      "date": "2026-08-18",
+      "evidence": "kit-autonomy gauntlet 2026-08-18; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "Follow Up rider + Baton Pass (teammate-granted Persona triggers — no engine source in this kit); distributed damage timing; cadence tuple",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "Activates when Follow Up takes effect. Affects all enemies. Deals 548.99% of final ATK as distributed damage."
+        ],
+        "skill2": [
+          "Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state. Baton Pass: ATK ▲ 35.2% of the skill user's ATK continuously. Stacks up to 3 times."
+        ],
+        "burst": []
+      }
     }
   }
 }

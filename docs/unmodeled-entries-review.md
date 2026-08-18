@@ -11,16 +11,16 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 205 | 45.1% |
-| Other / see caveats | 92 | 20.2% |
-| Missing engine primitive / trigger | 91 | 20.0% |
+| Defensive / HP / shield / aggro | 205 | 44.9% |
+| Other / see caveats | 93 | 20.4% |
+| Missing engine primitive / trigger | 92 | 20.1% |
 | Out-of-domain / parser unsupported | 30 | 6.6% |
 | Partless boss | 10 | 2.2% |
 | Weapon-state / shot-count approximation | 9 | 2.0% |
 | Self-status / stack gate | 8 | 1.8% |
 | RNG / probabilistic | 6 | 1.3% |
 | Measurement-gated / unverified cadence | 4 | 0.9% |
-| **Total** | **455** | 100.0% |
+| **Total** | **457** | 100.0% |
 
 ## Entries by reason
 
@@ -745,7 +745,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Other / see caveats (92)
+### Other / see caveats (93)
 
 **A2** (a2)
 
@@ -934,6 +934,11 @@ Critical Rate ▲ 3.56% for 5 sec.
 - **burst:** Designated Target: ATK ▼ 5.02% for 10 sec. (the STATUS is modeled via targetStatus; its ATK-down content is inert in v1 — the boss never attacks)
   - *Why:* STATUS WINDOW: durationSec 10 is DATAMINED, not inferred — the burst line "Designated Target: ATK 5.02% down for 10 sec" IS the status line, so the 10s is the status's own window
 
+**Queen (Makoto)** (queen)
+
+- **skill2:** Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state. Baton Pass: ATK ▲ 35.2% of the skill user's ATK continuously. Stacks up to 3 times.
+  - *Why:* See unit note / caveats
+
 **Ram** (ram)
 
 - **skill1:** ■ Activates after landing 5 normal attack(s). Affects the target(s).
@@ -1073,7 +1078,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Missing engine primitive / trigger (91)
+### Missing engine primitive / trigger (92)
 
 **A2** (a2)
 
@@ -1373,6 +1378,11 @@ Outgoing healing ▲ 30.05% continuously.
 
 - **skill1:** Outgoing healing ▲ 49.92% continuously.
   - *Why:* NOT MODELED: Encore's 'Performance duration ▲21 sec' (no primitive extends a named ally status window, so in solo mode the Charge Damage ▲25% and the heal run 25s instead of an extended ~46s); Encore's Singing part assignment (inert); S1's Outgoing healing ▲49.92% (no HP pool); S2's Full-Burst-enter Max HP ▲19.98% (defensive)
+
+**Queen (Makoto)** (queen)
+
+- **skill1:** Activates when Follow Up takes effect. Affects all enemies. Deals 548.99% of final ATK as distributed damage.
+  - *Why:* The S1 548.99% distributed rider on 1 More IS modeled (burstCast + Wind gate); the Follow Up rider (teammate-granted, no engine source for Follow Up in this kit) and the S2 Baton Pass team ATK buff (35.2% of caster ATK, stacks 3, to B3 Persona allies — no 'Persona state' gate primitive) remain UNMODELED
 
 **Rapi** (rapi)
 

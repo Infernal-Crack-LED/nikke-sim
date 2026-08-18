@@ -1,0 +1,218 @@
+{
+  "slug": "queen",
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Queen (Makoto) \u2014 SG/Fire/Attacker/Burst III. Whole-kit shape: she is a Wind-boss specialist. Fire holds elemental advantage over Wind, and three of her mechanics ('Nuke Boost'/'Nuke Amp' elemAdvantageDamagePct, the '1 More' ATK buff, and the 1-More-gated 548.99% distributed rider + Baton Pass) are live ONLY against a Wind Code boss, so against the neutral/Fire scope-lock boss the modeled kit reduces to: ATK \u25b250.28% (battle start + every Full Burst end, 15s), Attack Damage \u25b230% passive, Distributed Damage \u25b290.01% on Burst-Stage-3 entry, and the 1421.69% distributed burst nuke. '1 More' is modeled as her OWN burst cast + bossElementGate 'Wind' (that is the only place the kit text creates it). 'Follow Up' is NOT produced anywhere in this kit \u2014 its 548.99% rider is deliberately UNMODELED rather than given an invented trigger. DEF buffs are carried for kit completeness (defPct is offensively inert in v1).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 13.59
+        },
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 14.78
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "battleStart"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 50.28,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 50.28,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "bossElementGate": "Wind",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 548.99,
+          "flavor": "distributed",
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 25.56,
+          "durationSec": 10.4
+        },
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 17.95,
+          "durationSec": 10.4
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 90.01,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies",
+        "excludeSelf": true
+      },
+      "bossElementGate": "Wind",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 35.2,
+          "maxStacks": 3
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1421.69,
+          "flavor": "distributed",
+          "crit": true,
+          "burstDesc": "allEnemies"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "bossElementGate": "Wind",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 30.27,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "\u25a0 Activates when Follow Up takes effect. Affects all enemies. Deals 548.99% of final ATK as distributed damage. (\u2691 NOT MODELED: nothing in this kit creates 'Follow Up'; giving it an invented trigger would fabricate up to 548.99% of final ATK per proc)",
+      "Persona - Johanna: This effect is continuous and cannot be removed. (buff-name label + dispel immunity; no dispel/cleanse exists in the sim)",
+      "Function: Queen (Makoto) strengthens herself using her Persona. (flavor line, no mechanic)"
+    ],
+    "skill2": [
+      "Fist of Justice!: This effect is continuous and cannot be removed. (buff-name label + dispel immunity; no dispel modeled)",
+      "Function: Queen (Makoto) strengthens herself. (flavor line, no mechanic)",
+      "Deactivation condition: When Full Burst ends. (no 'until Full Burst ends' removal primitive \u2014 approximated by \u2691 durationSec 10.4s = 22f chain gap + the 10s Full Burst window)",
+      "Affects all standard Burst 3 allies (except the skill user) in the Persona state. (target narrowed only to allies-except-self \u2014 there is no Burst-tier target primitive and no 'Persona state' concept; OVER-CREDITS on a Wind boss with non-Burst-III / non-Persona allies)"
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 Wind-gated majority: against the neutral/Fire scope-lock boss, skill1's Nuke Boost, skill2's Nuke Amp, the 1-More 548.99% rider, Baton Pass, and the 1 More ATK \u25b230.27% are ALL inert. Any board movement from this override on a non-Wind boss comes only from ATK \u25b250.28%, Attack Damage \u25b230%, Distributed Damage \u25b290.01%, and the burst nuke.",
+    "\u2691 'Fist of Justice!' duration is an estimate (10.4s), not a kit number \u2014 the kit states a Full-Burst-end deactivation condition instead of a duration.",
+    "\u2691 '1 More' identity: modeled as HER OWN burst cast with a Wind Code enemy present, because that is the only line in this kit that grants it. If a collaborating unit can also grant '1 More', both 1-More-keyed blocks under-fire.",
+    "\u2691 Baton Pass target is over-scoped (all allies except self) and its stacks are permanent (one per 1 More, cap 3 \u2192 steady state 3 from her third Wind-boss burst onward).",
+    "\u2691 Burst-slot block order follows the kit's printed order: the 1421.69% nuke resolves BEFORE the 1 More ATK \u25b230.27% self-buff, so the nuke does not benefit from it. Unverified \u2014 footage could show the reverse ordering.",
+    "\u2691 Distributed damage against the single partless scope-lock boss is modeled as landing in FULL (no split); whether 'distributed' divides across enemy count is a kit-silent split-vs-merge question.",
+    "noFb is NOT set on any rider (default OFF, measured-only). The burst-slot nuke is Full-Burst-exempt by TIMING (a burst cast lands before the window opens), not by a flag."
+  ]
+}

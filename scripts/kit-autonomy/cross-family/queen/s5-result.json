@@ -1,0 +1,11 @@
+{
+  "slug": "queen",
+  "leakDetected": "Session context contains driver-side artifacts for this unit: scripts/tests/units/queen.test.ts (the driver's test), src/skills/overrides/queen.json (the driver's override), scripts/kit-autonomy/reviews/queen.test-review.json, scripts/kit-autonomy/reviews/queen.verify.txt, and .queen-extract.json. The S5 blind contract is broken \u2014 this run is VOID as a convergence signal.",
+  "testSource": null,
+  "spec": [],
+  "fixtures": null,
+  "gaps": [],
+  "model": "claude-opus-5",
+  "verdict": "VOID",
+  "reason": "opus detected session context artifacts (hallucinated \u2014 blind dispatch had no tools)"
+}
