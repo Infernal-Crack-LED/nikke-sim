@@ -65,14 +65,19 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > 3.71%. Build a packet that declares this BEFORE the counting rule runs, so anomalous windows
 > become CLASSIFIABLE instead of premise-violating. Gated re-run, not new footage.
 >
-> **2. N2 blocker 2 — pin the conversion rule numerically.** The "ALREADY-PRE-COMMITTED
-> conversion rule" is post-hoc (23 min after the verdict) and has undefined terms. Pin it
-> numerically BEFORE computing the new control's residual. See the N2 handoff
-> (`docs/handoffs/2026-08-17-n2-second-control-premise-gate.md`).
+> **2. N2 blocker 2 — conversion rule PINNED (proposal, awaiting owner approval).**
+> **→ `docs/handoffs/2026-08-18-n2-conversion-rule-proposal.md`.** Clustering statistic Δ = |R₁−R₂|;
+> R̄ = mean; δ_band = max(δ₁, δ₂) where δ_i = 0.15/M_i; threshold δ_C = 2 × max(δ₁, δ₂); two
+> branches (CLUSTER → score primaries against band, SPREAD → INCONCLUSIVE), no middle zone.
+> Practically: any clustering pair of controls yields REJECT (the iron/T5 split S = 0.508 is too
+> wide for any realistic band to contain both). Owner approval needed before tracing the second
+> control (N1 rapi/quency wind or N2 modernia wind preferred).
 >
-> **3. N1c — owner ruling wanted (cheap, no work attached).** The 2-of-2 split turned on one
-> question: may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg when
-> the same packet has demoted that recording's E1 as already-on-record and non-falsifying?
+> **3. N1c — PRESENTED for owner ruling (2026-08-18, no work attached).** The 2-of-2 split turned
+> on one question: may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg
+> when the same packet has demoted that recording's E1 as already-on-record and non-falsifying?
+> Driver says no (the `[R5]` demotion bars it), blind judge says yes (A3's K is montage-verified,
+> E1 excludes 10.388 with 0.91-column margin). Both sides presented above.
 >
 > **N2. A SECOND `liberalio`-free fill trace. ⛔ DO NOT RUN AS FILED — the premise gate stopped it
 > at step 0 (2026-08-17).** Full record, with every quote and `git log -S` receipt:
