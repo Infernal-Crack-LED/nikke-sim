@@ -90,10 +90,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      missing application-gauge credits). H-A team-context route CLOSED by owner ruling. The
      `anis-star` U28 divisor read is what remains of the encoding audit path.
      `iron sweep (run G)` regression comp stays disabled.
-   - **Batched `gaugeHits` follow-up (findings-only, small):** `cinderella` (burst, N=10),
-     `eve` (burst, N=6), `julia` (burst, N=5) also aggregate a multi-hit without `gaugeHits`. All
-     once-per-cast, so none can carry the FB shortfall — and the 2026-08-17 run gives no support for
-     crediting them at full value either.
    - Second, lower priority: settle
      the clean-bin-time vs full-window denominator on a fixture with known ground truth, which would
      turn the standing MAR caveat into a measured bias bound — every detection in this thread is
