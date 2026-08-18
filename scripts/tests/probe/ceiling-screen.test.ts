@@ -140,9 +140,9 @@ describe('ceiling screen: which comps can host the H-C detector (2026-08-17)', (
     expect(r.predictions.scalesWithCeiling.rate).toBeCloseTo(6.7313, 3);
     expect(r.predictions.scalesWithSharedUnit.rate).toBeCloseTo(6.2517, 3);
     // THE load-bearing assertion: under 2 sigma => the arm cannot separate the rivals.
-    // (0.9861 and 731 are the exact-schedule values; the original packet passed 38.1, the
-    // schedule sums to 38.2 — the 0.26% shift moves sigma by 0.0013, well within the
-    // "far under 2 sigma" qualitative claim.)
+    // (0.9861 is the exact-schedule value; the original packet passed 38.1, the
+    // schedule sums to 38.2 — the 0.26% shift moves sigma by 0.0013 and leaves
+    // eventBinsFor2Sigma unchanged at 733, well within the "far under 2 sigma" claim.)
     expect(r.power.separationSigmas).toBeCloseTo(0.9861, 3);
     expect(r.power.discriminates).toBe(false);
     expect(r.power.eventBinsFor2Sigma).toBe(733);

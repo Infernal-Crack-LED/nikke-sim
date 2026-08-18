@@ -17,7 +17,7 @@
 > `docs/open-questions.md` (single U-numbering — move it to `docs/answered-questions.md` with the
 > answer inline, no new A-number).
 >
-> **Last audited 2026-08-16** — every claim below was re-verified against the tree (branch merge
+> **Last audited 2026-08-17** — every claim below was re-verified against the tree (branch merge
 > state, file/symbol existence, test skips, doc paths). Landed narration deleted; dangling pointers
 > repaired.
 
@@ -59,38 +59,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > exist. Take them top-down. The numbered threads below (1–5) stay as the reference detail and are
 > mostly footage-gated — do NOT start there.
 >
-> **N1. DONE 2026-08-17 — LOG with a SPLIT 2-of-2; superseded by N1b below.** The pre-registered
-> re-run ran (packet + deliverable + `docs/probe-data/anis-star-solo-magnitude-2026-08-17.json`,
-> instrument `scripts/probe/gauge-magnitude.ts` + pin). Record:
-> `docs/handoffs/scientific-method-harness.md` 2026-08-17. Nothing enacted. Two things to carry:
-> the declared 3.71 candidate rests on `basePerTrigger`, which the premise gate proved
-> **ENGINE-INERT** (`sim.ts` never reads it) — so it could only ever describe a NEW mechanism, never
-> a mis-set constant; and the run measured the classified-steady credit at **11.32 / 11.15** on two
-> independently-calibrated recordings, both excluding the shipped 10.388.
->
-> **N1b. DONE 2026-08-17 — INCONCLUSIVE.** Calibration read landed as a findings-only artifact
-> (`docs/probe-data/n1b-anis-star-calibration-read-2026-08-17.json`). The maiden-ice-rose sub-step
-> method **cannot replicate** on anis-star's bar: the two-sub-step structure (weapon + rider,
-> ~160ms apart) is structurally absent — every steady pull lands in a single 60fps frame. Bar width
-> is identical (138px) so the pixel-to-% basis for a universal gain exists, but the internal
-> calibration anchor is not available. Applied, 1.064 moves solo #2 E2 to 10.64 (CI [10.10, 11.18])
-> which CONTAINS 10.388, but the point estimates imply a higher gain (~1.090) would be needed.
-> **Neither confirmed nor refuted.** The standing claim remains an unvalidated carry. Settling U28
-> now requires (a) a recording with resolvable sub-steps or (b) an independent non-bar measurement.
->
 > **N1c. Owner ruling wanted (cheap, no work attached).** The 2-of-2 split turned on one question:
 > may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg when the same
 > packet has demoted that recording's E1 as already-on-record and non-falsifying? Driver said no
 > (⇒ INCONCLUSIVE), blind Fable said yes in the spirit of the rule (⇒ ACCEPT-narrowed). Both struck
 > the W3 window independently — its "exclusion" margin was 0.0012 of a render column.
->
-> ~~Also flagged for the harness template: the clause-2 reachability wording is degenerate…~~
-> **DONE 2026-08-17 — and the framing was wrong.** There was no harness-template defect: the wording
-> was in **this run's own packet**, nowhere in `.claude/**` (there is no packet template), and the
-> same-day N3 third-arm packet already phrased the concern correctly, so nothing was inheriting it.
-> The generalizable rule landed in `.claude/skills/scientific-method/SKILL.md` with owner approval:
-> **no decision-rule clause may be conditioned on the realized estimate**, plus a pre-run
-> substitution test that every clause is selectable by some admissible outcome.
 >
 > **N2. A SECOND `liberalio`-free fill trace. ⛔ DO NOT RUN AS FILED — the premise gate stopped it
 > at step 0 (2026-08-17).** Full record, with every quote and `git log -S` receipt:
@@ -126,43 +99,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > ⚑ `docs/probes/**` is GITIGNORED — a fresh worktree has no media, so run this in the main tree (or
 > symlink the probe dir).
 >
-> **N4. DONE 2026-08-17** (`b5211625`). The "measured 4.43 / 3.56 / 3.71" bands are now titled as
-> SIM DRIFT-GUARDS; the PI2 < T5 contradiction and T1's missing footage measurement are documented
-> in the file header. ⚑ Do NOT blanket-`--update`: of the 19 reds under the `gaugeHits` arm, ZERO
-> are measured-anchored, 4 are child-process harness artifacts, 15 are genuine arm effects.
->
-> **N5. Probe-tooling follow-ups — ALL 4 DONE 2026-08-17** (all footage-free, detail in
-> thread 2 below).
->
-> - ~~`scan.ts` fixture writer emits fields `TempoFixture` does not declare~~ **DONE** (`b43378cf`):
->   every emitted field now declared, verified against all four committed fixtures; the two
->   `as TempoFixture & {...}` casts in `n3-third-arm.test.ts` retired and replaced with an explicit
->   assertion (a `?? []` default would have silently produced an EMPTY frame trace on a rename).
-> - ~~a bare `--fixture-out` with no value is silently skipped~~ **DONE** (`50198c6f`): now fails
->   loudly, and both it and the `--cycle-table` requirement are validated **before** the decode, so a
->   typo costs a second instead of a full video extraction. ⚑ Reported, NOT changed: `--debug-dir`
->   (`scan.ts` ~line 184) has the identical bare-flag pattern — left alone because absence there is
->   genuinely optional rather than a dropped deliverable. Owner call.
-> - ~~`auditElementControl` / `--element-control` has ZERO vitest coverage~~ **DONE** (`93426b0d`):
->   `scripts/tests/battery/element-control.test.ts` — five assertions pin the C1 invariants on N3
->   (gauge identical across elements, FB counts identical, damage moves, error on unknown comp).
-> - ~~`ceiling-screen.test.ts` hard-codes three literals (23.618, 38.1, `/ 30`)~~ **DONE**
->   (`93426b0d`): all three now derived from committed artifacts the test already loads. The
->   candSimRefillSec shift (38.1 → exact schedule sum 38.2) moves separationSigmas 0.9848 → 0.9861.
->
-> ~~**N6 (new, from the N3 landing — findings-only, reported not acted on).**~~ **DONE 2026-08-17.**
-> Findings artifact: `docs/probe-data/n6-gaugehits-blindness-audit-2026-08-17.json`. Three findings:
-> (1) **refill-starvation** — code pattern is wrong (counts damage instances, not gauge sub-hits)
-> but LATENT: only 2 comps audited (iron sweep + T5), neither seats a gaugeHits carrier. Zero output
-> impact. (2) **gauge-sources** — same pattern, LIVE on `N5 snowwhite-HA fire` (seats
-> snow-white-heavy-arms gaugeHits 5/10), but the census's purpose is path verification not total
-> counting, so the under-count may be acceptable. Owner call on whether to fix. (3)
-> **multihit-crediting** — NO defect: reads engine `gaugeGenerated` amounts, does not count damage
-> instances. The QUEUE's original description ("both folds count damage instances") was inaccurate
-> for this fold. Also: `docs/fb-count-matrix.md` buzzer-state table regenerated (4 comps drifted:
-> T1, misc B3s, T5, soda-tb — rotation timing changed from engine updates, per-unit gauge amounts
-> byte-identical).
->
 > Also unblocked but lower value: `mihara-bonding-chain`'s fit exposure (thread 1 — localize the
 > over-model, do not restore the 12-stack average); the clean-bin-time vs full-window denominator
 > settlement against a known-ground-truth fixture (turns the standing MAR caveat into a measured bias
@@ -173,25 +109,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    `docs/handoffs/closed/2026-08-10-faithfulness-batch{1..8}-findings.md`). Most items closed by
    enactment, refutation, or owner ruling (2026-08-11 M-list triage + 2026-08-13 corrections).
    Open:
-   - **`noir` — RESOLVED (2026-08-17, owner frame count).** Reload tension was recon ~0.6–0.9s
-     vs datamined 62f ≈ 1.03s. Owner hand-counted from `docs/probes/misc/noir solo reload.MP4`:
-     **49f** reload animation (start → end), **61f** full cycle (start → first shot in new mag).
-     Datamined `reloadFrames 62` matches measured 61f (within 1 frame / 1.6%). The recon was
-     measuring the reload ANIMATION only (49f = 0.817s), not the full cycle — the remaining 12f
-     is dead time between animation end and first shot. No override change needed.
-   - **`mihara-bonding-chain` — LOCALIZED v2 (2026-08-17, findings-only).** Ensnaring primitive
-     landed 2026-08-13; removing the old 12-stack average revealed an over-model elsewhere in her
-     kit. 1.034 → 1.179 HOT on 2 graded comps; FB count UNCHANGED at 11 vs measured 11, so it is
-     magnitude not rotation. **Localization v2 (owner rulings 2026-08-17):** sustainedDamagePct
-     is correctly implemented (additive in Damage-Up, applies to both DoTs — owner confirmed).
-     The over-model is in the **stack count** — the sim's pool (avg 13.39, always reaches 20
-     before burst per DBG_UNIT trace) is likely higher than the real game's. The burst DoT's
-     fixed 1001%/s assumes 20 stacks at burst time (kit-text assumption, not measured). If the
-     real pool averages ~16, the burst DoT over-credits by ~20% → total drops ~9.3%.
-     **Settling measurement:** popup-read Ensnaring DoT ticks at a known moment, or an owner
-     ruling on whether the real pool always reaches 20 before burst.
-     **→ Handoff: [2026-08-13-mihara-fit-exposure.md](2026-08-13-mihara-fit-exposure.md)**
-     **→ Probe data: [mihara-overmodel-localization-2026-08-17.json](../probe-data/mihara-overmodel-localization-2026-08-17.json)**
+   - **`mihara-bonding-chain` — LOCALIZED v2 (2026-08-17).** Over-model in the **stack count**
+     (sustainedDamagePct correctly implemented — owner confirmed). Burst DoT's fixed 1001%/s
+     assumes 20 stacks; if real pool averages ~16, total drops ~9.3%. Settling: popup-read
+     Ensnaring DoT ticks, or owner ruling on whether pool always reaches 20.
+     **→ [mihara-overmodel-localization-2026-08-17.json](../probe-data/mihara-overmodel-localization-2026-08-17.json)**
    - **Held primitives** (F11 discipline — leave held): `moran` S1 DEF ▲/stack, `maxwell`
      `byFinalAtk`, `helm`'s held tag.
    - **`mint` — HELD** (M12 confirmed shipped `singing` model; solo magnitudes unanchored by
@@ -253,22 +175,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `eve` (burst, N=6), `julia` (burst, N=5) also aggregate a multi-hit without `gaugeHits`. All
      once-per-cast, so none can carry the FB shortfall — and the 2026-08-17 run gives no support for
      crediting them at full value either.
-   - **Test-hygiene follow-up:** retitle `gauge-cycle-decomp.test.ts`'s "measured" bands as sim
-     drift-guards, and note its `PI2 < T5` assert is contradicted by measurement regardless of any
-     arm (real T5 1.75–1.82s < real PI2 2.09–2.11s). Do NOT blanket-`--update`: of 19 reds under the
-     arm, ZERO are measured-anchored, 4 are child-process harness artifacts, 15 genuine.
-   - ~~Ledger gap: the 2026-08-15 `snow-white-heavy-arms` per-sub-hit enactment has no DECISIONS
-     entry.~~ **CLOSED 2026-08-17** — entry backfilled into `docs/DECISIONS.md` → Measured mechanics.
-     It records the arithmetic-closure evidence, the independent 12/12 splash-count corroboration, the
-     49-minute FINDINGS-ONLY→enacted gap, and the caveat that only `snow-white-heavy-arms` of the three
-     `gaugeHits` carriers is measurement-backed (`eve`/`little-mermaid` are kit-prose only).
-   - ~~Protected-path correction pending owner approval: the `skillGauge` comment in
-     `src/engine/sim.ts` claims the `maiden-ice-rose` rider "measured exactly 364".~~ **CLOSED
-     2026-08-17** (owner-approved, comment-only — zero non-comment lines changed). It now states the
-     actual 3.45%-vs-modelled-3.64% measurement, that the flat/un-focused SHAPE is confirmed while the
-     −5.2% magnitude residual is OPEN (U28), that `hitsPerShot` 1 means the anchor does not verify the
-     `hitsPerShot > 1` divisor, and disambiguates `maiden-ice-rose` from the base `maiden`.
-     `docs/data/burst-gauge.md` §5/§6 were corrected the same day.
    - Second, lower priority: settle
      the clean-bin-time vs full-window denominator on a fixture with known ground truth, which would
      turn the standing MAR caveat into a measured bias bound — every detection in this thread is
@@ -281,36 +187,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      under the full-window denominator N3 reads 11.0% BELOW its own ceiling (iron: 5.7%), and C7's
      bridge-vs-activity ratios run OPPOSITE on the two arms (0.757 vs 1.357), so the estimator's
      behaviour has no mechanism.
-   - **Probe tooling follow-ups (achievable without footage):**
-     (i) **CLOSED 2026-08-17** — `gauge-fill.py` now emits a stderr warning when `--bar` is not
-     passed, noting the auto-lock footgun on solo footage. The maiden fixture gate in
-     `scripts/tests/gauge-fill-anchor.test.ts` validates the reader against the labeled anchor.
-     (ii) `read-ammo.ts` reads 0/851 frames on text-label HUD ("AMMO / NNN") — needs a text-label
-     digit reader path;
-     (iii) **CLOSED 2026-08-17** — all four items from the cross-family code review
-     (`qwen3.8-max-preview`): `TempoFixture` type updated to declare all writer-emitted fields
-     (closed in `fill-trace-compare.ts`); `auditElementControl` test coverage added
-     (`scripts/tests/battery/element-control.test.ts`); `ceiling-screen.test.ts` literals derived
-     from artifacts; bare `--fixture-out` guard added in `scan.ts`.
+   - **Probe tooling — `read-ammo.ts`** reads 0/851 frames on text-label HUD ("AMMO / NNN") —
+     needs a text-label digit reader path.
+   - **`scan.ts` `--debug-dir` (~line 184)** has the bare-flag-silently-skipped pattern fixed
+     for `--fixture-out`; left alone because absence is genuinely optional — owner call.
+   - **`--gauge-sources` census under-counts** gaugeHits sub-hits (LIVE on N5 snowwhite-HA
+     fire); census purpose is path verification not total counting — owner call whether to fix.
+     → `n6-gaugehits-blindness-audit-2026-08-17.json`
    - **T1 wind-weak v2 PROCESSED 2026-08-16** — 13 FBs confirmed (scan.ts, 2nd detector
      corroborated), per-unit totals from Battle Records screenshot. Result:
      `docs/probes/misc/t1-wind-weak-v2-result.md`. Confirms the existing "windweak t257 13fb"
      probe; comp remains disabled in regression (sim 11-12 FBs vs measured 13, engine shortfall).
    - **`ein` U8 0.7× team residual** — findings-only (N2); stage1→2 real 33f/32f vs modeled 30f
      (runs AGAINST the gap).
-3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
-   **CONFIRMED 2026-08-17 (owner popup read).** Scarlet burst popup: **11,069,312** (with roots)
-   vs **1,955,754** (without) → ratio **5.660** vs modeled **5.565** (435.6 + 20.9 additive in
-   Damage-Up, +1.7% deviation). The additive Damage-Up placement is CONFIRMED. The small excess
-   is within popup-read precision.
-   **→ Probe data: [trina-burst-amp-read-2026-08-17.json](../probe-data/trina-burst-amp-read-2026-08-17.json)**
-   **GRANULARITY RULED 2026-08-17 (owner):** block-level — the amp applies only to blocks whose
-   kit clause contains "Affects all enemies" (novel confirmed: affects-all-enemies block only).
-   Literal-only scope, matching the existing census (`census-burst-amp-scope.ts`).
-   Liter's burst popup would provide a cross-validation data point. Carried out of the
-   now-archived burst-amp handoff.
 
-4. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
+3. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
    economy landing (DECISIONS) made her colder, not warmer: the faithful custom weapon fires 12
    uncharged shots where the old estimate fired 7 that inherited her SR ×2.5 `chargeMultiplier`.
    Her swap window is therefore ruled OUT as the explanation. The largest remaining ⚑ in her file is
@@ -322,7 +213,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    _(Body restored 2026-08-13: nine lines were dropped from this item by the archive commit
    `80c9f041`; recovered verbatim from `d3314ca3`.)_
 
-5. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
+4. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
    The cadence landing itself is SHIPPED (merged as PR #126, 2026-08-16; cross-family
    `/code-review` verdict FIX-BEFORE-MERGE → all 3 FIX findings addressed pre-merge; landing
    record archived to `docs/handoffs/closed/2026-08-16-nbo-swap-cadence-landing.md`).

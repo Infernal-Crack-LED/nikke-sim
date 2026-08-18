@@ -14,6 +14,21 @@ DECISIONS leaves the stale question here reading as live — always move it.
 
 ## UNANSWERED
 
+### U40 — `mihara-bonding-chain` Ensnaring stack count at burst time (opened 2026-08-17)
+
+The sim's Ensnaring pool time-averages 13.39 stacks and always reaches 20 before each burst
+(DBG_UNIT trace), but this is a kit-text assumption, not a measurement. The burst DoT's fixed
+1001%/s encodes 20 stacks (20 × 50.05). If the real pool averages ~16, the burst DoT over-credits
+by ~20% → total drops ~9.3%, moving the ratio from 1.179 to ~1.069 on 2 graded comps. All other
+mihara encoding pieces are confirmed correct (sustainedDamagePct additive in Damage-Up, applies to
+both DoTs — owner rulings 2026-08-17).
+
+**Resolving it:** popup-read Ensnaring DoT ticks at a known moment (e.g., 5s after a Restraint
+dump) and compare against stacks × 25.08% × ATK × dmgUp. Alternative: an owner ruling on whether
+the real game's pool always reaches 20 before mihara's burst.
+
+**Artifact:** `docs/probe-data/mihara-overmodel-localization-2026-08-17.json`.
+
 ### U39 — `snow-white-heavy-arms` Fully Active: is the volley delivered by USES or by TIME? (opened 2026-08-11, re-filed)
 
 Her burst "Seven Dwarves Fully Active" is modeled as a weapon swap carrying the same 69.04% shot at
