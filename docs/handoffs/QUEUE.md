@@ -76,11 +76,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > wide for any realistic band to contain both). Owner approval needed before tracing the second
 > control (N1 rapi/quency wind or N2 modernia wind preferred).
 >
-> **3. N1c — PRESENTED for owner ruling (2026-08-18, no work attached).** The 2-of-2 split turned
-> on one question: may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg
-> when the same packet has demoted that recording's E1 as already-on-record and non-falsifying?
-> Driver says no (the `[R5]` demotion bars it), blind judge says yes (A3's K is montage-verified,
-> E1 excludes 10.388 with 0.91-column margin). Both sides presented above.
+> **3. N1c — OWNER RULED (2026-08-18).** Procedural dispute is moot: 9 pulls fill the bar on
+> three of four montage-verified windows → per-pull credit ≥ 100/9 = 11.11 %, which exceeds the
+> shipped 10.388 % (would need 9.63 pulls). The pull count alone settles the direction — the
+> clause-1(ii) machinery was over-engineering for a question the ammo counter already answered.
+> Per-pull gauge credit for Anis: Star is **elevated above the shipped model** (measurement, not
+> enactment — nothing changes in the engine). The pre-register re-run (item 1) now pins the
+> exact value and the anomaly mechanism, not the direction.
 >
 > **N2. A SECOND `liberalio`-free fill trace. ⛔ DO NOT RUN AS FILED — the premise gate stopped it
 > at step 0 (2026-08-17).** Full record, with every quote and `git log -S` receipt:
