@@ -62,6 +62,11 @@ interface TabMeta {
   image?: string;
 }
 export let TAB_META: Record<string, TabMeta> = {
+  home: {
+    title: 'Nikke Simulator — NIKKE Squad Builder & Solo Raid Sim',
+    label: 'Home',
+    desc: 'Build and plan your NIKKE: Goddess of Victory squad. Browse characters, assemble teams, run the solo-raid DPS sim, optimize overload lines, and share your setups.',
+  },
   sim: {
     title:
       'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
@@ -323,6 +328,9 @@ const escapeJsonLd = (obj: unknown): string =>
 // canonical tag pointing at the real URL (legacyCanonical below), not itself.
 function tabFromReqUrl(u: URL): string {
   const pathname = normalizeCanonicalPath(u.pathname.toLowerCase());
+  if (pathname === '/') {
+    return 'home';
+  }
   const segs = pathname.replace(/^\/+|\/+$/g, '').split('/');
   if (segs[0] === 'ranks') {
     if (segs[1] === 'support') {
@@ -345,16 +353,12 @@ function tabFromReqUrl(u: URL): string {
 const LEGACY_CANONICAL: Record<string, string> = {
   dpschart: '/ranks',
   dps: '/ranks/compare',
-  // `sim: '/'` is unreachable server-side because /sim now 301-redirects; kept
-  // for parity with the client-side table in useDocumentHead.ts.
-  sim: '/',
 };
 
 // 301 redirects for legacy paths that used to be canonical.
 const LEGACY_REDIRECT: Record<string, string> = {
   '/dpschart': '/ranks',
   '/dps': '/ranks/compare',
-  '/sim': '/',
   '/index.html': '/',
 };
 
@@ -529,6 +533,54 @@ function charactersStaticHtml(): string {
   );
 }
 
+// Static / landing body: mirrors LandingPage.tsx so crawlers see the same
+// headline, cards, and promos without executing JS.
+function homeStaticHtml(): string {
+  const maidenBlurb =
+    'A NIKKE: Goddess of Victory info & strategy Discord bot that serves up character data on demand. Built for my union cluster, Maiden’s Bakery, but it works in any Nikke-oriented server.';
+  const refittingName = 'Refitting Room';
+  const refittingBlurb =
+    'My other game tool: a Girls’ Frontline 2: Exilium squad planner. Browse dolls and weapons, filter by class, phase, and weapon type, and assemble a team — all running in the browser.';
+  return (
+    '<div class="app home-page">' +
+    '<section class="home-hero">' +
+    '<img class="home-hero-logo" src="/favicon.svg" alt="" width="56" height="56" />' +
+    '<h1>Nikke Simulator</h1>' +
+    '<p>Plan, build, and share <strong>NIKKE: Goddess of Victory</strong> squads. Browse every Nikke, assemble teams, optimize overload lines, and compare DPS — all in one place.</p>' +
+    '<div class="home-cta-row">' +
+    '<a class="btn-solid" href="/teambuilder">Build a Team</a>' +
+    '<a class="btn-outline" href="/characters">Browse Characters</a>' +
+    '</div>' +
+    '</section>' +
+    '<section class="home-section">' +
+    '<h2 class="home-section-title">Everything you need to plan a squad</h2>' +
+    '<div class="home-feature-grid">' +
+    '<a class="home-feature" href="/sim"><h2>Team Simulator</h2><p>Run a frame-tick damage simulation for your squad against a custom boss. Per-unit DPS, share breakdowns, and full-burst counts.</p><span class="home-feature-cta">Open the sim →</span></a>' +
+    '<a class="home-feature" href="/teambuilder"><h2>Team Builder</h2><p>Assemble up to five Nikkes and see team effects, elemental synergies, and burst coverage at a glance.</p><span class="home-feature-cta">Build a team →</span></a>' +
+    '<a class="home-feature" href="/ranks"><h2>DPS Rankings</h2><p>Ranked damage under standardized frameworks: neutral, elementally advantaged, with and without supports.</p><span class="home-feature-cta">View rankings →</span></a>' +
+    '<a class="home-feature" href="/roster"><h2>Roster Generator</h2><p>Generate the best solo-raid or union-raid roster teams from your unit pool, accounting for element, burst rotation, and overload synergy.</p><span class="home-feature-cta">Generate rosters →</span></a>' +
+    '<a class="home-feature" href="/overload"><h2>Overload Optimizer</h2><p>Find the best overload lines for any Nikke, estimate rolling costs, and check charge-speed breakpoints.</p><span class="home-feature-cta">Optimize lines →</span></a>' +
+    '<a class="home-feature" href="/builder"><h2>Infographic Generator</h2><p>Build and download shareable infographics for teams, DPS charts, unit comparisons, rank boards, and pull odds.</p><span class="home-feature-cta">Open builder →</span></a>' +
+    '</div>' +
+    '</section>' +
+    '<section class="home-callout">' +
+    '<img class="home-callout-avatar" src="/maiden.gif" alt="" width="72" height="72" />' +
+    '<div class="home-callout-body"><h2>Meet Maiden</h2><p>' +
+    escapeAttr(maidenBlurb) +
+    '</p><a class="btn-primary discord" href="https://discord.com/discovery/applications/1523719703950790946" target="_blank" rel="noreferrer">Add Maiden to your server</a></div>' +
+    '</section>' +
+    '<section class="home-callout">' +
+    '<img class="home-callout-avatar square" src="/refittingroom-icon.png" alt="" width="72" height="72" />' +
+    '<div class="home-callout-body"><h2>' +
+    escapeAttr(refittingName) +
+    '</h2><p>' +
+    escapeAttr(refittingBlurb) +
+    '</p><a class="btn-outline" href="https://refittingroom.app" target="_blank" rel="noreferrer">Visit Refitting Room</a></div>' +
+    '</section>' +
+    '</div>'
+  );
+}
+
 // Put a no-JS body into #root. React later replaces it wholesale (createRoot,
 // not hydration), so the markup only has to be valid and crawlable, not to match
 // what React renders.
@@ -680,9 +732,10 @@ function breadcrumbItems(canonicalPath: string, pageLabel: string) {
     if (
       canonicalPath === '/team' ||
       canonicalPath === '/roster' ||
-      canonicalPath === '/rostersim'
+      canonicalPath === '/rostersim' ||
+      canonicalPath === '/sim'
     ) {
-      return [home, { name: 'Sim', item: SITE + '/' }, leaf];
+      return [home, { name: 'Sim', item: SITE + '/sim' }, leaf];
     }
     if (
       canonicalPath === '/teambuilder' ||
@@ -767,6 +820,8 @@ async function sendIndex(
       html = injectStaticBody(html, unitStaticHtml(key.slice(5)));
     } else if (key === 'characters') {
       html = injectStaticBody(html, charactersStaticHtml());
+    } else if (key === 'home') {
+      html = injectStaticBody(html, homeStaticHtml());
     } else if (CONTENT_PAGES[key]) {
       html = injectStaticBody(html, CONTENT_PAGES[key]);
     }

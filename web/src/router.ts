@@ -8,6 +8,7 @@ import { useEffect, useRef, useState, type MouseEvent } from 'react';
 // card (see scripts/serve.mjs). The static server SPA-falls-back every unknown
 // path to index.html, and the web-smoke loads at "/?team=…" which resolves to sim.
 export type Route =
+  | 'home'
   | 'sim'
   | 'rankings'
   | 'overload'
@@ -26,6 +27,7 @@ export type Route =
 // are intentionally excluded — hrefFor('unit') would produce /unit, which only
 // renders "Unit not found"; unit pages are driven by the slug in the path.
 export const ROUTES: Route[] = [
+  'home',
   'sim',
   'rankings',
   'overload',
@@ -69,12 +71,15 @@ const SECTION_LANDING: Record<'rankings' | 'overload' | 'tools', string> = {
 };
 
 // map the first path segment to a Route; section paths → their section route,
-// other sim-app paths (and "/") → sim
+// other sim-app paths → sim, bare "/" → home
 export function routeFromPath(pathname: string): Route {
   const seg = pathname
     .replace(/^\/+|\/+$/g, '')
     .split('/')[0]
     .toLowerCase();
+  if (!seg) {
+    return 'home';
+  }
   if (seg === 'unit') {
     return 'unit';
   }
@@ -107,11 +112,13 @@ export function unitSlugFromPath(pathname: string): string | null {
 
 // href for a route — a real path so links are hyperlinkable and crawlable
 export const hrefFor = (route: Route): string =>
-  route === 'sim'
+  route === 'home'
     ? '/'
-    : route === 'rankings' || route === 'overload' || route === 'tools'
-      ? SECTION_LANDING[route]
-      : `/${route}`;
+    : route === 'sim'
+      ? '/sim'
+      : route === 'rankings' || route === 'overload' || route === 'tools'
+        ? SECTION_LANDING[route]
+        : `/${route}`;
 
 // SPA navigation: update the URL via pushState (no full reload), then notify every
 // listener (this router + the sim App's tab sync) with a popstate event. Callers

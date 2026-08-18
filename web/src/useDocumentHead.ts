@@ -12,6 +12,11 @@ interface HeadMeta {
 // lockstep with the servers' TAB_META tables (src/server/static.ts,
 // scripts/serve.mjs) — scripts/tests/share/meta-parity.test.ts enforces it.
 export const META: Record<string, HeadMeta> = {
+  home: {
+    title: 'Nikke Simulator — NIKKE Squad Builder & Solo Raid Sim',
+    description:
+      'Build and plan your NIKKE: Goddess of Victory squad. Browse characters, assemble teams, run the solo-raid DPS sim, optimize overload lines, and share your setups.',
+  },
   sim: {
     title:
       'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
@@ -179,11 +184,15 @@ function normalizeCanonicalPath(pathname: string): string {
 // in App.tsx but without importing the full sim state). The rankings section
 // lives under /ranks/* (owner decision 2026-07-26): bare /ranks is the DPS
 // chart, /ranks/support is Support Rankings, /ranks/compare is Unit
-// Comparison.
+// Comparison. Bare "/" is the landing page (home), not the sim.
 function tabKey(): string {
-  const segs = normalizeCanonicalPath(window.location.pathname.toLowerCase())
-    .replace(/^\/+|\/+$/g, '')
-    .split('/');
+  const pathname = normalizeCanonicalPath(
+    window.location.pathname.toLowerCase()
+  );
+  if (pathname === '/') {
+    return 'home';
+  }
+  const segs = pathname.replace(/^\/+|\/+$/g, '').split('/');
   if (segs[0] === 'ranks') {
     if (segs[1] === 'support') {
       return 'ranks';
@@ -204,7 +213,6 @@ function tabKey(): string {
 const LEGACY_CANONICAL: Record<string, string> = {
   dpschart: '/ranks',
   dps: '/ranks/compare',
-  sim: '/',
 };
 
 // Sync <title>, <meta description>, OG tags, and <link rel="canonical"> to

@@ -20,6 +20,9 @@ import { PORTRAIT_CROP_TOP } from '../../src/infographics/core/canvas2d';
 // is only fetched on sim-family routes. The nav/footer chrome stays eager so
 // the shell paints immediately while the page chunk streams in.
 const App = lazy(() => import('./App').then((m) => ({ default: m.App })));
+const LandingPage = lazy(() =>
+  import('./LandingPage').then((m) => ({ default: m.LandingPage }))
+);
 const HowToPage = lazy(() =>
   import('./HowToPage').then((m) => ({ default: m.HowToPage }))
 );
@@ -82,6 +85,38 @@ function Root() {
         .catch(() => setUser(null));
     }
   }, []);
+
+  // Legacy deep links that used to open straight into the sim from the root:
+  // ?chart=… belongs to /ranks; ?team=/ ?b=/ ?id=/ ?cmp=… belong to /sim.
+  // Replace the URL in-place so shared links keep working without landing on
+  // the new home page.
+  useEffect(() => {
+    if (route !== 'home') {
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('chart')) {
+      window.history.replaceState(
+        {},
+        '',
+        `/ranks?${params.toString()}${window.location.hash}`
+      );
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    } else if (
+      params.has('team') ||
+      params.has('b') ||
+      params.has('id') ||
+      params.has('cmp')
+    ) {
+      window.history.replaceState(
+        {},
+        '',
+        `/sim?${params.toString()}${window.location.hash}`
+      );
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  }, [route]);
+
   const onLogin = () => {
     window.location.href = loginUrl();
   };
@@ -101,6 +136,8 @@ function Root() {
       <Suspense fallback={<PageFallback />}>
         {route === 'unit' ? (
           <UnitPage slug={unitSlug} />
+        ) : route === 'home' ? (
+          <LandingPage />
         ) : route === 'howto' ? (
           <HowToPage />
         ) : route === 'mechanics' ? (

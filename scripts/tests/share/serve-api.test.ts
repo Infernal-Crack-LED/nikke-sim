@@ -711,8 +711,7 @@ describe('static port parity with serve.mjs', () => {
     expect(dps.headers.get('location')).toBe('/ranks/compare');
 
     const sim = await fetch(`${base}/sim`, { redirect: 'manual' });
-    expect(sim.status).toBe(301);
-    expect(sim.headers.get('location')).toBe('/');
+    expect(sim.status).toBe(200);
 
     const indexHtml = await fetch(`${base}/index.html`, { redirect: 'manual' });
     expect(indexHtml.status).toBe(301);

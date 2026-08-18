@@ -1,6 +1,6 @@
-// Smoke test for the DPS Chart tab: boots the built bundle at ?chart=… (which selects
-// the DPS Chart calc tab), shims fetch to serve the built artifact, and asserts the
-// headliners, charted bars, matrix, and compare annotation render.
+// Smoke test for the DPS Chart tab: boots the built bundle at /ranks?chart=… (which
+// selects the DPS Chart calc tab), shims fetch to serve the built artifact, and
+// asserts the headliners, charted bars, matrix, and compare annotation render.
 import { JSDOM } from 'jsdom';
 import { readFileSync, readdirSync } from 'node:fs';
 
@@ -9,7 +9,7 @@ const artifact = readFileSync('dist/dpschart.json', 'utf8');
 const dom = new JSDOM(
   '<!doctype html><html><body><div id="root"></div></body></html>',
   {
-    url: 'http://localhost:4173/?chart=standard-hc.eleweak.c100.8of12&cmp=helm',
+    url: 'http://localhost:4173/ranks?chart=standard-hc.eleweak.c100.8of12&cmp=helm',
     pretendToBeVisual: true,
     runScripts: 'outside-only',
   }

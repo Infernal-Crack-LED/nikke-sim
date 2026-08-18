@@ -98,8 +98,9 @@ async function mountAt(url) {
 // scripts/tests/share/serve-headers.test.ts, which cannot skip.
 
 // ---- Sim tab --------------------------------------------------------------
+// The sim now lives at /sim; / is the landing page.
 const sim = await mountAt(
-  'http://localhost:4173/?team=liter,crown,naga,modernia,alice'
+  'http://localhost:4173/sim?team=liter,crown,naga,modernia,alice'
 );
 
 // The Team Sim tab now requires a manual Run sim click (it no longer auto-runs

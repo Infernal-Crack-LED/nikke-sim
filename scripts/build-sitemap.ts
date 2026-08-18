@@ -25,6 +25,7 @@ const PRIORITY = {
 
 const ROUTES: Array<{ path: string; priority: number }> = [
   { path: '/', priority: PRIORITY.home },
+  { path: '/sim', priority: PRIORITY.generators },
   { path: '/ranks', priority: PRIORITY.rankings },
   { path: '/ranks/support', priority: PRIORITY.rankings },
   { path: '/ranks/compare', priority: PRIORITY.rankings },

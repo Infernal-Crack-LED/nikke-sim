@@ -16,6 +16,12 @@ const NAV: { route: Route; label: string }[] = [
   { route: 'howto', label: 'How to' },
   { route: 'mechanics', label: 'Mechanics' },
 ];
+// Mobile dropdown still needs a Home entry because the brand logo+wordmark is
+// small and the page menu is the explicit route switcher.
+const MOBILE_NAV: { route: Route; label: string }[] = [
+  { route: 'home', label: 'Home' },
+  ...NAV,
+];
 
 // Intercept left-clicks for in-app (pushState) navigation; let modified clicks
 // (open-in-new-tab, etc.) and the real href behave natively. Page links carry no
@@ -117,10 +123,25 @@ export function SiteNav({
     <nav className="site-nav">
       <div className="site-nav-inner">
         <div className="site-nav-left">
+          <a
+            className="site-nav-brand"
+            href={hrefFor('home')}
+            onClick={(e) => navClick(e, 'home')}
+            aria-label="Nikke Sim home"
+          >
+            <img
+              className="site-nav-logo"
+              src="/favicon.svg"
+              alt=""
+              width="28"
+              height="28"
+            />
+            <span className="site-nav-wordmark">Nikke Sim</span>
+          </a>
           {mobile ? (
             <TabDropdown
               label="Page"
-              items={NAV.map((n) => ({
+              items={MOBILE_NAV.map((n) => ({
                 key: n.route,
                 label: n.label,
                 active: current === n.route,

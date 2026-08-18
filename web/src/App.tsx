@@ -450,8 +450,9 @@ const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
 // Canonical URL per tab. The rankings section lives under /ranks/* (owner
 // decision 2026-07-26): the section default (/ranks) is the DPS chart;
 // /dpschart and /dps are LEGACY aliases, canonicalized by the effect below.
+// The Sim section now lives under /sim so the landing page can own /.
 const TAB_PATHS: Partial<Record<CalcTab, string>> = {
-  sim: '/',
+  sim: '/sim',
   dpschart: '/ranks',
   ranks: '/ranks/support',
   dps: '/ranks/compare',
@@ -1435,7 +1436,7 @@ export function App({ user }: { user: AuthUser | null }) {
   const [tab, setTab] = useState<CalcTab>(() => tabFromLocation());
   // Switch tab AND reflect it in the URL path so the view is hyperlinkable and
   // the server can serve tab-specific embed metadata (rankings tabs map to
-  // /ranks/*; Sim uses the bare path "/"). Uses the same path-based navigate()
+  // /ranks/*; Sim uses "/sim"). Uses the same path-based navigate()
   // as the top-level pages (one routing strategy app wide); existing query
   // deep-links (team/chart/cmp/b) are preserved.
   const selectTab = (key: CalcTab) => {
