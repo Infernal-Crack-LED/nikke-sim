@@ -443,9 +443,9 @@ function drawTile(
   ctx.textAlign = 'center';
 
   ctx.fillStyle = TEXT_SECONDARY;
-  ctx.font = `700 ${big ? 15 : 11}px ${FONT}`;
+  ctx.font = tileTitleFont(big);
   ctx.fillText(
-    fitText(ctx, tile.title.toUpperCase(), r.w - 16),
+    fitText(ctx, tile.title.toUpperCase(), r.w - TILE_TITLE_PAD),
     cx,
     r.y + (big ? 24 : 18)
   );
@@ -519,6 +519,38 @@ function drawTile(
     }
   });
   ctx.textAlign = 'left';
+}
+
+// ---- tile-title geometry (exported: a title that doesn't fit is TRUNCATED, and
+// the landscape tile is the tightest text slot on the card — ~111px of budget at
+// 11px bold. The ele-adv tile's title carries the unit's element, so the longest
+// element name is what decides whether that label survives; unit-card-layout's
+// title-fit case measures against THESE, not a copy of them.)
+
+export const TILE_TITLE_PAD = 16; // horizontal padding inside a tile, both sides
+export const tileTitleFont = (big: boolean): string =>
+  `700 ${big ? 15 : 11}px ${FONT}`;
+
+// The right-hand (tiles + notes) column on the landscape card.
+const rightColumnWidth = (): number => {
+  const innerW = UNIT_CARD_W - PAD * 2;
+  return innerW - Math.round(innerW * LEFT_COL_FRAC) - COL_GUTTER;
+};
+
+// One rank tile's width. Landscape tiles sit in the right column, portrait tiles
+// span the full content width; both rows are `count` tiles with TILE_GAP between.
+export function rankTileWidth(
+  variant: UnitCardVariant,
+  count = 3
+): { width: number; big: boolean } {
+  const row =
+    variant === 'twitter'
+      ? UNIT_CARD_PORTRAIT_W - PAD_P * 2
+      : rightColumnWidth();
+  return {
+    width: (row - TILE_GAP * (count - 1)) / count,
+    big: variant === 'twitter',
+  };
 }
 
 function drawTiles(
@@ -972,7 +1004,7 @@ export function drawUnitCard(ctx: Canvas2DLike, d: UnitCardData): void {
 
   const innerW = W - PAD * 2;
   const leftW = Math.round(innerW * LEFT_COL_FRAC);
-  const rightW = innerW - leftW - COL_GUTTER;
+  const rightW = rightColumnWidth();
   const rightX = PAD + leftW + COL_GUTTER;
 
   // The two gaps below the title absorb the taller title art: the bar charts are

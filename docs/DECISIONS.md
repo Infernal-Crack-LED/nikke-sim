@@ -6265,3 +6265,30 @@ Rendered check: her card now reads **#2 · default** with **#6 SR** beneath, on 
 boards render byte-identically (the golden fixture is `crown`, a comp-profiled unit, and it is
 unchanged). Pinned by `scripts/tests/share/unit-card-data.test.ts` (the variant-headline case
 plus a named ccw regression case); `verify.sh` green.
+
+## Elemental-advantage rank is ranked WITHIN the unit's own element (2026-08-18)
+
+**Owner ruling (2026-08-18):** the unit card's Ele. Adv. tile must rank a unit against her own
+element only — Electric with Electric, Iron with Iron — not against the whole B3 board.
+
+**Why it was wrong as a cross-element ordering:** the eleweak cell simulates EVERY unit against a
+boss weak to THAT unit's code, so a cross-element ordering of it compares each unit under a
+different boss. The question the tile actually answers — "how does she do when the boss is weak to
+her?" — only has a comparable answer inside one element.
+
+**Membership rule:** the site's existing element filter, unchanged (`web/src/dpschartData.ts`
+`chartBars`, and the per-element chart jobs in `scripts/build-infographics.ts`) — a unit counts for
+every code in its `elements` list, its own plus any its kit grants, so a unit that grants itself a
+second code appears on both elements' cards. The rel-score denominator is that pool's #1, which is
+also what the site's element-filtered charts normalize against (`dpsChart.ts` `topDps`).
+
+**Label:** the tile and chart title name the pool — `Ele. Adv. · Iron`. 'DPS' is dropped from this
+one title (the neutral tile keeps it): the landscape tile header affords ~111px at 11px bold and
+`ELE. ADV. DPS · ELECTRIC` overran it by 19px, so the ellipsis would have eaten the element — the
+part that changed. `scripts/tests/share/unit-card-layout.test.ts` now measures every element's
+title against the renderer's own tile geometry and font, so a longer label can't silently truncate.
+
+**Kept in lockstep:** `web/src/UnitPage.tsx`'s DPS-standing line, which exists so the page text and
+the hero card agree — it reads the same element-scoped lookup (`compareIn(art, cell, slug,
+element)`) and now says "#1 of 12 among Electric units, against a boss weak to her element". The
+neutral standing is unchanged on both surfaces: neutral has no element to scope to.

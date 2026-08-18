@@ -133,9 +133,10 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
       expect(rh.burst, 'red-hood should still be the Λ unit').toBe('Λ');
       const model = build('red-hood');
       expect(model.burstIsLambda).toBe(true);
+      // the ele-adv tile NAMES its pool — it ranks within red-hood's own element
       expect(model.tiles.map((t) => t.title)).toEqual([
         'Neutral DPS',
-        'Ele. Adv. DPS',
+        'Ele. Adv. · Iron',
         'Burst Gen',
       ]);
     }
@@ -147,7 +148,7 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
       const model = build('red-hood');
       expect(model.charts.map((c) => c.title)).toEqual([
         'Neutral DPS',
-        'Ele. Adv. DPS',
+        'Ele. Adv. · Iron',
       ]);
     }
   );
@@ -284,25 +285,84 @@ describe('buildUnitCardData — values mirror the site (ruling 1)', () => {
     }
   );
 
+  it.runIf(haveBoards)('neutral ranks match the artifact index', () => {
+    const rows = dpschart.cells[NEUTRAL_CELL];
+    // sample across the board, not just the top
+    for (const i of [0, 1, Math.floor(rows.length / 2), rows.length - 1]) {
+      const slug = rows[i][0];
+      if (!characters.characters[slug] || DPS_VARIANT_SLUGS.includes(slug)) {
+        continue;
+      }
+      const model = build(slug);
+      expect(model.tiles[0].rank, `${slug} ${NEUTRAL_CELL}`).toBe(i + 1);
+    }
+  });
+
+  // The ele-adv tile ranks within the unit's OWN element, so its rank is NOT the
+  // raw array index. Checked as PROPERTIES of the result rather than by re-running
+  // the builder's own filter-then-index: a rank is "how many same-element rows beat
+  // her, plus one", a pool is "how many same-element rows exist", and every row the
+  // chart draws is same-element. A filter or an index that drifted would break at
+  // least one of the three; restating filter+indexOf would have validated the code
+  // against itself.
   it.runIf(haveBoards)(
-    'ranks match the artifact index for both DPS cells',
+    'ele-adv ranks are within the unit’s own element',
     () => {
-      for (const [cell, tileIdx] of [
-        [NEUTRAL_CELL, 0],
-        [ELEWEAK_CELL, 1],
-      ] as const) {
-        const rows = dpschart.cells[cell];
-        // sample across the board, not just the top
-        for (const i of [0, 1, Math.floor(rows.length / 2), rows.length - 1]) {
-          const slug = rows[i][0];
-          if (
-            !characters.characters[slug] ||
-            DPS_VARIANT_SLUGS.includes(slug)
-          ) {
-            continue;
-          }
-          const model = build(slug);
-          expect(model.tiles[tileIdx].rank, `${slug} ${cell}`).toBe(i + 1);
+      const rows: [string, number, string | null][] =
+        dpschart.cells[ELEWEAK_CELL];
+      const elementsOf = (slug: string): string[] => {
+        const u = dpschart.units[slug];
+        return u ? (u.elements ?? [u.element]) : [];
+      };
+      let checked = 0;
+      for (const i of [
+        0,
+        1,
+        Math.floor(rows.length / 3),
+        Math.floor(rows.length / 2),
+        rows.length - 1,
+      ]) {
+        const slug = rows[i][0];
+        const c = characters.characters[slug];
+        if (!c) {
+          continue;
+        }
+        const mine = rows.filter((r) => elementsOf(r[0]).includes(c.element));
+        const own = mine.find((r) => r[0] === slug && !r[2])!;
+        const better = mine.filter((r) => r[1] > own[1]).length;
+
+        const tile = build(slug).tiles[1];
+        expect(tile.rank, `${slug} ele-adv rank`).toBe(better + 1);
+        expect(tile.population, `${slug} ele-adv pool`).toBe(mine.length);
+        // the pool really is narrower than the whole board, else every case here
+        // would pass just as well against an unfiltered population
+        expect(mine.length, `${slug} ele-adv pool`).toBeLessThan(rows.length);
+        checked++;
+      }
+      expect(
+        checked,
+        'no sampled ele-adv rows resolved to a character'
+      ).toBeGreaterThan(0);
+    }
+  );
+
+  it.runIf(haveBoards)(
+    'every row the ele-adv chart draws shares the unit’s element',
+    () => {
+      for (const slug of Object.keys(characters.characters)) {
+        const c = characters.characters[slug];
+        if (!isDpsSet(c.burst)) {
+          continue;
+        }
+        const chart = build(slug, {
+          neighbourRows: NEIGHBOUR_ROWS_PORTRAIT,
+        }).charts[1];
+        for (const row of chart.rows) {
+          const u = dpschart.units[row.slug];
+          expect(
+            u ? (u.elements ?? [u.element]) : [],
+            `${slug} ele-adv chart drew ${row.slug}`
+          ).toContain(c.element);
         }
       }
     }
@@ -460,7 +520,20 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
         const model = build(slug);
         for (const idx of [0, 1]) {
           const tile = model.tiles[idx];
-          const cell = dpschart.cells[idx === 0 ? NEUTRAL_CELL : ELEWEAK_CELL];
+          // tile 1 ranks within the unit's own element, so its pool is the
+          // element-filtered one — the same filter the site's charts use.
+          const ele = idx === 0 ? null : characters.characters[slug].element;
+          const cell = dpschart.cells[
+            idx === 0 ? NEUTRAL_CELL : ELEWEAK_CELL
+          ].filter(
+            (r: any[]) =>
+              !ele ||
+              (
+                dpschart.units[r[0]]?.elements ?? [
+                  dpschart.units[r[0]]?.element,
+                ]
+              ).includes(ele)
+          );
           const plainIdx = cell.findIndex((r: any[]) => r[0] === slug && !r[2]);
           const variantIdx = cell.findIndex(
             (r: any[]) => r[0] === slug && r[2]

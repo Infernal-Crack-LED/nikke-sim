@@ -306,13 +306,40 @@ const tileRanks = <R>(
   altChip: l.alt ? chipFor(l.alt) : null,
 });
 
+// A DPS cell's population as the card ranks over it. With `element` set the pool
+// is only that element's carries — the elemental-advantage board answers "how
+// does she do against a boss weak to HER code", and a cross-element ordering of
+// that question compares each unit under a different boss (owner, 2026-08-18).
+//
+// Membership is the site's own element-filter rule (web/src/dpschartData.ts
+// chartBars, scripts/build-infographics.ts's per-element chart jobs): a unit
+// counts for every element in its `elements` list — its own code plus any its kit
+// grants — so a unit that grants itself a second code appears on both elements'
+// cards. Rows whose unit is missing from the artifact's meta are dropped, exactly
+// as the pre-rendered element charts drop them.
+function dpsPopulation(
+  art: DpsArtifactLike | null | undefined,
+  cellId: string,
+  element?: string | null
+): [string, number, string | null][] | undefined {
+  const cell = art?.cells?.[cellId];
+  if (!cell || !element) {
+    return cell;
+  }
+  return cell.filter(([s]) => {
+    const u = art?.units?.[s];
+    return u ? (u.elements ?? [u.element]).includes(element) : false;
+  });
+}
+
 function dpsTile(
   title: string,
   art: DpsArtifactLike | null | undefined,
   cellId: string,
-  slug: string
+  slug: string,
+  element?: string | null
 ): RankTile {
-  const cell = art?.cells?.[cellId];
+  const cell = dpsPopulation(art, cellId, element);
   const hits = findHits(cell, slug, 2);
   // 'plain': a DPS-chart profile is a build variant, so the DEFAULT row leads.
   const l = leadRow(hits, 'plain');
@@ -324,9 +351,11 @@ function dpsTile(
   return {
     title,
     ...tileRanks(l, hits),
-    // rel-score vs the population #1 — the site's own DPS label (dpsChart.ts
-    // relScore). NOT a raw DPS number: the boards are normalized, and a raw
-    // number would imply a precision the card can't stand behind.
+    // rel-score vs the POPULATION #1 — the site's own DPS label (dpsChart.ts
+    // relScore against `topDps`, which on an element-filtered chart is that
+    // element's #1, not the board's). NOT a raw DPS number: the boards are
+    // normalized, and a raw number would imply a precision the card can't stand
+    // behind.
     value: (top > 0 ? dps / top : 0).toFixed(3),
     sub: 'rel. to #1',
   };
@@ -448,9 +477,10 @@ function dpsChartRows(
   art: DpsArtifactLike | null | undefined,
   cellId: string,
   slug: string,
-  each: number
+  each: number,
+  element?: string | null
 ): BarChart {
-  const cell = art?.cells?.[cellId];
+  const cell = dpsPopulation(art, cellId, element);
   if (!cell?.length) {
     return emptyChart(title);
   }
@@ -681,6 +711,19 @@ const tagLabel = (label: string): string =>
 export const isDpsSet = (burst: string): boolean =>
   burst === 'III' || burst === 'Λ';
 
+// The elemental-advantage tile/chart ranks the unit against her OWN element only,
+// so the label names that pool — a bare '#3' over a same-element board would read
+// as a whole-roster placement. Same separator as the site's element-filtered
+// chart title (build-infographics.ts: `<cell> · <Element> only`).
+//
+// 'DPS' is dropped from this one, unlike 'Neutral DPS': the landscape tile header
+// affords ~111px at 11px bold, and 'ELE. ADV. DPS · ELECTRIC' overruns it by 19px
+// — the ellipsis would eat the element, which is the part that changed. The
+// shorter form clears the longest element name, and unit-card-layout.test.ts
+// measures every element against the real tile geometry.
+export const eleAdvTitle = (element: string): string =>
+  element ? `Ele. Adv. · ${element}` : 'Ele. Adv. DPS';
+
 export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
   const c = src.character;
   const slug = c.slug;
@@ -695,7 +738,13 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
   if (dpsSet) {
     tiles = [
       dpsTile('Neutral DPS', src.dpschart, NEUTRAL_CELL, slug),
-      dpsTile('Ele. Adv. DPS', src.dpschart, ELEWEAK_CELL, slug),
+      dpsTile(
+        eleAdvTitle(c.element),
+        src.dpschart,
+        ELEWEAK_CELL,
+        slug,
+        c.element
+      ),
       burstGenTile(src.burstgen, slug),
     ];
   } else {
@@ -719,7 +768,14 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
     // concept at all. Worth knowing — the headline cards need none of §8a.
     charts.push(
       dpsChartRows('Neutral DPS', src.dpschart, NEUTRAL_CELL, slug, nb),
-      dpsChartRows('Ele. Adv. DPS', src.dpschart, ELEWEAK_CELL, slug, nb)
+      dpsChartRows(
+        eleAdvTitle(c.element),
+        src.dpschart,
+        ELEWEAK_CELL,
+        slug,
+        nb,
+        c.element
+      )
     );
   } else {
     // Ruling 13 as written: "sustain if present, else burst CDR if present".
