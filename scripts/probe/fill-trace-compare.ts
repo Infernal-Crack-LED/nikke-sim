@@ -4892,6 +4892,12 @@ export interface FbDurationResult {
     expectSec: number;
     tolSec: number;
     band: [number, number];
+    /**
+     * Which estimator is canonical for the control verdict. Pre-op packets MUST pin this; the
+     * default is 'paint' because it is ~10x tighter than the render-calibrated reading and is
+     * unbiased on the committed calibration fixtures.
+     */
+    estimator: 'paint' | 'rendered' | 'midpoint' | 'bracket';
     perCycleBracketContainsExpect: boolean[];
     cyclesWhereBracketExcludesExpect: number[];
     /** the literal reading: the raw rendered duration against the band */
@@ -4902,6 +4908,14 @@ export interface FbDurationResult {
     /** the calibrated point estimate per cycle (paint - calibration excess) */
     perCycleCalibratedPaint: number[] | null;
     perCycleCalibratedPaintInBand: boolean[] | null;
+    /**
+     * The canonical calibrated point estimate per cycle, determined by `estimator`. For 'bracket'
+     * this is null and the bracket check is used instead. This is the single number a pre-op packet
+     * should pre-register as the C2 control statistic.
+     */
+    perCycleCanonicalEstimate: number[] | null;
+    perCycleCanonicalInBand: boolean[] | null;
+    cyclesWhereCanonicalExcludesExpect: number[];
   } | null;
 }
 
@@ -4977,6 +4991,12 @@ export function fbDuration(opts: {
   };
   expectSec?: number;
   tolSec?: number;
+  /**
+   * Which calibrated estimate is canonical for the control verdict. Future pre-op packets MUST pin
+   * this explicitly. The default 'paint' is chosen because the paint-calibrated estimator is
+   * ~10x tighter than the render-calibrated one and unbiased on committed calibration fixtures.
+   */
+  estimator?: 'paint' | 'rendered' | 'midpoint' | 'bracket';
 }): FbDurationResult {
   const { cycles, medians } = fbDurationOne(opts.fx, opts.arm);
   let calibration: FbDurationResult['calibration'] = null;
@@ -5027,10 +5047,30 @@ export function fbDuration(opts: {
           round(c.correctedPaint! - calibration!.paintExcessSec)
         )
       : null;
+    // Default control estimator: paint when calibration is available (so a calibrated point
+    // estimate exists), otherwise bracket (the only assumption-free check without a calibration arm).
+    const estimator: 'paint' | 'rendered' | 'midpoint' | 'bracket' =
+      opts.estimator ?? (calibration ? 'paint' : 'bracket');
+    let perCycleCanonicalEstimate: number[] | null = null;
+    if (estimator === 'rendered') {
+      perCycleCanonicalEstimate = calRendered;
+    } else if (estimator === 'paint') {
+      perCycleCanonicalEstimate = calPaint;
+    } else if (estimator === 'midpoint') {
+      perCycleCanonicalEstimate =
+        calRendered && calPaint
+          ? calRendered.map((r, i) => round((r + calPaint[i]) / 2))
+          : null;
+    }
+    // 'bracket' leaves the canonical estimate null by design.
+    const perCycleCanonicalInBand = perCycleCanonicalEstimate
+      ? perCycleCanonicalEstimate.map((x) => x >= lo && x <= hi)
+      : null;
     test = {
       expectSec: opts.expectSec,
       tolSec: tol,
       band: [round(lo), round(hi)],
+      estimator,
       perCycleBracketContainsExpect: paired.map((c) => c.expectInBracket!),
       cyclesWhereBracketExcludesExpect: paired
         .filter((c) => !c.expectInBracket)
@@ -5046,6 +5086,11 @@ export function fbDuration(opts: {
       perCycleCalibratedPaintInBand: calPaint
         ? calPaint.map((x) => x >= lo && x <= hi)
         : null,
+      perCycleCanonicalEstimate,
+      perCycleCanonicalInBand,
+      cyclesWhereCanonicalExcludesExpect: perCycleCanonicalInBand
+        ? paired.filter((_, i) => !perCycleCanonicalInBand[i]).map((c) => c.id)
+        : paired.filter((c) => !c.expectInBracket).map((c) => c.id),
     };
   }
   return {
@@ -5173,6 +5218,73 @@ export function noiseCorrectedRate(opts: {
   };
 }
 
+// ---------------------------------------------------------------------------
+// CLEAN-BIN-TIME DENOMINATOR VALIDATION — third-arm methodological follow-up.
+//
+// The clean-bin-time event rate is only trustworthy if the reader's clean-set selection is not
+// itself correlated with fill rate. This function compares the clean-bin-time rate and the
+// full-window rate against an INDEPENDENTLY KNOWN true rate (e.g., a solo anchor, an ammo-counter
+// count, or a synthetic ground-truth fixture) and returns the bias of each denominator. A
+// classification should be treated as robust only when the clean-bin-time bias is within the stated
+// tolerance and the full-window rate is NOT materially closer (which would indicate the clean-set
+// is dropping fast-fill frames).
+// ---------------------------------------------------------------------------
+export interface DenominatorValidation {
+  comp: string;
+  knownTrueRatePerSec: number;
+  cleanBinTimeRatePerSec: number;
+  fullWindowRatePerSec: number;
+  cleanBinTimeBiasPct: number;
+  fullWindowBiasPct: number;
+  tolerancePct: number;
+  /** clean-bin-time rate is within tolerance of the known true rate */
+  cleanBinTimePasses: boolean;
+  /** full-window rate is NOT closer to true than clean-bin-time (anti-cheat guard) */
+  fullWindowNotCloser: boolean;
+  robust: boolean;
+}
+
+export function validateCleanBinDenominator(opts: {
+  comp: string;
+  pooled: Pick<
+    ClsPooled,
+    'eventBins' | 'usableCleanBins' | 'sumRealDurationSec'
+  >;
+  knownTrueRatePerSec: number;
+  tolerancePct?: number;
+}): DenominatorValidation {
+  const E = opts.pooled.eventBins;
+  const U = opts.pooled.usableCleanBins;
+  const T = U * CLS_BIN_SEC;
+  const cleanBinRate = E / T;
+  const fullWindowRate = E / opts.pooled.sumRealDurationSec;
+  const trueRate = opts.knownTrueRatePerSec;
+  const tolerancePct = opts.tolerancePct ?? 10;
+  const bias = (r: number): number =>
+    Number.isFinite(trueRate) && trueRate !== 0
+      ? round(((r - trueRate) / trueRate) * 100, 2)
+      : NaN;
+  const cleanBias = bias(cleanBinRate);
+  const fullBias = bias(fullWindowRate);
+  const cleanPasses = Math.abs(cleanBias) <= tolerancePct;
+  const fullNotCloser =
+    !Number.isFinite(cleanBias) ||
+    !Number.isFinite(fullBias) ||
+    Math.abs(fullBias) >= Math.abs(cleanBias);
+  return {
+    comp: opts.comp,
+    knownTrueRatePerSec: round(trueRate, 4),
+    cleanBinTimeRatePerSec: round(cleanBinRate, 4),
+    fullWindowRatePerSec: round(fullWindowRate, 4),
+    cleanBinTimeBiasPct: cleanBias,
+    fullWindowBiasPct: fullBias,
+    tolerancePct,
+    cleanBinTimePasses: cleanPasses,
+    fullWindowNotCloser: fullNotCloser,
+    robust: cleanPasses && fullNotCloser,
+  };
+}
+
 function noiseCorrectCli(): void {
   const armPath = arg('arm');
   if (!armPath) {
@@ -5228,7 +5340,8 @@ function fbDurationCli(): void {
     throw new Error(
       'usage: fill-trace-compare.ts fb-duration --fixture <tempo fixture> --arm <arm artifact> ' +
         '[--comp "<name>"] [--calib-fixture <fx> --calib-arm <artifact> --calib-comp "<name>" ' +
-        '--calib-fb-sec 10] [--expect-sec 15 --tol-sec 0.5] [--artifact <out>]'
+        '--calib-fb-sec 10] [--expect-sec 15 --tol-sec 0.5] ' +
+        '[--estimator paint|rendered|midpoint|bracket] [--artifact <out>]'
     );
   }
   const fx = JSON.parse(readFileSync(fixture, 'utf8')) as TempoFixture;
@@ -5237,6 +5350,21 @@ function fbDurationCli(): void {
   const calibArm = arg('calib-arm');
   const calibComp = arg('calib-comp');
   const expectSec = arg('expect-sec');
+  const rawEstimator = arg('estimator');
+  const validEstimators: ('paint' | 'rendered' | 'midpoint' | 'bracket')[] = [
+    'paint',
+    'rendered',
+    'midpoint',
+    'bracket',
+  ];
+  const estimator = rawEstimator
+    ? (validEstimators.find((e) => e === rawEstimator) ??
+      (() => {
+        throw new Error(
+          `--estimator must be one of ${validEstimators.join(', ')}; got ${rawEstimator}`
+        );
+      })())
+    : undefined;
   const res = fbDuration({
     fx,
     fixturePath: fixture,
@@ -5263,6 +5391,7 @@ function fbDurationCli(): void {
       arg('tol-sec') === undefined
         ? undefined
         : numArg('tol-sec', { nonNegative: true }),
+    estimator,
   });
   const artifact = arg('artifact');
   if (artifact) {

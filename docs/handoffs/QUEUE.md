@@ -90,17 +90,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      missing application-gauge credits). H-A team-context route CLOSED by owner ruling. The
      `anis-star` U28 divisor read is what remains of the encoding audit path.
      `iron sweep (run G)` regression comp stays disabled.
-   - Second, lower priority: settle
-     the clean-bin-time vs full-window denominator on a fixture with known ground truth, which would
-     turn the standing MAR caveat into a measured bias bound — every detection in this thread is
-     currently estimator-conditional.
-   - **Third-arm follow-up (i):** future packets must **PIN A CONTROL'S ESTIMATOR**, not just its
-     tolerance — C2 bound on "FB duration 15.0 ± 0.5s" without saying how to measure one, and the
-     branch flipped between four defensible readings.
-   - **Third-arm follow-up (ii):** every detection on this thread is **ESTIMATOR-CONDITIONAL** —
-     under the full-window denominator N3 reads 11.0% BELOW its own ceiling (iron: 5.7%), and C7's
-     bridge-vs-activity ratios run OPPOSITE on the two arms (0.757 vs 1.357), so the estimator's
-     behaviour has no mechanism.
+   - **Clean-bin-time vs full-window denominator validation — PARTIALLY LANDED.**
+     `fbDuration` now requires/defaults to a pinned `estimator` (`paint` for calibrated controls),
+     and `validateCleanBinDenominator` in `scripts/probe/fill-trace-compare.ts` compares both
+     denominators against an independently known true rate, flagging biased clean-sets or a
+     full-window denominator that is closer to truth. Still pending: run the validator against a
+     real fixture with known ground truth (solo anchor / ammo-counter count) to turn the standing
+     MAR caveat into a measured bias bound.
    - **Probe tooling — `read-ammo.ts`** reads 0/851 frames on text-label HUD ("AMMO / NNN") —
      needs a text-label digit reader path.
    - **`scan.ts` `--debug-dir` (~line 184)** has the bare-flag-silently-skipped pattern fixed

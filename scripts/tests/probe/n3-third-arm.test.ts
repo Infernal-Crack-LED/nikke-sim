@@ -271,7 +271,7 @@ describe('N3 third arm — C2/C3 tempo fixture', () => {
     expect(rows.filter((r) => r.tailStitched)).toHaveLength(9);
   });
 
-  it('C2: every cycle’s [rendered, barPaint] bracket contains 15.0s and excludes 10.0s', () => {
+  it('C2: the paint-calibrated estimator reads 15.0 ± 0.5s on every cycle', () => {
     const res = fbDuration({
       fx: fixture,
       fixturePath: FIXTURE,
@@ -284,7 +284,13 @@ describe('N3 third arm — C2/C3 tempo fixture', () => {
       },
       expectSec: 15,
       tolSec: 0.5,
+      estimator: 'paint',
     });
+    // The pre-registered control estimator is pinned in the output; bracket alone is not enough.
+    expect(res.test!.estimator).toBe('paint');
+    expect(res.test!.cyclesWhereCanonicalExcludesExpect).toEqual([]);
+    expect(res.test!.perCycleCanonicalInBand!.every(Boolean)).toBe(true);
+    // Bracket remains a sanity check: the true duration must still lie between the two bounds.
     expect(res.test!.cyclesWhereBracketExcludesExpect).toEqual([]);
     expect(res.test!.perCycleBracketContainsExpect.every(Boolean)).toBe(true);
     for (const c of res.cycles) {
