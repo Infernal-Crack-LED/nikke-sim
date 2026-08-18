@@ -141,13 +141,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      missing application-gauge credits). H-A team-context route CLOSED by owner ruling. The
      `anis-star` U28 divisor read is what remains of the encoding audit path.
      `iron sweep (run G)` regression comp stays disabled.
-   - **`anis-star` solo magnitude residual — MEASURED-ELEVATED (2026-08-18).** Pre-register
-     re-run confirmed clause 1: A = 3.71% (`basePerTrigger` 140 × 2.5 focus × 1.06 aura) explains
-     all 3 upward departures (E4 PASS), and clause-1(ii) now has 3 qualifying windows (W2, W3, W4)
-     with W2+W4 forming a robust pair. Direction settled by owner ruling (9 pulls ≥ 11.11%/pull).
-     **→ `docs/handoffs/2026-08-18-anis-star-pre-register-rerun-work-deliverable.md`.**
-     Measurement only — `basePerTrigger` is engine-inert; enacting the anomaly mechanism requires
-     a separate `/scientific-method` run.
+   - **`anis-star` solo magnitude residual — ENACTED (2026-08-18).** Pre-register re-run
+     confirmed clause 1: A = 3.71% (`basePerTrigger` 140 × 2.5 focus × 1.06 aura) explains all 3
+     upward departures (E4 PASS). Direction settled by owner ruling (9 pulls ≥ 11.11%/pull).
+     **Enacted:** `baseGaugeProb: 0.25` added to `gauge-per-shot.json`; `sim.ts` `gaugePerShot()`
+     now credits `(baseGaugeProb × basePerTrigger / 100) × focusMult × aura` on focused shots —
+     a per-shot average of 0.35 gauge credit (0.25 × 140/100 × 2.5 × 1.06). `fb-count-matrix.ts`
+     credit-schedule mirror updated in lockstep. All 4666 tests green after re-pinning
+     refill-starvation, focus-columns, gauge-source-census, and board-hash-parity artifacts.
+     **→ `docs/handoffs/2026-08-18-anis-star-pre-register-rerun-work-deliverable.md`** (measurement).
    - **⇒ `liberalio` GAUGE-CREDIT AUDIT — CLOSED as LOG 2026-08-17. Defect FOUND, magnitude
      INCONCLUSIVE at 2-of-2. Nothing enacted.**
      **→ Handoff: [2026-08-17-liberalio-gauge-credit-audit.md](2026-08-17-liberalio-gauge-credit-audit.md)**

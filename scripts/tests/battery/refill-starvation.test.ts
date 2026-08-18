@@ -94,10 +94,11 @@ describe('refill-window starvation audit (investigation-plan item 1)', () => {
     // instrument (`npx tsx scripts/battery/fb-count-matrix.ts --refill-starvation --json`),
     // not hand-edited.
     // T5 seats anis-star: her full 2.8-gauge skill-impact credit (hitsPerShot 1) shortens the
-    // comp's refill windows and re-phases them against the FB boundary; 1.130 still clears the
-    // 0.8 threshold comfortably. Value from the instrument's --json.
+    // comp's refill windows and re-phases them against the FB boundary; 1.106 still clears the
+    // 0.8 threshold comfortably. Re-pinned 2026-08-18 (baseGaugeProb 0.25 enactment moved the
+    // comp's gauge fill timing). Value from the instrument's --json.
     expect(byName('iron sweep (run G)').first1sRatio).toBeCloseTo(0.86, 2);
-    expect(byName('T5 wind-weak').first1sRatio).toBeCloseTo(1.13, 2);
+    expect(byName('T5 wind-weak').first1sRatio).toBeCloseTo(1.106, 2);
   });
 
   it('per-unit first-1s delivery is pinned; the sub-1.0 readings are charge PHASE, not starvation', () => {
@@ -120,25 +121,26 @@ describe('refill-window starvation audit (investigation-plan item 1)', () => {
     expect(iron.liberalio).toBeCloseTo(0.629, 2);
 
     // T5 seats anis-star: her full 2.8-gauge skill-impact credit (hitsPerShot 1) re-phases
-    // every unit against the shorter refill windows. Her own 0.905 is charge PHASE like the
-    // others (reloadBoundFirsts 0, next case). Values from the instrument's --json.
+    // every unit against the shorter refill windows. Re-pinned 2026-08-18 (baseGaugeProb 0.25
+    // enactment shifted the timing). Values from the instrument's --json.
     const t5 = perUnit('T5 wind-weak');
-    expect(t5.nayuta).toBeCloseTo(1.035, 2);
-    expect(t5['cinderella-crystal-wave']).toBeCloseTo(1.218, 2);
-    expect(t5['anis-star']).toBeCloseTo(0.905, 2);
-    expect(t5.liberalio).toBeCloseTo(1.113, 2);
-    expect(t5.velvet).toBeCloseTo(1.192, 2);
+    expect(t5.nayuta).toBeCloseTo(0.974, 2);
+    expect(t5['cinderella-crystal-wave']).toBeCloseTo(1.239, 2);
+    expect(t5['anis-star']).toBeCloseTo(0.833, 2);
+    expect(t5.liberalio).toBeCloseTo(1.124, 2);
+    expect(t5.velvet).toBeCloseTo(0.803, 2);
   });
 
-  it('reload-bound first hits: cinderella-crystal-wave on T5 is the sole carrier (2), all others zero', () => {
-    // T5's re-phased refill windows (anis-star's full 2.8-gauge skill-impact credit) put two of
-    // cinderella-crystal-wave's window-first hits on a reload completion. Every other unit on
-    // every audited comp reads zero — the comp-level NOT-STARVED verdicts rest on the team
-    // first-1s ratios above, which both clear the pre-committed 0.8 threshold.
+  it('reload-bound first hits: cinderella-crystal-wave on T5 is the sole carrier (4), all others zero', () => {
+    // T5's re-phased refill windows (anis-star's full 2.8-gauge skill-impact credit + 2026-08-18
+    // baseGaugeProb 0.25 enactment) put four of cinderella-crystal-wave's window-first hits on a
+    // reload completion. Every other unit on every audited comp reads zero — the comp-level
+    // NOT-STARVED verdicts rest on the team first-1s ratios above, which both clear the
+    // pre-committed 0.8 threshold.
     for (const r of reports) {
       for (const u of r.perUnit) {
         if (r.comp === 'T5 wind-weak' && u.slug === 'cinderella-crystal-wave') {
-          expect(u.reloadBoundFirsts).toBe(2);
+          expect(u.reloadBoundFirsts).toBe(4);
         } else {
           expect(u.reloadBoundFirsts).toBe(0);
         }
@@ -153,7 +155,7 @@ describe('refill-window starvation audit (investigation-plan item 1)', () => {
     // second and into the window tail. Re-derived from the instrument's --json.
     // T5 values from the same instrument run that re-pinned its first-1s ratios above.
     expect(byName('iron sweep (run G)').teamHits).toEqual([18, 17, 42, 86]);
-    expect(byName('T5 wind-weak').teamHits).toEqual([304, 314, 583, 721]);
+    expect(byName('T5 wind-weak').teamHits).toEqual([297, 282, 582, 595]);
   });
 
   it('T5 is FRONT-LOADED; iron sweep is FLAT-to-slightly-tail-heavy — neither RAMPS from starvation', () => {

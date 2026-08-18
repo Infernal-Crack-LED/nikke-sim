@@ -2418,7 +2418,16 @@ export function creditScheduleFor(
         ? 2.5 // FOCUS_CHARGE_GEN
         : (charMult > 0 ? charMult : fcb && fcb > 0 ? fcb : 250) / 100);
     // UNFOCUSED_CHARGE_GEN = 1.0 (measured, battery 3 A1/A2)
-    return per * (idx === focusIdx ? focusMult : 1.0) + flat;
+    // basePerTrigger credit (2026-08-18): mirrors sim.ts gaugePerShot's baseGaugeProb path.
+    const baseProb =
+      (row as { baseGaugeProb?: number } | undefined)?.baseGaugeProb ?? 0;
+    const basePer =
+      (row as { basePerTrigger?: number } | undefined)?.basePerTrigger ?? 0;
+    const baseExtra =
+      baseProb > 0 && idx === focusIdx && basePer > 0
+        ? (baseProb * basePer) / 100
+        : 0;
+    return (per + baseExtra) * (idx === focusIdx ? focusMult : 1.0) + flat;
   };
 
   for (const s of slugs) {

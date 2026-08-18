@@ -1489,6 +1489,8 @@ export function runSim(
           targetPerTrigger?: number;
           flatPerTrigger?: number;
           fullChargeBonus?: number;
+          basePerTrigger?: number;
+          baseGaugeProb?: number;
         }
       >
     )[u.char.slug];
@@ -1516,7 +1518,20 @@ export function runSim(
       (u.magDumpRof || PENDING_TEAM_ISOLATION.has(u.char.slug)
         ? FOCUS_CHARGE_GEN
         : (charMult > 0 ? charMult : fcb && fcb > 0 ? fcb : 250) / 100);
-    return per * (u.idx === focusIdx ? focusMult : UNFOCUSED_CHARGE_GEN) + flat;
+    // basePerTrigger credit (2026-08-18, anis-star measurement): the game credits an extra
+    // basePerTrigger × focus × aura on a fraction of focused charge shots. baseGaugeProb
+    // (0–1) models the per-shot average; omit = 0 (no extra credit). Only fires for the
+    // focused unit (consistent with the focus multiplier applying to the base component).
+    const baseProb = entry?.baseGaugeProb ?? 0;
+    const baseExtra =
+      baseProb > 0 && u.idx === focusIdx && entry?.basePerTrigger
+        ? (baseProb * entry.basePerTrigger) / 100
+        : 0;
+    return (
+      (per + baseExtra) *
+        (u.idx === focusIdx ? focusMult : UNFOCUSED_CHARGE_GEN) +
+      flat
+    );
   };
   const addGauge = (u: UnitState, frame: number, energyPct: number) => {
     // Generation is LOCKED during Full Burst and during the chain itself (stages 1-3,

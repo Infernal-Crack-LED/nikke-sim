@@ -141,13 +141,13 @@ describe('focus-column audit (investigation-plan item 3)', () => {
 
     // T5's focused unit IS anis-star (middle slot): her skill impacts credit the full
     // datamined 2.8 gauge (hitsPerShot 1), which raises her whole-unit focused rate and
-    // narrows the comp's measured shortfall. The ceiling still covers only ~19% of it.
-    // Values from the instrument's --json.
+    // narrows the comp's measured shortfall. Re-pinned 2026-08-18 (baseGaugeProb 0.25
+    // enactment increased anis-star's gauge credit). Values from the instrument's --json.
     const t5 = byName('T5 wind-weak');
-    expect(t5.focusPer60).toBeCloseTo(10.917, 3);
-    expect(t5.maxAltUpsideGaugePerSec).toBeCloseTo(4.367, 3);
-    expect(t5.shortfallRateGaugePerSec).toBeCloseTo(22.681, 2);
-    expect(t5.maxAltUpsideCoverPct).toBeCloseTo(19.3, 0);
+    expect(t5.focusPer60).toBeCloseTo(11.483, 3);
+    expect(t5.maxAltUpsideGaugePerSec).toBeCloseTo(4.593, 3);
+    expect(t5.shortfallRateGaugePerSec).toBeCloseTo(21.425, 2);
+    expect(t5.maxAltUpsideCoverPct).toBeCloseTo(21.4, 0);
 
     // the unfilmed comps carry no shortfall figure
     expect(byName('T1 wind-weak').maxAltUpsideCoverPct).toBeNull();
