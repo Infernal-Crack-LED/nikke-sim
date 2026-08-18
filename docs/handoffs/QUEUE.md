@@ -105,9 +105,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      needs a text-label digit reader path.
    - **`scan.ts` `--debug-dir` (~line 184)** has the bare-flag-silently-skipped pattern fixed
      for `--fixture-out`; left alone because absence is genuinely optional — owner call.
-   - **`--gauge-sources` census under-counts** gaugeHits sub-hits (LIVE on N5 snowwhite-HA
-     fire); census purpose is path verification not total counting — owner call whether to fix.
-     → `n6-gaugehits-blindness-audit-2026-08-17.json`
    - **`ein` U8 0.7× team residual** — findings-only (N2); stage1→2 real 33f/32f vs modeled 30f
      (runs AGAINST the gap).
 
