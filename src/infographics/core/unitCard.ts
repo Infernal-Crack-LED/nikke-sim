@@ -404,7 +404,7 @@ function tileAdvances(tile: RankTile, big: boolean): number[] {
   if (tile.profileChip) {
     sublines.push(big ? 21 : 15);
   }
-  if (tile.defaultRank != null) {
+  if (tile.altRank != null) {
     sublines.push(0); // last line advances nothing
   }
   if (sublines.length) {
@@ -478,9 +478,11 @@ function drawTile(
   ctx.font = `700 ${big ? 22 : 15}px ${FONT}`;
   ctx.fillText(fitText(ctx, tile.value ?? '', r.w - 12), cx, y);
 
-  // Dual rank (§8a ruling 14): the PROFILED rank is the single large numeral
-  // above; the profile chip and the muted default rank sit below. Two numerals
-  // of equal weight would compete and neither would read at timeline scale.
+  // Dual rank (§8a ruling 14): the HEADLINE rank is the single large numeral
+  // above (unitCardData.leadRow picks which of the unit's two rows that is); its
+  // chip and the muted OTHER rank ('#15 SR', '#12 default') sit below. Two
+  // numerals of equal weight would compete and neither would read at timeline
+  // scale.
   // Text is fitted at DRAW time, after its own font is set — measuring a
   // 400/11px sub-line against the 700/15px value font truncates it early.
   const sublines: { text: string; fill: string; font: string }[] = [];
@@ -498,9 +500,9 @@ function drawTile(
       font: `700 ${big ? 15 : 11}px ${FONT}`,
     });
   }
-  if (tile.defaultRank != null) {
+  if (tile.altRank != null) {
     sublines.push({
-      text: `#${tile.defaultRank} default`,
+      text: `#${tile.altRank} ${tile.altChip ?? 'default'}`,
       fill: TEXT_DIM,
       font: `400 ${big ? 14 : 10}px ${FONT}`,
     });
@@ -691,7 +693,7 @@ function drawBarChart(
     const by = y + barH - barH * 0.72;
     const bh = barH * 0.72;
 
-    ctx.globalAlpha = row.isDefaultAppendix ? 0.45 : 1;
+    ctx.globalAlpha = row.isAppendix ? 0.45 : 1;
     if (row.segments) {
       // Sustain is a 3-segment split (heal / shield / lifesteal) drawn inside
       // one track — a single-colour sustain bar loses the composition that

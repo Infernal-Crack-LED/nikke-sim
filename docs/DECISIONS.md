@@ -6235,3 +6235,33 @@ context-dependent term for units WITHOUT `baseGaugeProb`; anis-star carries a se
 **Recorded in:** `docs/data/burst-gauge.md` §4 (formula update), `docs/STATE.md` §2
 (rotation facts), `docs/handoffs/QUEUE.md` (item 2, anis-star bullet updated to ENACTED),
 `docs/handoffs/scientific-method-harness.md` (2026-08-18 entry).
+
+## Unit cards headline the DEFAULT build on the DPS chart, not the variant row (2026-08-18)
+
+**Owner ruling (2026-08-18):** the `cinderella-crystal-wave` unit card was showing her **SR
+(Snipe) rank** as its headline numeral when **MG is her default mode**; it must show the default
+instead. Her card therefore read a mid-board rank beside an MG weapon icon, and disagreed with
+the site's own DPS chart, where the default row is the one a reader lands on.
+
+**Root cause:** `unitCardData.ts` had ONE headline rule — "the profiled row when it exists, else
+the plain one" (plan §8a, written when only the comp boards carried profiles; the module's own
+comment still said "dpschart has no profile concept at all"). When DPS-chart variants landed
+2026-07-29 (`src/dpschart/matrix.ts` CHART_VARIANTS) they inherited that rule silently.
+
+**The distinction now encoded** (`leadRow`, `src/infographics/core/unitCardData.ts`):
+
+- a **comp profile** (bufferchart / sustain / burst CDR / burst gen — 'w/ Healer', 'w/ 2 MG') is
+  the same build measured in the comp it is played in → the **profiled** row leads, unchanged;
+- a **DPS-chart variant** (Cinderella: Crystal Wave's Snipe/SR, Bready's Distributed,
+  Diesel: Winter Sweets' bursts-second) is an **alternate build/rotation of the unit**, and each
+  variant's own player-facing note names the plain row as the default → the **default** row leads.
+
+Nothing is dropped either way: the other row stays as the muted secondary line (`altRank`/
+`altChip` — '#6 SR' where it used to read '#12 default') and as the dimmed appended bar row, and
+both of a unit's rows now carry a chip so two rows of the same name never read as a duplicate.
+Rendered check: her card now reads **#2 · default** with **#6 SR** beneath, on both DPS tiles.
+
+**Scope:** all three DPS-variant units' cards, since the rule is per-BOARD, not per-unit. Comp
+boards render byte-identically (the golden fixture is `crown`, a comp-profiled unit, and it is
+unchanged). Pinned by `scripts/tests/share/unit-card-data.test.ts` (the variant-headline case
+plus a named ccw regression case); `verify.sh` green.
