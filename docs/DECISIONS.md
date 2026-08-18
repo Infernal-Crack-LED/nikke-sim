@@ -9,6 +9,37 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-17) `trina` burst-amp magnitude CONFIRMED and granularity RULED (owner popup
+  read).** Scarlet burst popup with/without Spread Roots: 11,069,312 / 1,955,754 → ratio
+  **5.660** vs modeled **5.565** (burstSkillAoeDamagePct 435.6 + attackDamagePct 20.9 additive in
+  Damage-Up, +1.7% deviation — within popup-read precision). The additive Damage-Up placement per
+  the "○○ Damage ▲" family rule (SSOT damage-formula §2) is confirmed.
+  **Granularity: block-level** (owner ruling, novel) — the amp applies only to damage blocks
+  whose kit clause contains the literal string "Affects all enemies"; a paraphrase of the same
+  meaning does not qualify. Matches the existing census (`census-burst-amp-scope.ts`) and its
+  literal-only scope implementation. Artifact:
+  `docs/probe-data/trina-burst-amp-read-2026-08-17.json`.
+
+- **(2026-08-17) `noir` reload tension RESOLVED (owner frame count).** Datamined
+  `reloadFrames 62` matches measured full cycle **61f** (within 1 frame / 1.6%). Owner
+  hand-counted from `docs/probes/misc/noir solo reload.MP4`: **49f** reload animation (start →
+  end), **61f** full cycle (start → first shot in new mag). The prior recon reading (~0.6–0.9s)
+  was measuring the reload ANIMATION only (49f = 0.817s); the remaining 12f is dead time between
+  animation end and first shot. No override change needed.
+
+- **(2026-08-17) `mihara-bonding-chain` sustainedDamagePct rulings + stack-count
+  localization.** Three owner rulings on the over-model (1.179 HOT on 2 graded comps):
+  (1) sustainedDamagePct is correctly **additive in the Damage-Up bucket** (matching the sim's
+  implementation — not its own multiplier, per SSOT damage-formula §2); (2) the game applies
+  Sustained Damage buffs to **BOTH** Ensnaring Chains and Dragging Chain (scoping is correct);
+  (3) the over-model is in the **Ensnaring stack count** — the sim's pool (avg 13.39, always
+  reaches 20 before burst per DBG_UNIT trace) is likely higher than the real game's. The burst
+  DoT's fixed 1001%/s assumes 20 stacks at burst time (kit-text assumption, not measured). If
+  the real pool averages ~16, burst DoT over-credits by ~20% → total drops ~9.3%. Settling
+  measurement: popup-read Ensnaring DoT ticks at a known moment, or owner ruling on whether the
+  pool always reaches 20. Artifact:
+  `docs/probe-data/mihara-overmodel-localization-2026-08-17.json`.
+
 - **(2026-08-16) `countScope:'gated'` triage — 2 of 18 units migrated, 16 stay at default.**
   Code census found 117 unmigrated `hitCount` blocks across the roster. Each unit's kit text was
   read to determine whether the counter's counting scope is explicitly Full Burst. Result: 2 units

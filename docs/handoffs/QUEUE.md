@@ -17,7 +17,7 @@
 > `docs/open-questions.md` (single U-numbering — move it to `docs/answered-questions.md` with the
 > answer inline, no new A-number).
 >
-> **Last audited 2026-08-16** — every claim below was re-verified against the tree (branch merge
+> **Last audited 2026-08-17** — every claim below was re-verified against the tree (branch merge
 > state, file/symbol existence, test skips, doc paths). Landed narration deleted; dangling pointers
 > repaired.
 
@@ -54,44 +54,25 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
-> **NEXT UP — UNBLOCKED AND ORDERED (set 2026-08-17 at owner request).** Every item here is
+> **NEXT UP — UNBLOCKED AND ORDERED (refreshed 2026-08-18).** Every item here is
 > footage-FREE: it runs against footage or fixtures ALREADY on disk, with instruments that already
-> exist. Take them top-down. The numbered threads below (1–5) stay as the reference detail and are
+> exist. Take them top-down. The numbered threads below stay as the reference detail and are
 > mostly footage-gated — do NOT start there.
 >
-> **N1. DONE 2026-08-17 — LOG with a SPLIT 2-of-2; superseded by N1b below.** The pre-registered
-> re-run ran (packet + deliverable + `docs/probe-data/anis-star-solo-magnitude-2026-08-17.json`,
-> instrument `scripts/probe/gauge-magnitude.ts` + pin). Record:
-> `docs/handoffs/scientific-method-harness.md` 2026-08-17. Nothing enacted. Two things to carry:
-> the declared 3.71 candidate rests on `basePerTrigger`, which the premise gate proved
-> **ENGINE-INERT** (`sim.ts` never reads it) — so it could only ever describe a NEW mechanism, never
-> a mis-set constant; and the run measured the classified-steady credit at **11.32 / 11.15** on two
-> independently-calibrated recordings, both excluding the shipped 10.388.
+> **1. `anis-star` pre-register re-run (thread 2).** The source-hunt narrowed the anomaly to
+> gauge-specific excess (identical 480,330 increment across 3 windows). Candidate hypothesis to
+> pre-register: anomalous pulls credit one extra `basePerTrigger` 140 × 2.5 focus × 1.06 aura =
+> 3.71%. Build a packet that declares this BEFORE the counting rule runs, so anomalous windows
+> become CLASSIFIABLE instead of premise-violating. Gated re-run, not new footage.
 >
-> **N1b. ⛔ BLOCKING PREREQUISITE — a render-scale calibration read on `anis-star`'s own solo bar.**
-> This is the one measurement that settles the magnitude question, and until it exists **no further
-> magnitude run is worth starting** (a third would re-fight the same argument). A3's own
-> `series30fps.calibration` block carries `rawOverTrue = 1.064` — a standing instrument-gain claim
-> anchored on `maiden-ice-rose`. Applied, it drags the measured 11.32 down to ~10.64 with a CI that
-> CONTAINS the shipped 10.388, i.e. the whole elevation could be reader gain. The 2026-08-17 run's
-> pre-registered gain test looks for a gain SIGNATURE in the data (absent) and has no leg for a gain
-> CONSTANT already written down elsewhere in the tree. **DO:** apply the `maiden-ice-rose`-anchored
-> calibration method to `docs/probes/solo/anis-star-solo.mov` directly and confirm or refute
-> `rawOverTrue ≈ 1.064` for THIS bar. Footage-free (recording on disk).
+> **2. N2 blocker 2 — pin the conversion rule numerically.** The "ALREADY-PRE-COMMITTED
+> conversion rule" is post-hoc (23 min after the verdict) and has undefined terms. Pin it
+> numerically BEFORE computing the new control's residual. See the N2 handoff
+> (`docs/handoffs/2026-08-17-n2-second-control-premise-gate.md`).
 >
-> **N1c. Owner ruling wanted (cheap, no work attached).** The 2-of-2 split turned on one question:
-> may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg when the same
-> packet has demoted that recording's E1 as already-on-record and non-falsifying? Driver said no
-> (⇒ INCONCLUSIVE), blind Fable said yes in the spirit of the rule (⇒ ACCEPT-narrowed). Both struck
-> the W3 window independently — its "exclusion" margin was 0.0012 of a render column.
->
-> ~~Also flagged for the harness template: the clause-2 reachability wording is degenerate…~~
-> **DONE 2026-08-17 — and the framing was wrong.** There was no harness-template defect: the wording
-> was in **this run's own packet**, nowhere in `.claude/**` (there is no packet template), and the
-> same-day N3 third-arm packet already phrased the concern correctly, so nothing was inheriting it.
-> The generalizable rule landed in `.claude/skills/scientific-method/SKILL.md` with owner approval:
-> **no decision-rule clause may be conditioned on the realized estimate**, plus a pre-run
-> substitution test that every clause is selectable by some admissible outcome.
+> **3. N1c — owner ruling wanted (cheap, no work attached).** The 2-of-2 split turned on one
+> question: may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg when
+> the same packet has demoted that recording's E1 as already-on-record and non-falsifying?
 >
 > **N2. A SECOND `liberalio`-free fill trace. ⛔ DO NOT RUN AS FILED — the premise gate stopped it
 > at step 0 (2026-08-17).** Full record, with every quote and `git log -S` receipt:
@@ -127,39 +108,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > ⚑ `docs/probes/**` is GITIGNORED — a fresh worktree has no media, so run this in the main tree (or
 > symlink the probe dir).
 >
-> **N4. Test hygiene on `scripts/tests/gauge-cycle-decomp.test.ts`.** Retitle its "measured 4.43 /
-> 3.56 / 3.71" bands as SIM DRIFT-GUARDS — four-leg confirmed 2026-08-17 as that instrument's own
-> 2026-08-04 output relabelled "measured" (`git show 2a8b869d`); the real bar-paint tape is 2.342 /
-> 1.75–1.82 / 2.09–2.11s. Also record that its `PI2 < T5` assertion is contradicted by measurement
-> regardless of any arm (real T5 1.75–1.82s < real PI2 2.09–2.11s), and that T1 has NO footage refill
-> measurement at all. ⚑ Do NOT blanket-`--update`: of the 19 reds under the `gaugeHits` arm, ZERO are
-> measured-anchored, 4 are child-process harness artifacts, 15 are genuine arm effects.
->
-> **N5. Probe-tooling follow-ups — 2 of 4 DONE 2026-08-17, 2 remain** (all footage-free, detail in
-> thread 2 below).
->
-> - ~~`scan.ts` fixture writer emits fields `TempoFixture` does not declare~~ **DONE** (`b43378cf`):
->   every emitted field now declared, verified against all four committed fixtures; the two
->   `as TempoFixture & {...}` casts in `n3-third-arm.test.ts` retired and replaced with an explicit
->   assertion (a `?? []` default would have silently produced an EMPTY frame trace on a rename).
-> - ~~a bare `--fixture-out` with no value is silently skipped~~ **DONE** (`50198c6f`): now fails
->   loudly, and both it and the `--cycle-table` requirement are validated **before** the decode, so a
->   typo costs a second instead of a full video extraction. ⚑ Reported, NOT changed: `--debug-dir`
->   (`scan.ts` ~line 184) has the identical bare-flag pattern — left alone because absence there is
->   genuinely optional rather than a dropped deliverable. Owner call.
-> - **OPEN:** `auditElementControl` / `--element-control` has ZERO vitest coverage and its C1
->   artifact block is never replayed.
-> - **OPEN:** `ceiling-screen.test.ts` hard-codes three literals (23.618, 38.1, `/ 30`) derivable
->   from artifacts it already loads.
->
-> **N6 (new, from the N3 landing — findings-only, reported not acted on).** The sibling
-> `--refill-starvation` and `--multihit-crediting` folds in `scripts/battery/fb-count-matrix.ts`
-> count damage **instances** as gauge-eligible hits, so they carry the SAME (N−1) `gaugeHits`
-> blindness N3 just fixed in the credit-schedule fold — latent for the same reason, and now the only
-> remaining instance of that defect class in the file. Also: `docs/fb-count-matrix.md`'s generated
-> tables have drifted from a fresh run (e.g. T5's buzzer state reads "opened 173.5s" vs the doc's
-> 179.2s).
->
 > Also unblocked but lower value: `mihara-bonding-chain`'s fit exposure (thread 1 — localize the
 > over-model, do not restore the 12-stack average); the clean-bin-time vs full-window denominator
 > settlement against a known-ground-truth fixture (turns the standing MAR caveat into a measured bias
@@ -170,13 +118,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    `docs/handoffs/closed/2026-08-10-faithfulness-batch{1..8}-findings.md`). Most items closed by
    enactment, refutation, or owner ruling (2026-08-11 M-list triage + 2026-08-13 corrections).
    Open:
-   - **`noir` — OPEN (footage-gated).** Reload tension (recon ~0.6–0.9s vs datamined 62f ≈ 1.03s).
-     Folded into SG investigation (M7); same footage serves both.
-   - **`mihara-bonding-chain` — FIT-EXPOSED (achievable without footage).** Ensnaring primitive
-     landed 2026-08-13; removing the old 12-stack average revealed an over-model elsewhere in her
-     kit. 1.034 → 1.179 HOT on 2 graded comps; FB count UNCHANGED at 11 vs measured 11, so it is
-     magnitude not rotation. LOCALIZE the over-model; do not restore the average.
-     **→ Handoff: [2026-08-13-mihara-fit-exposure.md](2026-08-13-mihara-fit-exposure.md)**
+   - **`mihara-bonding-chain` — LOCALIZED v2 (2026-08-17).** Over-model in the **stack count**
+     (sustainedDamagePct correctly implemented — owner confirmed). Burst DoT's fixed 1001%/s
+     assumes 20 stacks; if real pool averages ~16, total drops ~9.3%. Settling: popup-read
+     Ensnaring DoT ticks, or owner ruling on whether pool always reaches 20.
+     **→ [mihara-overmodel-localization-2026-08-17.json](../probe-data/mihara-overmodel-localization-2026-08-17.json)**
    - **Held primitives** (F11 discipline — leave held): `moran` S1 DEF ▲/stack, `maxwell`
      `byFinalAtk`, `helm`'s held tag.
    - **`mint` — HELD** (M12 confirmed shipped `singing` model; solo magnitudes unanchored by
@@ -238,22 +184,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `eve` (burst, N=6), `julia` (burst, N=5) also aggregate a multi-hit without `gaugeHits`. All
      once-per-cast, so none can carry the FB shortfall — and the 2026-08-17 run gives no support for
      crediting them at full value either.
-   - **Test-hygiene follow-up:** retitle `gauge-cycle-decomp.test.ts`'s "measured" bands as sim
-     drift-guards, and note its `PI2 < T5` assert is contradicted by measurement regardless of any
-     arm (real T5 1.75–1.82s < real PI2 2.09–2.11s). Do NOT blanket-`--update`: of 19 reds under the
-     arm, ZERO are measured-anchored, 4 are child-process harness artifacts, 15 genuine.
-   - ~~Ledger gap: the 2026-08-15 `snow-white-heavy-arms` per-sub-hit enactment has no DECISIONS
-     entry.~~ **CLOSED 2026-08-17** — entry backfilled into `docs/DECISIONS.md` → Measured mechanics.
-     It records the arithmetic-closure evidence, the independent 12/12 splash-count corroboration, the
-     49-minute FINDINGS-ONLY→enacted gap, and the caveat that only `snow-white-heavy-arms` of the three
-     `gaugeHits` carriers is measurement-backed (`eve`/`little-mermaid` are kit-prose only).
-   - ~~Protected-path correction pending owner approval: the `skillGauge` comment in
-     `src/engine/sim.ts` claims the `maiden-ice-rose` rider "measured exactly 364".~~ **CLOSED
-     2026-08-17** (owner-approved, comment-only — zero non-comment lines changed). It now states the
-     actual 3.45%-vs-modelled-3.64% measurement, that the flat/un-focused SHAPE is confirmed while the
-     −5.2% magnitude residual is OPEN (U28), that `hitsPerShot` 1 means the anchor does not verify the
-     `hitsPerShot > 1` divisor, and disambiguates `maiden-ice-rose` from the base `maiden`.
-     `docs/data/burst-gauge.md` §5/§6 were corrected the same day.
    - Second, lower priority: settle
      the clean-bin-time vs full-window denominator on a fixture with known ground truth, which would
      turn the standing MAR caveat into a measured bias bound — every detection in this thread is
@@ -266,58 +196,33 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      under the full-window denominator N3 reads 11.0% BELOW its own ceiling (iron: 5.7%), and C7's
      bridge-vs-activity ratios run OPPOSITE on the two arms (0.757 vs 1.357), so the estimator's
      behaviour has no mechanism.
-   - **Probe tooling follow-ups (achievable without footage):**
-     (i) `gauge-fill.py` without `--bar` self-calibrates onto a dark terrain edge on solo footage
-     — always pass `--bar` + the maiden fixture gate (/skill-maintenance candidate);
-     (ii) `read-ammo.ts` reads 0/851 frames on text-label HUD ("AMMO / NNN") — needs a text-label
-     digit reader path;
-     (iii) **filed 2026-08-17 from the cross-family code review (`qwen3.8-max-preview`)** — the FIX
-     and both FOLLOW-UPs it raised are already fixed; these remain: `scan.ts`'s fixture writer emits
-     fields (`frameT`/`frameFill`, the extended `expected` block) that the `TempoFixture` TYPE does
-     not declare, and both consumers bridge with casts — producer and declared type have drifted, so
-     a rename would only surface at runtime; `auditElementControl` / `--element-control` in
-     `fb-count-matrix.ts` has ZERO vitest coverage and the C1 artifact block it produced is never
-     replayed (the reviewer re-ran it manually and reproduced the recorded result exactly), plus it
-     matches the long `COMPS` name while the classification world uses the short arm label;
-     `ceiling-screen.test.ts` hard-codes three literals (23.618, 38.1, `/ 30`) that are derivable
-     from artifacts it already loads — drift risk, not error; a bare `--fixture-out` with no value
-     is silently skipped in `scan.ts`.
+   - **Probe tooling — `read-ammo.ts`** reads 0/851 frames on text-label HUD ("AMMO / NNN") —
+     needs a text-label digit reader path.
+   - **`scan.ts` `--debug-dir` (~line 184)** has the bare-flag-silently-skipped pattern fixed
+     for `--fixture-out`; left alone because absence is genuinely optional — owner call.
+   - **`--gauge-sources` census under-counts** gaugeHits sub-hits (LIVE on N5 snowwhite-HA
+     fire); census purpose is path verification not total counting — owner call whether to fix.
+     → `n6-gaugehits-blindness-audit-2026-08-17.json`
    - **T1 wind-weak v2 PROCESSED 2026-08-16** — 13 FBs confirmed (scan.ts, 2nd detector
      corroborated), per-unit totals from Battle Records screenshot. Result:
      `docs/probes/misc/t1-wind-weak-v2-result.md`. Confirms the existing "windweak t257 13fb"
      probe; comp remains disabled in regression (sim 11-12 FBs vs measured 13, engine shortfall).
    - **`ein` U8 0.7× team residual** — findings-only (N2); stage1→2 real 33f/32f vs modeled 30f
      (runs AGAINST the gap).
-3. **Measure the `trina` burst-amp MAGNITUDE — the last carry-forward of the burst-amp rulings.**
-   Recipe (unchanged, but the qualifying set is now exact): popup-read a qualifying all-enemies
-   burst nuke cast INSIDE vs OUTSIDE a `trina` Spread Roots window and compare against
-   `1 + 4.356` additive-in-Damage-Up. Any comp pairing `trina` with one of `isabel` / `liberalio` /
-   `mica` / `noir` / `phantom` / `privaty` / `quency-escape-queen` / `scarlet` /
-   `soda-twinkling-bunny` gives it; `cinderella` is NOT a candidate. If the test unit is `novel` or
-   another granularity-split unit the same measurement settles amp granularity for free (amped ⇒
-   skill-level, unamped ⇒ block-level). The MAGNITUDE half is genuinely footage-gated (only
-   popups produce a number); the GRANULARITY half is separately rulable if the owner ever knows
-   whether a split-kit unit like `novel` gets both halves amped (offered 2026-08-16, not yet
-   answered). Carried out of the now-archived burst-amp handoff.
 
-4. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
+3. **`takina`'s residual is now BIGGER and unexplained — 0.579 COLD, n=1.** The 2026-08-12 swap
    economy landing (DECISIONS) made her colder, not warmer: the faithful custom weapon fires 12
    uncharged shots where the old estimate fired 7 that inherited her SR ×2.5 `chargeMultiplier`.
    Her swap window is therefore ruled OUT as the explanation. The largest remaining ⚑ in her file is
    the **S2 uptime-average** — `damageTakenPct` 3.36 = 10.09 × 5/15 and ally `trueDamagePct` 93.66 =
-   140.49 × 10/15 — where the **15s cooldown is COMMUNITY-sourced (Prydwen), not in the kit prose**.
-   If the real cooldown is shorter, both values are under-credited roughly proportionally. Recipe is
-   already written in her override caveats: read the real skill2 cooldown + pulse shape from a
-   focused `takina` recording and rescale. She has ONE recorded fight (PG iron sweep), so this needs
-   footage before anything is changed — evidence-proportionality, not a re-fit.
-   **Cheaper substitute (offered to owner 2026-08-16, not yet answered): a cooldown is
-   config-independent, so the owner observing her skill-2 pulse rhythm in ANY casual play — no
-   scope lock, no recording — replaces the footage ask for the CD value itself** (the pulse
-   SHAPE would still benefit from footage, but the CD is the load-bearing number).
+   140.49 × 10/15 — where the **15s cooldown is now OWNER-CONFIRMED by in-game test (2026-08-17)**.
+   The community-sourced value was correct, so the S2-CD hypothesis is REFUTED — the 0.579 cold
+   residual must have a different source. She has ONE recorded fight (PG iron sweep), so further
+   diagnosis needs footage before anything is changed — evidence-proportionality, not a re-fit.
    _(Body restored 2026-08-13: nine lines were dropped from this item by the archive commit
    `80c9f041`; recovered verbatim from `d3314ca3`.)_
 
-5. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
+4. **`neon-blue-ocean` (nbo) ⚑3 — is her swapped burst weapon MULTI-HIT? One recording settles it.**
    The cadence landing itself is SHIPPED (merged as PR #126, 2026-08-16; cross-family
    `/code-review` verdict FIX-BEFORE-MERGE → all 3 FIX findings addressed pre-merge; landing
    record archived to `docs/handoffs/closed/2026-08-16-nbo-swap-cadence-landing.md`).
@@ -336,3 +241,4 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    −47 / −50 before. **RECIPE:** one isolated nbo-solo scope-lock recording — count rounds fired
    inside a single 7s burst window and watch the ammo counter. That settles cadence, hits-per-pull
    and belt size in one go. Sizing arm: `npx tsx scripts/battery/nbo-swap-cadence-ab.ts`.
+   **AWAITING FOOTAGE** (owner does not own nbo; requested from a friend, 2026-08-17).

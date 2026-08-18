@@ -1,0 +1,75 @@
+{
+  "_note": "N1b calibration read — apply the maiden-ice-rose-anchored method to anis-star's own solo bar. QUEUE N1b (2026-08-17). This is a FINDINGS-ONLY analysis over committed trace data; no video was re-read, no engine or override was changed.",
+  "date": "2026-08-17",
+  "question": "Does rawOverTrue ≈ 1.064 (anchored on maiden-ice-rose) hold for anis-star's gauge bar?",
+  "inputs": {
+    "standingClaim": {
+      "rawOverTrue": 1.064,
+      "anchor": "maiden-ice-rose docs/probes/tb2/tb2 3 maiden.MP4 (12.55%/pull, +9.1/+3.45 sub-steps)",
+      "source": "scripts/probe/gauge-fill.py line 244; every committed solo trace's calibration block"
+    },
+    "anisStarTraces": [
+      "docs/probe-data/anis-star-solo-a3-gauge-reread.json",
+      "docs/probe-data/anis-star-solo2-gauge.json"
+    ],
+    "shippedPerPull": 10.388,
+    "shippedBasis": "datamine basePerTrigger 140 × focus 2.5 × aura 1.06 / hitsPerShot 1 (carried from the magnitude run's own packet)"
+  },
+  "barGeometry": {
+    "maidenIceRose": { "widthPx": 138, "borderRow": 31 },
+    "anisStarA3": { "widthPx": 138, "borderRow": 71 },
+    "note": "Same pixel width (138), different screen row. The pixel-to-percentage mapping depends on width, so the geometric basis for a UNIVERSAL gain is present. The different borderRow means different surrounding pixel context, which could affect self-calibration or edge reads."
+  },
+  "subStepDecomposition": {
+    "verdict": "UNRESOLVED — method CANNOT replicate",
+    "maidenIceRose": "two sub-steps per pull visible at both 30fps and 60fps: weapon +9.1% then rider +3.45%, separated by ~160ms. The ratio of reader-reported weapon step to modeled weapon step yields rawOverTrue.",
+    "anisStar": "every steady pull lands in a SINGLE 60fps frame (16.7ms). No weapon/rider separation visible. Pull 1 shows a transient two-frame artifact (8.7 + 0.7 at 100ms spacing) that is NOT a reproducible sub-step — pulls 2-6 all single-step. The internal calibration anchor is structurally absent, not merely noisy.",
+    "consequence": "The maiden-ice-rose method requires a unit with resolvable sub-steps. Anis-star does not have them at any sampling rate the instrument supports. The calibration read must use a different method or accept the standing claim unverified."
+  },
+  "gainCorrectionApplied": {
+    "rawOverTrue": 1.064,
+    "a3StrictDeltas": {
+      "raw": [10.9, 11.6, 11.6, 10.1, 11.6],
+      "rawMean": 11.16,
+      "rawMedian": 11.6,
+      "rawRange": 1.5,
+      "corrected": [10.24, 10.90, 10.90, 9.49, 10.90],
+      "correctedMean": 10.49,
+      "correctedMedian": 10.90,
+      "correctedRange": 1.41
+    },
+    "solo2E2": {
+      "rawEstimate": 11.32,
+      "rawCI": [10.745, 11.894],
+      "correctedEstimate": 10.64,
+      "correctedCI": [10.10, 11.18],
+      "shippedInsideCorrectedCI": true
+    },
+    "note": "The gain correction is a pure multiplicative shift — it does not change the per-pull scatter (range 1.5 raw → 1.41 corrected, the ~6% reduction is just 1/1.064). The scatter is ±1-column quantization noise, NOT gain variation."
+  },
+  "impliedGain": {
+    "gainForSolo2ToMatchShipped": 1.090,
+    "derivation": "11.32 / 10.388 = 1.090",
+    "deltaFromStandingClaim": 0.026,
+    "note": "If the shipped value is the true per-pull credit, the implied gain is 1.090 — 2.6 percentage points ABOVE the standing 1.064. But the solo #2 CI is wide ([10.745, 11.894]), so the implied gain's CI is [1.034, 1.145] — containing both 1.064 and 1.0."
+  },
+  "verdict": {
+    "status": "INCONCLUSIVE — cannot confirm, cannot refute",
+    "for1064": [
+      "shipped 10.388 is INSIDE the corrected solo #2 CI [10.10, 11.18]",
+      "bar width identical (138px) — pixel-to-% mapping supports a universal gain",
+      "A3 corrected median 10.90 is within 5% of shipped 10.388"
+    ],
+    "against1064": [
+      "sub-step anchor CANNOT be replicated — the method's own calibration input is structurally absent",
+      "implied gain from solo #2 point estimate is 1.090, not 1.064 (delta = +0.026)",
+      "corrected A3 median (10.90) and corrected solo #2 (10.64) both sit ABOVE shipped 10.388 — the correction may be too small",
+      "the standing claim was derived from maiden-ice-rose's specific weapon/rider sub-step ratio; no evidence it transfers to a unit with different gauge mechanics"
+    ],
+    "bottomLine": "The maiden-ice-rose-anchored rawOverTrue = 1.064 is NEITHER confirmed NOR refuted for anis-star's bar. The internal calibration method fails structurally (no sub-steps). The point estimates suggest a HIGHER gain (~1.09) would be needed to fully explain the elevation, but the CIs are wide enough to contain 1.064. The standing claim remains an unvalidated carry from another recording."
+  },
+  "consequence": {
+    "forMagnitudeThread": "The elevation (11.32 / 11.15 raw vs 10.388 shipped) remains inseparable from a plausible but unverified instrument gain. No further magnitude run can settle this without either (a) a recording where anis-star's sub-steps ARE resolvable (different HUD, slower weapon), or (b) an independent measurement of the per-pull credit that does not use the gauge bar reader.",
+    "forTheStandingClaim": "rawOverTrue = 1.064 is now known to be an ANCHOR-SPECIFIC constant, not a validated universal reader gain. Its application to other bars is a CARRY, not a measurement. Every future trace that uses it should label it as such."
+  }
+}

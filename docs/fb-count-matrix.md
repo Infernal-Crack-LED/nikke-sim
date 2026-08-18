@@ -105,13 +105,13 @@ feed).
 | comp                      | state at 180s     | detail                                                                         |
 | ------------------------- | ----------------- | ------------------------------------------------------------------------------ |
 | iron sweep (run G)        | **gauge filling** | refilling the final 3.60s (last Full Burst ended 176.4s); the bar never filled |
-| T1 wind-weak              | **gauge filling** | refilling the final 2.90s (last Full Burst ended 177.1s); the bar never filled |
-| misc B3s (run I order)    | **gauge filling** | refilling the final 0.90s (last Full Burst ended 179.1s); the bar never filled |
-| T5 wind-weak              | mid-Full-Burst    | opened 179.2s — only 0.80s of it inside the fight                              |
+| T1 wind-weak              | **gauge filling** | refilling the final 3.50s (last Full Burst ended 176.5s); the bar never filled |
+| misc B3s (run I order)    | **gauge filling** | refilling the final 1.40s (last Full Burst ended 178.6s); the bar never filled |
+| T5 wind-weak              | mid-Full-Burst    | opened 173.5s — 6.50s of it inside the fight                                   |
 | N5 snowwhite-HA fire      | mid-Full-Burst    | opened 178.9s — only 1.10s inside the fight                                    |
 | N3 scarlet/liberalio iron | mid-Full-Burst    | opened 175.0s — 5.00s inside the fight                                         |
 | N1 rapi/quency wind       | mid-Full-Burst    | opened 173.7s — 6.30s inside the fight                                         |
-| soda-tb control           | mid-Full-Burst    | opened 169.7s — 10.30s inside the fight                                        |
+| soda-tb control           | mid-Full-Burst    | opened 168.4s — 11.60s inside the fight                                        |
 | N2 modernia wind          | mid-Full-Burst    | opened 165.5s — 14.50s inside the fight                                        |
 
 **No comp ends mid-chain**, and **chain stall is 0.00s on all nine** — no team is ever waiting on a

@@ -1,0 +1,67 @@
+{
+  "_note": "mihara-bonding-chain over-model localization. QUEUE item 1 (faithfulness sweep residue, mihara bullet). Findings-only — no override or engine was changed.",
+  "date": "2026-08-17",
+  "question": "Where does the 17.9% over-model (1.034 → 1.179 HOT on 2 graded comps) sit in mihara-bonding-chain's kit encoding?",
+  "priorHandoff": "docs/handoffs/2026-08-13-mihara-fit-exposure.md",
+  "channelSplit": {
+    "comp": "N6 mihara/maiden wind (boss Wind)",
+    "totalDamage": 895197123,
+    "measuredTarget": 759284667,
+    "overModel": 135912456,
+    "overModelPct": 17.9,
+    "channels": [
+      {
+        "name": "Burst DoT (Dragging Chain)",
+        "hits": 56,
+        "damage": 414715333,
+        "share": 0.463,
+        "inheritsSustDmg": true
+      },
+      {
+        "name": "Ensnaring DoT",
+        "ticks": 179,
+        "damage": 269872425,
+        "share": 0.301,
+        "avgStacks": 13.27,
+        "inheritsSustDmg": true
+      },
+      {
+        "name": "Normal weapon",
+        "hits": 5611,
+        "damage": 201442669,
+        "share": 0.225,
+        "inheritsSustDmg": false
+      },
+      {
+        "name": "Restraint dumps",
+        "hits": 11,
+        "damage": 9166696,
+        "share": 0.01,
+        "inheritsSustDmg": false
+      }
+    ]
+  },
+  "ruledOut": {
+    "sustainedDamagePctScoping": "Owner confirmed 2026-08-17: the game applies Sustained Damage buffs to BOTH Ensnaring Chains and Dragging Chain. The sim's application to both DoTs is correct — scoping is NOT the explanation.",
+    "sustainedDamagePctBucket": "Owner confirmed 2026-08-17: sustainedDamagePct is correctly additive in the Damage-Up bucket (matching the sim's implementation). Not its own multiplier.",
+    "baselineEnsnaringDoT_mechanics": "Live perResource, correctly zeroes on burst cancel. Kit-faithful mechanically. But the STACK COUNT may be higher than the real game — see localization.",
+    "restraintDumpCadence": "11 dumps (1 battle start + 10 FB ends), correct count. Handoff already ruled this out.",
+    "multiB3OverFire": "Dump count correct despite 3 B3s on N6. Handoff already ruled this out.",
+    "countScope": "Already fixed (127 → 107 gains), moved time-average only 13.55 → 13.39. Not the explanation."
+  },
+  "localization": {
+    "verdict": "The over-model is in the ENSNARING STACK COUNT — the sim's pool is higher than what the real game produces",
+    "detail": "sustainedDamagePct is correctly implemented (additive in Damage-Up, applies to both DoTs — owner confirmed 2026-08-17). Each encoding piece is mechanically correct. But the sim's Ensnaring pool time-averages 13.39 stacks and always reaches 20 before each burst (DBG_UNIT trace). If the real game's pool averages fewer stacks, both DoT channels over-credit: the burst DoT pays fixed 1001%/s (20 × 50.05) when the real mirror is actual_stacks × 50.05, and the Ensnaring DoT reads higher-than-real stack counts.",
+    "mostLikelyExplanation": "The sim's pool reaches 20 before each burst (kit-text assumption, verified by DBG_UNIT trace in-sim). But the real game's pool may NOT always reach 20 — the override note's claim is a kit-text reading, not a measurement. If the real pool averages ~16 stacks before burst, the burst DoT over-credits by ~4 × 50.05 × 10s × 6 bursts = 12,012% total, and the Ensnaring DoT over-credits proportionally.",
+    "sizingArm": "Burst DoT is 46.3% of total damage and is the most sensitive to the 20-stack assumption. A 4-stack reduction (20 → 16) drops burst DoT by 20% → total drops by ~9.3%, moving ratio from 1.179 to ~1.069. A 6-stack reduction (20 → 14) drops by 30% → total drops by ~13.9%, moving ratio to ~1.015. The right stack count lands the ratio near 1.0."
+  },
+  "settlingMeasurement": {
+    "what": "Popup-read mihara's Ensnaring DoT ticks at a known moment (e.g., 5s after a Restraint dump) and compare against stacks × 25.08% × ATK × dmgUp. If the popup reads lower than the sim's prediction, the real stack count is lower than simulated.",
+    "recipe": "Record mihara solo or with a non-interfering team. Watch the ammo counter / normal-hit counter to track stack generation. At a known moment (e.g., exactly 40 normals into a FB window), popup-read the Ensnaring DoT tick. Compare against the sim's predicted stack count at that moment.",
+    "alternative": "An owner ruling on whether the real game's Ensnaring pool always reaches 20 before mihara's burst would settle it without footage."
+  },
+  "consequence": {
+    "forTheBoard": "The 1.179 HOT reading on 2 graded comps is likely a STACK-COUNT over-estimate. The fix is to determine the real game's average stack count and either (a) make the burst DoT live perResource (mirroring actual stacks instead of fixed 20) or (b) adjust the generation rate if the real game generates stacks slower.",
+    "forTheOverride": "The burst DoT's fixed 1001%/s is the load-bearing assumption. If the real pool doesn't always reach 20, the burst DoT should become perResource like the baseline (reading actual stacks at burst time), and the cancel block remains to zero the pool."
+  }
+}
