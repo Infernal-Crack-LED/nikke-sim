@@ -59,11 +59,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > exist. Take them top-down. The numbered threads below stay as the reference detail and are
 > mostly footage-gated — do NOT start there.
 >
-> **1. `anis-star` pre-register re-run (thread 2).** The source-hunt narrowed the anomaly to
-> gauge-specific excess (identical 480,330 increment across 3 windows). Candidate hypothesis to
-> pre-register: anomalous pulls credit one extra `basePerTrigger` 140 × 2.5 focus × 1.06 aura =
-> 3.71%. Build a packet that declares this BEFORE the counting rule runs, so anomalous windows
-> become CLASSIFIABLE instead of premise-violating. Gated re-run, not new footage.
+> **1. `anis-star` pre-register re-run (thread 2) — DRAFT PACKET AWAITING PRE-OP JUDGE.**
+> **→ `docs/handoffs/2026-08-18-anis-star-pre-register-rerun-preop-packet.md`.**
+> Delta packet over the 2026-08-17 run: pre-registers A = 3.71 % as a testable anomaly value,
+> adds E4 recovery test (subtract A from departing pulls → test if they rejoin the steady
+> family), and recomputes E1/E2 with recovered pulls (tighter intervals, longer runs). All
+> three upward departures predicted to recover (adjusted values 11.49/11.59/12.29, all within
+> the 3-column radius of median 11.60). If E4 passes, clause-1(ii) window count may recover
+> (W4 gains pulls). Footage-free — uses the committed 2026-08-17 artifacts.
 >
 > **2. N2 blocker 2 — conversion rule PINNED (proposal, awaiting owner approval).**
 > **→ `docs/handoffs/2026-08-18-n2-conversion-rule-proposal.md`.** Clustering statistic Δ = |R₁−R₂|;
