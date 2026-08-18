@@ -168,6 +168,16 @@ const MEASURED_REFILL: {
     fbGate: null,
     label: 'PA MiKa [CONTROL — no liberalio]',
   },
+  {
+    key: 'N1',
+    compName: 'N1 rapi/quency wind (boss Wind)',
+    measured: 1.817,
+    fixture: 'docs/probe-data/fill-trace-n1-rapi-quency-wind-windows.json',
+    role: 'control',
+    fbGate: null,
+    label:
+      'N1 rapi/quency wind [CONTROL — no liberalio, 2026-08-18 fill trace]',
+  },
 ];
 
 function findComp(name: string): Comp {

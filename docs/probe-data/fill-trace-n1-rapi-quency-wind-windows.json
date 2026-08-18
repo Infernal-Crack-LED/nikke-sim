@@ -1,0 +1,257 @@
+{
+  "_note": "Refill-window bounds for N1 rapi/quency wind (boss Wind) \u2014 generated 2026-08-18 from scan.ts --cycle-table.",
+  "source": {
+    "video": "docs/probes/probe u7/13 fb count wind weak vid.MP4",
+    "fps": 60,
+    "command": "npx tsx scripts/probe/scan.ts <video> --fps 60 --cycle-table"
+  },
+  "fullWindows": [
+    {
+      "start": 13.7167,
+      "startFill": 0.956,
+      "peakFill": 0.956,
+      "last": 22.0667,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 22.0667,
+      "durationSec": 8.35,
+      "endFill": 0.022
+    },
+    {
+      "start": 26.8833,
+      "startFill": 0.956,
+      "peakFill": 1,
+      "last": 35.2333,
+      "lastFill": 0.037,
+      "partial": false,
+      "end": 35.2333,
+      "durationSec": 8.35,
+      "endFill": 0.037
+    },
+    {
+      "start": 40.9167,
+      "startFill": 0.948,
+      "peakFill": 0.956,
+      "last": 49.3167,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 49.3167,
+      "durationSec": 8.4,
+      "endFill": 0.022
+    },
+    {
+      "start": 53.9667,
+      "startFill": 0.926,
+      "peakFill": 1,
+      "last": 62.75,
+      "lastFill": 0.037,
+      "partial": false,
+      "end": 62.75,
+      "durationSec": 8.78,
+      "endFill": 0.037
+    },
+    {
+      "start": 67.5333,
+      "startFill": 0.956,
+      "peakFill": 0.97,
+      "last": 75.8833,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 75.8833,
+      "durationSec": 8.35,
+      "endFill": 0.022
+    },
+    {
+      "start": 84.0333,
+      "startFill": 0.956,
+      "peakFill": 1,
+      "last": 92.2667,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 92.2667,
+      "durationSec": 8.23,
+      "endFill": 0.022
+    },
+    {
+      "start": 97.6,
+      "startFill": 0.933,
+      "peakFill": 0.97,
+      "last": 105.9167,
+      "lastFill": 0.03,
+      "partial": false,
+      "end": 105.9167,
+      "durationSec": 8.32,
+      "endFill": 0.03
+    },
+    {
+      "start": 110.5667,
+      "startFill": 0.911,
+      "peakFill": 1,
+      "last": 119.2167,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 119.2167,
+      "durationSec": 8.65,
+      "endFill": 0.022
+    },
+    {
+      "start": 124.7667,
+      "startFill": 0.911,
+      "peakFill": 0.956,
+      "last": 133.4833,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 133.4833,
+      "durationSec": 8.72,
+      "endFill": 0.022
+    },
+    {
+      "start": 137.55,
+      "startFill": 0.926,
+      "peakFill": 1,
+      "last": 146.9167,
+      "lastFill": 0.059,
+      "partial": false,
+      "end": 146.9167,
+      "durationSec": 9.37,
+      "endFill": 0.059
+    },
+    {
+      "start": 151.3833,
+      "startFill": 0.911,
+      "peakFill": 0.956,
+      "last": 160.2667,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 160.2667,
+      "durationSec": 8.88,
+      "endFill": 0.022
+    },
+    {
+      "start": 165.3833,
+      "startFill": 0.926,
+      "peakFill": 1,
+      "last": 175.1,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 175.1,
+      "durationSec": 9.72,
+      "endFill": 0.022
+    },
+    {
+      "start": 178.8,
+      "startFill": 0.911,
+      "peakFill": 0.956,
+      "last": 187.6667,
+      "lastFill": 0.022,
+      "partial": false,
+      "end": 187.6667,
+      "durationSec": 8.87,
+      "endFill": 0.022
+    }
+  ],
+  "burstChains": [
+    {
+      "stage1": null,
+      "stage2": 12.45,
+      "stage3": 12.95,
+      "fightT": null
+    },
+    {
+      "stage1": null,
+      "stage2": 18.9667,
+      "stage3": null,
+      "fightT": null
+    },
+    {
+      "stage1": 25.0833,
+      "stage2": 25.6167,
+      "stage3": 26.1167,
+      "fightT": null
+    },
+    {
+      "stage1": null,
+      "stage2": 33.3,
+      "stage3": null,
+      "fightT": null
+    },
+    {
+      "stage1": 39.1,
+      "stage2": 39.65,
+      "stage3": 40.15,
+      "fightT": null
+    },
+    {
+      "stage1": null,
+      "stage2": 50.5667,
+      "stage3": null,
+      "fightT": null
+    },
+    {
+      "stage1": 52.5833,
+      "stage2": 53.1167,
+      "stage3": 53.6167,
+      "fightT": null
+    },
+    {
+      "stage1": 65.7333,
+      "stage2": 66.2667,
+      "stage3": 66.7667,
+      "fightT": null
+    },
+    {
+      "stage1": 82.2333,
+      "stage2": 82.7667,
+      "stage3": 83.2667,
+      "fightT": null
+    },
+    {
+      "stage1": 95.7833,
+      "stage2": 96.3333,
+      "stage3": 96.8333,
+      "fightT": null
+    },
+    {
+      "stage1": 109.1667,
+      "stage2": 109.7167,
+      "stage3": 110.2167,
+      "fightT": null
+    },
+    {
+      "stage1": 123.3833,
+      "stage2": 123.9167,
+      "stage3": 124.4167,
+      "fightT": null
+    },
+    {
+      "stage1": 136.1667,
+      "stage2": 136.7,
+      "stage3": 137.2,
+      "fightT": null
+    },
+    {
+      "stage1": null,
+      "stage2": 146.7333,
+      "stage3": null,
+      "fightT": null
+    },
+    {
+      "stage1": 150,
+      "stage2": 150.5333,
+      "stage3": 151.0333,
+      "fightT": null
+    },
+    {
+      "stage1": 164,
+      "stage2": 164.4167,
+      "stage3": 165.0333,
+      "fightT": null
+    },
+    {
+      "stage1": 177.35,
+      "stage2": 177.9,
+      "stage3": 178.4333,
+      "fightT": null
+    }
+  ]
+}

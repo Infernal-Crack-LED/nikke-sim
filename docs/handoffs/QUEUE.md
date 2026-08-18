@@ -68,13 +68,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > form a robust pair (both ≥ 0.3 cols) even if W3's razor-thin margin is disputed. E2 barely
 > moved (recovered runs have low weight from SE_A). Measurement only — no enactment.
 >
-> **2. N2 blocker 2 — conversion rule PINNED (proposal, awaiting owner approval).**
-> **→ `docs/handoffs/2026-08-18-n2-conversion-rule-proposal.md`.** Clustering statistic Δ = |R₁−R₂|;
-> R̄ = mean; δ_band = max(δ₁, δ₂) where δ_i = 0.15/M_i; threshold δ_C = 2 × max(δ₁, δ₂); two
-> branches (CLUSTER → score primaries against band, SPREAD → INCONCLUSIVE), no middle zone.
-> Practically: any clustering pair of controls yields REJECT (the iron/T5 split S = 0.508 is too
-> wide for any realistic band to contain both). Owner approval needed before tracing the second
-> control (N1 rapi/quency wind or N2 modernia wind preferred).
+> **2. N2 blocker 2 — conversion rule APPLIED → SPREAD / INCONCLUSIVE (2026-08-18).**
+> **→ Result: `docs/handoffs/2026-08-18-n2-conversion-rule-result.md`.**
+> **→ Proposal (pinned rule): `docs/handoffs/2026-08-18-n2-conversion-rule-proposal.md`.**
+> Second control: N1 rapi/quency wind (R₂ = 0.903, δ₂ = 0.083). First control: PI2 (R₁ = 0.442,
+> δ₁ = 0.071). Δ = 0.461, δ_C = 0.165 → Δ > δ_C → SPREAD → INCONCLUSIVE. The estimator varies
+> too much across comps (N1 residual is 2× PI2's) to form a coherent control band. The
+> `liberalio` gauge-credit finding (LOG 2026-08-17) stays LOG — nothing enacted. The
+> comp-level estimator structurally cannot separate a reduced per-sub-hit value from the general
+> fill-tempo gap; the settling measurement is a per-pull hand read.
 >
 > **3. N1c — OWNER RULED (2026-08-18).** Procedural dispute is moot: 9 pulls fill the bar on
 > three of four montage-verified windows → per-pull credit ≥ 100/9 = 11.11 %, which exceeds the
@@ -84,27 +86,18 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > enactment — nothing changes in the engine). The pre-register re-run (item 1) now pins the
 > exact value and the anomaly mechanism, not the direction.
 >
-> **N2. A SECOND `liberalio`-free fill trace. ⛔ DO NOT RUN AS FILED — the premise gate stopped it
-> at step 0 (2026-08-17).** Full record, with every quote and `git log -S` receipt:
-> **`docs/handoffs/2026-08-17-n2-second-control-premise-gate.md`**. Read that BEFORE re-planning;
-> three verifier passes are in it and none of it needs re-deriving. Summary of what failed:
+> **N2. A SECOND `liberalio`-free fill trace — COMPLETE (2026-08-18), SPREAD → INCONCLUSIVE.**
+> Full record: `docs/handoffs/2026-08-17-n2-second-control-premise-gate.md` (premise gate),
+> `docs/handoffs/2026-08-18-n2-conversion-rule-proposal.md` (pinned rule),
+> `docs/handoffs/2026-08-18-n2-conversion-rule-result.md` (verdict). Summary:
 >
 > - ~~**Blocker 1 — N3 gates N2.**~~ **CLEARED 2026-08-17** by the `gaugeHits` credit-schedule fix
 >   (`2d4dd117`): the carrier seat now reconstructs at 1080.352 = engine, residual 0, was 463.008.
-> - **Blocker 2 — the "ALREADY-PRE-COMMITTED conversion rule" is neither pre-committed nor
->   applicable. STILL OPEN.** `git log -S` puts its text in `c8f3caf8` at 07:53, **23 minutes AFTER**
->   the verdict it supposedly preceded (`7e2f7e1f`, 07:30); that run committed no pre-op packet at
->   all, so the attribution is self-attested. And the conversion half is a sketch: the clustering
->   statistic is unnamed, the two-control `R_ctrl` reconstruction undefined, "spread comparably" has
->   no threshold, and there is an uncovered middle zone where NEITHER branch fires. δ = 0.15 also
->   fails its own seconds→proportional step (derived ~0.064–0.084). **Pin the rule numerically
->   BEFORE computing the new control's residual, or the run inherits exactly the post-hoc-tolerance
->   exposure harness lessons 1 and 4 exist to prevent.**
-> - **Blocker 3 — `N5 snowwhite-HA fire` is the wrong control. STILL OPEN.** It is the ONLY member of
->   the stamped nine where the sim reads **HIGH** (13 vs measured 12); the other eight under-count,
->   and the band was built on PI2, which under-counts. Untraced `liberalio`-free alternatives:
->   `N1 rapi/quency wind`, `N2 modernia wind` (prefer these), or `soda-tb control` — ⚠ the last seats
->   `soda-twinkling-bunny`, whose `fullBurstExtend` broke the closure decomposition on N3.
+> - ~~**Blocker 2 — conversion rule unpinned.**~~ **CLEARED 2026-08-18**: rule pinned numerically
+>   (Δ = |R₁−R₂|, δ_C = 2×max(δ₁,δ₂), CLUSTER/SPREAD branches, no middle zone), applied to the N1
+>   control trace, yielded SPREAD → INCONCLUSIVE.
+> - ~~**Blocker 3 — N5 is the wrong control.**~~ **BYPASSED 2026-08-18**: N1 rapi/quency wind
+>   traced instead (no `fullBurstExtend` carrier, no `liberalio`, boss Wind).
 >
 > Also corrected there: N5 has **no fill-trace bundle at all** (so "clean bundle" was a hoped-for
 > outcome, not a property); "measured FB 12/12" is splash-scan notation, **not** sim 12 / real 12

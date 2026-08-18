@@ -1399,3 +1399,30 @@ qualifying windows** (W2, W3, W4 — up from 2), with W2+W4 forming a robust pai
 render columns). Clause 1 (MEASURED-ELEVATED) confirmed with strengthened evidence.
 
 **Open items 3–6** are carried forward unchanged (item 3 was already closed above).
+
+## 2026-08-18 — N2 `liberalio` second control conversion rule → LOG, INCONCLUSIVE (SPREAD)
+
+**Outcome: LOG. The conversion rule yielded SPREAD → INCONCLUSIVE.** Nothing enacted; the
+2026-08-17 `liberalio` gauge-credit LOG verdict stands.
+
+**What the run was.** QUEUE item N2, blocker 2: apply the pinned conversion rule
+(`docs/handoffs/2026-08-18-n2-conversion-rule-proposal.md`) to a second liberalio-free control's
+residual. Second control: N1 rapi/quency wind (boss Wind), traced from existing recording
+(`docs/probes/N/n1_rapi_quency_wind.mp4`). Fill-trace pipeline: ffmpeg crop → gauge-fill.py
+(team mode, magenta drain-bar lock, 134 px bar) → fill-trace-compare.ts spans → 13 windows,
+median refill 1.817 s.
+
+**Result.** PI2 R₁ = 0.442 (δ₁ = 0.071), N1 R₂ = 0.903 (δ₂ = 0.083). Δ = |R₁ − R₂| = 0.461,
+δ_C = 2 × max(δ₁, δ₂) = 0.165. Δ > δ_C → **SPREAD → INCONCLUSIVE**. The two controls' residuals
+differ by 2.8× the cluster threshold: the `decomposeCycles().excess` estimator overshoots the
+measured refill by 90% on N1 but only 44% on PI2. The estimator is not stable enough across
+comps to form a coherent control band.
+
+**Implications.** The iron/T5 primary split (S = 0.508) cannot be attributed to `liberalio`
+specifically — it may reflect general estimator variability. The comp-level estimator
+structurally cannot separate a reduced per-sub-hit value from the general fill-tempo gap. The
+settling measurement remains a per-pull gauge sub-step hand read (QUEUE priority 2).
+
+**Files.** `scripts/battery/liberalio-gaugehits-ab.ts` (N1 added to `MEASURED_REFILL`),
+`docs/probe-data/fill-trace-n1-rapi-quency-wind-windows.json` (N1 fixture, NEW),
+`docs/handoffs/2026-08-18-n2-conversion-rule-result.md` (verdict record).
