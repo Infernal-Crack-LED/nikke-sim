@@ -476,7 +476,8 @@ function drawTile(
   let y = numeralY + adv[ai++];
   ctx.fillStyle = TEXT_PRIMARY;
   ctx.font = `700 ${big ? 22 : 15}px ${FONT}`;
-  ctx.fillText(fitText(ctx, tile.value ?? '', r.w - 12), cx, y);
+  // Same budget as the sub-lines below it — one constant, not a second copy.
+  ctx.fillText(fitText(ctx, tile.value ?? '', r.w - TILE_SUB_PAD), cx, y);
 
   // Dual rank (§8a ruling 14): the HEADLINE rank is the single large numeral
   // above (unitCardData.leadRow picks which of the unit's two rows that is); its

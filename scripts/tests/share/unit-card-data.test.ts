@@ -520,34 +520,33 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
         const model = build(slug);
         for (const idx of [0, 1]) {
           const tile = model.tiles[idx];
-          // tile 1 ranks within the unit's own element, so its pool is the
-          // element-filtered one — the same filter the site's charts use.
-          const ele = idx === 0 ? null : characters.characters[slug].element;
-          const cell = dpschart.cells[
-            idx === 0 ? NEUTRAL_CELL : ELEWEAK_CELL
-          ].filter(
-            (r: any[]) =>
-              !ele ||
-              (
-                dpschart.units[r[0]]?.elements ?? [
-                  dpschart.units[r[0]]?.element,
-                ]
-              ).includes(ele)
+          const cell: [string, number, string | null][] =
+            dpschart.cells[idx === 0 ? NEUTRAL_CELL : ELEWEAK_CELL];
+          const plain = cell.find((r) => r[0] === slug && !r[2])!;
+          const variant = cell.find((r) => r[0] === slug && r[2])!;
+          expect(plain, `${slug} has a default row`).toBeTruthy();
+          expect(variant, `${slug} has a variant row`).toBeTruthy();
+
+          // WHICH row leads, stated without rebuilding the builder's pool: the
+          // headline outranks the secondary exactly when the DEFAULT build
+          // out-damages the variant. (It doesn't always — bready's variant row
+          // sits above her default one, and her card still leads with default.)
+          expect(tile.rank! < tile.altRank!, `${slug} tile ${idx} order`).toBe(
+            plain[1] > variant[1]
           );
-          const plainIdx = cell.findIndex((r: any[]) => r[0] === slug && !r[2]);
-          const variantIdx = cell.findIndex(
-            (r: any[]) => r[0] === slug && r[2]
-          );
-          expect(plainIdx, `${slug} has a default row`).toBeGreaterThanOrEqual(
-            0
-          );
-          expect(tile.rank, `${slug} tile ${idx}`).toBe(plainIdx + 1);
           // the headline IS the default row, and says so
           expect(tile.profileChip, `${slug} tile ${idx}`).toBe('default');
-          expect(tile.altRank, `${slug} tile ${idx}`).toBe(variantIdx + 1);
           expect(tile.altChip, `${slug} tile ${idx}`).toBeTruthy();
           expect(tile.altChip, `${slug} tile ${idx}`).not.toBe('default');
         }
+        // Rank arithmetic for the whole-board tile, as a count of who beats her
+        // (the ele-adv tile's is covered by the element-pool property above).
+        const neutral: [string, number, string | null][] =
+          dpschart.cells[NEUTRAL_CELL];
+        const own = neutral.find((r) => r[0] === slug && !r[2])!;
+        expect(model.tiles[0].rank, `${slug} neutral rank`).toBe(
+          neutral.filter((r) => r[1] > own[1]).length + 1
+        );
       }
     }
   );
