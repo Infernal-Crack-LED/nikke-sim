@@ -174,9 +174,11 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
         'N3 scarlet/liberalio iron': [35, 284],
         'misc B3s (run I order)': [76, 834],
         'N1 rapi/quency wind': [49, 269],
-        'soda-tb control (neutral)': [17, 345],
+        // soda-tb and N5 seat gaugeHits carriers (little-mermaid 10, snow-white-heavy-arms 5/10);
+        // the census now counts sub-hits rather than aggregated damage events.
+        'soda-tb control (neutral)': [35, 489],
         'N2 modernia wind': [1370, 7597],
-        'N5 snowwhite-HA fire': [74, 912],
+        'N5 snowwhite-HA fire': [178, 1220],
       };
       for (const [comp, [unlocked, locked]] of Object.entries(pinned)) {
         expect(byName(comp).unlockedImpacts).toBe(unlocked);
@@ -222,6 +224,21 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
       ]) {
         expect(byName(comp).divisor).toEqual([]);
       }
+    });
+
+    it('counts `gaugeHits` sub-hits, not one aggregated damage event', () => {
+      // A flatDamage with gaugeHits: N emits one damage event but credits gauge N times.
+      // The census used to count the event as one impact; after the fix it counts N.
+      const n5 = byName('N5 snowwhite-HA fire');
+      expect(n5.perUnitUnlockedImpacts['snow-white-heavy-arms']).toBe(156);
+      // 156 is the sub-hit total; the raw damage-event count is lower (52 in the pre-fix pin).
+      expect(
+        n5.perUnitUnlockedImpacts['snow-white-heavy-arms']
+      ).toBeGreaterThan(52);
+
+      const soda = byName('soda-tb control (neutral)');
+      expect(soda.perUnitUnlockedImpacts['little-mermaid']).toBe(20);
+      expect(soda.perUnitUnlockedImpacts['little-mermaid']).toBeGreaterThan(2);
     });
 
     it('anis-star skill impacts credit the full datamined 280 (2.8 gauge, divisor 1)', () => {
