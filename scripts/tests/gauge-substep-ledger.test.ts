@@ -89,4 +89,5 @@ describe('burst-gauge sub-steps vs the maiden-ice-rose labeled anchor', () => {
 // re-derived it, and pinning an observed output you cannot explain pins the defect along with the
 // behaviour. Recorded as an OBSERVATION (2026-08-18, n=1 ledger read, not a verdict); the
 // discriminating structure lives in `scripts/tests/battery/multihit-crediting.test.ts`, which
-// `4d60a624` updated as its own gate.
+// `4d60a624` updated as its own gate. Tracked as open work in
+// `docs/engine-modeling-gaps.md` §20b — not just this comment.

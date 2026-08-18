@@ -155,14 +155,24 @@ case**. Both original solo anchors confirm it exactly (a solo unit is always foc
 364 × 2.5 = 910/shot, takina 560 × 2.5 = 1400/shot, measured to the pixel on the gauge bar —
 both `fullChargeBonus` 250, the modal value across the roster.
 
-- **PER-UNIT (2026-07-29):** the datamined `fullChargeBonus` column (`data/gauge-per-shot.json`,
-  = `chargeMultiplier` for every unit) is the real per-unit focus multiplier
-  (`fullChargeBonus / 100`), not a roster-wide flat 2.5 — engine: `gaugePerShot()`
-  (`src/engine/sim.ts`). For the 250-family this is byte-identical to the old flat constant.
-  Four units deviate: **alice 350 (3.5×)**, **cinderella 200 (2.0×)**,
-  **scarlet-black-shadow 150 (1.5×)**, `vesti-tactical-upgrade` 200 (sim-supported since
-  2026-08-01, but still pinned to the flat 2.5× by `PENDING_TEAM_ISOLATION` until her own
-  column is measured — her kit build's ⚑3 carries the recipe). Live per-unit status:
+- **PER-UNIT (2026-07-29), AND NO ROSTER DEFAULT AT ALL (2026-08-18):** the datamined
+  `fullChargeBonus` column (`data/gauge-per-shot.json`, = `chargeMultiplier` for every unit) is the
+  real per-unit focus multiplier (`fullChargeBonus / 100`), not a roster-wide flat 2.5 — engine:
+  `gaugePerShot()` (`src/engine/sim.ts`). For the 250-family this is byte-identical to the old flat
+  constant. The multiplier is sourced from `characters.json` `chargeMultiplier`, with the
+  `gauge-per-shot.json` column filling in where that row reads 0 (`raven`).
+  - **The `?? 250` fallback is RETIRED** (owner ruling 2026-08-12, re-affirmed 2026-08-18; the
+    focus gauge bonus IS the unit's full-charge bonus, for every unit). A unit with no bonus in
+    EITHER datamined column does not full-charge and takes **×1.0**, the measured unfocused value.
+    `pascal` (RL/Iron) is the only such unit — `chargeFrames: 0`, so the retired default had been
+    paying her ×2.5 for a charge she never performs (7.00 → 2.80 gauge per focused shot). A
+    CHARGE-capable unit (`chargeFrames > 0`) missing both columns is a data hole, not a game fact;
+    `scripts/tests/data/gauge-per-shot-source.test.ts` fails loudly if one ever appears. The
+    `magDumpRof` pin is gone with the default, as unreachable.
+    Four units deviate: **alice 350 (3.5×)**, **cinderella 200 (2.0×)**,
+    **scarlet-black-shadow 150 (1.5×)**, `vesti-tactical-upgrade` 200 (sim-supported since
+    2026-08-01, but still pinned to the flat 2.5× by `PENDING_TEAM_ISOLATION` until her own
+    column is measured — her kit build's ⚑3 carries the recipe). Live per-unit status:
   - **scarlet-black-shadow: ENACTED at 1.5×.** Confirmed at two independent measured levels:
     a solo per-shot gauge-fill read (~1.42× observed) AND a team full-burst count
     (`docs/probes/720-kit-audit/scarlet black shadow.MP4`, 11 FBs measured — outside the old
@@ -174,8 +184,10 @@ both `fullChargeBonus` 250, the modal value across the roster.
     (3.5×) counting bound `[16.67%, 20.0%)` and excludes the flat 2.5× bound. Driver +
     blind Fable post-op both ACCEPT H1 at HIGH confidence.
   - **cinderella: ENACTED at 2.0×** (`charFixes.focusChargeMult` 2.0 in
-    `src/skills/overrides/cinderella.json`, applied ahead of the `magDumpRof` flat-2.5× pin
-    — her whole-magazine dump-fire cadence modeling via `magDumpRof` is unaffected).
+    `src/skills/overrides/cinderella.json`. It always outranked the `magDumpRof` flat-2.5× pin,
+    which is why that pin was unreachable and was deleted 2026-08-18 — her whole-magazine
+    dump-fire cadence modeling via `magDumpRof` is unaffected, that flag still drives her firing
+    pattern).
     `focusChargeMult = chargeMultiplier/100` is confirmed TRUE for her (owner ruling), same
     footing as alice/scarlet-black-shadow above. A prior recount claiming an 8-shot gaugeless
     opener and an effective ≈2.2× was a repeated reading error and is RETRACTED — there is no

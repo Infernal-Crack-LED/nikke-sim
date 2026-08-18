@@ -3,9 +3,12 @@
 //
 // THE QUESTION the audit answers: the focused charge unit's burst-gauge multiplier is sourced
 // per unit — the engine ladder (gaugePerShot(), src/engine/sim.ts): charFixes.focusChargeMult →
-// magDumpRof / PENDING_TEAM_ISOLATION pin (flat 2.5) → characters.json chargeMultiplier (>0) →
-// gauge-per-shot.json fullChargeBonus (>0) → 250. Does every off-count comp's focused charge
-// unit resolve to a MEASURED or OWNER-CONFIRMED column? The obvious version of this item —
+// PENDING_TEAM_ISOLATION pin (flat 2.5) → characters.json chargeMultiplier (>0) →
+// gauge-per-shot.json fullChargeBonus (>0) → x1.0 (no bonus in either column = the unit does not
+// full-charge). There is NO roster default since 2026-08-18 (owner ruling; DECISIONS) — the old
+// `?? 250` tail and the magDumpRof arm are gone from the engine and from the mirror this pins.
+// Does every off-count comp's focused charge unit resolve to a MEASURED or OWNER-CONFIRMED
+// column? The obvious version of this item —
 // "unfocused charge units are missing the full-charge bonus" — was already REFUTED by
 // measurement (UNFOCUSED_CHARGE_GEN 1.0, battery 3 A1/A2) and is not what runs here.
 //
@@ -170,6 +173,12 @@ describe('focus-column audit (investigation-plan item 3)', () => {
         ['belorta', 350, 'measured'],
         ['cinderella', 200, 'owner-confirmed'],
         ['n102', 350, 'measured'],
+        // pascal resolves to NO column (0): no full-charge bonus in either datamine and
+        // chargeFrames 0, so she takes x1.0 and has nothing to grade. She is here rather than
+        // silently inside the 250 family because the `?? 250` default was retired 2026-08-18 —
+        // this mirror used to report her as a measured 250-column unit while the engine gave
+        // her x1.0 (cross-family code review, 2026-08-18).
+        ['pascal', 0, 'n/a'],
         ['scarlet-black-shadow', 150, 'measured'],
         ['vesti-tactical-upgrade', 200, 'unmeasured'],
         ['yan', 350, 'measured'],
@@ -179,6 +188,7 @@ describe('focus-column audit (investigation-plan item 3)', () => {
     });
 
     it('the ONLY unmeasured column seats in no off-count comp', () => {
+      // pascal is deliberately NOT here: status 'n/a' (no column to measure), not 'unmeasured'.
       const unmeasured = census.filter((r) => r.status === 'unmeasured');
       expect(unmeasured.map((r) => r.slug)).toEqual(['vesti-tactical-upgrade']);
       expect(

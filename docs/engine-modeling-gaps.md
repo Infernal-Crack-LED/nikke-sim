@@ -734,6 +734,27 @@ number, and what separates "does not charge" from "data went missing". Sourcing 
 `ccee21f7` (retroactive record: DECISIONS 2026-08-13); the default retirement in `8d92c8fe`
 (DECISIONS 2026-08-18).
 
+### 20b. `gaugeHits` authored count vs credits actually emitted — ⚑ OPEN (observed 2026-08-18)
+
+`4d60a624` (2026-08-15) added `gaugeHits` to the `flatDamage` effect schema: `gaugeHits = N` fires
+`skillGauge` N times while keeping the damage instance aggregated (`src/engine/sim.ts`, the
+`flatDamage` case; premise `e64e0432` — solo gauge-bar reads say the `snow-white-heavy-arms` volley
+generates PER HIT). **The authored counts and the observed credits do not obviously reconcile.**
+`snow-white-heavy-arms` (SR/Iron) authors `gaugeHits: 5` and `gaugeHits: 10` across her two
+`shotFired` + `flatDamage` blocks — 15 calls — while `scripts/battery/gauge-substep-ledger.ts`
+observes **six** rider credits per pull (1 weapon credit of 14.0 + 6 × 5.6), stable across pulls.
+
+STATUS: an OBSERVATION, n=1 ledger read, **not** a defect verdict — there are innocent explanations
+nobody has ruled out (the blocks may not both fire every pull; `sim.ts` has a separate
+projectile-landing credit path, `landingGaugeHits`). Recorded because it was found while porting the
+ledger and would otherwise live only in a test comment. Her team-level outcome is NOT unpinned: the
+N5 regression comp holds her at 12 full bursts against the measurement (`4d60a624`), and
+`scripts/tests/battery/multihit-crediting.test.ts` is the rule's own gate. Deliberately NOT pinned
+at 6 in `scripts/tests/gauge-substep-ledger.test.ts` — pinning an unexplained output would pin the
+defect with it. To settle: instrument which blocks fire per pull and whether the landing path
+double-counts, then either explain 6 or fix toward 15. Surfaced by the cross-family code review of
+`8d92c8fe`.
+
 ### 21. "Buff my NEXT round" per-pull `durationShots` budget — ✅ FIXED 2026-08-08
 
 `firePull` now skips the round-budget decrement for any round-scoped buff whose `startFrame`

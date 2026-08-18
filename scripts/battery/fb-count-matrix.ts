@@ -1722,10 +1722,17 @@ function printMultihitCrediting(audit: MultihitCreditingAudit) {
 // Run it: npx tsx scripts/battery/fb-count-matrix.ts --focus-columns
 //
 // QUESTION: the focused charge unit's gauge multiplier is sourced per unit — the engine ladder
-// (gaugePerShot(), src/engine/sim.ts): charFixes.focusChargeMult → magDumpRof /
-// PENDING_TEAM_ISOLATION pin (flat 2.5) → characters.json chargeMultiplier (>0) →
-// gauge-per-shot.json fullChargeBonus (>0) → 250. Does every off-count comp's focused charge
-// unit resolve to a MEASURED or OWNER-CONFIRMED column?
+// (gaugePerShot(), src/engine/sim.ts): charFixes.focusChargeMult → PENDING_TEAM_ISOLATION pin
+// (flat 2.5) → characters.json chargeMultiplier (>0) → gauge-per-shot.json fullChargeBonus (>0)
+// → x1.0 (no bonus in either column = the unit does not full-charge). Does every off-count
+// comp's focused charge unit resolve to a MEASURED or OWNER-CONFIRMED column?
+//
+// ⚠ THIS IS A MIRROR OF THE ENGINE LADDER — keep it in lockstep with gaugePerShot(). There is NO
+// roster default since 2026-08-18 (owner ruling; DECISIONS): the old `?? 250` tail and the
+// `magDumpRof` arm are both GONE from the engine, so a replica that keeps them silently grades
+// units against a ladder the sim no longer walks. That is not hypothetical — this audit resolved
+// `pascal` to column 250 at x2.5 while the engine gave her x1.0, and the pinned test stayed green
+// because she is not an outlier here (cross-family code review, 2026-08-18).
 //
 // The audit is a DATA read, not a sim behaviour question: it re-walks the ladder against the
 // data files + override charFixes, grades the resolved column against the column record
@@ -1739,11 +1746,10 @@ export type FocusColumnStatus =
 
 export type FocusMultSource =
   | 'charFixes.focusChargeMult'
-  | 'magDumpRof pin (flat 2.5)'
   | 'PENDING_TEAM_ISOLATION pin (flat 2.5)'
   | 'characters.json chargeMultiplier'
   | 'gauge-per-shot.json fullChargeBonus'
-  | 'default 250';
+  | 'no bonus in either column (x1.0, does not full-charge)';
 
 /** The column record under audit, at COLUMN granularity (the 200 column is per-unit, below). */
 const FOCUS_COLUMN_BASIS: Record<
@@ -1788,6 +1794,17 @@ function focusColumnStatus(
   slug: string,
   column: number
 ): { status: FocusColumnStatus; basis: string } {
+  if (column === 0) {
+    // No bonus in either datamined column: the unit does not full-charge, so it has NO focus
+    // column to grade — 'n/a', not 'unmeasured'. Grading it unmeasured would park it forever on
+    // the "needs footage" list for a measurement that can never exist (owner ruling 2026-08-18;
+    // `pascal`, chargeFrames 0, is the only such unit).
+    return {
+      status: 'n/a',
+      basis:
+        'no full-charge bonus in either datamine and chargeFrames 0 — takes no focus bonus (x1.0)',
+    };
+  }
   if (column === 200) {
     return (
       FOCUS_200_BASIS[slug] ?? {
@@ -1877,9 +1894,6 @@ export function auditFocusColumns(): FocusColumnReport[] {
     if (fixes?.focusChargeMult !== undefined) {
       resolvedMult = fixes.focusChargeMult;
       source = 'charFixes.focusChargeMult';
-    } else if (fixes?.magDumpRof) {
-      resolvedMult = FOCUS_CHARGE_GEN_FLAT;
-      source = 'magDumpRof pin (flat 2.5)';
     } else if (PENDING_TEAM_ISOLATION_MIRROR.has(focus)) {
       resolvedMult = FOCUS_CHARGE_GEN_FLAT;
       source = 'PENDING_TEAM_ISOLATION pin (flat 2.5)';
@@ -1893,8 +1907,10 @@ export function auditFocusColumns(): FocusColumnReport[] {
         resolvedMult = fcb / 100;
         source = 'gauge-per-shot.json fullChargeBonus';
       } else {
-        resolvedMult = 2.5;
-        source = 'default 250';
+        // No bonus in either column ⇒ the unit does not full-charge ⇒ no focus bonus.
+        // Mirrors the engine's UNFOCUSED_CHARGE_GEN tail (sim.ts gaugePerShot).
+        resolvedMult = 1.0;
+        source = 'no bonus in either column (x1.0, does not full-charge)';
       }
     }
 
@@ -1944,8 +1960,11 @@ export function focusColumnCensus(): FocusColumnCensusRow[] {
     }
     const charMult = c.chargeMultiplier ?? 0;
     const fcb = gaugeTable[slug]?.fullChargeBonus ?? null;
+    // 0 = no bonus in either column ⇒ the unit does not full-charge ⇒ x1.0, NOT a 250 default
+    // (owner ruling 2026-08-18; mirrors gaugePerShot's UNFOCUSED_CHARGE_GEN tail). `pascal` is
+    // the only such unit today, and reporting her as a 250-column unit was this mirror's bug.
     const resolvedColumn =
-      charMult > 0 ? charMult : fcb !== null && fcb > 0 ? fcb : 250;
+      charMult > 0 ? charMult : fcb !== null && fcb > 0 ? fcb : 0;
     rows.push({
       slug,
       weapon: c.weapon,
@@ -2431,15 +2450,20 @@ export function creditScheduleFor(
       return per + flat;
     }
     const ov = loadOverride(slug) as unknown as
-      | { charFixes?: { focusChargeMult?: number; magDumpRof?: boolean } }
-      | undefined;
+      { charFixes?: { focusChargeMult?: number } } | undefined;
     const charMult = c.chargeMultiplier ?? 0;
     const fcb = row?.fullChargeBonus;
+    // No roster default since 2026-08-18: charge bonus from either datamine, else x1.0 (the unit
+    // does not full-charge). The magDumpRof arm is gone from the engine as unreachable.
     const focusMult =
       ov?.charFixes?.focusChargeMult ??
-      (ov?.charFixes?.magDumpRof || slug === 'vesti-tactical-upgrade'
-        ? 2.5 // FOCUS_CHARGE_GEN
-        : (charMult > 0 ? charMult : fcb && fcb > 0 ? fcb : 250) / 100);
+      (slug === 'vesti-tactical-upgrade'
+        ? 2.5 // FOCUS_CHARGE_GEN — PENDING_TEAM_ISOLATION evidence hold
+        : charMult > 0
+          ? charMult / 100
+          : fcb && fcb > 0
+            ? fcb / 100
+            : 1.0);
     // UNFOCUSED_CHARGE_GEN = 1.0 (measured, battery 3 A1/A2)
     // basePerTrigger credit (2026-08-18): mirrors sim.ts gaugePerShot's baseGaugeProb path.
     const baseProb =

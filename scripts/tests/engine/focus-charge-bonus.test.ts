@@ -54,7 +54,8 @@ describe('a unit that never full-charges takes NO focus bonus', () => {
     // number — it was inventing a value, not guarding one.
     const focused = weaponCredit('pascal');
     const [unfocused] = gaugeSubstepLedger({
-      // 3-unit team focuses the middle slot, so seating her at slot 0 makes her unfocused
+      // focusIdx defaults to Math.min(2, len-1) = slot 2 for a 3-unit team (the LAST slot,
+      // crown — not the middle), so seating pascal at slot 0 makes her unfocused either way
       slugs: ['pascal', 'liter', 'crown'],
       bossElement: null,
     });
