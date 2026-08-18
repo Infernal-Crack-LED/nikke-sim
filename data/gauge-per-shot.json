@@ -48,9 +48,10 @@
     "targetPerTrigger": 500.0
   },
   "anis-star": {
+    "baseGaugeProb": 0.25,
     "basePerTrigger": 140.0,
     "fullChargeBonus": 250.0,
-    "source": "MEASURED (battery 3 A3 solo, 2026-07-13): ~10.7-11.3%/pull = 280x2.5 focused shot + 280 proc skill-gen x her +6% aura. The synergy 16.8 is a folded aggregate (user hypothesis confirmed); the 840 estimate was wrong.",
+    "source": "MEASURED (battery 3 A3 solo, 2026-07-13): ~10.7-11.3%/pull = 280x2.5 focused shot + 280 proc skill-gen x her +6% aura. The synergy 16.8 is a folded aggregate (user hypothesis confirmed); the 840 estimate was wrong. baseGaugeProb 0.25 (2026-08-18): game credits extra basePerTrigger×focus×aura on ~25% of focused charge shots (anomaly A=3.71%, E4 PASS; owner ruling ≥11.11%/pull).",
     "targetPerTrigger": 280.0
   },
   "arcana": {

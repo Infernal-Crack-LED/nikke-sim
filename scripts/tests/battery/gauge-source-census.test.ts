@@ -166,8 +166,11 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
         // T5 / T1 / misc B3s / N5 seat anis-star: her full 2.8-gauge impact credit (hitsPerShot 1,
         // no divisor) re-phases those comps' bursts, moving impacts across the unlocked/locked
         // boundary. Values from the instrument's own `--gauge-sources --json` output.
-        'T5 wind-weak': [77, 754],
-        'T1 wind-weak': [86, 782],
+        // T5 and T1 seat anis-star: the baseGaugeProb 0.25 enactment (2026-08-18) increases
+        // her per-shot gauge credit, re-phasing burst timing and shifting impacts across the
+        // unlocked/locked boundary on both comps. Re-derived from the instrument's --json.
+        'T5 wind-weak': [68, 770],
+        'T1 wind-weak': [79, 808],
         'N3 scarlet/liberalio iron': [35, 284],
         'misc B3s (run I order)': [76, 834],
         'N1 rapi/quency wind': [49, 269],
@@ -258,12 +261,13 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
       const iron = byName('iron sweep (run G)');
       expect(iron.shortfallRateGaugePerSec).toBeCloseTo(16.38, 1);
       expect(iron.shortfallPerCycleGauge).toBeCloseTo(40.76, 1);
-      // T5 seats anis-star: her full 2.8-gauge impact credit (hitsPerShot 1) raises the comp's
-      // sim generation, narrowing the sim-vs-filmed shortfall the pin holds — the shortfall
-      // itself stays open (T5 remains a disabled comp). Values from `--gauge-sources --json`.
+      // T5 seats anis-star: her full 2.8-gauge impact credit (hitsPerShot 1) plus the
+      // baseGaugeProb 0.25 enactment (2026-08-18) raises the comp's sim generation further,
+      // narrowing the sim-vs-filmed shortfall. The shortfall itself stays open (T5 remains a
+      // disabled comp). Re-pinned 2026-08-18 from `--gauge-sources --json`.
       const t5 = byName('T5 wind-weak');
-      expect(t5.shortfallRateGaugePerSec).toBeCloseTo(22.68, 1);
-      expect(t5.shortfallPerCycleGauge).toBeCloseTo(43.28, 1);
+      expect(t5.shortfallRateGaugePerSec).toBeCloseTo(21.42, 1);
+      expect(t5.shortfallPerCycleGauge).toBeCloseTo(40.88, 1);
     });
   });
 });

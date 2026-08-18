@@ -1426,3 +1426,35 @@ settling measurement remains a per-pull gauge sub-step hand read (QUEUE priority
 **Files.** `scripts/battery/liberalio-gaugehits-ab.ts` (N1 added to `MEASURED_REFILL`),
 `docs/probe-data/fill-trace-n1-rapi-quency-wind-windows.json` (N1 fixture, NEW),
 `docs/handoffs/2026-08-18-n2-conversion-rule-result.md` (verdict record).
+
+## 2026-08-18 — `anis-star` baseGaugeProb enactment → IMPLEMENT
+
+**Outcome: IMPLEMENT. Engine + data change landed; all 4666 tests green.**
+
+**What the change was.** QUEUE item 1 (anis-star pre-register re-run) found clause 1
+MEASURED-ELEVATED: A = 3.71% anomaly (`basePerTrigger` 140 × 2.5 focus × 1.06 aura) explains all
+3 upward departures in the solo gauge trace (E4 PASS). Owner ruling (N1c, 2026-08-18): 9 pulls
+fill the bar → per-pull credit ≥ 11.11%, exceeding the shipped 10.388%. The anomaly mechanism
+needed an engine path.
+
+**Mechanism.** `basePerTrigger` was already in `gauge-per-shot.json` but engine-inert (sim.ts
+never read it). The enactment adds `baseGaugeProb` (0.25 for anis-star): the game credits an
+extra `basePerTrigger × focus × aura` gauge amount on ~25% of focused charge shots (3 anomalous
+pulls observed out of ~12 in footage). Modeled as a per-shot expected value:
+`0.25 × 140/100 × 2.5 × 1.06 = 0.9275%` extra gauge per focused shot, flowing through the
+existing `gaugePerShot() → addGauge()` pipeline so the aura multiplier applies naturally.
+
+**Files changed.**
+
+- `data/gauge-per-shot.json`: added `baseGaugeProb: 0.25` to anis-star's row.
+- `src/engine/sim.ts`: `gaugePerShot()` now reads `basePerTrigger` + `baseGaugeProb` from the
+  gauge table and credits `(prob × base / 100) × focusMult` on the focused shooter only.
+- `scripts/battery/fb-count-matrix.ts`: credit-schedule mirror function updated in lockstep.
+- `scripts/tests/battery/refill-starvation.test.ts`: re-pinned T5 values (first1sRatio, per-unit
+  delivery, teamHits, reloadBoundFirsts).
+- `scripts/tests/battery/focus-columns.test.ts`: re-pinned T5 focus audit values.
+- `scripts/tests/battery/gauge-source-census.test.ts`: re-pinned T5 + T1 unlocked/locked impact
+  splits and T5 shortfall figures.
+- Board-hash-parity artifacts: rebuilt via `npm run dpschart && npm run ranks:all`.
+
+**Verification.** `npx vitest run`: 4666 passed, 6 skipped, 0 failures.
