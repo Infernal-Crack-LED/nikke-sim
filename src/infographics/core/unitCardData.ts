@@ -764,8 +764,12 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
   // Burst gen is a tile only — it never gets a chart.
   const charts: BarChart[] = [];
   if (dpsSet) {
-    // The B3 DPS bars can never carry a profile: dpschart has no profile
-    // concept at all. Worth knowing — the headline cards need none of §8a.
+    // DPS rows DO carry profiles — build variants (CHART_VARIANTS), not comps —
+    // so these charts run the same leadRow/appendix machinery as the comp boards,
+    // only with the DEFAULT row leading. (This comment used to say dpschart had
+    // no profile concept at all; it was true when written, went stale when the
+    // variants landed 2026-07-29, and is what let the wrong row headline
+    // Cinderella: Crystal Wave's card until 2026-08-18 — see DECISIONS.)
     charts.push(
       dpsChartRows('Neutral DPS', src.dpschart, NEUTRAL_CELL, slug, nb),
       dpsChartRows(

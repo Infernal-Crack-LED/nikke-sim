@@ -497,14 +497,14 @@ function drawTile(
     sublines.push({
       text: tile.profileChip,
       fill: '#8fb4ff',
-      font: `700 ${big ? 15 : 11}px ${FONT}`,
+      font: tileChipFont(big),
     });
   }
   if (tile.altRank != null) {
     sublines.push({
-      text: `#${tile.altRank} ${tile.altChip ?? 'default'}`,
+      text: tileAltLine(tile),
       fill: TEXT_DIM,
-      font: `400 ${big ? 14 : 10}px ${FONT}`,
+      font: tileAltFont(big),
     });
   }
   if (sublines.length) {
@@ -513,7 +513,7 @@ function drawTile(
   sublines.forEach((ln, i) => {
     ctx.fillStyle = ln.fill;
     ctx.font = ln.font;
-    ctx.fillText(fitText(ctx, ln.text, r.w - 12), cx, y);
+    ctx.fillText(fitText(ctx, ln.text, r.w - TILE_SUB_PAD), cx, y);
     if (i < sublines.length - 1) {
       y += adv[ai++];
     }
@@ -530,6 +530,18 @@ function drawTile(
 export const TILE_TITLE_PAD = 16; // horizontal padding inside a tile, both sides
 export const tileTitleFont = (big: boolean): string =>
   `700 ${big ? 15 : 11}px ${FONT}`;
+
+// The sub-lines under the numeral (value, profile chip, '#6 SR' alt rank) have
+// their own budget and their own fonts. The alt line is the one that grew: it
+// used to read '#12 default' on every board and now carries a profile label, so
+// the longest label in the vocabulary is what decides whether it survives.
+export const TILE_SUB_PAD = 12;
+export const tileChipFont = (big: boolean): string =>
+  `700 ${big ? 15 : 11}px ${FONT}`;
+export const tileAltFont = (big: boolean): string =>
+  `400 ${big ? 14 : 10}px ${FONT}`;
+export const tileAltLine = (tile: RankTile): string =>
+  `#${tile.altRank} ${tile.altChip ?? 'default'}`;
 
 // The right-hand (tiles + notes) column on the landscape card.
 const rightColumnWidth = (): number => {
