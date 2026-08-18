@@ -66,6 +66,20 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 > bound); and the batched `cinderella`/`eve`/`julia` `gaugeHits` census rows — findings-only, and the
 > 2026-08-17 run gives NO support for crediting them at full value.
 
+0. **⚑ OWNER DECISION PENDING — `vesti-tactical-upgrade`'s `PENDING_TEAM_ISOLATION` pin
+   (opened 2026-08-18).** The `?? 250` roster default is retired (DECISIONS 2026-08-18,
+   `8d92c8fe`), leaving her the LAST user of `FOCUS_CHARGE_GEN`: she is held at flat 2.5 instead of
+   her datamined 200 (×2.0). Both datamines agree on 200 (`chargeMultiplier` and
+   `fullChargeBonus`). **For the pin:** the `sim.ts` comment refreshed 2026-08-13 — a day AFTER the
+   ruling — holds that her 200 has never been isolated on footage, so the pin withholds an
+   unmeasured value rather than asserting the column is wrong. **Against it:** 2.5 is now an orphan
+   (not measured, not datamined for her, no longer a default), so the pin substitutes a value with
+   NO provenance for one both datamines agree on, and holds her to a footage standard the other 74
+   `chargeMultiplier`-sourced units do not meet. Board-inert either way — she is in zero graded or
+   regression comps. Flipping it is a one-line change plus one test expectation
+   (`scripts/tests/engine/focus-charge-bonus.test.ts`, which pins today's behaviour and states both
+   sides). Settling it either way retires `FOCUS_CHARGE_GEN` entirely.
+
 1. **Faithfulness sweep residue** (batch docs archived 2026-08-13 in
    `docs/handoffs/closed/2026-08-10-faithfulness-batch{1..8}-findings.md`). Most items closed by
    enactment, refutation, or owner ruling (2026-08-11 M-list triage + 2026-08-13 corrections).
