@@ -1101,8 +1101,9 @@ export interface DivisorExposure {
   weapon: string;
   /** the live skillGauge divisor: hitsPerShot (10 for SG) */
   divisor: number;
+  /** unlocked skillGauge calls (sub-hits, not damage instances) */
   unlockedImpacts: number;
-  /** gauge shipped: impacts × per/divisor */
+  /** gauge shipped: calls × per/divisor */
   gaugeShipped: number;
   /** gauge under the divisor-1 hypothesis (the U28-residual upper bound) */
   gaugeIfDivisorOne: number;
@@ -1113,11 +1114,20 @@ export interface GaugeSourceCompReport {
   slugs: string[];
   /** steady-state refill windows (excludes the fight-opening first fill) */
   steadyWindows: number;
-  /** skill/burst damage instances landing UNLOCKED — one skillGauge each, reaching the bar */
+  /**
+   * skillGauge calls landing UNLOCKED (a flatDamage with gaugeHits: N contributes N, not 1) —
+   * each reaches the bar.
+   */
   unlockedImpacts: number;
-  /** skill/burst instances inside the chain + FB lock — emitted, swallowed by addGauge */
+  /** skillGauge calls inside the chain + FB lock — emitted, swallowed by addGauge */
   lockedImpacts: number;
   perUnitUnlockedImpacts: Record<string, number>;
+  /**
+   * LOUD flags from the gaugeHits reconstruction. Empty today, but any future override that
+   * pairs gaugeHits with rampSec or colliding coefficients will appear here instead of silently
+   * under-counting.
+   */
+  reconstructionWarnings: string[];
   /** seated carriers of the no-emission impact kinds (storedHit / stackedNuke) */
   noEmitCarriers: { slug: string; kinds: EffectDef['kind'][] }[];
   /** seated carriers of unmeasured-emission kinds (hitRepeat) */
@@ -1193,7 +1203,10 @@ export function auditGaugeSources(): GaugeSourceCompReport[] {
     // ---- per-impact gauge multiplicity for the census (same reconstruction as the
     // credit-schedule fold). A flatDamage with gaugeHits: N emits one damage event but N
     // skillGauge calls, so counting events under-counts the actual gauge credits.
-    const skillGaugeHits = buildSkillGaugeHitsLookup(comp);
+    const reconstructionWarnings: string[] = [];
+    const skillGaugeHits = buildSkillGaugeHitsLookup(comp, (s) =>
+      reconstructionWarnings.push(s)
+    );
 
     // ---- single fold over the frame-ordered stream (pointer stays monotonic)
     const perUnitUnlockedImpacts: Record<string, number> = {};
@@ -1307,6 +1320,7 @@ export function auditGaugeSources(): GaugeSourceCompReport[] {
       unlockedImpacts,
       lockedImpacts,
       perUnitUnlockedImpacts,
+      reconstructionWarnings,
       noEmitCarriers: carriersOf(NO_EMIT_KINDS),
       unmeasuredEmitCarriers: carriersOf(UNMEASURED_EMIT_KINDS),
       divisor,
@@ -1362,14 +1376,17 @@ function printGaugeSources(reports: GaugeSourceCompReport[]) {
       `\n${'='.repeat(96)}\n${r.comp} — ${r.steadyWindows} steady refill windows`
     );
     console.log(
-      `  skill/burst impacts: ${r.unlockedImpacts} unlocked (each one skillGauge, reaching the bar) | ${r.lockedImpacts} locked`
+      `  skill/burst gauge credits: ${r.unlockedImpacts} unlocked (each one skillGauge, reaching the bar) | ${r.lockedImpacts} locked`
     );
     for (const [slug, n] of Object.entries(r.perUnitUnlockedImpacts)) {
       if (n > 0) {
         console.log(
-          `      ${slug.padEnd(26)} ${String(n).padStart(5)} unlocked impacts × ${skillImpactGauge(slug).toFixed(3)} gauge`
+          `      ${slug.padEnd(26)} ${String(n).padStart(5)} unlocked gauge credits × ${skillImpactGauge(slug).toFixed(3)} gauge`
         );
       }
+    }
+    for (const w of r.reconstructionWarnings) {
+      console.log(`  RECONSTRUCTION WARNING: ${w}`);
     }
     if (r.noEmitCarriers.length) {
       for (const c of r.noEmitCarriers) {

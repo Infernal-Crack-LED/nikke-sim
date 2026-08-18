@@ -64,6 +64,12 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
     return r;
   };
 
+  it('the gaugeHits reconstruction emits no warnings on any seated comp', () => {
+    for (const r of reports) {
+      expect(r.reconstructionWarnings).toEqual([]);
+    }
+  });
+
   describe('part 1 — field-form kind census', () => {
     it('the impact-producing kinds are exactly five, with the emission map fully ruled', () => {
       const impactKinds = Object.entries(GAUGE_KIND_CENSUS)
@@ -231,14 +237,9 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
       // The census used to count the event as one impact; after the fix it counts N.
       const n5 = byName('N5 snowwhite-HA fire');
       expect(n5.perUnitUnlockedImpacts['snow-white-heavy-arms']).toBe(156);
-      // 156 is the sub-hit total; the raw damage-event count is lower (52 in the pre-fix pin).
-      expect(
-        n5.perUnitUnlockedImpacts['snow-white-heavy-arms']
-      ).toBeGreaterThan(52);
 
       const soda = byName('soda-tb control (neutral)');
       expect(soda.perUnitUnlockedImpacts['little-mermaid']).toBe(20);
-      expect(soda.perUnitUnlockedImpacts['little-mermaid']).toBeGreaterThan(2);
     });
 
     it('anis-star skill impacts credit the full datamined 280 (2.8 gauge, divisor 1)', () => {
