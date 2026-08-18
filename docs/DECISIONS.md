@@ -9,6 +9,59 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-18) The camera-focus gauge bonus IS the unit's full-charge bonus — the `?? 250`
+  roster default is RETIRED.** Owner ruling 2026-08-12, re-affirmed 2026-08-18: _"we know that's
+  how that full charge bonus works — get rid of the 250 fallback unless there's a good code safety
+  reason for it, and implement the gauge bonus = charge bonus on all units."_ The modeling question
+  was already ANSWERED, so this was encode + `/code-review`, not `/scientific-method` (CLAUDE.md,
+  owner ruling 2026-08-11). Engine: `gaugePerShot()` in `src/engine/sim.ts`, commit `8d92c8fe`.
+  - **The rule.** One rule, every unit: the focus multiplier is `characters.json`
+    `chargeMultiplier / 100`, with `data/gauge-per-shot.json`'s `fullChargeBonus` (the datamined
+    `full_charge_burst_energy` column — the same quantity from a second datamine) filling in where
+    the character row reports 0. Census re-run against current main 2026-08-18: **79 SR/RL units,
+    77 source straight from `chargeMultiplier`, exactly two exceptions.**
+  - **Was there a "good code safety reason" to keep the default? No — it was inventing a value,
+    not guarding one.** `pascal` (RL/Iron) is the ONLY unit the fallback ever caught, and it was
+    wrong for her: `chargeFrames: 0` means she fires without charging, yet the class-modal default
+    handed her a ×2.5 focus bonus for a full charge she never performs. She now takes
+    `UNFOCUSED_CHARGE_GEN` (×1.0, the measured unfocused value) — 7.00 → 2.80 gauge per focused
+    shot, and identical focused vs unfocused.
+  - **What replaced it is a louder guard.** `raven` (RL/Iron) is the real distinction: her
+    character row reads 0 but `chargeFrames` is 60 — she genuinely charges, and the second column
+    carries her 250. `chargeFrames` separates "does not charge" from "data went missing", which a
+    magic number could not. `scripts/tests/data/gauge-per-shot-source.test.ts` now FAILS if any
+    charge-capable unit (`chargeFrames > 0`) resolves no bonus from either column, scanned across
+    all 196 characters. No unit is in that state today.
+  - **Also retired: the `magDumpRof` pin, as unreachable.** Its sole carrier, `cinderella`
+    (RL/Electric), sets `charFixes.focusChargeMult` 2.0, which short-circuits ahead of it.
+  - **Blast radius: `pascal` only, and inert BY MECHANISM rather than by fixture.** The consumer
+    sweep is the census itself: across all 196 characters, `pascal` is the ONLY unit whose resolved
+    multiplier changes, because she is the only one with no bonus in either column — every other
+    charge unit keeps the value it already had. The removed `magDumpRof` arm changes nobody for the
+    same kind of reason: its sole carrier, `cinderella` (RL/Electric), sets `focusChargeMult`, which
+    outranked it already. The ENABLING CONDITION for the change to manifest at all is being the
+    CAMERA-FOCUSED unit (the bonus is focus-only), and `pascal` is seated in zero regression/
+    experiment comps and no ranked web board — focused or otherwise — so no graded fixture can
+    express it. Regression snapshot byte-identical and NOT regenerated; every measured full-burst
+    count preserved; `verify.sh` green at 4691 passed, 6 skipped, 314 files. Mutation-checked —
+    restoring the `?? 250` arm turns the `pascal` pin red (7 vs 2.8), so the pin is discriminating
+    rather than vacuously green.
+  - **STILL PINNED, and deliberately left open: `vesti-tactical-upgrade` (RL/Fire).** She keeps her
+    `PENDING_TEAM_ISOLATION` hold at the flat 2.5 rather than taking her datamined 200 (×2.0). The
+    `sim.ts` comment justifying that hold was refreshed 2026-08-13 — a day AFTER the ruling — on the
+    grounds her 200 has never been isolated on footage, so the pin "withholds an unmeasured value"
+    rather than asserting the column is wrong. Unpinning her would overturn a LATER deliberate
+    evidence decision, which is an owner call. The counter-argument, recorded but not enacted: 2.5
+    is now an orphan — not measured, not datamined for her, and no longer a roster default — so the
+    pin substitutes a value with NO provenance for one both datamines agree on, and holds her to a
+    footage standard the other 74 `chargeMultiplier`-sourced units do not meet. Board-inert either
+    way (zero comps). Pinned as-is by `scripts/tests/engine/focus-charge-bonus.test.ts`, which
+    states both sides.
+  - **Tooling (constraint #9).** `scripts/battery/gauge-substep-ledger.ts` lands with the change it
+    supports — the instrument the focus-bonus test measures through, self-validating against the
+    `maiden-ice-rose` labeled anchor (9.10 = 364 × 2.5 in two sub-steps). It was authored
+    2026-08-12 on `audit/phase-2-gauge` and never merged; that branch is otherwise superseded.
+
 - **(2026-08-17) `trina` burst-amp magnitude CONFIRMED and granularity RULED (owner popup
   read).** Scarlet burst popup with/without Spread Roots: 11,069,312 / 1,955,754 → ratio
   **5.660** vs modeled **5.565** (burstSkillAoeDamagePct 435.6 + attackDamagePct 20.9 additive in

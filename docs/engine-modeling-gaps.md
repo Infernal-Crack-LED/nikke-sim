@@ -708,22 +708,31 @@ arcana-fortune-mate, isabel (per-unit SG landing residuals). Per-unit landing is
 (open-questions **A31 (U17)** — the class table stands, class-wide far 0.66 rejected); the open tail is
 isabel's mid/midfar clock-drift re-derive (**U27**). The pull-vs-pellet 10× lever stays open.
 
-### 20. `gauge-per-shot.json` `fullChargeBonus` — ✅ FIXED 2026-08-08 (recorded 2026-08-13)
+### 20. `gauge-per-shot.json` `fullChargeBonus` — ✅ CLOSED 2026-08-18 (sourcing 2026-08-08; default retired 2026-08-18)
 
 `gaugePerShot` sources the SR/RL full-charge focus multiplier from `characters.json`
-`chargeMultiplier`; `data/gauge-per-shot.json`'s `fullChargeBonus` is now an explicit override
+`chargeMultiplier`; `data/gauge-per-shot.json`'s `fullChargeBonus` is the explicit override
 only when `characters.json` reports 0 (the non-charge marker — `raven` is the one live case).
 That retires the 6 synthesized `class-modal-SR`/`class-modal-RL` rows as a live source and stops
-the four no-row 3.5x units (`belorta`, `n102`, `yan`, `yuni`) from silently running at the `?? 250`
-fallback. `u.focusChargeMult` (`charFixes.focusChargeMult`) and the `magDumpRof` /
-`PENDING_TEAM_ISOLATION` pins still take priority over both sources.
+the four no-row 3.5x units (`belorta`, `n102`, `yan`, `yuni`) from silently running at a fallback.
+
+**There is now NO roster default at all** (owner ruling 2026-08-12, re-affirmed 2026-08-18): the
+focus gauge bonus IS the unit's full-charge bonus, for every unit, and a unit with no bonus in
+either datamined column takes `UNFOCUSED_CHARGE_GEN` (×1.0) because it does not full-charge.
+`pascal` (RL/Iron) is the only such unit and the only one the old `?? 250` arm ever caught — she
+has `chargeFrames: 0`, so the default was handing her ×2.5 for a charge she never performs
+(7.00 → 2.80 per focused shot). `u.focusChargeMult` (`charFixes.focusChargeMult`) and the
+`PENDING_TEAM_ISOLATION` hold still take priority over both sources; the `magDumpRof` arm is gone
+as unreachable (its sole carrier, `cinderella` (RL/Electric), sets `focusChargeMult`).
 
 The lint asked for here exists: `scripts/tests/data/gauge-per-shot-source.test.ts` fails if any
 SR/RL unit's two sources disagree, or if a `chargeMultiplier: 0` unit gains a gauge row outside the
-known exceptions, and pins the four no-row units so a future resync cannot reintroduce the silent
-fallback. Landed in `ccee21f7`; it carried no DECISIONS entry, so this section still read
-"not yet done" three days later and was queued as open work — the retroactive record is
-DECISIONS 2026-08-13 (burst-gauge economy cluster).
+known exceptions, and pins the four no-row units so a future resync cannot reintroduce a silent
+fallback. Since the default was retired it also fails if any **charge-capable** unit
+(`chargeFrames > 0`) resolves no bonus from either column — the guard that replaced the magic
+number, and what separates "does not charge" from "data went missing". Sourcing landed in
+`ccee21f7` (retroactive record: DECISIONS 2026-08-13); the default retirement in `8d92c8fe`
+(DECISIONS 2026-08-18).
 
 ### 21. "Buff my NEXT round" per-pull `durationShots` budget — ✅ FIXED 2026-08-08
 
