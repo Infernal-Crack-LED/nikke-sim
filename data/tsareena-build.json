@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-08-03T09:14:42.134Z",
+  "syncedAt": "2026-08-18T22:24:20.426Z",
   "source": "bakery-bot DB nikke_characters.sheet_data (community Tsareena build sheet)",
   "units": {
     "a2": {
@@ -37,7 +37,7 @@
       }
     },
     "ade-agent-bunny": {
-      "priority": "Medium Priority",
+      "priority": "High Union Raid Priority",
       "annotations": [],
       "build": {
         "skillLevels": "7+/7+/10",
@@ -286,13 +286,13 @@
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes",
         "endgameUses": "Solo Raid",
-        "burstGen": "Auto: Low Manual: Low",
+        "burstGen": "Auto: Medium Manual: Medium",
         "pairWith": "Sustain Damage or Distributed Damage Buffer",
         "notes": null
       }
     },
     "brid-silent-track": {
-      "priority": "Medium Priority",
+      "priority": "High Union Raid Priority",
       "annotations": ["L"],
       "build": {
         "skillLevels": "10/10/10",
@@ -456,7 +456,7 @@
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes (High Prio)",
         "endgameUses": "Solo Raid",
-        "burstGen": "Auto: Medium Manual: Medium",
+        "burstGen": "Auto: High Manual: High",
         "pairWith": null,
         "notes": null
       }
@@ -479,7 +479,7 @@
       }
     },
     "elegg-boom-and-shock": {
-      "priority": "Medium Priority",
+      "priority": "High Union Raid Priority",
       "annotations": ["L"],
       "build": {
         "skillLevels": "10/7+/4+",
@@ -643,7 +643,7 @@
         "overloadLevelFive": "Yes",
         "levelDoll": "No",
         "endgameUses": "Solo Raid · Union Raid",
-        "burstGen": "Auto: Medium Manual: Medium",
+        "burstGen": "Auto: Low Manual: Low",
         "pairWith": "Arcana",
         "notes": null
       }
@@ -705,13 +705,13 @@
       "build": {
         "skillLevels": "10/10/10",
         "cube": "Vigor · Bastion · Resilience",
-        "overloadMinimum": "4x Ammo",
+        "overloadMinimum": "4x Ammo · 4x Elemental",
         "overloadIdeal": "4x Ammo · 4x Element · 4x Attack",
         "overloadGear": "Yes",
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes",
         "endgameUses": "Solo Raid · Missilis Tower · PvP",
-        "burstGen": "N/A",
+        "burstGen": "Auto: Medium Manual: Medium",
         "pairWith": null,
         "notes": "Does almost no damage in her base RL form so she needs ammo to keep herself transformed to do damage"
       }
@@ -734,7 +734,7 @@
       }
     },
     "liter": {
-      "priority": "Medium Priority",
+      "priority": "High Union Raid Priority",
       "annotations": [],
       "build": {
         "skillLevels": "10/7/10",
@@ -1034,7 +1034,7 @@
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes",
         "endgameUses": "Story · Solo Raid · Union Raid · Pilgrim Tower · MIssilis Tower · PvP",
-        "burstGen": "Auto: Medium Manual: Medium",
+        "burstGen": "Auto: Medium - High Manual: Medium - High",
         "pairWith": null,
         "notes": "Relies heavily on charge speed so does very well pair with liberalio and alice who buff charge speed"
       }
@@ -1187,13 +1187,13 @@
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes",
         "endgameUses": "Solo Raid · Union Raid",
-        "burstGen": "Auto: Medium Manual: Low",
+        "burstGen": "Auto: High Manual: Low",
         "pairWith": null,
         "notes": null
       }
     },
     "red-hood": {
-      "priority": "Medium Priority",
+      "priority": "High Union Raid Priority",
       "annotations": [],
       "build": {
         "skillLevels": "10/10/10",
@@ -1425,7 +1425,7 @@
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes (High Prio)",
         "endgameUses": "Solo Raid · Union Raid",
-        "burstGen": "Auto: Medium Manual: Medium",
+        "burstGen": "Auto: High Manual: High",
         "pairWith": null,
         "notes": "Iron and water element. The best buffer for SDoro for water and the best BSoda buffer for iron. Does repectable damage herself"
       }
@@ -1482,7 +1482,7 @@
       }
     },
     "velvet": {
-      "priority": "Medium Priority",
+      "priority": "High Union Raid Priority",
       "annotations": [],
       "build": {
         "skillLevels": "7+/10/7+",
