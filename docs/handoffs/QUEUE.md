@@ -54,16 +54,25 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
-> **NEXT UP — UNBLOCKED AND ORDERED (set 2026-08-17 at owner request).** Every item here is
+> **NEXT UP — UNBLOCKED AND ORDERED (refreshed 2026-08-18).** Every item here is
 > footage-FREE: it runs against footage or fixtures ALREADY on disk, with instruments that already
-> exist. Take them top-down. The numbered threads below (1–5) stay as the reference detail and are
+> exist. Take them top-down. The numbered threads below stay as the reference detail and are
 > mostly footage-gated — do NOT start there.
 >
-> **N1c. Owner ruling wanted (cheap, no work attached).** The 2-of-2 split turned on one question:
-> may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg when the same
-> packet has demoted that recording's E1 as already-on-record and non-falsifying? Driver said no
-> (⇒ INCONCLUSIVE), blind Fable said yes in the spirit of the rule (⇒ ACCEPT-narrowed). Both struck
-> the W3 window independently — its "exclusion" margin was 0.0012 of a render column.
+> **1. `anis-star` pre-register re-run (thread 2).** The source-hunt narrowed the anomaly to
+> gauge-specific excess (identical 480,330 increment across 3 windows). Candidate hypothesis to
+> pre-register: anomalous pulls credit one extra `basePerTrigger` 140 × 2.5 focus × 1.06 aura =
+> 3.71%. Build a packet that declares this BEFORE the counting rule runs, so anomalous windows
+> become CLASSIFIABLE instead of premise-violating. Gated re-run, not new footage.
+>
+> **2. N2 blocker 2 — pin the conversion rule numerically.** The "ALREADY-PRE-COMMITTED
+> conversion rule" is post-hoc (23 min after the verdict) and has undefined terms. Pin it
+> numerically BEFORE computing the new control's residual. See the N2 handoff
+> (`docs/handoffs/2026-08-17-n2-second-control-premise-gate.md`).
+>
+> **3. N1c — owner ruling wanted (cheap, no work attached).** The 2-of-2 split turned on one
+> question: may an out-of-sample recording's E1 window carry a `clause 1(ii)` counting leg when
+> the same packet has demoted that recording's E1 as already-on-record and non-falsifying?
 >
 > **N2. A SECOND `liberalio`-free fill trace. ⛔ DO NOT RUN AS FILED — the premise gate stopped it
 > at step 0 (2026-08-17).** Full record, with every quote and `git log -S` receipt:
