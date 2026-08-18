@@ -14212,7 +14212,7 @@
         }
       },
       "generatorSupported": false,
-      "simSupported": false,
+      "simSupported": true,
       "baseStats": {
         "hp": 16500,
         "atk": 400,

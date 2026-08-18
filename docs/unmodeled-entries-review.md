@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 200 | 44.4% |
-| Other / see caveats | 92 | 20.4% |
-| Missing engine primitive / trigger | 91 | 20.2% |
-| Out-of-domain / parser unsupported | 30 | 6.7% |
+| Defensive / HP / shield / aggro | 205 | 45.1% |
+| Other / see caveats | 92 | 20.2% |
+| Missing engine primitive / trigger | 91 | 20.0% |
+| Out-of-domain / parser unsupported | 30 | 6.6% |
 | Partless boss | 10 | 2.2% |
 | Weapon-state / shot-count approximation | 9 | 2.0% |
 | Self-status / stack gate | 8 | 1.8% |
 | RNG / probabilistic | 6 | 1.3% |
 | Measurement-gated / unverified cadence | 4 | 0.9% |
-| **Total** | **450** | 100.0% |
+| **Total** | **455** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (200)
+### Defensive / HP / shield / aggro (205)
 
 **A2** (a2)
 
@@ -139,6 +139,19 @@ Deals 14.96% of final ATK as additional damage.
   - *Why:* SKIPS (burst line 2, target = 1 lowest-remaining-HP ally except self): 'Gain Indomitability for 10 sec.' — genuinely-skippable survival (revive/death-immunity class; boss lethality unmodeled); 'Max HP ▲ 31.68% for 10 sec.' — now modeled via targetMaxHpPct (own-% basis) + alliesLowestHp TargetDef (theme-13, 2026-07-17); offensively inert (e3 rule)
 - **burst:** Constantly recovers 3.84% of the skill user's final Max HP every 1 sec for 8 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
   - *Why:* skill2/burst: heals now emit their real per-second ticks (heal ticks:5 for the 5s S2 HoT, ticks:8 for the 8s burst HoT) — on-recovery consumers (Crown-type) stay refreshed across each window (engine gap #1 fix, 2026-07-17)
+
+**Centi (Treasure)** (centi)
+
+- **skill1:** Activates at the start of battle. Forcefully uses Skill 2. — shield creation at t=0; offensively inert (no DPS impact from shields in v1).
+  - *Why:* (3-7) All other lines UNMODELED verbatim — S1 battle-start force S2 (shield creation, offensively inert), S1 Full Charge → S2 CD ▼9.16% (CD reduction of offensively inert skill), S1 shield-destroyed heal (no shield-break model), S2 shield creation (shields don't affect damage dealt), Burst self Max HP ▲5% (no HP→ATK conversion for centi)
+- **skill1:** Activates when landing a Full Charge attack. Cooldown of Skill 2 ▼ 9.16%. — CD reduction of an offensively inert skill (S2 creates shields); no DPS channel.
+  - *Why:* (3-7) All other lines UNMODELED verbatim — S1 battle-start force S2 (shield creation, offensively inert), S1 Full Charge → S2 CD ▼9.16% (CD reduction of offensively inert skill), S1 shield-destroyed heal (no shield-break model), S2 shield creation (shields don't affect damage dealt), Burst self Max HP ▲5% (no HP→ATK conversion for centi)
+- **skill1:** Activates when the shield created by Centi is destroyed. Recovers 9.7% of the skill user's final Max HP as HP. — no shield-break model in v1; no shield entity to destroy.
+  - *Why:* (3-7) All other lines UNMODELED verbatim — S1 battle-start force S2 (shield creation, offensively inert), S1 Full Charge → S2 CD ▼9.16% (CD reduction of offensively inert skill), S1 shield-destroyed heal (no shield-break model), S2 shield creation (shields don't affect damage dealt), Burst self Max HP ▲5% (no HP→ATK conversion for centi)
+- **skill2:** Creates a Shield equal to 7% of the skill user's final Max HP for 5 sec. — shield creation; offensively inert in v1 (no HP pool modeled, no shielded consumer on centi's own kit).
+  - *Why:* See unit note / caveats
+- **burst:** Max HP ▲ 5% for 10 sec. — self Max HP buff; offensively inert (no HP→ATK conversion for centi; would strengthen S2 shield basis but shield itself is inert).
+  - *Why:* S2b (claude-fable-5) cross-family review converged on burst nuke + DEF debuff encoding; diverged on shield/CD lines (fable: load-bearing for tandem shield consumers; driver ruling: inert at scope lock — no shield consumer exists on centi's own kit; a future tandem teammate would add its own consumer)
 
 **Chisato** (chisato)
 
