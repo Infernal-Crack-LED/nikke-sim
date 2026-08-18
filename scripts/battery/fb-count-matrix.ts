@@ -1914,7 +1914,17 @@ export function auditFocusColumns(): FocusColumnReport[] {
       }
     }
 
-    const { status } = focusColumnStatus(focus, Math.round(resolvedMult * 100));
+    // Grade from the RESOLUTION, not the derived number. The x1.0 tail means "no column at all",
+    // but Math.round(1.0 * 100) = 100 would look like a column-100 unit and fall through to the
+    // unrecognised-column arm — parking a no-bonus unit on the needs-footage list as 'unmeasured',
+    // the exact outcome the 'n/a' status exists to prevent, and a status divergence from
+    // focusColumnCensus() (which passes column 0) for identical engine state. Inert today (no
+    // seated focus takes this tail); caught by cross-family review round 2, 2026-08-18.
+    const gradedColumn =
+      source === 'no bonus in either column (x1.0, does not full-charge)'
+        ? 0
+        : Math.round(resolvedMult * 100);
+    const { status } = focusColumnStatus(focus, gradedColumn);
     const upside =
       focusPer60 * (MAX_LIVE_FOCUS_COLUMN / 100 / resolvedMult - 1);
     return {
@@ -2008,8 +2018,8 @@ function printFocusColumns(
   }
   console.log(
     "\nROSTER CENSUS — every SR/RL unit's data-level column (characters.json chargeMultiplier,\n" +
-      'gauge-per-shot.json fullChargeBonus fallback, 250 default), graded against the record.\n' +
-      'Non-250 columns and source disagreements only:\n'
+      'gauge-per-shot.json fullChargeBonus fill-in, x1.0 when neither column carries a bonus),\n' +
+      'graded against the record. Non-250 columns and source disagreements only:\n'
   );
   for (const row of census) {
     const outlier = row.resolvedColumn !== 250;

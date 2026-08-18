@@ -169,10 +169,11 @@ both `fullChargeBonus` 250, the modal value across the roster.
     CHARGE-capable unit (`chargeFrames > 0`) missing both columns is a data hole, not a game fact;
     `scripts/tests/data/gauge-per-shot-source.test.ts` fails loudly if one ever appears. The
     `magDumpRof` pin is gone with the default, as unreachable.
-    Four units deviate: **alice 350 (3.5×)**, **cinderella 200 (2.0×)**,
-    **scarlet-black-shadow 150 (1.5×)**, `vesti-tactical-upgrade` 200 (sim-supported since
-    2026-08-01, but still pinned to the flat 2.5× by `PENDING_TEAM_ISOLATION` until her own
-    column is measured — her kit build's ⚑3 carries the recipe). Live per-unit status:
+
+  Four units deviate from the 250 family: **alice 350 (3.5×)**, **cinderella 200 (2.0×)**,
+  **scarlet-black-shadow 150 (1.5×)**, `vesti-tactical-upgrade` 200 (sim-supported since
+  2026-08-01, but still pinned to the flat 2.5× by `PENDING_TEAM_ISOLATION` until her own
+  column is measured — her kit build's ⚑3 carries the recipe). Live per-unit status:
   - **scarlet-black-shadow: ENACTED at 1.5×.** Confirmed at two independent measured levels:
     a solo per-shot gauge-fill read (~1.42× observed) AND a team full-burst count
     (`docs/probes/720-kit-audit/scarlet black shadow.MP4`, 11 FBs measured — outside the old
@@ -193,6 +194,7 @@ both `fullChargeBonus` 250, the modal value across the roster.
     opener and an effective ≈2.2× was a repeated reading error and is RETRACTED — there is no
     open dispute on this value.
     Full record: `docs/DECISIONS.md` 2026-07-29 entries.
+
 - **baseGaugeProb (2026-08-18):** a second focus-gated credit term alongside `fullChargeBonus`.
   For units carrying `baseGaugeProb > 0` in `data/gauge-per-shot.json`, the engine's
   `gaugePerShot()` adds `(baseGaugeProb × basePerTrigger / 100)` to the per-trigger value
