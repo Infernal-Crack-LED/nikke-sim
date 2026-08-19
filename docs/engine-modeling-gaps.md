@@ -738,6 +738,32 @@ number, and what separates "does not charge" from "data went missing". Sourcing 
 `ccee21f7` (retroactive record: DECISIONS 2026-08-13); the default retirement in `8d92c8fe`
 (DECISIONS 2026-08-18).
 
+### 20c. U28 rider gauge: is one emission per PULL right, or one per HIT? — ⚑ OPEN (2026-08-18)
+
+The U28 gauge half landed 2026-08-13 (`src/engine/sim.ts`, the `extraHitDamagePct` rider path in
+`firePull()`), crediting `skillGauge(u, frame)` **once per pull**. `skillGauge` divides by
+`hitsPerShot`, so that credits `targetPerTrigger / hitsPerShot`. The rider's DAMAGE on the same line
+is `extraPerHit × hitsPerShot` — i.e. the aggregated call stands for `hitsPerShot` per-hit impacts.
+The equivalent `flatDamage` `hitCount: 1` encoding of the same kit line fires `hitsPerShot` times
+per pull and credits `targetPerTrigger` in total. **For a carrier with `hitsPerShot > 1` the two
+encodings therefore differ by a factor of `hitsPerShot`, while the engine comment and
+`scripts/tests/engine/rider-gauge-equivalence.test.ts` both assert they are equal.**
+
+The pin does not catch it: its fixture carrier is `nayuta` (SMG/Water, `hitsPerShot: 1`), where the
+two coincide exactly. The only discriminating carrier today is `modernia` (MG/Fire,
+`hitsPerShot: 2`); `neon-blue-ocean`, `neon-vision-eye` and `nayuta` are all `hitsPerShot: 1`.
+
+STATUS: an OBSERVATION derived by reading the arithmetic, not yet measured in-game — and the
+direction is genuinely arguable. The shipped reading ("`extraHitDamagePct` is a SUMMED stat dealt as
+a single impact, so the emission count matches the IMPACT count") is coherent; the competing reading
+("the aggregated call stands for N per-hit riders, so it should credit what N `flatDamage` riders
+credit") is what an unmerged branch (`audit/phase-2-gauge`, 2026-08-12) implemented via an
+`instances` parameter. Board-inert either way — every carrier's rider window closes inside the
+chain+FB gauge lock (`scripts/battery/u28-gauge-ab.ts --lock-census`). To settle: add a
+`hitsPerShot: 2` carrier to the equivalence fixture and decide which encoding is authoritative, or
+rule on it directly. Recorded here because that branch was never pushed and is being cleaned up;
+this is the one substantive item it held that did not carry forward.
+
 ### 20b. `gaugeHits` authored count vs credits actually emitted — ⚑ OPEN (observed 2026-08-18)
 
 `4d60a624` (2026-08-15) added `gaugeHits` to the `flatDamage` effect schema: `gaugeHits = N` fires
