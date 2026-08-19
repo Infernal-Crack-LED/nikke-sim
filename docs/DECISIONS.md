@@ -43,14 +43,25 @@ lives. Newest first within each section.
     - **GRADED comps: unaffected.** The regression snapshot is byte-identical and was NOT
       regenerated, and every measured full-burst count is preserved — `pascal` seats in zero
       regression/experiment comps. `verify.sh` green at 4691 passed, 6 skipped, 314 files.
-    - **RANKED WEB BOARDS: they DO move, substantially.** The enabling condition is being the
-      CAMERA-FOCUSED unit, and `web/public/burstgen.json` has a `focusedEntries` board that focuses
-      every unit in turn — so it expresses the change directly. Measured by rebuilding the board
-      with and without the retired arm: `pascal`'s focused entry goes **8.7 / 504 / 11 FBs → 3.72 /
-      238 / 10 FBs**, and her focused row now equals her unfocused row exactly, which is the
-      fingerprint of the fix (she takes no focus bonus). That is a CORRECTION, not a regression —
-      the old board was crediting her a ×2.5 full-charge bonus, and a whole extra full burst, for a
-      charge she never performs.
+    - **RANKED WEB BOARDS: the PRIMARY burstgen board is unchanged; only the FOCUSED variant
+      moves.** The enabling condition is being the CAMERA-FOCUSED unit, and the documented burstgen
+      board is measured UNFOCUSED by construction — `docs/data/rank-boards.md`: camera focus is
+      parked on a non-charge no-op teammate, "so charge weapons generate at ×1.0 … the ×2.5 focused
+      charge bonus is a camera artifact a board cannot grant to every unit at once". A change to the
+      FOCUS multiplier therefore cannot reach it. Confirmed in the artifact: `pascal`'s `entries`
+      row holds at 3.72 / 238 / 10 and `vesti-tactical-upgrade`'s at 3.18 / 208 / 10, before and
+      after. The secondary `focusedEntries` board, which focuses every unit in turn, does move:
+      `pascal` **8.7 / 504 / 11 FBs → 3.72 / 238 / 10 FBs** (her focused row now equals her
+      unfocused row exactly — the fingerprint of taking no focus bonus), `vesti-tactical-upgrade`
+      6.32 / 386.75 → 4.85 / 304.2. Both are CORRECTIONS, not regressions: the old focused board
+      credited `pascal` a ×2.5 full-charge bonus, and a whole extra full burst, for a charge she
+      never performs.
+    - **`pascal` is the ONLY charge weapon in the roster with `chargeFrames: 0`** — 1 of 79 SR/RL
+      units, verified across all 196 characters — and the only unit taking ×1.0. The dangerous
+      inverse (a `chargeFrames: 0` unit that DOES carry a bonus column, so it silently takes a focus
+      bonus for a charge it never performs and nothing flags it) has zero members. Note that lacking
+      a datamined `gauge-per-shot.json` row is NOT what makes her unusual: 75 of 185 ranked burstgen
+      rows have no row and fall back to the weapon class modal, which is the designed default.
     - ⚠ An earlier draft of this entry claimed she appeared in "no ranked web board". That was
       **wrong and never actually tested**: the shell command meant to check it sat behind an `&&`
       after a `grep -c` that returned 0 matches, so it exited non-zero and the board check never

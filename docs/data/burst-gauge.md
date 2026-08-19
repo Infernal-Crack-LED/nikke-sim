@@ -165,9 +165,12 @@ both `fullChargeBonus` 250, the modal value across the roster.
     focus gauge bonus IS the unit's full-charge bonus, for every unit). A unit with no bonus in
     EITHER datamined column does not full-charge and takes **×1.0**, the measured unfocused value.
     `pascal` (RL/Iron) is the only such unit — `chargeFrames: 0`, so the retired default had been
-    paying her ×2.5 for a charge she never performs (7.00 → 2.80 gauge per focused shot; her
-    `burstgen.json` `focusedEntries` row 8.7 / 504 / 11 FBs → 3.72 / 238 / 10 FBs, now exactly
-    equal to her unfocused row — the fingerprint of taking no focus bonus). A
+    paying her ×2.5 for a charge she never performs (7.00 → 2.80 gauge per focused shot). She is
+    the ONLY charge weapon in the roster with `chargeFrames: 0` — 1 of 79 SR/RL units — and the
+    only unit taking ×1.0. Board effect: the primary burstgen board is measured UNFOCUSED, so it
+    cannot express a focus-multiplier change and her `entries` row holds at 3.72 / 238 / 10; the
+    secondary `focusedEntries` row moves 8.7 / 504 / 11 FBs → 3.72 / 238 / 10 FBs, landing exactly
+    on her unfocused row — the fingerprint of taking no focus bonus. A
     CHARGE-capable unit (`chargeFrames > 0`) missing both columns is a data hole, not a game fact;
     `scripts/tests/data/gauge-per-shot-source.test.ts` fails loudly if one ever appears. The
     `magDumpRof` pin is gone with the default, as unreachable.
