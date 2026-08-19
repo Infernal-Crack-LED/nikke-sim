@@ -85,10 +85,13 @@ describe('roster pairing — the F9 answer, held to its dispositioned set', () =
     expect(slotAttribution.map((r) => r.slug)).toEqual(['sin']);
   });
 
-  it('holds the ALLY-scoped non-emitters to their three dispositioned units', () => {
-    // The only non-emitters that could reach a consumer the carrier does not own. All three are
+  it('holds the ALLY-scoped non-emitters to their dispositioned units', () => {
+    // The only non-emitters that could reach a consumer the carrier does not own. All are
     // recorded under `unmodeled`, and they are NOT the same case:
     //   `biscuit` — trigger needs a Defender ally below 50% HP: indeterminate on the immortal boss
+    //   `centi`   — shield/heal lines: offensively inert at scope lock (no shield-break model,
+    //               no shielded consumer on centi's own kit); would become load-bearing for
+    //               tandem shield consumers if ever modeled
     //   `emma` (MG/Fire, not `emma-tactical-upgrade`) — "5% chance when attacked": the v1 boss
     //             never attacks
     //   `pascal`  — "after firing 10 time(s)" is a LIVE trigger; blocked only on the DEF-ranked
@@ -98,7 +101,7 @@ describe('roster pairing — the F9 answer, held to its dispositioned set', () =
       [
         ...new Set(noEmit.filter((r) => r.scope === 'ally').map((r) => r.slug)),
       ].sort()
-    ).toEqual(['biscuit', 'emma', 'pascal']);
+    ).toEqual(['biscuit', 'centi', 'emma', 'pascal']);
   });
 
   it('keeps every self-scoped non-emitter inert by MECHANISM, not by measurement', () => {

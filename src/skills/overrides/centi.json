@@ -1,0 +1,38 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-08-18. Centi (Treasure) — slug `centi`; RL/Defender/Iron/Burst II, cd 20s, ammo 6, chargeFrames 60, reloadFrames 111, normalMult 61.3, coreMult 200, chargeMult 250, burstGaugePerShot 3.45. FROM-SCRATCH build (no shipped override existed; simSupported was false). Test-first re-derivation (scripts/tests/units/centi.test.ts, C1/C2/C-UNMODELED) — 7 assertions, all green. LINE DISPOSITIONS: (1) BURST 'Affects 5 enemy unit(s) with the lowest remaining HP. Deals 145.46% of final ATK as damage.' → burstCast → enemy flatDamage 145.46. burstCast-keyed (HER OWN Burst II cast, not fullBurstEnter); the nuke lands BEFORE the Full Burst window opens and never takes the +50% FB major (helm H7 / mica precedent). '5 lowest HP' collapses to ONE instance on the lone partless boss (anis / privaty-unkind-maid precedent). UNTAGGED for burstDesc: the 5-target selection clause is not an amp literal (owner ruling 2026-08-10). (2) BURST 'DEF ▼ 14.54% for 10 sec.' → burstCast → enemy defPct -14.54, durationSec 10. On the enemy DEF channel (bossDefNow scales cfg.bossDef by (1+Σ/100) at damage time — mica precedent). ~50% uptime (20s CD / 10s duration). The counterfactual (damageTakenPct laundering) is discriminated in the test. (3-7) All other lines UNMODELED verbatim — S1 battle-start force S2 (shield creation, offensively inert), S1 Full Charge → S2 CD ▼9.16% (CD reduction of offensively inert skill), S1 shield-destroyed heal (no shield-break model), S2 shield creation (shields don't affect damage dealt), Burst self Max HP ▲5% (no HP→ATK conversion for centi). S2b (claude-fable-5) cross-family review converged on burst nuke + DEF debuff encoding; diverged on shield/CD lines (fable: load-bearing for tandem shield consumers; driver ruling: inert at scope lock — no shield consumer exists on centi's own kit; a future tandem teammate would add its own consumer). EVIDENCE TIER: every magnitude is kit-text-literal (DATAMINED lvl-10): 145.46 / 14.54 / 10s. TIER 1: straightforward burst nuke + enemy DEF debuff; no scoped-buff, round-count, status-gate, or meta-defining mechanic. Kit-autonomy gauntlet 2026-08-18.",
+  "skill1": [],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 145.46 }]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "buff", "stat": "defPct", "value": -14.54, "durationSec": 10 }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates at the start of battle. Forcefully uses Skill 2. — shield creation at t=0; offensively inert (no DPS impact from shields in v1).",
+      "Activates when landing a Full Charge attack. Cooldown of Skill 2 ▼ 9.16%. — CD reduction of an offensively inert skill (S2 creates shields); no DPS channel.",
+      "Activates when the shield created by Centi is destroyed. Recovers 9.7% of the skill user's final Max HP as HP. — no shield-break model in v1; no shield entity to destroy."
+    ],
+    "skill2": [
+      "Creates a Shield equal to 7% of the skill user's final Max HP for 5 sec. — shield creation; offensively inert in v1 (no HP pool modeled, no shielded consumer on centi's own kit)."
+    ],
+    "burst": [
+      "Max HP ▲ 5% for 10 sec. — self Max HP buff; offensively inert (no HP→ATK conversion for centi; would strengthen S2 shield basis but shield itself is inert)."
+    ]
+  },
+  "caveats": [
+    "burst: 'Affects 5 enemy unit(s) with the lowest remaining HP' collapses to ONE instance on the lone partless boss; no burstDesc tag (the 5-target selection is not an amp literal)",
+    "burst: DEF ▼ 14.54% is on the enemy DEF channel (defPct, mica precedent); ~50% uptime on 20s CD / 10s duration"
+  ]
+}

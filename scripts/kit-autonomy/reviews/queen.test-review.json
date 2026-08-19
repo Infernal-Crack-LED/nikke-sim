@@ -1,0 +1,182 @@
+{
+  "slug": "queen",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Nuke Boost: Elem Adv Atk Dmg \u25b2 13.59%",
+      "disposition": "FAITHFUL",
+      "scope": "All her damage, but ONLY the elemental-advantage bucket \u2014 active solely vs a Wind Code boss (queen is Fire). Not generic Damage Up.",
+      "durationSemantics": "Permanent ('continuously', cannot be removed).",
+      "triggerIdentity": "battleStart (start of battle), no gate.",
+      "targetSet": "Self.",
+      "nearestWrongModel": "Encoding as attackDamagePct 13.59 (generic Damage-Up), which credits ~13.6% Damage Up vs ANY boss including the Fire control boss where the real line contributes zero.",
+      "distinguishingAssertion": "buffApply at frame 0 with stat 'elemAdvantageDamagePct' value 13.59 targeting self; AND on controlComp (Fire boss) withPatchedOverride zeroing this value changes totals(res)['queen'] by exactly 0.",
+      "inertness": "Must move ZERO damage on the Fire control boss (no elemental advantage). Only a Wind-boss comp may move.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Defense Master: DEF \u25b2 14.78%",
+      "disposition": "FAITHFUL",
+      "scope": "Self DEF stat only \u2014 defensive, engine-inert (defPct inert in v1).",
+      "durationSemantics": "Permanent ('continuously').",
+      "triggerIdentity": "battleStart.",
+      "targetSet": "Self.",
+      "nearestWrongModel": "Silently dropping the line entirely (no block, no unmodeled entry) \u2014 or worse, mis-keying it into a damage stat.",
+      "distinguishingAssertion": "buffApply stat 'defPct' value 14.78 at frame 0 (kit completeness / future-consumer rule); totals identical with it removed.",
+      "inertness": "Zero damage movement anywhere \u2014 it is a pure stat record.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK \u25b2 50.28% for 15 sec (start + FB end)",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self ATK \u2014 feeds normals, riders, and the burst nuke while live.",
+      "durationSemantics": "durationSec 15 \u2014 wall-clock seconds, refreshed per trigger. NOT continuous.",
+      "triggerIdentity": "TWO triggers on one line: battleStart AND fullBurstEnd. 'when Full Burst ends' is fullBurstEnd \u2014 not fullBurstEnter, not burstCast.",
+      "targetSet": "Self.",
+      "nearestWrongModel": "Keying to fullBurstEnter (shifts the 15s window INTO Full Burst and delays/removes the t=0 window), or dropping the battle-start application so the first ~15s pre-first-FB is uncovered, or making it permanent.",
+      "distinguishingAssertion": "buffApply stat 'atkPct' value 50.28 occurs at frame 0 AND at every fullBurstEnd event frame, each with expiresFrame \u2248 apply+900f; NO such apply is coincident with fullBurstStart events (other than none).",
+      "inertness": "Between expiry (+15s post-FB-end) and the next FB end, no atkPct 50.28 instance may be live.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "When 1 More takes effect: 548.99% dist",
+      "disposition": "FAITHFUL",
+      "scope": "Instant function damage, distributed flavor (fed by Distributed Damage \u25b2 and ally distributed boosts); rider \u2014 crits at caster rate, NO core, noRange; lands at burst cast so pre-FB (no +50% by timing).",
+      "durationSemantics": "Instant hit per activation.",
+      "triggerIdentity": "'1 More takes effect' = the moment her OWN burst applies the '1 More' buff \u2014 which happens ONLY if a Wind Code enemy is present. Encoding: burstCast + bossElementGate 'Wind'. One proc per burst cast, not per second of the status.",
+      "targetSet": "All enemies (single boss at scope).",
+      "nearestWrongModel": "An UNGATED burstCast (or fullBurstEnter) rider that fires every rotation vs the Fire control boss \u2014 548.99% per rotation of phantom damage. This is the single largest over-credit trap in the kit.",
+      "distinguishingAssertion": "On controlComp (Fire boss): ZERO skill1-bucket flatDamage events of atkPct 548.99 across the whole fight. On the same comp with boss element Wind: exactly one such damage event per queen burstCast frame, co-frame with the '1 More' (atkPct 30.27) buffApply.",
+      "inertness": "The Fire control board must not move at all from this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "When Follow Up takes effect: 548.99% dist",
+      "disposition": "UNMODELED",
+      "scope": "Same distributed rider shape as the 1 More rider.",
+      "durationSemantics": "Instant per activation.",
+      "triggerIdentity": "'Follow Up' is a status QUEEN'S OWN KIT NEVER GRANTS \u2014 a cross-unit collab (Persona) tandem status from a teammate's kit. No source exists in the fixture or (as far as this kit states) the roster.",
+      "targetSet": "All enemies.",
+      "nearestWrongModel": "Conflating it with the 1 More rider and double-firing 548.99% \u00d7 2 per burst cast, or inventing a trigger (interval/shotFired) for a line that has a stated but unsatisfiable activation.",
+      "distinguishingAssertion": "Per burst cast on a Wind boss there is exactly ONE 548.99% rider event, never two; on the Fire control boss, zero. The line's verbatim text appears in unmodeled.skill1.",
+      "inertness": "Must contribute nothing in any comp lacking a Follow-Up-granting teammate \u2014 i.e. everywhere at scope.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack Damage \u25b2 30% continuously",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Damage-Up bucket (attackDamagePct) on all her damage \u2014 additive with other Damage-Up terms (dilution applies).",
+      "durationSemantics": "Permanent.",
+      "triggerIdentity": "battleStart.",
+      "targetSet": "Self.",
+      "nearestWrongModel": "atkPct 30 (ATK bucket) instead of attackDamagePct 30 (Damage-Up bucket) \u2014 different bucket, different stacking/dilution; also plausibly mis-scoped to allies.",
+      "distinguishingAssertion": "buffApply at frame 0 stat 'attackDamagePct' value 30, targetIdx === queen's own index only; no atkPct 30 apply exists.",
+      "inertness": "No ally may receive it.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Fist of Justice: ElemAdv \u25b225.56 + DEF \u25b217.95",
+      "disposition": "FAITHFUL",
+      "scope": "elemAdvantageDamagePct 25.56 (Element bucket, live only vs Wind boss) + defPct 17.95 (inert). NOT generic Damage Up.",
+      "durationSemantics": "TRAP: 'continuous and cannot be removed' is overridden by the explicit 'Deactivation condition: When Full Burst ends' \u2014 the window is her burst cast \u2192 that Full Burst's end (~10s + the 22f cast\u2192FB gap), NOT permanent.",
+      "triggerIdentity": "'when using Burst Skill' = burstCast (HER OWN cast). Not fullBurstEnter \u2014 with helm as the second B3 in controlComp, FB-enter would fire on helm's rotations too and over-credit uptime ~2\u00d7.",
+      "targetSet": "Self.",
+      "nearestWrongModel": "Permanent passive (reading 'cannot be removed' and missing the Deactivation line), or fullBurstEnter keying that grants it on rotations where helm bursts.",
+      "distinguishingAssertion": "buffApply stat 'elemAdvantageDamagePct' value 25.56 ONLY on frames where a burstCast event with queen's srcSlot fires (a strict subset of fullBurstStart cycles in the helm comp), with expiresFrame \u2248 the following fullBurstEnd frame \u2014 never frame 0, never \u221e.",
+      "inertness": "Zero damage movement on the Fire control boss (elemAdv dormant, DEF inert) \u2014 zeroing both values must not change totals; uptime/keying is still testable via buffApply events.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stage-3 entry: Distributed Dmg \u25b290.01%, 10s",
+      "disposition": "FAITHFUL",
+      "scope": "distributedDamagePct \u2014 boosts HER distributed-flavor hits only: the burst nuke (1421.69%) and the 1 More/Follow Up riders. Does not touch SG normals.",
+      "durationSemantics": "durationSec 10.",
+      "triggerIdentity": "'Activates when entering Burst Stage 3' = stageEnter{stage:3} \u2014 the chain REACHING stage 3, which LEADS the stage-3 cast by the 30f chain gap, and fires on EVERY rotation (including rotations where helm casts B3). Not burstCast, not fullBurstEnter.",
+      "targetSet": "Self.",
+      "nearestWrongModel": "fullBurstEnter keying \u2014 the buff would then apply AFTER her burst nuke lands (burst-cast damage resolves pre-FB), so the 1421.69% nuke and the 548.99% rider silently MISS the \u00d71.9001 they are designed to receive. Secondary misread: burstCast (skips helm's rotations).",
+      "distinguishingAssertion": "The buffApply (stat 'distributedDamagePct' 90.01) frame strictly PRECEDES the burst-slot 1421.69% damage event of the same rotation, and that damage event's mult reflects the +90.01% (compare withPatchedOverride zeroing it: the burst-bucket damage drops by exactly the 1.9001 factor). Additionally a buffApply occurs on rotations where helm, not queen, casts stage 3.",
+      "inertness": "SG normal-attack damage events must be identical with the value zeroed.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Baton Pass: ATK \u25b235.2% of user's ATK \u00d73",
+      "disposition": "GAP",
+      "scope": "casterAtkPct-shaped flat-ATK grant (buffApply would carry the flat (35.2/100)\u00d7staticAtk value, not 35.2).",
+      "durationSemantics": "Continuous, maxStacks 3, stacking per 1 More application.",
+      "triggerIdentity": "Gated on '1 More takes effect' (her burst cast + Wind boss present) \u2014 doubly dead at scope.",
+      "targetSet": "'All standard Burst 3 allies (except the skill user) in the Persona state' \u2014 the schema has NO Persona-state target/filter primitive, and no Persona teammate exists in the control fixture (helm is not a Persona unit). Excludes self; 'standard Burst 3' = literal Burst III, a \u039b unit does not qualify.",
+      "nearestWrongModel": "Targeting all B3 allies unconditionally (helm receives a flat-ATK grant she must never get), or resolving it as a self buff.",
+      "distinguishingAssertion": "Across the whole controlComp run there is NO buffApply with stat 'casterAtkPct' from queen's casterIdx targeting any ally; helm's totals are bit-identical with queen's override patched to remove the line. Verbatim text recorded in unmodeled.skill2.",
+      "inertness": "Helm (and any non-Persona B3) must never move because of this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1421.69% final ATK as distributed",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-slot flatDamage, flavor 'distributed' (MUST carry the flavor tag or the S2 90.01% and any ally distributed boosts silently don't feed it). Crit-eligible at sheet rate, no core, no range.",
+      "durationSemantics": "Instant on cast.",
+      "triggerIdentity": "burstCast (stage 3). Lands PRE-Full-Burst by timing \u2014 verified project fact: burst-cast damage lands before FB begins, so NO +50% FB major and no FB-entry auras.",
+      "targetSet": "All enemies.",
+      "nearestWrongModel": "Letting it take the +50% Full Burst major (encoded as landing inside FB / noFb unset with delayed landing), or omitting flavor 'distributed' so the stage-3-entry \u00d71.9001 never applies.",
+      "distinguishingAssertion": "The burst-bucket damage event has inFullBurst false / fbMajorApplied false, AND its magnitude scales with the distributedDamagePct buff (zeroing S2's 90.01 shrinks exactly this event by \u00d71/1.9001).",
+      "inertness": "Its mult decomposition must show no FB major and no core/range factors.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "If Wind enemy: 1 More: ATK \u25b230.27%, 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self ATK for 10s post-cast \u2014 and it IS the '1 More' status event that skill1's 548.99% rider (and Baton Pass) key off, so its application and the rider must co-fire.",
+      "durationSemantics": "durationSec 10.",
+      "triggerIdentity": "burstCast + bossElementGate 'Wind' ('Activates if a Wind Code enemy is present' \u2014 a composable element gate on the cast, not a bossElement passive).",
+      "targetSet": "Self.",
+      "nearestWrongModel": "Dropping the Wind gate \u2014 an unconditional per-cast ATK \u25b230.27% for 10s that over-credits every rotation on the Fire control boss.",
+      "distinguishingAssertion": "On controlComp (Fire boss): zero buffApply with stat 'atkPct' value 30.27 all fight. Same comp, boss element Wind: exactly one per queen burstCast, expiresFrame \u2248 apply+600f, same frame as the 548.99% rider event.",
+      "inertness": "The Fire control board must not move from this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:nuke-boost-elemadv-13.59",
+    "skill1:defense-master-def-14.78",
+    "skill1:atk-50.28-15s-start+fbEnd",
+    "skill1:1more-rider-548.99-dist",
+    "skill2:attack-damage-30-continuous",
+    "skill2:fist-of-justice-elemadv-25.56-until-fbEnd",
+    "skill2:stage3-entry-distributed-90.01-10s",
+    "burst:nuke-1421.69-dist-preFb",
+    "burst:1more-atk-30.27-windGated"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "\u25a0 Activates when Follow Up takes effect. Affects all enemies. Deals 548.99% of final ATK as distributed damage."
+    ],
+    "skill2": [
+      "\u25a0 Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state. Baton Pass: ATK \u25b2 35.2% of the skill user's ATK continuously. Stacks up to 3 times."
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in priority order. (1) THE ELEMENT-GATE CLUSTER: '1 More' only exists if a Wind Code enemy is present, and queen is Fire \u2014 so on the Fire control boss the 548.99% rider, the burst's 30.27% ATK, Baton Pass, AND both elemAdvantageDamagePct buffs (13.59 / 25.56) are all damage-inert. A driver pattern-matching 'burst rider' and firing 548.99% per rotation ungated is the biggest over-credit available in this kit; tests need BOTH a Fire-boss zero-assertion and a Wind-boss positive assertion. (2) TIMING OF THE 90.01% DISTRIBUTED BUFF: it must be stageEnter{stage:3} (leads the cast by 30f) so the PRE-FB burst nuke is inside the window \u2014 fullBurstEnter keying passes a lazy 'buff exists' test while the nuke silently misses \u00d71.9001. (3) FIST OF JUSTICE duration: 'continuous and cannot be removed' plus a 'Deactivation condition: When Full Burst ends' line = cast\u2192FB-end window, not permanent; and 'when using Burst Skill' = HER burstCast \u2014 the control fixture includes helm as a second B3, so burstCast vs fullBurstEnter genuinely diverge here (uptime roughly halves under alternation) \u2014 assert applications are a subset of queen-srcSlot burstCast events. (4) The burst nuke must carry flavor 'distributed' and land pre-FB (no +50%): assert fbMajorApplied false and the \u00d71.9001 coupling. (5) The 548.99% rider is distributed-flavored and fires at cast, 30f AFTER stage-3 entry, so it IS boosted by the 90.01% window \u2014 a test computing its expected value without that factor is wrong on Wind bosses. (6) 'Follow Up' has no source in this kit \u2014 it must be unmodeled verbatim, never merged into the 1 More rider (exactly one 548.99% per Wind-boss cast, never two). (7) Baton Pass needs a Persona-state target primitive the schema lacks \u2014 inert at scope; assert helm never receives a casterAtkPct grant. Tooling note: I have no file-write access in this run, so the JSON is returned inline rather than saved to scripts/kit-autonomy/reviews/queen.test-review.json \u2014 the orchestrator should persist it.",
+  "model": "claude-fable-5"
+}

@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-08-03T09:14:41.692Z",
+  "syncedAt": "2026-08-18T22:24:19.971Z",
   "characters": {
     "2b": {
       "slug": "2b",
@@ -14212,7 +14212,7 @@
         }
       },
       "generatorSupported": false,
-      "simSupported": false,
+      "simSupported": true,
       "baseStats": {
         "hp": 16500,
         "atk": 400,
@@ -69193,6 +69193,552 @@
         "maxLevel": 1200,
         "critDamage": 150,
         "resourceId": 307
+      }
+    },
+    "queen": {
+      "slug": "queen",
+      "name": "Queen (Makoto)",
+      "imageUrl": "https://sg-tools-cdn.blablalink.com/dw-92/du-29/e339cb2508f2f6daa29db6299cb0e358.png",
+      "weapon": "SG",
+      "burst": "III",
+      "burstCooldownSec": 40,
+      "class": "Attacker",
+      "element": "Fire",
+      "manufacturer": "Abnormal",
+      "normalAttackMultiplier": 201.5,
+      "coreAttackMultiplier": 200,
+      "ammo": 9,
+      "reloadFrames": 111,
+      "chargeFrames": 0,
+      "chargeMultiplier": 0,
+      "hitsPerShot": 10,
+      "rl3": 12,
+      "releaseDate": "2026-08-13",
+      "burstGaugePerShot": 2,
+      "treasure": false,
+      "skills": {
+        "skill1": "■ Activates at the start of battle. Affects self.\nPersona - Johanna: This effect is continuous and cannot be removed.\nFunction: Queen (Makoto) strengthens herself using her Persona.\nEffect 1: Nuke Boost: Elemental Advantage Attack Damage ▲ 13.59% continuously. This effect cannot be removed.\nEffect 2: Defense Master: DEF ▲ 14.78% continuously. This effect cannot be removed.\n■ Activates at the start of battle and when Full Burst ends. Affects self.\nATK ▲ 50.28% for 15 sec.\n■ Activates when 1 More takes effect. Affects all enemies.\nDeals 548.99% of final ATK as distributed damage.\n■ Activates when Follow Up takes effect. Affects all enemies.\nDeals 548.99% of final ATK as distributed damage.",
+        "skill2": "■ Activates at the start of battle. Affects self.\nAttack Damage ▲ 30% continuously.\n■ Activates when using Burst Skill. Affects self.\nFist of Justice!: This effect is continuous and cannot be removed.\nFunction: Queen (Makoto) strengthens herself.\nEffect 1: Nuke Amp: Elemental Advantage Attack Damage ▲ 25.56% continuously. This effect cannot be removed.\nEffect 2: Rakukaja: DEF ▲ 17.95% continuously. This effect cannot be removed.\nDeactivation condition: When Full Burst ends.\n■ Activates when entering Burst Stage 3. Affects self.\nDistributed Damage ▲ 90.01% for 10 sec.\n■ Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state.\nBaton Pass: ATK ▲ 35.2% of the skill user's ATK continuously. Stacks up to 3 times.",
+        "burst": "■ Affects all enemies.\nDeals 1421.69% of final ATK as distributed damage.\n■ Activates if a Wind Code enemy is present. Affects self.\n1 More: ATK ▲ 30.27% for 10 sec."
+      },
+      "role": {
+        "weapon": {
+          "shot_id": 1087001,
+          "shot_detail": {
+            "id": 1087001,
+            "damage": 20150,
+            "max_ammo": 9,
+            "shake_id": 2,
+            "ShakeType": "Fire_SG",
+            "fire_type": "Instant",
+            "zoom_rate": 0,
+            "input_type": "DOWN",
+            "shot_count": 10,
+            "ShakeWeight": 120,
+            "attack_type": "Metal",
+            "camera_work": "camera_work_01",
+            "charge_time": 0,
+            "penetration": 0,
+            "reload_time": 150,
+            "shot_timing": "Concurrence",
+            "spot_radius": 0,
+            "weapon_type": "SG",
+            "is_targeting": true,
+            "muzzle_count": 1,
+            "rate_of_fire": 90,
+            "name_localkey": "Shotgun",
+            "prefer_target": "Front",
+            "reload_bullet": 10000,
+            "counter_enermy": "Metal_Type",
+            "multi_aim_range": 0,
+            "spot_last_delay": 20,
+            "core_damage_rate": 20000,
+            "end_rate_of_fire": 90,
+            "spot_first_delay": 20,
+            "center_shot_count": 0,
+            "reload_start_ammo": 8,
+            "full_charge_damage": 10000,
+            "multi_target_count": 0,
+            "spot_radius_object": 0,
+            "uptype_fire_timing": 0,
+            "burst_energy_pershot": 2000,
+            "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+            "maintain_fire_stance": 0,
+            "spot_explosion_range": 0,
+            "use_function_id_list": [0],
+            "accuracy_change_speed": 0,
+            "hurt_function_id_list": [0],
+            "spot_projectile_speed": 0,
+            "accuracy_change_pershot": 0,
+            "prefer_target_condition": "None",
+            "rate_of_fire_reset_time": 0,
+            "full_charge_burst_energy": 0,
+            "end_accuracy_circle_scale": 250,
+            "auto_accuracy_change_speed": 0,
+            "rate_of_fire_change_pershot": 0,
+            "start_accuracy_circle_scale": 250,
+            "target_burst_energy_pershot": 4000,
+            "auto_accuracy_change_pershot": 0,
+            "auto_end_accuracy_circle_scale": 250,
+            "auto_start_accuracy_circle_scale": 250
+          },
+          "bonusrange_max": 25,
+          "bonusrange_min": 0
+        },
+        "burstMeta": {
+          "burst_duration": 1000,
+          "use_burst_skill": "Step3",
+          "burst_apply_delay": 1,
+          "change_burst_step": "StepFull"
+        },
+        "skillDetails": {
+          "skill1_id": 2870101,
+          "skill2_id": 2870201,
+          "skill1_table": "StateEffect",
+          "skill2_table": "StateEffect",
+          "skill1_detail": {
+            "id": 2870101,
+            "icon": "icn_skill_damageshareinstant",
+            "group_id": 28701,
+            "skill_level": 1,
+            "name_localkey": "Persona: Johanna",
+            "next_level_id": 2870102,
+            "level_up_cost_id": 10102,
+            "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Persona - Johanna: This effect is continuous and cannot be removed.\nFunction: Queen (Makoto) strengthens herself using her Persona.\nEffect 1: Nuke Boost: <word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_01}% continuously. This effect cannot be removed.\nEffect 2: Defense Master: DEF ▲ {description_value_02}% continuously. This effect cannot be removed.</color>\n■ Activates at the start of battle and when Full Burst ends. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_05}% for {description_value_06} sec.</color>\n■ Activates when 1 More takes effect. Affects all enemies.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as <word_group=10019>distributed damage</word_group>.</color>\n■ Activates when Follow Up takes effect. Affects all enemies.\n<color=#00AEFF>Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as <word_group=10019>distributed damage</word_group>.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "8.03",
+                  "8.65",
+                  "9.27",
+                  "9.88",
+                  "10.5",
+                  "11.12",
+                  "11.74",
+                  "12.36",
+                  "12.97",
+                  "13.59"
+                ]
+              },
+              {
+                "description_value": [
+                  "8.73",
+                  "9.4",
+                  "10.08",
+                  "10.75",
+                  "11.42",
+                  "12.09",
+                  "12.76",
+                  "13.44",
+                  "14.11",
+                  "14.78"
+                ]
+              },
+              {
+                "description_value": [
+                  "324.39",
+                  "349.34",
+                  "374.3",
+                  "399.25",
+                  "424.21",
+                  "449.16",
+                  "474.11",
+                  "499.07",
+                  "524.02",
+                  "548.99"
+                ]
+              },
+              {
+                "description_value": [
+                  "324.39",
+                  "349.34",
+                  "374.3",
+                  "399.25",
+                  "424.21",
+                  "449.16",
+                  "474.11",
+                  "499.07",
+                  "524.02",
+                  "548.99"
+                ]
+              },
+              {
+                "description_value": [
+                  "29.7",
+                  "32",
+                  "34.28",
+                  "36.56",
+                  "38.84",
+                  "41.14",
+                  "43.42",
+                  "45.7",
+                  "48",
+                  "50.28"
+                ]
+              },
+              {
+                "description_value": [
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 1"
+          },
+          "skill2_detail": {
+            "id": 2870201,
+            "icon": "icn_skill_atkup_01",
+            "group_id": 28702,
+            "skill_level": 1,
+            "name_localkey": "Fist of Justice!",
+            "next_level_id": 2870202,
+            "level_up_cost_id": 10202,
+            "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Attack Damage ▲ {description_value_09}% continuously.</color>\n■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF>Fist of Justice!: This effect is continuous and cannot be removed.\nFunction: Queen (Makoto) strengthens herself.\nEffect 1: Nuke Amp: <word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_01}% continuously. This effect cannot be removed.\nEffect 2: Rakukaja: DEF ▲ {description_value_02}% continuously. This effect cannot be removed.\n<word_group=10097>Deactivation condition</word_group>: When Full Burst ends.</color>\n■ Activates when entering Burst Stage 3. Affects self.\n<color=#00AEFF><word_group=10019>Distributed Damage</word_group> ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Activates when 1 More takes effect. Affects all <word_group=10082>standard Burst {description_value_05} allies</word_group> (except the skill user) in the Persona state.\n<color=#00AEFF>Baton Pass: ATK ▲ {description_value_06}% of the skill user's ATK continuously. Stacks up to {description_value_07} times.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "15.09",
+                  "16.25",
+                  "17.41",
+                  "18.57",
+                  "19.73",
+                  "20.89",
+                  "22.05",
+                  "23.21",
+                  "24.38",
+                  "25.56"
+                ]
+              },
+              {
+                "description_value": [
+                  "10.6",
+                  "11.42",
+                  "12.24",
+                  "13.05",
+                  "13.87",
+                  "14.68",
+                  "15.5",
+                  "16.32",
+                  "17.13",
+                  "17.95"
+                ]
+              },
+              {
+                "description_value": [
+                  "53.18",
+                  "57.28",
+                  "61.37",
+                  "65.46",
+                  "69.55",
+                  "73.64",
+                  "77.73",
+                  "81.82",
+                  "85.92",
+                  "90.01"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3"
+                ]
+              },
+              {
+                "description_value": [
+                  "20.8",
+                  "22.4",
+                  "24",
+                  "25.6",
+                  "27.2",
+                  "28.8",
+                  "30.4",
+                  "32",
+                  "33.6",
+                  "35.2"
+                ]
+              },
+              {
+                "description_value": [
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3"
+                ]
+              },
+              {
+                "description_value": [
+                  "0",
+                  "0",
+                  "0",
+                  "0",
+                  "0",
+                  "0",
+                  "0",
+                  "0",
+                  "0",
+                  "0"
+                ]
+              },
+              {
+                "description_value": [
+                  "17.72",
+                  "19.09",
+                  "20.45",
+                  "21.82",
+                  "23.18",
+                  "24.54",
+                  "25.91",
+                  "27.27",
+                  "28.64",
+                  "30"
+                ]
+              },
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 2"
+          },
+          "ulti_skill_id": 1870301,
+          "ulti_skill_detail": {
+            "id": 1870301,
+            "icon": "icn_skill_c870_ult",
+            "group_id": 18703,
+            "shake_id": 1,
+            "skill_type": "InstantNumber",
+            "attack_type": "Fire",
+            "skill_level": 1,
+            "counter_type": "Metal_Type",
+            "duration_type": "None",
+            "name_localkey": "Mafreidyne",
+            "next_level_id": 1870302,
+            "prefer_target": "LowDefence",
+            "resource_name": "c870_ulti",
+            "duration_value": 0,
+            "skill_cooltime": 4000,
+            "level_up_cost_id": 10302,
+            "skill_value_data": [
+              {
+                "skill_value": 84008,
+                "skill_value_type": "Percent"
+              },
+              {
+                "skill_value": 1,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              }
+            ],
+            "skill_cooltime_list": [
+              4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
+            ],
+            "description_localkey": "■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as <word_group=10019>distributed damage</word_group>.</color>\n■ Activates if a Wind Code enemy is present. Affects self.\n<color=#00AEFF>1 More: ATK ▲ {description_value_02}% for {description_value_03} sec.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "840.08",
+                  "904.7",
+                  "969.33",
+                  "1033.95",
+                  "1098.57",
+                  "1163.19",
+                  "1227.82",
+                  "1292.43",
+                  "1357.06",
+                  "1421.69"
+                ]
+              },
+              {
+                "description_value": [
+                  "17.88",
+                  "19.26",
+                  "20.64",
+                  "22.01",
+                  "23.39",
+                  "24.76",
+                  "26.14",
+                  "27.52",
+                  "28.89",
+                  "30.27"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "prefer_target_condition": "IncludeNoneTargetLast",
+            "info_description_localkey": "Burst Skill",
+            "after_use_function_id_list": [0],
+            "after_hurt_function_id_list": [187030102, 187030103],
+            "before_use_function_id_list": [0],
+            "before_hurt_function_id_list": [187030101]
+          }
+        },
+        "statScaling": {
+          "grow_grade": 587002,
+          "grade_core_id": 1,
+          "stat_enhance_id": 5104,
+          "stat_enhance_detail": {
+            "id": 5104,
+            "core_hp": 200,
+            "grade_hp": 3000,
+            "core_attack": 200,
+            "grade_ratio": 200,
+            "core_defence": 200,
+            "grade_attack": 20,
+            "grade_defence": 100,
+            "core_bio_resist": 0,
+            "grade_bio_resist": 0,
+            "core_metal_resist": 0,
+            "core_energy_resist": 0,
+            "grade_metal_resist": 0,
+            "grade_energy_resist": 0
+          }
+        },
+        "element": {
+          "element_id": [100001],
+          "element_details": [
+            {
+              "id": 100001,
+              "element": "Fire",
+              "group_id": 5000001,
+              "element_icon": "icn_element_fire",
+              "weak_element_id": 200001,
+              "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+              "element_name_localekey": "Fire",
+              "element_code_name_localekey": "Code: H.S.T.A."
+            }
+          ]
+        },
+        "piece": {
+          "piece_id": 5100870,
+          "piece_detail": {
+            "id": 5100870,
+            "class": "Attacker",
+            "order": 87000,
+            "use_id": 0,
+            "use_type": "None",
+            "item_rare": "SSR",
+            "item_type": "Piece",
+            "stack_max": 9999999,
+            "use_value": 0,
+            "corporation": "ABNORMAL",
+            "resource_id": 870,
+            "item_sub_type": "CharacterPiece",
+            "name_localkey": "Queen (Makoto)'s Spare Body",
+            "use_limit_count": false,
+            "inventory_filter": ["etc"],
+            "description_localkey": "Used for a Nikke's Limit Break.\nSpare Bodies for a fully enhanced Nikke will be converted into Body Labels."
+          }
+        },
+        "meta": {
+          "id": 587001,
+          "class": "Attacker",
+          "order": 10180,
+          "name_code": 5179,
+          "corporation": "ABNORMAL",
+          "resource_id": 870,
+          "name_localkey": "Queen (Makoto)",
+          "original_rare": "SSR",
+          "critical_ratio": 1500,
+          "category_type_1": "None",
+          "category_type_2": "None",
+          "category_type_3": "None",
+          "critical_damage": 15000,
+          "eff_category_type": "Walk",
+          "eff_category_value": 0
+        }
+      },
+      "generatorSupported": false,
+      "simSupported": true,
+      "baseStats": {
+        "hp": 13500,
+        "atk": 600,
+        "def": 86,
+        "core": {
+          "hp": 200,
+          "atk": 200,
+          "def": 200
+        },
+        "grade": {
+          "hp": 3000,
+          "atk": 20,
+          "def": 100,
+          "ratio": 200
+        },
+        "critRate": 15,
+        "maxLevel": 1400,
+        "critDamage": 150,
+        "resourceId": 870
       }
     },
     "quency": {

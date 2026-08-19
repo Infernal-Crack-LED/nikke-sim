@@ -1,0 +1,107 @@
+{
+  "note": "queen (Queen (Makoto)) — SG / Attacker / Fire / Burst III, cd 40s, ammo 9, hitsPerShot 10, RoF 90 (instant-fire SG), SSR. A distributed-damage Attacker built around the Persona collaboration's '1 More' / 'Follow Up' chain mechanics. The '1 More' status is granted by her burst when a Wind Code enemy is present, so 'when 1 More takes effect' decomposes to burstCast + bossElementGate Wind. The S1 548.99% distributed rider on 1 More IS modeled (burstCast + Wind gate); the Follow Up rider (teammate-granted, no engine source for Follow Up in this kit) and the S2 Baton Pass team ATK buff (35.2% of caster ATK, stacks 3, to B3 Persona allies — no 'Persona state' gate primitive) remain UNMODELED. ⚑ FLAGS: (⚑1) FOLLOW UP TRIGGER — teammate-granted, no engine source; estimate = 0 in v1; recipe = engine primitive for externally-granted status trigger. (⚑2) DISTRIBUTED DAMAGE TIMING — L9 distributedDamagePct 90.01% fires at burstCast (same frame as burst nuke + 1 More rider); engine buff-ordering decides whether it applies to the same-cast nuke. (⚑3) CADENCE TUPLE — RoF 90 / ammo 9 / reloadFrames 111 shipped datamine; SG instant-fire default; est = class-default; recipe = focus video. TIER 2 (bossElementGate status-gate + partial Persona trigger decomposition). Kit-autonomy gauntlet 2026-08-18.",
+  "unmodeled": {
+    "skill1": [
+      "Activates when Follow Up takes effect. Affects all enemies. Deals 548.99% of final ATK as distributed damage."
+    ],
+    "skill2": [
+      "Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state. Baton Pass: ATK ▲ 35.2% of the skill user's ATK continuously. Stacks up to 3 times."
+    ],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "battleStart" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 13.59 },
+        { "kind": "buff", "stat": "defPct", "value": 14.78 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "battleStart" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 50.28, "durationSec": 15 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnd" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 50.28, "durationSec": 15 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "burstCast" },
+      "bossElementGate": "Wind",
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 548.99, "flavor": "distributed" }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "battleStart" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "buff", "stat": "attackDamagePct", "value": 30 }]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 25.56,
+          "durationSec": 10
+        },
+        { "kind": "buff", "stat": "defPct", "value": 17.95, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 90.01,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1421.69,
+          "flavor": "distributed",
+          "burstDesc": "allEnemies"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "bossElementGate": "Wind",
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 30.27, "durationSec": 10 }
+      ]
+    }
+  ]
+}
