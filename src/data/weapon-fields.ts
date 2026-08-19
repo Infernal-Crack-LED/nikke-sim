@@ -98,10 +98,15 @@ export function deriveWeaponFields(
 
   // Multi-muzzle weapons (muzzle_count > 1) fire that many projectiles per trigger, and the
   // datamined `damage` is PER-MUZZLE-shot — so per-trigger normal damage = damage × muzzle_count.
-  // Only quency-escape-queen (SMG) and zwei (SG) have muzzle_count=2; every other unit is ×1
-  // (byte-identical). Confirmed by quency's board: 5.06→10.12 moved her 0.546 COLD → 0.989 ±3%.
-  // (Core is a RATIO — coreAttackMultiplier — so it scales automatically; gauge lives in
-  // gauge-per-shot.json where these two are already hand-curated quirks. Do NOT double those.)
+  // The rule is universal; do NOT re-derive it from an enumeration of which units are affected
+  // (an earlier version of this comment named only `quency-escape-queen` and `zwei`, which went
+  // stale — the roster now carries SEVEN muzzle_count=2 units: `crow`, `k`, `noah`, `quency`,
+  // `quency-escape-queen`, `soline`, `zwei`).
+  // Confirmed by quency's board: 5.06→10.12 moved her 0.546 COLD → 0.989 ±3%.
+  // Core is a RATIO (coreAttackMultiplier) so it scales automatically. BURST GAUGE also takes the
+  // ×muzzle factor, and is applied by `src/data/gauge-per-shot-gen.ts` when it generates
+  // data/gauge-per-shot.json — that file is no longer hand-curated, so the muzzle factor belongs
+  // there and must NOT be double-applied here.
   const muzzle = shot.muzzle_count ?? 1;
   return {
     normalAttackMultiplier: round6(((shot.damage ?? 0) / 100) * muzzle),

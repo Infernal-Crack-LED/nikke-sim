@@ -29,12 +29,18 @@ const generated = buildGaugePerShot(characters) as unknown as Record<
 >;
 const committed = JSON.parse(readFileSync(OUT, 'utf8')) as Record<string, Row>;
 
+// `source` is compared too, not just the numbers: several rows carry evidence-bearing prose
+// (anis-star's measurement provenance, liberalio's corrected rl3 misread, sugar's never-read-from-
+// datamine bug) that a hand-edit could clobber without moving a single value. Without it, --check
+// and the vitest fixture — which deep-equals the whole object — would disagree about what "stale"
+// means, and the cheaper checker would be the permissive one.
 const FIELDS = [
   'basePerTrigger',
   'targetPerTrigger',
   'fullChargeBonus',
   'flatPerTrigger',
   'baseGaugeProb',
+  'source',
 ] as const;
 
 const added: string[] = [];
@@ -55,9 +61,13 @@ for (const slug of [
   }
   for (const f of FIELDS) {
     if ((a[f] ?? null) !== (b[f] ?? null)) {
-      changed.push(
-        `${slug}.${f}: ${String(a[f] ?? '—')} → ${String(b[f] ?? '—')}`
-      );
+      // `source` prose runs to hundreds of characters; truncate so one changed row cannot bury
+      // the rest of the report.
+      const show = (v: unknown) => {
+        const s = String(v ?? '—');
+        return s.length > 60 ? `${s.slice(0, 57)}...` : s;
+      };
+      changed.push(`${slug}.${f}: ${show(a[f])} → ${show(b[f])}`);
     }
   }
 }
