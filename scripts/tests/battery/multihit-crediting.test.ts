@@ -153,7 +153,7 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
       expect(r.trigTeamRate).toBe(r.baseTeamRate);
     }
     // and the two filmed comps (the only quantified shortfalls) are among them
-    expect(byName('iron sweep (run G)').baseFb).toBe(11);
+    expect(byName('iron sweep (run G)').baseFb).toBe(12);
     expect(byName('T5 wind-weak').baseFb).toBe(12);
   });
 

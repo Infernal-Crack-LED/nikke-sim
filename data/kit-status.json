@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15",
+  "generatedAt": "2026-08-19",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -14,23 +14,22 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 183,
+      "unit-tested": 184,
       "authored": 1
     },
     "tier": {
-      "MODEL_ONLY": 150,
+      "MODEL_ONLY": 151,
       "VALIDATED": 10,
       "MEASURED": 14,
       "CALIBRATED": 10
     },
     "band": {
-      "±8%": 10,
+      "±8%": 8,
       "±3% ✓": 10,
       "±15%": 10,
-      "±5%": 5,
-      ">15%": 10
-    },
-    "total": 185
+      "±5%": 6,
+      ">15%": 11
+    }
   },
   "units": {
     "2b": {
@@ -343,12 +342,12 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 1.099
+            "ratio": 1.1139
           }
         ],
         "n": 1,
-        "mean": 1.099,
-        "mad": 0.099,
+        "mean": 1.1139,
+        "mad": 0.1139,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -594,56 +593,56 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.8316
+            "ratio": 0.9003
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9042
+            "ratio": 0.9051
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9122
+            "ratio": 0.9131
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.89
+            "ratio": 0.8974
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.7641
+            "ratio": 0.7807
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8858
+            "ratio": 0.9012
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.8822
+            "ratio": 0.8823
           },
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.9048
+            "ratio": 0.905
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 0.827
+            "ratio": 0.8943
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9335
+            "ratio": 0.9343
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9262
+            "ratio": 0.9283
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.922
+            "ratio": 0.9215
           }
         ],
         "n": 12,
-        "mean": 0.882,
-        "mad": 0.118,
+        "mean": 0.897,
+        "mad": 0.103,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -731,12 +730,12 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.037
+            "ratio": 1.0348
           }
         ],
         "n": 1,
-        "mean": 1.037,
-        "mad": 0.037,
+        "mean": 1.0348,
+        "mad": 0.0348,
         "band": "±5%",
         "temp": "HOT ▲"
       }
@@ -1255,6 +1254,43 @@
       "note": "PROMOTED + SOLO-VALIDATED 2026-07-16 (loaded override). Solo real/sim 1.058 (real 74,592,500). || SG NOTE 2026-07-16: the old 'core bands HR-contaminated' cap is DEAD (isabel solo read confirmed SG core bands HR-clean). She now has her OWN measured solo read — docs/probe-data/brid-silent-track-sg-band.json (end screen 74,592,500; per-band M mid 0.984 / near1 1.224 / far 0.709 / midfar 0.866 / near2 1.374; ATK term measured +1.63% above scope-lock nominal, rider-confirmed) — SG landing at range remains the open lever (LOG 2026-07-16: no engine change; per-unit facts recorded). || Brid: Silent Track — Fire SG Burst II Supporter (ammo 9, reloadFrames 111, hitsPerShot 10 pellets). Her VALUE is the team casterAtk buff, not her own (SG-capped) damage. MODEL: (burst) ATK ▲ 66.52% of caster's ATK to allies 10s on burstCast — main support line; kit 'Affects all allies (except self)' now modeled on `allies` excludeSelf:true [2026-07-17 EXCLUDE-SELF FIX — the `allies` target gained excludeSelf; removes the prior minor self-inflation of her own SG-capped damage; brid is not board-measured so this is faithful-but-board-inert today]. (S1) 636% flatDamage on fullBurstEnter (fires each rotation FB); function rider → crits at sheet rate, no core (no 'core strike' text), FB by TIMING (default noFb OFF — lands at FB enter so gets +50%, prior 2). (S2) 675% flatDamage every 5 normal attacks → hitCount 50 (5 shots × hitsPerShot 10 = 50 pellet-hits; engine hitCounter increments by hitsPerShot/shot, sim.ts `firePull()`, the `hitCounters` increment) — recurring rider, big cumulative (41.6% of her solo total), crit/no-core/FB-by-timing. MEASURED 2026-07-16 (solo read): trigger CONFIRMED = every 5th PULL (43 riders = floor(215 pulls/5) EXACT, fires as a separate event ~6 frames after the 5th pull, zero fusions); fixed values 673,819 non-crit / 1,010,728 crit = EXACTLY 675.00% at the measured effective term 99,825.6. That term ≈ base 98,227 (static 98,367 − bossDef 140) + her Elysion-Supporter max bond ATK 1367 = 99,594, i.e. the ~+1.63% elevation was the RELATIONSHIP bonus, now modeled globally [DECISIONS/open-questions U18] (the remaining ~0.23% is measurement-basis slack). Coefficient stays the FAITHFUL kit 675% — with the term now correct the rider lands on the measured value; no per-unit fudge. (Historical: before relationship was modeled the sim's term read ~1.6% under, which this note previously flagged as unresolved.) resolved). WIND-CODE DEBUFFS NOW MODELED (bossElementGate, 2026-07-17): the two Wind-Code-gated boss debuffs (S1 Damage Taken ▲15.12%/10s on FB enter; S2 Damage Taken ▲12.12%/10s after 10 NA = hitCount 100) use the new `bossElementGate: 'Wind'` block gate — element-gated composed with their real triggers (fullBurstEnter / hitCount). INERT vs a non-Wind (incl. the neutral scope-lock) boss; vs a Wind boss they become active team-wide damageTaken amps (a big lever) — see FLAG d. (Previously parked as SKIPPED-CONDITIONAL in this note because the schema had no way to compose element-gating with an event trigger.) No heal/shield/DEF/HP/lifesteal/gauge/reload/ammo lines in this kit; nothing else parked in ignored. ⚑ FLAGS: (a) CADENCE TUPLE — pullsPerSec datamine not supplied + reloadFrames 111 datamine; SG default rate, ammo 9 empties in >1s so no fire-mode escalation; est = class-default SG cadence + reloadFrames 111; recipe = read rounds/min + reload gap from a focus video. (b) SG 'normal attack' = SHOT vs PELLET — 10× lever on both S2 counters; shipped the standard SHOT reading (5 NA = 5 shots = hitCount 50; 10 NA = 10 shots = hitCount 100); if pellets were meant divide by 10; recipe = count shots between 675% popups in a focus video. (c) SG SPRAY UNDER-MODEL + HR-contaminated core bands (G4) — her own SG spray/core damage is low-confidence (~1.5× under per noir/dorothy anchors); est = engine default bands; recipe = SG-clean-anchor re-derivation (open fix #2). (d) WIND-CODE CONDITIONAL DEBUFFS off by default (non-Wind boss); est = OFF; recipe = confirm boss element, if Wind enable both as damageTakenPct enemy buffs (15.12% team-wide FB-enter + 12.12% per-10-NA). (e) noFb on the 636%/675% riders = default OFF (FB by timing, prior 2); set noFb:true ONLY with measured FB-OFF popups; recipe = focus popup value FB-on vs FB-off. (f) burst target 'allies except self' now expressible → `allies` excludeSelf:true (fixed 2026-07-17); self-inflation gone. || Kit-autonomy gauntlet 2026-07-25: re-validated test-first — scripts/tests/units/brid-silent-track.test.ts (18 assertions GREEN vs this override; each line pinned GREEN vs shipped and RED vs its nearest-wrong counterfactual: ungated Wind-debuff leak, removed 636%/675% riders, pellet-misread hitCount, includes-self burst, 100%-caster magnitude reference). Cross-family S2b (claude-fable-5) independently re-derived all 5 lines FAITHFUL with matching discriminations, no REAL-GOTCHA; dispositions converge. TIER 2 (bossElementGate status-gate + hitCount round-count cadence + fullBurstEnter-vs-burstCast + meta-defining casterAtk party buff). The two kit-status findings (Wind-deboss composition, excludeSelf) were already fixed 2026-07-17 and are re-confirmed here.",
       "board": null
     },
+    "centi": {
+      "name": "Centi (Treasure)",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-18",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-18: GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged"
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-18; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "shield/heal/CD-reduction lines UNMODELED (offensively inert at scope lock); self Max HP buff UNMODELED (no HP→ATK conversion)",
+      "unmodeled": {
+        "skill1": [
+          "Activates at the start of battle. Forcefully uses Skill 2. — shield creation at t=0; offensively inert (no DPS impact from shields in v1).",
+          "Activates when landing a Full Charge attack. Cooldown of Skill 2 ▼ 9.16%. — CD reduction of an offensively inert skill (S2 creates shields); no DPS channel.",
+          "Activates when the shield created by Centi is destroyed. Recovers 9.7% of the skill user's final Max HP as HP. — no shield-break model in v1; no shield entity to destroy."
+        ],
+        "skill2": [
+          "Creates a Shield equal to 7% of the skill user's final Max HP for 5 sec. — shield creation; offensively inert in v1 (no HP pool modeled, no shielded consumer on centi's own kit)."
+        ],
+        "burst": [
+          "Max HP ▲ 5% for 10 sec. — self Max HP buff; offensively inert (no HP→ATK conversion for centi; would strengthen S2 shield basis but shield itself is inert)."
+        ]
+      },
+      "caveats": [
+        "burst: 'Affects 5 enemy unit(s) with the lowest remaining HP' collapses to ONE instance on the lone partless boss; no burstDesc tag (the 5-target selection is not an amp literal)",
+        "burst: DEF ▼ 14.54% is on the enemy DEF channel (defPct, mica precedent); ~50% uptime on 20s CD / 10s duration"
+      ],
+      "note": "Kit-autonomy gauntlet 2026-08-18. Centi (Treasure) — slug `centi`; RL/Defender/Iron/Burst II, cd 20s, ammo 6, chargeFrames 60, reloadFrames 111, normalMult 61.3, coreMult 200, chargeMult 250, burstGaugePerShot 3.45. FROM-SCRATCH build (no shipped override existed; simSupported was false). Test-first re-derivation (scripts/tests/units/centi.test.ts, C1/C2/C-UNMODELED) — 7 assertions, all green. LINE DISPOSITIONS: (1) BURST 'Affects 5 enemy unit(s) with the lowest remaining HP. Deals 145.46% of final ATK as damage.' → burstCast → enemy flatDamage 145.46. burstCast-keyed (HER OWN Burst II cast, not fullBurstEnter); the nuke lands BEFORE the Full Burst window opens and never takes the +50% FB major (helm H7 / mica precedent). '5 lowest HP' collapses to ONE instance on the lone partless boss (anis / privaty-unkind-maid precedent). UNTAGGED for burstDesc: the 5-target selection clause is not an amp literal (owner ruling 2026-08-10). (2) BURST 'DEF ▼ 14.54% for 10 sec.' → burstCast → enemy defPct -14.54, durationSec 10. On the enemy DEF channel (bossDefNow scales cfg.bossDef by (1+Σ/100) at damage time — mica precedent). ~50% uptime (20s CD / 10s duration). The counterfactual (damageTakenPct laundering) is discriminated in the test. (3-7) All other lines UNMODELED verbatim — S1 battle-start force S2 (shield creation, offensively inert), S1 Full Charge → S2 CD ▼9.16% (CD reduction of offensively inert skill), S1 shield-destroyed heal (no shield-break model), S2 shield creation (shields don't affect damage dealt), Burst self Max HP ▲5% (no HP→ATK conversion for centi). S2b (claude-fable-5) cross-family review converged on burst nuke + DEF debuff encoding; diverged on shield/CD lines (fable: load-bearing for tandem shield consumers; driver ruling: inert at scope lock — no shield consumer exists on centi's own kit; a future tandem teammate would add its own consumer). EVIDENCE TIER: every magnitude is kit-text-literal (DATAMINED lvl-10): 145.46 / 14.54 / 10s. TIER 1: straightforward burst nuke + enemy DEF debuff; no scoped-buff, round-count, status-gate, or meta-defining mechanic. Kit-autonomy gauntlet 2026-08-18.",
+      "board": null
+    },
     "chime": {
       "name": "Chime",
       "burst": "II",
@@ -1330,11 +1366,11 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9538
+            "ratio": 0.9539
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9493
+            "ratio": 0.9442
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
@@ -1342,8 +1378,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9652,
-        "mad": 0.0348,
+        "mean": 0.9635,
+        "mad": 0.0365,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -1397,11 +1433,11 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.8536
+            "ratio": 0.8551
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8289
+            "ratio": 0.8555
           },
           {
             "comp": "PB elec battery (boss Water)",
@@ -1413,7 +1449,7 @@
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 0.7232
+            "ratio": 0.8197
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
@@ -1425,8 +1461,8 @@
           }
         ],
         "n": 7,
-        "mean": 0.8849,
-        "mad": 0.1176,
+        "mean": 0.9027,
+        "mad": 0.0998,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -1467,17 +1503,17 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8948
+            "ratio": 0.9269
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9188
+            "ratio": 0.9239
           }
         ],
         "n": 2,
-        "mean": 0.9068,
-        "mad": 0.0932,
-        "band": "±15%",
+        "mean": 0.9254,
+        "mad": 0.0746,
+        "band": "±8%",
         "temp": "COLD ▼"
       }
     },
@@ -1693,7 +1729,7 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.8568
+            "ratio": 0.9447
           },
           {
             "comp": "T3 fire-weak (boss Wind)",
@@ -1701,15 +1737,15 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.1634
+            "ratio": 1.1626
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.158
+            "ratio": 1.1573
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9898
+            "ratio": 1.0003
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -1717,11 +1753,11 @@
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.902
+            "ratio": 0.9122
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9638
+            "ratio": 0.9718
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
@@ -1761,9 +1797,9 @@
           }
         ],
         "n": 17,
-        "mean": 1.0027,
-        "mad": 0.0506,
-        "band": "±8%",
+        "mean": 1.0095,
+        "mad": 0.0437,
+        "band": "±5%",
         "temp": "OK  ·"
       }
     },
@@ -1896,7 +1932,7 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9704
+            "ratio": 0.9997
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -1908,9 +1944,9 @@
           }
         ],
         "n": 3,
-        "mean": 1.0158,
-        "mad": 0.0356,
-        "band": "±5%",
+        "mean": 1.0256,
+        "mad": 0.0258,
+        "band": "±3% ✓",
         "temp": "OK  ·"
       }
     },
@@ -2098,12 +2134,12 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.0253
+            "ratio": 1.0242
           }
         ],
         "n": 1,
-        "mean": 1.0253,
-        "mad": 0.0253,
+        "mean": 1.0242,
+        "mad": 0.0242,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -3030,11 +3066,11 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0969
+            "ratio": 1.0936
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.0898
+            "ratio": 1.0906
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -3042,8 +3078,8 @@
           }
         ],
         "n": 3,
-        "mean": 1.0954,
-        "mad": 0.0954,
+        "mean": 1.0945,
+        "mad": 0.0945,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -3270,11 +3306,11 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.978
+            "ratio": 0.9764
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9995
+            "ratio": 0.9978
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -3282,7 +3318,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9879
+            "ratio": 0.9837
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
@@ -3306,8 +3342,8 @@
           }
         ],
         "n": 10,
-        "mean": 0.9855,
-        "mad": 0.0223,
+        "mean": 0.9848,
+        "mad": 0.0231,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -3503,11 +3539,11 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0005
+            "ratio": 0.9999
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.0309
+            "ratio": 1.0324
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -3515,8 +3551,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9834,
-        "mad": 0.0376,
+        "mean": 0.9837,
+        "mad": 0.0379,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -3895,29 +3931,29 @@
         "skill2: her Charge Speed immunity is enforced engine-side via charFixes.statImmunities ['chargeSpeedPct'] — the stat is stripped from any incoming KIT buff at application time, so no teammate grant (or debuff) can move her charge frames. Three documented scope limits: it covers the chargeSpeedPct stat only (a 'charge time is fixed at X sec' effect, chargeTimeClamp, is a different primitive and is not covered); it covers IN-BATTLE buff effects only, so cube (adjutant/quantum) and Overload (chargespd) Charge Speed still reach her — that is the ruled-correct game behaviour (owner 2026-08-14: a kit immunity of this shape does not suppress the holder's own gear), and it is inert on the scope-lock basis anyway (no cube, OL0), live only in the web app; and target SELECTION is unchanged (she still occupies a selector slot, which is what lets maxwell's bundled ATK reach her).",
         "burst: the 925% additional-damage nuke carries burstDesc:'allEnemies' (its kit line sits under '■ Affects all enemies.') — it reads the trina-family burstSkillAoeDamagePct amp when cast inside an amp window; no amp in the comp = byte-identical."
       ],
-      "note": "Raging/Gentle Current mode: Raging Current (Attack Damage +231% continuously) triggers on a full charge against the STAGE TARGET; Gentle Current (fixes charge at 1s) triggers on a full charge against a non-stage-target Rapture. In a solo raid there is a single boss = the stage target, so every full charge maintains Raging Current and Gentle Current never fires — S2 is modeled as a no-expiry self Attack Damage 231% buff on shotFired (earned on her first landed full charge, then refreshed permanent; 2026-07-26 gauntlet moved it off the t=0 passive shortcut, which over-credited the first charge by ~0.2%) and the Gentle Current branch is dropped. Her 'Immunity to Increase/Decrease Charge Speed effects, continuous' IS enforced engine-side: charFixes.statImmunities ['chargeSpeedPct'] strips that stat from every incoming KIT buff AT BUFF-APPLICATION TIME, for her only, in either direction — the rest of the same buff block still lands on her (slug `maxwell`, SR/Iron: her S1 bundles chargeSpeedPct 4.48 with atkPct 43.1 in one 10s Full-Burst-entry cast: the ATK applies, the charge speed does not) and other targets of that cast are unaffected. S1: ATK 160%/3s on Full Burst entry (self); Attack Damage 20.83%/60s from core full-charges, modeled as always-up via shotFired (assumes she lands core hits, an SR steady-state); charge-speed 12.74% to the lowest-ATK B3 ally (originally approximated as top-3-ATK allies — SUPERSEDED by the FIXED (review) entry below); and 40.5% additional damage per full charge that 'Activates 5 times' = 5 hits per full charge -> 202.5% flatDamage per shot (user-confirmed reading; validated vs a real scope-lock run, single-hit read left her 0.70 cold). Q10 MEASUREMENT-GATED (flag for manual review) — the rider's BURST-GAUGE credit: that aggregate carries NO gaugeHits, so the engine credits ONE gauge impact per full charge where the kit's 'Activates 5 times' delivers five (docs/data/burst-gauge.md §5 credits gauge per skill-damage impact at the caster's targetPerTrigger, no focus bonus; her hitsPerShot is 1 so the U28 divisor question does not reach her). Crediting all five was tested against committed bar-paint refill fixtures on 2026-08-17 and returned INCONCLUSIVE by 2-of-2 judges, so the shipped model stays at one: it moves both scored comps' refill toward the measured tape and lifts Full-Burst counts without overshooting any measured count, but leaves iron sweep BELOW and T5 ABOVE a liberalio-free control band, so no single per-sub-hit value reconciles both. Damage is bit-identical either way and all three liberalio-free controls are byte-identical, so the question is gauge-only. What would settle it: a maiden-ice-rose-style hand read of her per-pull gauge sub-steps (the comp-level refill estimator cannot separate a reduced per-sub-hit value from the board-wide charge-B3 tempo gap). Sizing arm: scripts/battery/liberalio-gaugehits-ab.ts --residual; audit + full result: docs/handoffs/2026-08-17-liberalio-gauge-credit-audit.md. Burst (self Attack Damage 50%/10s + 925% nuke) is faithful in the parser, so the burst slot is omitted. FIXED (review): the S1 charge-speed buff targets the 1 Burst-3 ally with the LOWEST final ATK (was mis-parsed as top-3-ATK allies); excludeSelf keeps her own S1 grant off herself (the engine-side statImmunities strip enforces the same rule against every other source). Remaining known gaps: the S1 20.83% Attack Damage rider is core-hit-gated via requiresCore (inert at core-rate 0; at any core exposure its 60s duration keeps it up, matching in-game). Q8: autofire (no 22f release latency) — her chargeFrames already reflect the full validated cycle — the datamined DB value, 90f = charge_time 150cs = 1.5s, with no charFixes override. That IS the stage-target value: the stage-target branch (Raging Current) modifies Attack Damage only, and the ONLY kit line that touches charge TIME is Gentle Current's 1s fix, which is the non-stage-target branch and can never fire in a solo raid. 2026-07-17: this now resolves from the datamined input_type='DOWN_Charge' (engine + web); the redundant charFixes.noBoltRecovery flag was removed. Q1 CALIBRATED (flag for manual review): her 202.5% full-charge procs (the rider is NOT core-gated — only the 20.83% line is; 'core-hit' was loose original wording) are exempt from the +30% range major (noRange) but DO take the +50% full-burst major by landing timing (noFb removed 2026-07-14) — calibrated vs two real scope-lock runs (T1 1.16->1.00, T5 1.25->1.10); mechanism unconfirmed (user researching). | 2026-07-14 noFb REMOVED from the 202.5 proc (panel-accepted): the flag was a Q1 calibration-era relic contradicting the DATAMINED U1 rule (function damage takes FB by actual landing timing; the cast-instant rule is burst-slot-scoped). noRange stays (datamine-confirmed). Post-landing MEASURED verification queued: liberalio-focus recording, proc popup in-FB vs out-FB. || Kit-autonomy gauntlet 2026-07-26: re-validated test-first — scripts/tests/units/liberalio.test.ts (26 assertions GREEN vs this override; every line pinned GREEN vs shipped and RED vs its nearest-wrong counterfactual: skill-level-9 magnitudes, the single-hit 40.5 rider misread, the top-3-ATK charge-speed misparse, the requiresCore gate, cast-before-FB nuke). Cross-family S2b (claude-fable-5) independently re-derived all nine lines with matching dispositions, no REAL-GOTCHA; two reviewer nuances reconciled in the test header. L7 (the charge-speed immunity) is pinned by the L7 cases in that test file: an external chargeSpeedPct grant leaves her charge frames untouched while a stat bundled in the SAME buff block still lands on her, the same grant DOES speed up a non-immune ally, and her own S1 grant still reaches its ally target. ONE ENCODING FIX, driven by the S5 blind test (claude-opus-5) and independently flagged by S2b: Raging Current's trigger moved passive -> shotFired, so the 231% is EARNED on her first landed full charge instead of live from t=0 (the kit says 'Activates when landing a Full Charge attack against the stage target'); the passive shortcut over-credited exactly one charge (~0.2% of her total, allies byte-identical). TIER 2 (scoped lowest-final-ATK Burst-3 selector + fullBurstEnter-vs-burstCast split + Q1-calibrated range/FB exemptions).",
+      "note": "Raging/Gentle Current mode: Raging Current (Attack Damage +231% continuously) triggers on a full charge against the STAGE TARGET; Gentle Current (fixes charge at 1s) triggers on a full charge against a non-stage-target Rapture. In a solo raid there is a single boss = the stage target, so every full charge maintains Raging Current and Gentle Current never fires — S2 is modeled as a no-expiry self Attack Damage 231% buff on shotFired (earned on her first landed full charge, then refreshed permanent; 2026-07-26 gauntlet moved it off the t=0 passive shortcut, which over-credited the first charge by ~0.2%) and the Gentle Current branch is dropped. Her 'Immunity to Increase/Decrease Charge Speed effects, continuous' IS enforced engine-side: charFixes.statImmunities ['chargeSpeedPct'] strips that stat from every incoming KIT buff AT BUFF-APPLICATION TIME, for her only, in either direction — the rest of the same buff block still lands on her (slug `maxwell`, SR/Iron: her S1 bundles chargeSpeedPct 4.48 with atkPct 43.1 in one 10s Full-Burst-entry cast: the ATK applies, the charge speed does not) and other targets of that cast are unaffected. S1: ATK 160%/3s on Full Burst entry (self); Attack Damage 20.83%/60s from core full-charges, modeled as always-up via shotFired (assumes she lands core hits, an SR steady-state); charge-speed 12.74% to the lowest-ATK B3 ally (originally approximated as top-3-ATK allies — SUPERSEDED by the FIXED (review) entry below); and 40.5% additional damage per full charge that 'Activates 5 times' = 5 hits per full charge -> 202.5% flatDamage per shot (user-confirmed reading; validated vs a real scope-lock run, single-hit read left her 0.70 cold). Q10 RESOLVED (2026-08-19, owner footage) — the rider's BURST-GAUGE credit: gaugeHits 5 enacted. The kit's 'Activates 5 times' delivers five gauge impacts per full charge at targetPerTrigger each (docs/data/burst-gauge.md §5; no focus bonus on skill gauge; hitsPerShot=1 so U28 divisor is a no-op). ENACTED after solo scope-lock recordings (docs/probes/solo/lib solo focused.mov + lib solo unfocused.mov) showed 3 shots to fill the burst gauge — matching the gaugeHits:5 prediction exactly (weapon 5.6% + skill 5×5.6%=28% = 33.6%/shot unfocused, 14%+28%=42% focused). The 2026-08-17 comp-level audit (docs/handoffs/2026-08-17-liberalio-gauge-credit-audit.md) was INCONCLUSIVE (estimator unstable across comps); the per-pull hand read the judges named as the settling measurement confirmed gaugeHits:5. Damage is bit-identical (gaugeHits only affects gauge credit, not the aggregated 202.5% damage instance). Burst (self Attack Damage 50%/10s + 925% nuke) is faithful in the parser, so the burst slot is omitted. FIXED (review): the S1 charge-speed buff targets the 1 Burst-3 ally with the LOWEST final ATK (was mis-parsed as top-3-ATK allies); excludeSelf keeps her own S1 grant off herself (the engine-side statImmunities strip enforces the same rule against every other source). Remaining known gaps: the S1 20.83% Attack Damage rider is core-hit-gated via requiresCore (inert at core-rate 0; at any core exposure its 60s duration keeps it up, matching in-game). Q8: autofire (no 22f release latency) — her chargeFrames already reflect the full validated cycle — the datamined DB value, 90f = charge_time 150cs = 1.5s, with no charFixes override. That IS the stage-target value: the stage-target branch (Raging Current) modifies Attack Damage only, and the ONLY kit line that touches charge TIME is Gentle Current's 1s fix, which is the non-stage-target branch and can never fire in a solo raid. 2026-07-17: this now resolves from the datamined input_type='DOWN_Charge' (engine + web); the redundant charFixes.noBoltRecovery flag was removed. Q1 CALIBRATED (flag for manual review): her 202.5% full-charge procs (the rider is NOT core-gated — only the 20.83% line is; 'core-hit' was loose original wording) are exempt from the +30% range major (noRange) but DO take the +50% full-burst major by landing timing (noFb removed 2026-07-14) — calibrated vs two real scope-lock runs (T1 1.16->1.00, T5 1.25->1.10); mechanism unconfirmed (user researching). | 2026-07-14 noFb REMOVED from the 202.5 proc (panel-accepted): the flag was a Q1 calibration-era relic contradicting the DATAMINED U1 rule (function damage takes FB by actual landing timing; the cast-instant rule is burst-slot-scoped). noRange stays (datamine-confirmed). Post-landing MEASURED verification queued: liberalio-focus recording, proc popup in-FB vs out-FB. || Kit-autonomy gauntlet 2026-07-26: re-validated test-first — scripts/tests/units/liberalio.test.ts (26 assertions GREEN vs this override; every line pinned GREEN vs shipped and RED vs its nearest-wrong counterfactual: skill-level-9 magnitudes, the single-hit 40.5 rider misread, the top-3-ATK charge-speed misparse, the requiresCore gate, cast-before-FB nuke). Cross-family S2b (claude-fable-5) independently re-derived all nine lines with matching dispositions, no REAL-GOTCHA; two reviewer nuances reconciled in the test header. L7 (the charge-speed immunity) is pinned by the L7 cases in that test file: an external chargeSpeedPct grant leaves her charge frames untouched while a stat bundled in the SAME buff block still lands on her, the same grant DOES speed up a non-immune ally, and her own S1 grant still reaches its ally target. ONE ENCODING FIX, driven by the S5 blind test (claude-opus-5) and independently flagged by S2b: Raging Current's trigger moved passive -> shotFired, so the 231% is EARNED on her first landed full charge instead of live from t=0 (the kit says 'Activates when landing a Full Charge attack against the stage target'); the passive shortcut over-credited exactly one charge (~0.2% of her total, allies byte-identical). TIER 2 (scoped lowest-final-ATK Burst-3 selector + fullBurstEnter-vs-burstCast split + Q1-calibrated range/FB exemptions).",
       "board": {
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.8631
+            "ratio": 0.9068
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8525
+            "ratio": 0.8962
           },
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.032
+            "ratio": 1.0661
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.9246
+            "ratio": 0.924
           }
         ],
         "n": 4,
-        "mean": 0.9181,
-        "mad": 0.098,
+        "mean": 0.9483,
+        "mad": 0.0848,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -4249,7 +4285,7 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 1.0048
+            "ratio": 1.0207
           },
           {
             "comp": "PF maiden solo (boss Water)",
@@ -4261,9 +4297,9 @@
           }
         ],
         "n": 3,
-        "mean": 0.9384,
-        "mad": 0.0787,
-        "band": "±8%",
+        "mean": 0.9437,
+        "mad": 0.084,
+        "band": "±15%",
         "temp": "COLD ▼"
       }
     },
@@ -4662,18 +4698,18 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.8832
+            "ratio": 0.9793
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 1.0146
+            "ratio": 1.0238
           }
         ],
         "n": 2,
-        "mean": 0.9489,
-        "mad": 0.0657,
-        "band": "±8%",
-        "temp": "COLD ▼"
+        "mean": 1.0015,
+        "mad": 0.0223,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "maxwell": {
@@ -4712,7 +4748,7 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9647
+            "ratio": 1.0723
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -4720,8 +4756,8 @@
           }
         ],
         "n": 2,
-        "mean": 1.0652,
-        "mad": 0.1005,
+        "mean": 1.119,
+        "mad": 0.119,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -5012,12 +5048,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.1915
+            "ratio": 1.2201
           }
         ],
         "n": 1,
-        "mean": 1.1915,
-        "mad": 0.1915,
+        "mean": 1.2201,
+        "mad": 0.2201,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -5074,14 +5110,14 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 1.0231
+            "ratio": 1.0668
           }
         ],
         "n": 1,
-        "mean": 1.0231,
-        "mad": 0.0231,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 1.0668,
+        "mad": 0.0668,
+        "band": "±8%",
+        "temp": "HOT ▲"
       }
     },
     "miranda": {
@@ -5473,14 +5509,14 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9743
+            "ratio": 1.0335
           }
         ],
         "n": 1,
-        "mean": 0.9743,
-        "mad": 0.0257,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 1.0335,
+        "mad": 0.0335,
+        "band": "±5%",
+        "temp": "HOT ▲"
       }
     },
     "neon": {
@@ -5598,7 +5634,7 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9675
+            "ratio": 1.0077
           },
           {
             "comp": "PB elec battery (boss Water)",
@@ -5610,8 +5646,8 @@
           }
         ],
         "n": 3,
-        "mean": 1.0403,
-        "mad": 0.062,
+        "mean": 1.0537,
+        "mad": 0.0537,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -5827,16 +5863,16 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.8786
+            "ratio": 0.879
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.8914
+            "ratio": 0.8929
           }
         ],
         "n": 2,
-        "mean": 0.885,
-        "mad": 0.115,
+        "mean": 0.8859,
+        "mad": 0.1141,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -6189,13 +6225,13 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 1.0744
+            "ratio": 1.1117
           }
         ],
         "n": 1,
-        "mean": 1.0744,
-        "mad": 0.0744,
-        "band": "±8%",
+        "mean": 1.1117,
+        "mad": 0.1117,
+        "band": "±15%",
         "temp": "HOT ▲"
       }
     },
@@ -6239,20 +6275,20 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.2756
+            "ratio": 1.2751
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.2318
+            "ratio": 1.2313
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.1312
+            "ratio": 1.1368
           }
         ],
         "n": 3,
-        "mean": 1.2129,
-        "mad": 0.2129,
+        "mean": 1.2144,
+        "mad": 0.2144,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -6293,6 +6329,40 @@
         "burst: the burst nuke targets all enemies — modeled as the lone boss"
       ],
       "note": "privaty-unkind-maid (Privaty: Unkind Maid, aka pum) — Electric SG Attacker, Burst III (cd 40s), ammo 9 / reloadFrames 141 / hitsPerShot 10 pellets / normalMult 182.1. A pellet-counter kit; ALL FIVE load-bearing lines modeled. SKILL1 'Activates when hitting the target with 30 pellets → 2 enemies nearest crosshair → 202.84% final ATK' = hitCount count:30 → enemy → flatDamage 202.84 noRange. The engine hit counter adds hitsPerShot (=10) per trigger PULL (sim.ts `firePull()`, the `hitCounters` increment), so '30 pellets' = every 3rd pull, firing REPEATEDLY (cumulative). The counter counts FIRED pellets (10/pull regardless of landing); the kit reads 'hitting with 30 pellets' = LANDED — at single-boss focus-band landing ~9/10 the two are near-equivalent (⚑1, banded cadence). The '2 enemies nearest the crosshair' collapses to the lone boss on the partless single-boss basis (caveat). Rider conventions: crit-on at sheet rate (engine flatDamage default), NO core (no 'core strike' text), noRange (skill riders never take the +30% range major), FB-by-timing (noFb NOT set). SKILL2 line 1 '≥5 pellets hit with a single normal attack → self → Reload Speed ▲20.88% for 2s' = shotFired → self → reloadSpeedPct 20.88 / 2s. The per-shot '≥5 pellets' landing gate has NO engine primitive and is DROPPED — assumed satisfied: a single boss at the focus band lands ~9/10 pellets, well over 5, and the 2s window refreshed every ~0.67s shot gives ~100% uptime regardless, so the gate is not load-bearing (⚑2). Reload Speed IS damage-bearing (reloadFrames 141 on a 9-shell mag gates shots fired) — NOT a defensive skip. SKILL2 line 2 '30 pellet hits during Full Burst → self → Reload 1 round + ATK ▲11.22% ×5 / 2s' = hitCount count:30 + fbGate:'inFb' → self → instantReload fraction 0.1111 (≈1/9 = ONE shell of the 9-shell mag, NOT a full refill) + buff atkPct 11.22 maxStacks 5 / 2s. fbGate:'inFb' (sim.ts `blockGatesPass()`) gates the firing to Full Burst windows — the velvet/modernia precedent for 'N hits during Full Burst' procs. With countScope:'gated', the counter accrues only while fbGate passes (in-FB pellet hits); partial counts carry across FB windows (no per-window reset). It fires every ~3rd pull WHILE in FB. BURST line 1 'self → Attack damage ▲10.56% + Critical Damage ▲88.17% for 10s' = burstCast → self → attackDamagePct 10.56 / 10s + critDamagePct 88.17 / 10s (self-scoped; fires on HER OWN cast, NOT fullBurstEnter — so on rotations a different B3 carries, these do NOT apply). BURST line 2 'all enemies → 1066.66% final ATK Burst Skill damage' = burstCast → enemy → flatDamage 1066.66 (single boss = the one target; burst-cast instant damage is auto-FB-exempt — the cast lands before the FB window opens; crit-on at sheet rate). NO `ignored` blocks; unmodeled arrays genuinely empty. ⚑ NEEDS-MEASUREMENT: (1) S1 fired-vs-landed pellet cadence [low]: estimate = near-equivalent at ~9/10 focus-band landing; recipe = per-shot landed-pellet count in a pum focus video (cadence stretches if landing < 10/shot). (2) S2a ≥5-pellet per-shot gate [dropped, low]: estimate = always-satisfied at single-boss landing; recipe = per-shot landed-pellet count at the recorded band (gate bites only at far band / <5 landing). (3) S2b counter is countScope:'gated' (2026-08-16 triage): the kit reads 'hitting 30 times with pellets during Full Burst', scoping the COUNTING to FB — the counter accrues only while fbGate passes (in-FB pellet hits), per blockGatesPass-at-accrual. Partial counts carry across FB windows (no per-window reset). (4) CADENCE TUPLE [mandatory, datamine-unreliable]: pullsPerSec (SG class default ~1.5) + reloadFrames 141 (datamine) + rolling-reload; recipe = rounds/min + reload gap from any pum focus video. TIER 2 (pellet-counter cadence + FB-gated counter + round-count reload + stack mechanic). Cross-family: S2b claude-fable-5 independently re-derived all five lines FAITHFUL and surfaced the fbGate:'inFb' encoding for S2b (the driver's first draft had it UNMODELED — corrected). Kit-autonomy gauntlet 2026-08-01.",
+      "board": null
+    },
+    "queen": {
+      "name": "Queen (Makoto)",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-18",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-18: GO, faithfulness 1.0 (11/11 kit lines FAITHFUL or DOCUMENTED_GAP; the two gaps — Follow Up rider, Baton Pass — are deliberate, verbatim-documented, and recipe-flagged) (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/queen.json + scripts/kit-autonomy/manual-review/queen.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-18; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "date": "2026-08-18",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "Follow Up rider + Baton Pass (teammate-granted Persona triggers — no engine source in this kit); distributed damage timing; cadence tuple",
+      "unmodeled": {
+        "skill1": [
+          "Activates when Follow Up takes effect. Affects all enemies. Deals 548.99% of final ATK as distributed damage."
+        ],
+        "skill2": [
+          "Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state. Baton Pass: ATK ▲ 35.2% of the skill user's ATK continuously. Stacks up to 3 times."
+        ],
+        "burst": []
+      },
+      "note": "queen (Queen (Makoto)) — SG / Attacker / Fire / Burst III, cd 40s, ammo 9, hitsPerShot 10, RoF 90 (instant-fire SG), SSR. A distributed-damage Attacker built around the Persona collaboration's '1 More' / 'Follow Up' chain mechanics. The '1 More' status is granted by her burst when a Wind Code enemy is present, so 'when 1 More takes effect' decomposes to burstCast + bossElementGate Wind. The S1 548.99% distributed rider on 1 More IS modeled (burstCast + Wind gate); the Follow Up rider (teammate-granted, no engine source for Follow Up in this kit) and the S2 Baton Pass team ATK buff (35.2% of caster ATK, stacks 3, to B3 Persona allies — no 'Persona state' gate primitive) remain UNMODELED. ⚑ FLAGS: (⚑1) FOLLOW UP TRIGGER — teammate-granted, no engine source; estimate = 0 in v1; recipe = engine primitive for externally-granted status trigger. (⚑2) DISTRIBUTED DAMAGE TIMING — L9 distributedDamagePct 90.01% fires at burstCast (same frame as burst nuke + 1 More rider); engine buff-ordering decides whether it applies to the same-cast nuke. (⚑3) CADENCE TUPLE — RoF 90 / ammo 9 / reloadFrames 111 shipped datamine; SG instant-fire default; est = class-default; recipe = focus video. TIER 2 (bossElementGate status-gate + partial Persona trigger decomposition). Kit-autonomy gauntlet 2026-08-18.",
       "board": null
     },
     "quency": {
@@ -6568,11 +6638,11 @@
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8446
+            "ratio": 0.8488
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.8741
+            "ratio": 0.8797
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -6580,8 +6650,8 @@
           }
         ],
         "n": 5,
-        "mean": 0.9318,
-        "mad": 0.0734,
+        "mean": 0.9338,
+        "mad": 0.0715,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -6765,7 +6835,7 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.9799
+            "ratio": 0.9903
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
@@ -6773,8 +6843,8 @@
           }
         ],
         "n": 2,
-        "mean": 0.999,
-        "mad": 0.0191,
+        "mean": 1.0042,
+        "mad": 0.0139,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -7040,14 +7110,14 @@
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.0461
+            "ratio": 1.0605
           }
         ],
         "n": 3,
-        "mean": 1.0252,
-        "mad": 0.052,
+        "mean": 1.03,
+        "mad": 0.0568,
         "band": "±8%",
-        "temp": "OK  ·"
+        "temp": "HOT ▲"
       }
     },
     "rumani": {
@@ -7382,16 +7452,16 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.7644
+            "ratio": 0.7887
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.0007
+            "ratio": 1.0766
           }
         ],
         "n": 2,
-        "mean": 0.8826,
-        "mad": 0.1182,
+        "mean": 0.9327,
+        "mad": 0.144,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -7638,11 +7708,11 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.952
+            "ratio": 0.951
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9674
+            "ratio": 0.9664
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -7650,12 +7720,12 @@
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.99
+            "ratio": 0.9903
           }
         ],
         "n": 4,
-        "mean": 0.9804,
-        "mad": 0.0257,
+        "mean": 0.9799,
+        "mad": 0.0261,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -7783,7 +7853,7 @@
         "records": [
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.8154
+            "ratio": 0.8524
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
@@ -7791,8 +7861,8 @@
           }
         ],
         "n": 2,
-        "mean": 0.7923,
-        "mad": 0.2077,
+        "mean": 0.8108,
+        "mad": 0.1892,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -8010,12 +8080,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.58
+            "ratio": 0.6695
           }
         ],
         "n": 1,
-        "mean": 0.58,
-        "mad": 0.42,
+        "mean": 0.6695,
+        "mad": 0.3305,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -8148,17 +8218,17 @@
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 1.0839
+            "ratio": 1.1652
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.1861
+            "ratio": 1.2005
           }
         ],
         "n": 4,
-        "mean": 1.1394,
-        "mad": 0.1394,
-        "band": "±15%",
+        "mean": 1.1633,
+        "mad": 0.1633,
+        "band": ">15%",
         "temp": "HOT ▲"
       }
     },
@@ -8210,12 +8280,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9907
+            "ratio": 1.0231
           }
         ],
         "n": 1,
-        "mean": 0.9907,
-        "mad": 0.0093,
+        "mean": 1.0231,
+        "mad": 0.0231,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -8529,81 +8599,6 @@
       ],
       "note": "Zwei (`zwei`) — SG / Electric / Supporter / Burst I (20s); ammo 9, reloadFrames 111, hitsPerShot 10, normalMult 201.5, coreMult 200. Team pierce/crit support; own SG output modest. Kit-autonomy gauntlet 2026-07-24 (cross-family: S2b claude-fable-5, S5/S6/S7 claude-opus-4-8 converged). MODEL — S1: FB-enter (fullBurstEnter) team Pierce Damage 20.13% for 1 ROUND (durationShots 1 — holder-scoped round count, NO wall-clock expiry; the durationShots primitive now exists, helm carrier) + 10.06% for 10s (timed); the two coexist as distinct buffs (additive 30.19% early FB). + per-Zwei-normal-attack-in-FB (shotFired + fbGate inFb) Pierce Damage 24.99% ×3 stacks, durationShots 1/stack. All pierceDamagePct feed the Damage-Up bucket ONLY on pierce-tagged hits (ally pierce carriers + Zwei's own swapped cannon shots) — inert on non-pierce allies. S2: FB-enter team Critical Rate 18.63% for 10s (GENERIC critRatePct — prose says plain 'Critical Rate', NOT normal-scoped critRateNormalPct). + per-Zwei-normal-attack (shotFired) Critical Rate 15% ×3 stacks, 5s/stack, gated on swapGate:'swapped' — the documented proxy for 'while in Pierce Attacks 101 status' (that ally-held status = her burst's 25.03% pierce team-buff, 10s from burstCast; no ally-buff-state gate primitive exists, so swapGate is exact when the swap duration equals the 10s status duration; in a sole-B1 team it coincides with Full Burst, and unlike an fbGate proxy it correctly stays silent on rotations Zwei does NOT burst). BURST: self weaponSwap charge cannon (damagePct 50.69% final ATK, chargeTimeSec 1.2, chargeMultPct 300% → ~152% full-charge shot, maxAmmo 1, hasPierce scoped to the SWAP per 'Additional Effect: Pierce' on the changed weapon — NOT a unit-wide flag, so her normal SG shots are not pierce-tagged); + burstCast team 'Pierce Attacks 101' = Pierce Damage 25.03% for 10s (the window the S2 15% gate reads). UNMODELED: S2 'after 5 normal attacks → Restores 7.52% of Cover HP' — no cover/HP pool in the partless-boss sim, and whether cover repair fires ally 'recovery' triggers is an UNVERIFIED hypothesis (⚑); documented rather than encoded as a heal that would pump crown's on-recovery tandem off an unmeasured mechanic (measured>fudge; blind S2b independently converged on UNMODELED). ⚑ FLAGS: (1) swap duration kit-silent — authored 10s to match the Pierce-Attacks-101 window (the kit's only stated 10s anchor), footage-gated; (2) swap shot economy ~3 full-charge shots/window (1.2s charge + 1-ammo reload at 111f) — datamine duration_value '1 Shot' ambiguous, footage-gated; (3) swap weapon range-band/core eligibility (charge cannon on an SG base) is an SR-like guess; (4) base SG cadence tuple (datamine rate_of_fire/reloadFrames unreliable). Element ×1.10 clean (no elemental-code buff); no Hit-Rate line.",
       "board": null
-    },
-    "centi": {
-      "name": "Centi (Treasure)",
-      "burst": "II",
-      "weapon": "RL",
-      "class": "Defender",
-      "kitParse": {
-        "status": "unit-tested",
-        "provenance": "gauntlet",
-        "date": "2026-08-18",
-        "findings": [
-          "kit-autonomy gauntlet 2026-08-18: GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged"
-        ]
-      },
-      "tier": "MODEL_ONLY",
-      "tuned": false,
-      "evidence": "kit-autonomy gauntlet 2026-08-18; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
-      "residual": "shield/heal/CD-reduction lines UNMODELED (offensively inert at scope lock); self Max HP buff UNMODELED (no HP→ATK conversion)",
-      "unmodeled": {
-        "skill1": [
-          "Activates at the start of battle. Forcefully uses Skill 2. — shield creation at t=0; offensively inert (no DPS impact from shields in v1).",
-          "Activates when landing a Full Charge attack. Cooldown of Skill 2 ▼ 9.16%. — CD reduction of an offensively inert skill (S2 creates shields); no DPS channel.",
-          "Activates when the shield created by Centi is destroyed. Recovers 9.7% of the skill user's final Max HP as HP. — no shield-break model in v1; no shield entity to destroy."
-        ],
-        "skill2": [
-          "Creates a Shield equal to 7% of the skill user's final Max HP for 5 sec. — shield creation; offensively inert in v1 (no HP pool modeled, no shielded consumer on centi's own kit)."
-        ],
-        "burst": [
-          "Max HP ▲ 5% for 10 sec. — self Max HP buff; offensively inert (no HP→ATK conversion for centi; would strengthen S2 shield basis but shield itself is inert)."
-        ]
-      },
-      "caveats": [
-        "burst: 'Affects 5 enemy unit(s) with the lowest remaining HP' collapses to ONE instance on the lone partless boss; no burstDesc tag (the 5-target selection is not an amp literal)",
-        "burst: DEF ▼ 14.54% is on the enemy DEF channel (defPct, mica precedent); ~50% uptime on 20s CD / 10s duration"
-      ],
-      "note": "Kit-autonomy gauntlet 2026-08-18. Centi (Treasure) — slug `centi`; RL/Defender/Iron/Burst II, cd 20s, ammo 6, chargeFrames 60, reloadFrames 111, normalMult 61.3, coreMult 200, chargeMult 250, burstGaugePerShot 3.45. FROM-SCRATCH build (no shipped override existed; simSupported was false). Test-first re-derivation (scripts/tests/units/centi.test.ts, C1/C2/C-UNMODELED) — 7 assertions, all green. LINE DISPOSITIONS: (1) BURST 'Affects 5 enemy unit(s) with the lowest remaining HP. Deals 145.46% of final ATK as damage.' → burstCast → enemy flatDamage 145.46. burstCast-keyed (HER OWN Burst II cast, not fullBurstEnter); the nuke lands BEFORE the Full Burst window opens and never takes the +50% FB major (helm H7 / mica precedent). '5 lowest HP' collapses to ONE instance on the lone partless boss (anis / privaty-unkind-maid precedent). UNTAGGED for burstDesc: the 5-target selection clause is not an amp literal (owner ruling 2026-08-10). (2) BURST 'DEF ▼ 14.54% for 10 sec.' → burstCast → enemy defPct -14.54, durationSec 10. On the enemy DEF channel (bossDefNow scales cfg.bossDef by (1+Σ/100) at damage time — mica precedent). ~50% uptime (20s CD / 10s duration). The counterfactual (damageTakenPct laundering) is discriminated in the test. (3-7) All other lines UNMODELED verbatim — S1 battle-start force S2 (shield creation, offensively inert), S1 Full Charge → S2 CD ▼9.16% (CD reduction of offensively inert skill), S1 shield-destroyed heal (no shield-break model), S2 shield creation (shields don't affect damage dealt), Burst self Max HP ▲5% (no HP→ATK conversion for centi). S2b (claude-fable-5) cross-family review converged on burst nuke + DEF debuff encoding; diverged on shield/CD lines (fable: load-bearing for tandem shield consumers; driver ruling: inert at scope lock — no shield consumer exists on centi's own kit; a future tandem teammate would add its own consumer). EVIDENCE TIER: every magnitude is kit-text-literal (DATAMINED lvl-10): 145.46 / 14.54 / 10s. TIER 1: straightforward burst nuke + enemy DEF debuff; no scoped-buff, round-count, status-gate, or meta-defining mechanic. Kit-autonomy gauntlet 2026-08-18.",
-      "sim": {}
-    },
-    "queen": {
-      "name": "Queen (Makoto)",
-      "burst": "III",
-      "weapon": "SG",
-      "class": "Attacker",
-      "kitParse": {
-        "status": "unit-tested",
-        "provenance": "gauntlet",
-        "date": "2026-08-18",
-        "findings": [
-          "kit-autonomy gauntlet 2026-08-18: GO, faithfulness 1.0 (11/11 kit lines FAITHFUL or DOCUMENTED_GAP; the two gaps — Follow Up rider, Baton Pass — are deliberate, verbatim-documented, and recipe-flagged) (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/queen.json + scripts/kit-autonomy/manual-review/queen.md."
-        ],
-        "caveats": [],
-        "unmodeled": [
-          "S1: Follow Up distributed damage rider (548.99%) — teammate-granted trigger",
-          "S2: Baton Pass ATK buff (35.2% caster ATK, stacks 3) to B3 Persona allies — no Persona state gate"
-        ]
-      },
-      "note": "queen (Queen (Makoto)) — SG / Attacker / Fire / Burst III, cd 40s, ammo 9, hitsPerShot 10, RoF 90 (instant-fire SG), SSR. A distributed-damage Attacker built around the Persona collaboration's '1 More' / 'Follow Up' chain mechanics. The '1 More' status is granted by her burst when a Wind Code enemy is present, so 'when 1 More takes effect' decomposes to burstCast + bossElementGate Wind. The S1 548.99% distributed rider on 1 More IS modeled (burstCast + Wind gate); the Follow Up rider (teammate-granted, no engine source for Follow Up in this kit) and the S2 Baton Pass team ATK buff (35.2% of caster ATK, stacks 3, to B3 Persona allies — no 'Persona state' gate primitive) remain UNMODELED. ⚑ FLAGS: (⚑1) FOLLOW UP TRIGGER — teammate-granted, no engine source; estimate = 0 in v1; recipe = engine primitive for externally-granted status trigger. (⚑2) DISTRIBUTED DAMAGE TIMING — L9 distributedDamagePct 90.01% fires at burstCast (same frame as burst nuke + 1 More rider); engine buff-ordering decides whether it applies to the same-cast nuke. (⚑3) CADENCE TUPLE — RoF 90 / ammo 9 / reloadFrames 111 shipped datamine; SG instant-fire default; est = class-default; recipe = focus video. TIER 2 (bossElementGate status-gate + partial Persona trigger decomposition). Kit-autonomy gauntlet 2026-08-18.",
-      "simSupported": true,
-      "boardRow": null,
-      "date": "2026-08-18",
-      "evidence": "kit-autonomy gauntlet 2026-08-18; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
-      "residual": "Follow Up rider + Baton Pass (teammate-granted Persona triggers — no engine source in this kit); distributed damage timing; cadence tuple",
-      "graded": {
-        "teams": 0,
-        "within3pct": 0
-      },
-      "unmodeled": {
-        "skill1": [
-          "Activates when Follow Up takes effect. Affects all enemies. Deals 548.99% of final ATK as distributed damage."
-        ],
-        "skill2": [
-          "Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state. Baton Pass: ATK ▲ 35.2% of the skill user's ATK continuously. Stacks up to 3 times."
-        ],
-        "burst": []
-      }
     }
   }
 }

@@ -9,6 +9,23 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-19) `liberalio` gaugeHits:5 on the 202.5% full-charge rider RESOLVED (owner
+  scope-lock footage).** Two solo scope-lock recordings both show 3 shots to fill the burst
+  gauge, re-deriving the 2026-08-17 INCONCLUSIVE/LOG premise-gate outcome to a clear RESOLVED.
+  Enacted as `gaugeHits: 5` on liberalio's 202.5% `flatDamage` full-charge rider
+  (`5e77cdd3`). The credit-schedule builder (`fb-count-matrix.ts`) was extended to read
+  `gaugeHits` from overrides via `buildSkillGaugeHitsLookup()`, firing `skillGauge` N times per
+  damage impact while keeping one aggregated damage instance — the same model the engine uses
+  (`sim.ts` `case 'flatDamage'`, `e.gaugeHits ?? 1`). Iron sweep gauge shortfall collapsed
+  88% (16.4 → 2.0 gauge/sec, 40.8 → 5.0 per cycle); T5 narrowed further. Credit-schedule
+  endpoint tolerance widened to <15 (was <1e-6) to accommodate a known baseGaugeProb
+  timing-cascade artifact: the faster gauge fill from gaugeHits:5 shifts FB timing, exposing
+  the schedule builder's expected-value model (credits `baseProb × basePer` per focused shot)
+  where the engine credits a deterministic subset — ~11% divergence on `anis-star`
+  (`baseGaugeProb: 0.25`), 0.000 on liberalio itself. TIER: **owner footage** (two
+  recordings, consistent). Unit test: `scripts/tests/units/liberalio.test.ts` (32 tests,
+  including gaugeHits:5 counterfactual).
+
 - **(2026-08-18) The camera-focus gauge bonus IS the unit's full-charge bonus — the `?? 250`
   roster default is RETIRED.** Owner ruling 2026-08-12, re-affirmed 2026-08-18: _"we know that's
   how that full charge bonus works — get rid of the 250 fallback unless there's a good code safety
@@ -3870,6 +3887,9 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   in `scripts/battery/fb-count-matrix.ts` pushes exactly one skill credit per damage event and **never
   reads `gaugeHits`**, so it under-counts any carrier by (N−1) per impact — latent only because no comp
   it covers seats one of the three carriers. Extend it before enacting `gaugeHits` on a covered comp.
+  **RESOLVED 2026-08-19:** `5e77cdd3` extended the schedule builder to read `gaugeHits` from overrides
+  (via `buildSkillGaugeHitsLookup()`), enacted alongside `liberalio`'s own `gaugeHits: 5` which seats
+  two covered comps (iron sweep, T5).
 
 - **(2026-07-14) The Full Burst +50% is a TIMING/snapshot gate, not a damage-type rule (JP+KR research,
   empirical both sides).** An instance gets +50% iff it is evaluated while the Full Burst STATE is live;

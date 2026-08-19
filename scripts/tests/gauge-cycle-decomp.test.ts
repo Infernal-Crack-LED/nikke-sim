@@ -71,17 +71,17 @@ function decomp(name: string) {
 }
 
 describe('gauge cycle decomposition (fb-count-regression LOG finding)', () => {
-  it('PG iron sweep: SIM refill-from-zero drift-guard [3.5,5.5] (real bar-paint: 2.342s — sim is SLOW)', () => {
+  it('PG iron sweep: SIM refill-from-zero drift-guard [2.0,4.0] (real bar-paint: 2.342s — sim is SLOW; band widened 2026-08-19 after gaugeHits:5 reduced liberalio-driven shortfall)', () => {
     const d = decomp('PG iron sweep (boss Electric)');
-    expect(d.excess).toBeGreaterThan(3.5);
-    expect(d.excess).toBeLessThan(5.5);
+    expect(d.excess).toBeGreaterThan(2.0);
+    expect(d.excess).toBeLessThan(4.0);
   });
 
-  it('T5/T1 wind-weak: SIM refill-from-zero drift-guard [3.0,4.5] (real T5 1.75-1.82s; T1 has NO footage measurement)', () => {
+  it('T5/T1 wind-weak: SIM refill-from-zero drift-guard [2.0,4.5] (real T5 1.75-1.82s; T1 has NO footage measurement; lower bound dropped 2026-08-19 after gaugeHits:5)', () => {
     const t5 = decomp('T5 wind-weak probe (boss Iron)');
     const t1 = decomp('T1 wind-weak (boss Iron)');
     for (const d of [t5, t1]) {
-      expect(d.excess).toBeGreaterThan(3.0);
+      expect(d.excess).toBeGreaterThan(2.0);
       expect(d.excess).toBeLessThan(4.5);
     }
   });
@@ -89,7 +89,7 @@ describe('gauge cycle decomposition (fb-count-regression LOG finding)', () => {
   it('N3 scarlet/liberalio: 15s FB duration from soda-twinkling-bunny Golden-Chip max, refill in band', () => {
     const d = decomp('N3 scarlet/liberalio iron (boss Iron)');
     expect(d.fbDur).toBeCloseTo(15.0, 1);
-    expect(d.excess).toBeGreaterThan(3.0);
+    expect(d.excess).toBeGreaterThan(1.5);
   });
 
   it('N6 baseline (non-liberalio, currently PASSES): refill is AT LEAST as slow as the disabled comps — the H0b signal', () => {
@@ -100,20 +100,16 @@ describe('gauge cycle decomposition (fb-count-regression LOG finding)', () => {
     expect(n6.excess).toBeGreaterThanOrEqual(pg.excess - 0.5);
   });
 
-  it('PI2 misc B3s: SIM drift-guard — sim makes PI2 fastest, but the real tape INVERTS this (real PI2 2.09-2.11s > real T5 1.75-1.82s)', () => {
+  it('PI2 misc B3s: SIM drift-guard — absolute band only (relative ordering vs T5/T1 dropped 2026-08-19: gaugeHits:5 makes liberalio comps refill faster, inverting the sim ordering)', () => {
     const d = decomp('PI2 misc B3s RERUN w/ video (boss Water)');
-    const t5 = decomp('T5 wind-weak probe (boss Iron)');
-    const t1 = decomp('T1 wind-weak (boss Iron)');
     expect(d.excess).toBeGreaterThan(1.5);
     // Band re-derived 2026-08-09 (2.x → 3.16): the faithfulness-enactment batch gave this
     // comp's grave her kit Prediction-end ammo dump (one forced ~3.35s reload per burst
     // cycle — MG gauge feed pauses), slowing the comp's refill-from-zero.
-    // ⚠ The two relative asserts below pin SIM ORDERING ONLY. They were once described as
-    // carrying "the negative-control CLAIM"; they do not. Measurement contradicts the ordering
-    // they encode (real T5 1.75-1.82s < real PI2 2.09-2.11s), so a green here says the sim has
-    // not drifted — it says nothing about the game.
+    // ⚠ Relative ordering asserts (PI2 < T5/T1) were dropped 2026-08-19: the gaugeHits:5 fix
+    // makes liberalio-seated comps (T5, T1) refill faster than PI2 (no liberalio), inverting
+    // the old sim ordering. The real tape always had T5 faster (1.75-1.82s < PI2 2.09-2.11s),
+    // so the sim now agrees with the tape on this point.
     expect(d.excess).toBeLessThan(3.5);
-    expect(d.excess).toBeLessThan(t5.excess);
-    expect(d.excess).toBeLessThan(t1.excess);
   });
 });

@@ -186,18 +186,23 @@ const TO_LIB = { kind: 'alliesOfElement', element: 'Wind' };
 const TO_HELM = { kind: 'alliesOfElement', element: 'Water' };
 
 /**
- * L3b arm: credit all FIVE rider sub-hits (`gaugeHits: 5`) — the 2026-08-17 audit's proposed fix,
- * deliberately NOT shipped. Damage is byte-identical either way (one aggregated 202.5 instance),
- * so only the gauge channel moves. Sized in scripts/battery/liberalio-gaugehits-ab.ts.
+ * L3b counterfactual: strip `gaugeHits` back to 1 — the OLD shipped state before the
+ * 2026-08-19 owner-footage enactment. Damage is byte-identical either way (one aggregated
+ * 202.5 instance), so only the gauge channel moves.
  */
-const libGaugeHits5 = withPatchedOverride('liberalio', (ov) => {
+const libGaugeHits1 = withPatchedOverride('liberalio', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage' && x.atkPct === 202.5);
   if (!e) {
     throw new Error('liberalio S1 202.5 rider missing — fixture is stale');
   }
-  e.gaugeHits = 5;
+  if (e.gaugeHits !== 5) {
+    throw new Error(
+      'liberalio S1 202.5 rider gaugeHits is not 5 — the 2026-08-19 enactment was reverted'
+    );
+  }
+  delete e.gaugeHits;
 });
 
 /** Raw SimResult (not just events/totals) — `unitOf` needs it for the gauge counters. */
@@ -214,10 +219,11 @@ const cf = run({ liberalio: libAllCf });
 /**
  * L3b: bursting disabled so the bar never fills and `gaugeGenerated` accrues uncapped — the
  * gaugeHits difference is then exactly (5-1) extra `skillGauge` calls per full charge.
+ * Shipped state (2026-08-19) is gaugeHits:5; counterfactual strips it to 1.
  */
-const noBurstGaugeBase = runResult({}, { disableBursts: true });
-const noBurstGaugeFive = runResult(
-  { liberalio: libGaugeHits5 },
+const noBurstGaugeShipped = runResult({}, { disableBursts: true });
+const noBurstGaugeOne = runResult(
+  { liberalio: libGaugeHits1 },
   { disableBursts: true }
 );
 /** requiresCore discrimination: identical basis but the boss core is never exposed. */
@@ -416,39 +422,33 @@ describe('liberalio — kit spec', () => {
     });
   });
 
-  describe('L3b — the rider credits ONE gauge impact per full charge (KNOWN GAP, measurement-gated)', () => {
+  describe('L3b — the rider credits FIVE gauge impacts per full charge (ENACTED 2026-08-19)', () => {
     // The kit's "Activates 5 times" is one aggregated damage instance of 202.5 but five physical
-    // impacts by that wording, and `docs/data/burst-gauge.md` §5 credits gauge per skill-damage
-    // impact at `targetPerTrigger / hitsPerShot` with no focus bonus (her hitsPerShot is 1, so the
-    // U28 divisor question does not reach her). An aggregated multi-hit therefore needs
-    // `flatDamage.gaugeHits` to declare its count — and HERS DELIBERATELY DOES NOT CARRY IT.
+    // impacts by that wording. As of 2026-08-19, `gaugeHits: 5` is SHIPPED on the rider — the
+    // engine credits FIVE `skillGauge` calls per trigger, matching the kit wording. ENACTED after
+    // owner solo scope-lock recordings (docs/probes/solo/lib solo focused.mov + unfocused.mov)
+    // showed 3 shots to fill the burst gauge — matching gaugeHits:5 exactly (weapon 5.6% + skill
+    // 5×5.6% = 33.6%/shot unfocused; 14%+28% = 42% focused). The 2026-08-17 comp-level audit was
+    // INCONCLUSIVE (estimator unstable); the per-pull hand read the judges named confirmed it.
     //
-    // This group pins the SHIPPED state (1 credit) so it cannot drift silently in either direction,
-    // and pins what the fix would move. It is NOT an endorsement of 1: crediting all five was tested
-    // 2026-08-17 via /scientific-method and returned INCONCLUSIVE at 2-of-2 (decision LOG — see
-    // docs/handoffs/scientific-method-harness.md). It moves both scored comps' refill TOWARD the
-    // measured tape and lifts FB counts without overshooting any measured count, but leaves iron
-    // sweep below and T5 above a `liberalio`-free control band, so no single per-sub-hit value
-    // reconciles both. Whoever settles it flips the shipped side and this group's expectation
-    // together. Sizing arm: scripts/battery/liberalio-gaugehits-ab.ts --residual.
-    const libBase = unitOf(noBurstGaugeBase, 'liberalio');
-    const libFive = unitOf(noBurstGaugeFive, 'liberalio');
+    // This group pins the SHIPPED state (5 credits) and the old counterfactual (1 credit) as a
+    // guard against accidental reversion. Damage is bit-identical either way.
+    const libShipped = unitOf(noBurstGaugeShipped, 'liberalio');
+    const libOne = unitOf(noBurstGaugeOne, 'liberalio');
 
-    // This assertion also pins the SHIPPED side: were `gaugeHits: 5` already on the rider, the two
-    // arms would be identical and the difference would read 0 instead of 4 × pulls × 5.6.
-    it('DISCRIMINATING (gauge): the 5-sub-hit arm would add 4 skillGauge calls per full charge', () => {
-      expect(libBase.pulls).toBeGreaterThan(0);
+    it('DISCRIMINATING (gauge): stripping gaugeHits to 1 loses 4 skillGauge calls per full charge', () => {
+      expect(libShipped.pulls).toBeGreaterThan(0);
       // her targetPerTrigger is 560 ⇒ each skillGauge call feeds 5.6 gauge-percent
-      const expectedDiff = 4 * libBase.pulls * 5.6;
-      expect(libFive.gaugeGenerated - libBase.gaugeGenerated).toBeCloseTo(
+      const expectedDiff = 4 * libShipped.pulls * 5.6;
+      expect(libShipped.gaugeGenerated - libOne.gaugeGenerated).toBeCloseTo(
         expectedDiff,
         -1
       );
     });
 
     it('the sub-hit credit is gauge-ONLY — damage is identical in both arms', () => {
-      expect(totals(noBurstGaugeFive).liberalio).toBeCloseTo(
-        totals(noBurstGaugeBase).liberalio,
+      expect(totals(noBurstGaugeOne).liberalio).toBeCloseTo(
+        totals(noBurstGaugeShipped).liberalio,
         6
       );
     });

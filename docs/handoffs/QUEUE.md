@@ -85,11 +85,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    source-hunt fix, and symmetric-E_min analysis — all three 2026-08-16). Application-gauge engine
    landed 2026-08-16 (owner rulings ×3). `anis-star` carve-out removal enacted 2026-08-16 (PR #125
    merged). Opening-window timing promoted to owner ruling 2026-08-16 (DECISIONS). Open:
-   - **Iron-sweep FB shortfall (sim 11 vs measured 13–14) — OPEN (footage-gated).** `takina` S2
-     re-modeled as 15s pulse; comp still reads 11 FBs. All five seated kits audited clean (no
-     missing application-gauge credits). H-A team-context route CLOSED by owner ruling. The
-     `anis-star` U28 divisor read is what remains of the encoding audit path.
-     `iron sweep (run G)` regression comp stays disabled.
+   - **Iron-sweep FB shortfall — narrowed 88% by `liberalio` gaugeHits:5 (2026-08-19, DECISIONS).**
+     Shortfall collapsed 16.4 → 2.0 gauge/sec (40.8 → 5.0 per cycle). Residual ~2 gauge/sec is
+     within the focus-column ceiling's reach. The `anis-star` U28 divisor read remains as the
+     encoding audit path. `iron sweep (run G)` regression comp stays disabled pending footage
+     verification of the residual.
    - **Clean-bin-time vs full-window denominator validation — PARTIALLY LANDED.**
      `fbDuration` now requires/defaults to a pinned `estimator` (`paint` for calibrated controls),
      and `validateCleanBinDenominator` in `scripts/probe/fill-trace-compare.ts` compares both
