@@ -1,0 +1,122 @@
+{
+  "slug": "centi",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Forcefully uses Skill 2.",
+      "disposition": "FAITHFUL",
+      "scope": "Skill cast, not attack-scoped; fires once regardless of weapon state.",
+      "durationSemantics": "Instant one-shot at battle start (frame 0); the cast's shield then follows Skill 2's own 5 sec duration.",
+      "triggerIdentity": "battleStart (once, t=0) \u2014 a FORCE-CAST of Skill 2, distinct from Skill 2's own cooldown timer. Per the force-cast convention, Skill 2's cadence first-fires t=0 because of THIS line, then repeats at CD.",
+      "targetSet": "Self (the cast); the cast's shield resolves to all allies per Skill 2's own clause.",
+      "nearestWrongModel": "Skill 2 modeled as a bare interval trigger first firing at t=CD (t=20s), dropping the t=0 force-cast \u2014 the classic no-'Activates when'-clause default applied without honoring this line.",
+      "distinguishingAssertion": "A shield event (from centi's skill2) targeting all 5 units is emitted at ~frame 0. RED under nearest-wrong: first shield event appears no earlier than ~frame 1200 (20s). Also assert no DOUBLE cast near t=0 (the force-cast must not stack with an independent t=0 interval fire).",
+      "inertness": "Moves no damage directly; only shield-event timing and tandem-trigger availability shift.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Cooldown of Skill 2 \u25bc 9.16%.",
+      "disposition": "FIX",
+      "scope": "Full Charge attacks ONLY, and on LANDING (on-hit, not on trigger pull / not on cast). RL at chargeFrames 60 fully charges every auto shot, so in practice every landed shot procs \u2014 in and out of Full Burst (no FB gate in the text).",
+      "durationSemantics": "No duration stated \u2014 this is an instantaneous cooldown reduction applied per landing, NOT a persistent stat buff. Percent basis flagged \u2691: 9.16% of the 20s base CD = 1.832s per landing (percent-of-base is the literal reading; percent-of-remaining is the alternative to pin).",
+      "triggerIdentity": "Per-landed-full-charge (hitCount-per-shot semantics on a 1-hit RL; equivalently shot-landed), self-targeted, effect = tick the live Skill 2 timer down. NOT a passive.",
+      "targetSet": "Self (her own Skill 2 timer).",
+      "nearestWrongModel": "Two near-misses: (a) a static passive 'Skill 2 CD \u00d70.9084' \u2192 fixed ~18.17s shield interval, ignoring fire cadence; (b) reading 9.16 as SECONDS via skillCooldownReductionSec 9.16 \u2192 ~10.84s interval. Faithful per-landing tick-down at her ~1.3\u20131.4s/shot cadence (60 charge frames + release latency, \u2691) compounds to shields roughly every 8\u20139s.",
+      "distinguishingAssertion": "Measure consecutive skill2 shield-event gaps in the event log over 180s: faithful per-landing model gives gaps \u2248 8\u20139s (each landed full charge during the CD window shaves ~1.832s); RED under (a) gaps \u2248 18.2s and under (b) gaps \u2248 10.8s. Equivalently assert total shield casts in 180s sits in the faithful band, strictly above both misread bands. Secondary: the gap should LENGTHEN if her firing is suppressed (e.g. reload stretch), proving cadence-coupling.",
+      "inertness": "Centi's own damage totals must NOT move from this line (it is pure shield cadence); no damage event may carry it.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "shield ... destroyed \u2192 Recovers 9.7% Max HP",
+      "disposition": "UNMODELED",
+      "scope": "Heal to all allies, 9.7% of CASTER's final Max HP.",
+      "durationSemantics": "Instant on destruction event.",
+      "triggerIdentity": "Shield DESTROYED (broken by enemy damage) \u2014 NOT shield expiry. The sim models no shield HP pool and no incoming boss damage, so the destruction event is unreachable at scope; the line cannot fire.",
+      "targetSet": "All allies.",
+      "nearestWrongModel": "Firing the heal on shield EXPIRY (every 5s lapse) \u2014 a phantom recovery event every shield cycle that would over-credit any on-recovery consumer teammate (Crown-style 'when recovery takes effect' kits) in tandem comps.",
+      "distinguishingAssertion": "NO heal/recovery events attributable to this line ever fire: with a patched teammate carrying a 'recovery'-triggered buff, that trigger receives ZERO activations sourced from centi (she has no other heal). RED under nearest-wrong: one recovery burst per shield cycle.",
+      "inertness": "Entire line inert at scope \u2014 no events, no damage, no tandem procs.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Shield 7% of user's final Max HP, 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Defensive shield \u2014 but tandem-live: it must EMIT shield events (the 'shielded' trigger / requiresShielded gate channel). The taxonomy forbids skipping shield lines as inert.",
+      "durationSemantics": "durationSec 5 \u2014 genuine wall-clock seconds (no round wording).",
+      "triggerIdentity": "Skill 2 has NO activation clause of its own: its cadence is owned externally \u2014 battle-start force-cast (S1 line 1) + the 20s CD shortened per-landing (S1 line 2). Do not author an additional independent interval that double-fires.",
+      "targetSet": "All allies INCLUDING self ('Affects all allies' \u2014 no except-self clause); shield magnitude keys off the CASTER's Max HP (caster-scaled, not per-target).",
+      "nearestWrongModel": "Skipped as 'defensive, no damage' with no shield effect emitted \u2014 silently killing every shield-synergy teammate's gate \u2014 or mis-targeted self-only.",
+      "distinguishingAssertion": "Each cast emits a shield event to all 5 units with maxHpPct 7 (caster basis); a patched teammate with a 'shielded' trigger fires once per centi cast, and a requiresShielded-gated block is live during (and only during) the 5s windows. RED if zero shield events or self-only targeting.",
+      "inertness": "Adds no damage instance of its own; centi's own totals unchanged by the shield effect itself.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 145.46% of final ATK as damage.",
+      "disposition": "FAITHFUL",
+      "scope": "Instant burst-cast damage. 'Affects 5 enemy unit(s) with the lowest remaining HP' collapses to ONE instance against the single partless raid boss \u2014 the count clause selects targets, it does not multiply hits.",
+      "durationSemantics": "Instant, once per her own burst cast.",
+      "triggerIdentity": "burstCast (HER OWN Burst II cast) \u2014 NOT fullBurstEnter and NOT stage-2 chain entry. Fires only on rotations centi actually wins the Burst II cast.",
+      "targetSet": "Enemy (the boss), single instance.",
+      "nearestWrongModel": "Emitting 5 damage instances against the lone boss (727.3% total), or letting the hit take the +50% Full Burst major (burst-cast damage lands BEFORE the FB window opens \u2014 verified project fact).",
+      "distinguishingAssertion": "Exactly ONE burst-bucket damage event per centi burstCast, atkPct 145.46, with fbMajorApplied false and rangeApplied false on the event; total burst-bucket delta equals one instance per cast. RED under \u00d75 (five events / 5\u00d7 delta) and under FB-credit (fbMajorApplied true).",
+      "inertness": "Zero burst-bucket events from this line on rotations where the OTHER Burst II unit (fixture: crown) takes the stage-2 cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF \u25bc 14.54% for 10 sec.",
+      "disposition": "FIX",
+      "scope": "Boss DEBUFF \u2014 a WHOLE-TEAM damage lever (every attacker's hits subtract less DEF for 10s), not a self buff and not defensive. The highest-risk skip in this kit.",
+      "durationSemantics": "durationSec 10 from her cast \u2014 wall-clock, correct as seconds.",
+      "triggerIdentity": "burstCast (own Burst II). Order flag \u2691: whether her own 145.46% hit lands before or after the debuff applies on the same cast is prose-silent \u2014 pin the ordering in the test rather than assuming.",
+      "targetSet": "Enemy (boss) \u2014 expect a boss-held buffApply with casterIdx===null and targetIdx===null per the harness's boss-debuff convention.",
+      "nearestWrongModel": "Encoding as damageTakenPct 14.54 (a multiplicative \u00d71.1454 on final damage \u2014 wrong mechanic: DEF \u25bc restores a FLAT DEF\u00d70.1454 to the (ATK\u2212DEF) term, identical absolute per-hit gain for small and large hits) \u2014 or dropping it entirely because the schema's defPct is documented self-inert.",
+      "distinguishingAssertion": "During the 10s post-cast window, a teammate's per-hit final damage rises by a constant FLAT amount \u2248 0.1454 \u00d7 bossDEF per hit \u2014 the absolute delta is the SAME for a low-multiplier and a high-multiplier hit. RED under damageTakenPct: deltas scale proportionally (\u00d71.1454) with hit size. Also assert the boss-held buffApply (stat+value filter, casterIdx null) exists for exactly ~10s and teammate damage outside the window is untouched.",
+      "inertness": "No effect outside the 10s windows; no effect on rotations she does not cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP \u25b2 5% for 10 sec.",
+      "disposition": "FAITHFUL",
+      "scope": "Self stat buff (her OWN Max HP).",
+      "durationSemantics": "durationSec 10 \u2014 seconds, correct.",
+      "triggerIdentity": "burstCast (own Burst II), self block.",
+      "targetSet": "Self only.",
+      "nearestWrongModel": "Dropped as 'defensive, inert' (violates the keep-the-stat rule \u2014 a future HP-scaling consumer reads it), or granted to allies, or encoded as casterMaxHpPct semantics leaking to teammates. Note it ALSO slightly feeds her own kit: skill2's shield and the S1 heal key off her final Max HP.",
+      "distinguishingAssertion": "On her burst cast, a buffApply with stat 'maxHpFlat' (targetMaxHpPct resolves to flat HP) targeting ONLY centi, value = 5% of her Max HP, expiring ~10s later \u2014 AND total damage for all 5 units is IDENTICAL with this effect patched out (no HP\u2192ATK scaler anywhere in the comp). RED if any teammate receives it or any damage total moves.",
+      "inertness": "All damage totals, all teammates \u2014 fully damage-inert in this kit; presence is asserted via the event log only.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:battle-start force-cast of Skill 2",
+    "skill1:full-charge landing \u2192 Skill 2 CD \u25bc 9.16%",
+    "skill2:7% caster-Max-HP shield to all allies, 5s",
+    "burst:145.46% ATK instant damage (single instance, no FB major)",
+    "burst:boss DEF \u25bc 14.54% for 10s (flat DEF-term lift)",
+    "burst:self Max HP \u25b2 5% for 10s (event-asserted, damage-inert)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "\u25a0 Activates when the shield created by Centi is destroyed. Affects all allies. Recovers 9.7% of the skill user's final Max HP as HP."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Three shared-prior misreads I expect the driver to have risked: (1) DEFENSIVE-KIT SKIP \u2014 every line here except the burst nuke looks 'defensive'; the faithful model still has three damage-relevant levers: the shield's tandem 'shielded' events, the shield-destroyed heal's INERTNESS (must not fire on expiry), and the boss DEF \u25bc team lift. A model where centi emits no events but her burst hit would pass a totals-only test and be wrong everywhere tandem matters. (2) CDR SEMANTICS \u2014 'Cooldown of Skill 2 \u25bc 9.16%' is a PERCENT applied per LANDED full charge; the two attractor misreads (static \u00d70.9084 stat; 9.16 read as seconds) give shield cadences of ~18.2s and ~10.8s vs the faithful cadence-coupled ~8\u20139s \u2014 assert the inter-cast gap, not just 'a shield exists'. The percent basis (of base 20s vs of remaining) is a genuine \u2691; whichever is chosen must be pinned explicitly in the test. (3) FIXTURE TRAP \u2014 centi is Burst II: controlComp(carry) seats the carry beside crown (also Burst II), so the two compete for every stage-2 cast under first-ready selection, and centi may cast on only a subset of rotations (or none). Every burst-line assertion must FIRST establish, from burstCast events, which rotations are hers, and the burst lines must be inert on crown's rotations. Do not key any burst effect to fullBurstEnter/stageEnter \u2014 that over-credits precisely because another B2 is present. Also reconcile: Skill 2's cadence is jointly owned by S1's two lines (force-cast t=0 + per-landing CDR on the 20s base CD) \u2014 authoring an extra independent interval alongside the force-cast double-casts at t\u22480. Finally, the DEF \u25bc needs the boss-DEF term of the damage formula (flat per-hit lift), NOT damageTakenPct \u2014 the flat-vs-proportional per-hit delta is the distinguishing observable.",
+  "verdict": "GO (same-model only)",
+  "model": "claude-fable-5"
+}

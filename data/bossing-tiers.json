@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-03",
+  "updated": "2026-08-18",
   "source": "bakery-bot DB nikke_characters.prydwen_tiers.bossing",
   "tiers": {
     "2b": "B",
@@ -144,6 +144,7 @@
     "product-08": "F",
     "product-12": "F",
     "product-23": "F",
+    "queen": "?",
     "quency": "D",
     "quency-escape-queen": "A",
     "quiry": "E",
