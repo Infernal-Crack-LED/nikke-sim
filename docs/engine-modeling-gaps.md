@@ -738,6 +738,34 @@ number, and what separates "does not charge" from "data went missing". Sourcing 
 `ccee21f7` (retroactive record: DECISIONS 2026-08-13); the default retirement in `8d92c8fe`
 (DECISIONS 2026-08-18).
 
+### 20d. `k`'s burst weapon swap costs her a rotation step — ⚑ OPEN (observed 2026-08-18)
+
+Surfaced by the gauge-table generator (§20 above), which corrected `k` (SMG/Electric) from the SMG
+class modal 20 to her datamined 40 — she fires **two muzzles** per pull, and the muzzle factor was
+never applied because she had no row at all. Corroborated: `crow` (SMG/Fire), `quency` (SMG/Electric
+— the base unit, NOT `quency-escape-queen`) and `soline` (SMG/Iron — NOT `soline-frost-ticket`,
+which is SG/Water) all carry the identical raw 2000, and the muzzle-2 treatment was already
+committed for `quency-escape-queen`.
+
+At the corrected value, her `liter`/`crown`/`k` fixture straddles a rotation boundary: **the swap arm
+completes 4 burst casts, the swap-removed arm completes 5.** Measured with everything else identical
+(`scripts/tests/units/k.test.ts`; k 111.9M / 1869 shots / 4 casts with the swap vs 114.6M / 2322
+shots / 5 casts without). The swap replaces ~20 pulls/s of SMG fire with ~2.4 pulls/s of SG fire for
+its 10s window, so the arms diverge in shot count by ~450 over the fight.
+
+WHY THIS IS NOT SELF-EVIDENTLY CORRECT: the swap window sits inside Full Burst, where the gauge lock
+discards every credit, so the swap should not be able to cost gauge directly — and indeed the swap
+arm ends with MORE uncapped `gaugeGenerated` (431.2 vs 406.8), which is the signature of it spending
+more time OUT of Full Burst rather than generating better. The causality is therefore unexplained:
+something other than gauge-during-the-window is moving her cast count, plausibly ammo/reload state
+on the revert. Until that is understood, whether the swap SHOULD cost a rotation step is open.
+
+CONSEQUENCE ALREADY TAKEN: the spec's `base.totals.k > noSwap.totals.k` assertion — which justified
+itself as isolating "the weapon choice alone" — was retired, because a 4-cast run versus a 5-cast run
+isolates nothing about weapons. It is replaced by a pin on the cast-count divergence itself, with an
+instruction to restore a real weapon comparison if the arms ever match again. To settle: trace her
+ammo/reload state across the swap revert, or build a fixture where both arms hold the same cast count.
+
 ### 20c. U28 rider gauge: is one emission per PULL right, or one per HIT? — ⚑ OPEN (2026-08-18)
 
 The U28 gauge half landed 2026-08-13 (`src/engine/sim.ts`, the `extraHitDamagePct` rider path in

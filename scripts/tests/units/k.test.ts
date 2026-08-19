@@ -208,15 +208,32 @@ describe('k — kit spec', () => {
       ).toBeGreaterThanOrEqual(bursts.length * 18);
     });
 
-    it('DISCRIMINATING: removing the swap zeroes swap-bucket damage and is a modest net loss', () => {
+    it('DISCRIMINATING: removing the swap zeroes swap-bucket damage', () => {
       expect(kSwapHits(noSwap.events).length).toBe(0);
-      // The swap's self ATK/Attack-Damage buffs apply regardless of which weapon fires (a separate
-      // burstCast block), so this isolates the weapon choice alone: continuous buffed SMG fire loses
-      // ~2.15s/10s to reload downtime (ammo 120 @ 20/s), while the swap's landing-derated 92.5% total
-      // (56-75% effective per pull at this fixture's bands) still nets ahead — a real but MODEST margin
-      // (~11% on this fixture), not the ~10x the pre-fix 925 misread implied.
-      expect(base.totals.k).toBeGreaterThan(noSwap.totals.k);
-      expect(base.totals.k).toBeLessThan(noSwap.totals.k * 1.5);
+      expect(kSwapHits(base.events).length).toBeGreaterThan(0);
+    });
+
+    it('the two arms diverge by a FULL BURST, so their totals are not a weapon comparison', () => {
+      // THIS ASSERTION REPLACED A CONFOUNDED ONE (2026-08-18). It used to read
+      // `base.totals.k > noSwap.totals.k` on the rationale that the swap's self buffs apply either
+      // way, so the totals "isolate the weapon choice alone". That rationale is now false: with k's
+      // burst-gauge value corrected (SMG 20 → her datamined 40, two muzzles per pull), the arms no
+      // longer complete the same number of bursts — base casts 4, noSwap casts 5. A 4-cast run
+      // versus a 5-cast run cannot isolate anything about which weapon fires, and the ~2.4% total
+      // gap between them is mostly that missing cast.
+      //
+      // Pinned as an OBSERVATION of a real modeled consequence, not endorsed as correct: whether
+      // the swap SHOULD cost a rotation step is unsettled (docs/engine-modeling-gaps.md §20d).
+      // Deliberately NOT "fixed" by flipping the inequality — that would pin the confound.
+      const baseCasts = kBursts(base.events).length;
+      const noSwapCasts = kBursts(noSwap.events).length;
+      expect(baseCasts).toBe(4);
+      expect(noSwapCasts).toBe(5);
+      expect(
+        noSwapCasts,
+        'arms must differ in cast count — if they ever match, restore a real weapon-choice ' +
+          'comparison here instead of this pin'
+      ).toBeGreaterThan(baseCasts);
     });
 
     it('DISCRIMINATING: the pre-fix buggy magnitude (925, a 10x per-pellet misread) reads ~10x higher', () => {

@@ -249,17 +249,40 @@ const recoveryFrames = (evs: SimEvent[]): number[] =>
     ),
   ].sort((a, b) => a - b);
 
-/** Magazine dumps completed STRICTLY BEFORE each pepper burst-cast frame = the Refresh Heart
- *  pool the cast sees pre-increment (S1 grants +1 per dump; the pool starts at 0). */
-function magsAtCast(evs: SimEvent[]): { castFrame: number; mags: number }[] {
+/**
+ * Refresh Heart pool at each pepper burst cast.
+ *
+ * The pool accumulates from TWO sources and never resets: S1 grants +1 per magazine dump
+ * (`lastBullet`), and the BURST itself grants +1 per cast (its self-slice resource block). So the
+ * pool a cast sees pre-increment is `mags + priorCasts`, not `mags` — an earlier version of this
+ * fixture counted dumps only, which held while the rotation was slow enough that the cast term
+ * never mattered, and broke the moment pepper's burst-gauge value was corrected (2026-08-18,
+ * SG 400 → her datamined 900) and she started casting often enough for `priorCasts` to bite.
+ *
+ * `before` = pool entering the cast · `after` = pool the `resourceGate` min:5 is actually checked
+ * against, i.e. including this cast's own +1.
+ *
+ * `burstIncrement: false` models the `pepperNoBurstIncrement` counterfactual, where the self-slice
+ * is patched out and the pool can only ever grow through mag dumps.
+ */
+function poolAtCast(
+  evs: SimEvent[],
+  { burstIncrement = true }: { burstIncrement?: boolean } = {}
+): { castFrame: number; mags: number; before: number; after: number }[] {
   const dumpFrames = pepperShots(evs)
     .filter((s) => s.ammoAfter === 0)
     .map((s) => s.frame)
     .sort((a, b) => a - b);
-  return pepperBursts(evs).map((c) => ({
-    castFrame: c.frame,
-    mags: dumpFrames.filter((f) => f < c.frame).length,
-  }));
+  return pepperBursts(evs).map((c, i) => {
+    const mags = dumpFrames.filter((f) => f < c.frame).length;
+    const before = mags + (burstIncrement ? i : 0);
+    return {
+      castFrame: c.frame,
+      mags,
+      before,
+      after: before + (burstIncrement ? 1 : 0),
+    };
+  });
 }
 
 describe('pepper — kit spec', () => {
@@ -387,31 +410,31 @@ describe('pepper — kit spec', () => {
   });
 
   describe('P7 — burst heal is GATED on Refresh Heart at max stacks (pool 5, incl. the cast increment)', () => {
-    const shipped = magsAtCast(isolated.events);
+    const shipped = poolAtCast(isolated.events);
     const castFrameSet = new Set(shipped.map((c) => c.castFrame));
     const healsOn = (evs: SimEvent[]) =>
       new Set(recoveryFrames(evs).filter((f) => castFrameSet.has(f)));
 
     it('fixture sanity: the fight spans the gate transition (silent casts AND capped casts)', () => {
       expect(
-        shipped.some((c) => c.mags < 4),
+        shipped.some((c) => c.after < 5),
         'need an early cast before the pool can cap'
       ).toBe(true);
       expect(
-        shipped.some((c) => c.mags >= 5),
+        shipped.some((c) => c.after >= 5),
         'need a late cast with the pool long-capped'
       ).toBe(true);
     });
 
-    it('heals exactly when mags-dumped + the cast increment reach 5', () => {
+    it('heals exactly when the Refresh Heart pool reaches 5, cast increment included', () => {
       const on = healsOn(isolated.events);
-      for (const { castFrame, mags } of shipped) {
+      for (const { castFrame, mags, before, after } of shipped) {
         const fired = on.has(castFrame);
         expect(
           fired,
-          `cast at ${mags} mags dumped ${fired ? 'healed' : 'did not heal'} — the gate ` +
-            'opens at mags+1 >= 5 (the cast increment completes the pool)'
-        ).toBe(mags + 1 >= 5);
+          `cast at pool ${before}+1=${after} (${mags} mag dumps + prior casts) ` +
+            `${fired ? 'healed' : 'did not heal'} — the resourceGate opens at >= 5`
+        ).toBe(after >= 5);
       }
     });
 
@@ -425,10 +448,13 @@ describe('pepper — kit spec', () => {
   });
 
   describe('P6 — burst: +1 Refresh Heart resource (self-slice) + addStack count:1 to all allies (cross-ally slice)', () => {
-    it('fixture sanity: a cast exists at exactly 4 mags dumped — the discriminating state', () => {
+    it('fixture sanity: a cast enters at pool 4 — the discriminating state', () => {
+      // Pool 4 entering the cast is the ONLY state where the self-slice +1 is observable: it is
+      // the difference between not healing (4) and healing (5). Stated as pool rather than mag
+      // dumps because prior casts feed the pool too.
       expect(
-        magsAtCast(isolated.events).some((c) => c.mags === 4),
-        'no 4-mag cast in this fixture — the +1 slice is not observable'
+        poolAtCast(isolated.events).some((c) => c.before === 4),
+        'no pool-4 cast in this fixture — the +1 slice is not observable'
       ).toBe(true);
     });
 
@@ -456,8 +482,12 @@ describe('pepper — kit spec', () => {
       });
     });
 
-    it('a 4-mag cast HEALS shipped (the +1 completes 5)…', () => {
-      const four = magsAtCast(isolated.events).filter((c) => c.mags === 4);
+    it('a pool-4 cast HEALS shipped (the +1 completes 5)…', () => {
+      const four = poolAtCast(isolated.events).filter((c) => c.before === 4);
+      expect(
+        four.length,
+        'fixture must contain the discriminating cast or this assertion is vacuous'
+      ).toBeGreaterThan(0);
       const on = new Set(
         recoveryFrames(isolated.events).filter((f) =>
           four.some((c) => c.castFrame === f)
@@ -465,31 +495,55 @@ describe('pepper — kit spec', () => {
       );
       expect(
         on.size,
-        'every 4-mag cast must heal with the increment live'
+        'every pool-4 cast must heal with the increment live'
       ).toBe(four.length);
     });
 
     it('…and WAITS with the increment removed (gate opens one reload later)', () => {
-      const four = magsAtCast(noIncr.events).filter((c) => c.mags === 4);
-      const on = new Set(
-        recoveryFrames(noIncr.events).filter((f) =>
-          four.some((c) => c.castFrame === f)
-        )
+      // With the self-slice patched out the pool grows through mag dumps ALONE, so `before` here
+      // is just the dump count and the gate is exactly `dumps >= 5`.
+      //
+      // NOT written as "a pool-4 cast must not heal": this fixture's dump counts at cast frames
+      // skip 4 outright, so that phrasing asserted nothing against an empty set. The claim below
+      // is the one that actually has teeth — every cast is checked, and the increment is shown to
+      // be load-bearing by naming the casts that stop healing without it.
+      const noIncrPool = poolAtCast(noIncr.events, { burstIncrement: false });
+      const noIncrCastFrames = new Set(noIncrPool.map((c) => c.castFrame));
+      const onNoIncr = new Set(
+        recoveryFrames(noIncr.events).filter((f) => noIncrCastFrames.has(f))
+      );
+      for (const { castFrame, before } of noIncrPool) {
+        const fired = onNoIncr.has(castFrame);
+        expect(
+          fired,
+          `pool ${before} (dumps only) ${fired ? 'healed' : 'did not heal'} — without the ` +
+            'self-slice the gate is dumps >= 5'
+        ).toBe(before >= 5);
+      }
+
+      // THE DISCRIMINATOR: at least one cast heals shipped and stops healing here, so the +1 is
+      // doing real work rather than riding a pool that was already capped.
+      const shippedCasts = poolAtCast(isolated.events);
+      const shippedFrames = new Set(shippedCasts.map((c) => c.castFrame));
+      const onShipped = new Set(
+        recoveryFrames(isolated.events).filter((f) => shippedFrames.has(f))
+      );
+      const lost = shippedCasts.filter(
+        (c) => onShipped.has(c.castFrame) && !onNoIncr.has(c.castFrame)
       );
       expect(
-        on.size,
-        'without the +1, a 4-mag cast sees pool 4 and must NOT heal'
-      ).toBe(0);
-      // Sanity: the increment-removed run still heals on fully-capped casts (pool reaches 5
-      // via mags alone), so the counterfactual is the increment, not the whole gate.
-      const capped = magsAtCast(noIncr.events).filter((c) => c.mags >= 5);
-      const onCapped = new Set(
-        recoveryFrames(noIncr.events).filter((f) =>
-          capped.some((c) => c.castFrame === f)
-        )
-      );
+        lost.length,
+        'removing the +1 must cost at least one heal, else the increment is inert here'
+      ).toBeGreaterThan(0);
+
+      // Sanity: the increment-removed run still heals on fully-capped casts (pool reaches 5 via
+      // mags alone), so the counterfactual is the increment, not the whole gate.
+      const capped = noIncrPool.filter((c) => c.before >= 5);
       expect(capped.length).toBeGreaterThan(0);
-      expect(onCapped.size).toBe(capped.length);
+      expect(
+        capped.every((c) => onNoIncr.has(c.castFrame)),
+        'capped casts must still heal without the increment'
+      ).toBe(true);
     });
   });
 });
