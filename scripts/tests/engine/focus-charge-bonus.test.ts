@@ -64,17 +64,24 @@ describe('a unit that never full-charges takes NO focus bonus', () => {
   });
 });
 
-describe('PENDING_TEAM_ISOLATION still overrides the rule', () => {
-  it('vesti-tactical-upgrade remains held at the flat 2.5, NOT her datamined 200', () => {
-    // ⚑ OPEN QUESTION, deliberately pinned to today's behaviour rather than resolved here.
-    // She is the last surviving user of FOCUS_CHARGE_GEN. The hold is an EVIDENCE decision
-    // (sim.ts comment refreshed 2026-08-13): her 200 column has never been isolated on footage,
-    // so the pin "withholds an unmeasured value" rather than asserting 200 is wrong.
-    // The counter-argument, unresolved: 2.5 is now an orphan — not measured, not datamined for
-    // her, and no longer a roster default — so the pin substitutes a value with NO provenance
-    // for one both datamines agree on (chargeMultiplier 200 and fullChargeBonus 200), and holds
-    // her to a footage standard the other 74 chargeMultiplier-sourced units do not meet.
-    // Board-inert either way: she appears in zero graded or regression comps.
-    expect(weaponCredit('vesti-tactical-upgrade')).toBeCloseTo(3.25, 2);
+describe('no flat multiplier survives anywhere in the ladder', () => {
+  it('vesti-tactical-upgrade takes her datamined 200, not the retired flat 2.5', () => {
+    // THE LAST PIN, retired by owner ruling 2026-08-18. She was held at a flat 2.5 by
+    // PENDING_TEAM_ISOLATION while her 200 column went un-isolated on footage. Once the roster
+    // default was gone that 2.5 became an ORPHAN — not measured, not datamined for her, and no
+    // longer a default — so the pin was substituting a value with NO provenance for one both
+    // datamines agree on (chargeMultiplier 200 and fullChargeBonus 200), and holding her to a
+    // footage standard the other 74 chargeMultiplier-sourced units never met.
+    // 130 target x 2.0 = 2.60. Under the retired pin this read 3.25.
+    // Her column is still UNMEASURED — a focused solo recording would CONFIRM it (her kit
+    // build's ⚑3 carries the recipe), but it no longer gates the value.
+    expect(weaponCredit('vesti-tactical-upgrade')).toBeCloseTo(2.6, 2);
+  });
+
+  it('every charge unit resolves from its own datamines or takes x1.0', () => {
+    // The invariant the retirement buys: no slug is special-cased to a flat number. cinderella
+    // (RL/Electric) is the ONLY per-unit override left, via charFixes.focusChargeMult 2.0 —
+    // and that equals her own chargeMultiplier/100, so even she is not an exception in value.
+    expect(weaponCredit('cinderella')).toBeCloseTo(0.9, 2);
   });
 });

@@ -165,15 +165,16 @@ both `fullChargeBonus` 250, the modal value across the roster.
     focus gauge bonus IS the unit's full-charge bonus, for every unit). A unit with no bonus in
     EITHER datamined column does not full-charge and takes **×1.0**, the measured unfocused value.
     `pascal` (RL/Iron) is the only such unit — `chargeFrames: 0`, so the retired default had been
-    paying her ×2.5 for a charge she never performs (7.00 → 2.80 gauge per focused shot). A
+    paying her ×2.5 for a charge she never performs (7.00 → 2.80 gauge per focused shot; her
+    `burstgen.json` `focusedEntries` row 8.7 / 504 / 11 FBs → 3.72 / 238 / 10 FBs, now exactly
+    equal to her unfocused row — the fingerprint of taking no focus bonus). A
     CHARGE-capable unit (`chargeFrames > 0`) missing both columns is a data hole, not a game fact;
     `scripts/tests/data/gauge-per-shot-source.test.ts` fails loudly if one ever appears. The
     `magDumpRof` pin is gone with the default, as unreachable.
 
   Four units deviate from the 250 family: **alice 350 (3.5×)**, **cinderella 200 (2.0×)**,
-  **scarlet-black-shadow 150 (1.5×)**, `vesti-tactical-upgrade` 200 (sim-supported since
-  2026-08-01, but still pinned to the flat 2.5× by `PENDING_TEAM_ISOLATION` until her own
-  column is measured — her kit build's ⚑3 carries the recipe). Live per-unit status:
+  **scarlet-black-shadow 150 (1.5×)**, **`vesti-tactical-upgrade` 200 (2.0×)**. Live per-unit
+  status:
   - **scarlet-black-shadow: ENACTED at 1.5×.** Confirmed at two independent measured levels:
     a solo per-shot gauge-fill read (~1.42× observed) AND a team full-burst count
     (`docs/probes/720-kit-audit/scarlet black shadow.MP4`, 11 FBs measured — outside the old
@@ -194,6 +195,20 @@ both `fullChargeBonus` 250, the modal value across the roster.
     opener and an effective ≈2.2× was a repeated reading error and is RETRACTED — there is no
     open dispute on this value.
     Full record: `docs/DECISIONS.md` 2026-07-29 entries.
+  - **vesti-tactical-upgrade: ENACTED at 2.0×, still UNMEASURED** (owner ruling 2026-08-18). She
+    takes her datamined 200 like every other charge unit — both datamines agree
+    (`chargeMultiplier` 200, `fullChargeBonus` 200). Her flat-2.5× `PENDING_TEAM_ISOLATION` pin,
+    the last one in the engine, was retired with the roster default: once there was no default,
+    2.5 was an orphan value with no provenance for her, so the pin substituted a baseless number
+    for a doubly-datamined one and held her to a footage standard the other 74
+    `chargeMultiplier`-sourced units never met. Unmeasured ≠ withheld: a focused solo recording
+    would CONFIRM the column (her kit build's ⚑3 carries the recipe) but no longer gates it.
+    Blast radius: GRADED comps are unaffected — the consumer sweep (`focusColumnCensus()` over
+    every SR/RL unit, plus a grep of `scripts/regression.ts` and `scripts/experiment.ts`) seats her
+    in zero comps, so the regression snapshot is byte-identical. The **focused ranked board DOES
+    move**, because `web/public/burstgen.json`'s `focusedEntries` focuses every unit in turn:
+    6.32 / 386.75 → 4.85 / 304.2 (full-burst count holds at 10). Unfocused row unchanged at
+    3.18 / 208 — the pin only ever applied to the focused case.
 
 - **baseGaugeProb (2026-08-18):** a second focus-gated credit term alongside `fullChargeBonus`.
   For units carrying `baseGaugeProb > 0` in `data/gauge-per-shot.json`, the engine's

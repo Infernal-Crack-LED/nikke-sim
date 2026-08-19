@@ -1722,17 +1722,18 @@ function printMultihitCrediting(audit: MultihitCreditingAudit) {
 // Run it: npx tsx scripts/battery/fb-count-matrix.ts --focus-columns
 //
 // QUESTION: the focused charge unit's gauge multiplier is sourced per unit — the engine ladder
-// (gaugePerShot(), src/engine/sim.ts): charFixes.focusChargeMult → PENDING_TEAM_ISOLATION pin
-// (flat 2.5) → characters.json chargeMultiplier (>0) → gauge-per-shot.json fullChargeBonus (>0)
-// → x1.0 (no bonus in either column = the unit does not full-charge). Does every off-count
-// comp's focused charge unit resolve to a MEASURED or OWNER-CONFIRMED column?
+// (gaugePerShot(), src/engine/sim.ts): charFixes.focusChargeMult → characters.json
+// chargeMultiplier (>0) → gauge-per-shot.json fullChargeBonus (>0) → x1.0 (no bonus in either
+// column = the unit does not full-charge). Does every off-count comp's focused charge unit
+// resolve to a MEASURED or OWNER-CONFIRMED column?
 //
-// ⚠ THIS IS A MIRROR OF THE ENGINE LADDER — keep it in lockstep with gaugePerShot(). There is NO
-// roster default since 2026-08-18 (owner ruling; DECISIONS): the old `?? 250` tail and the
-// `magDumpRof` arm are both GONE from the engine, so a replica that keeps them silently grades
-// units against a ladder the sim no longer walks. That is not hypothetical — this audit resolved
-// `pascal` to column 250 at x2.5 while the engine gave her x1.0, and the pinned test stayed green
-// because she is not an outlier here (cross-family code review, 2026-08-18).
+// ⚠ THIS IS A MIRROR OF THE ENGINE LADDER — keep it in lockstep with gaugePerShot(). As of
+// 2026-08-18 (owner ruling; DECISIONS) there is NO flat multiplier left anywhere in the ladder:
+// the `?? 250` roster default, the `magDumpRof` arm and the PENDING_TEAM_ISOLATION pin are all
+// GONE from the engine, so a replica that keeps any of them silently grades units against a
+// ladder the sim no longer walks. That is not hypothetical — this audit resolved `pascal` to
+// column 250 at x2.5 while the engine gave her x1.0, and the pinned test stayed green because
+// she is not an outlier here (cross-family code review, 2026-08-18).
 //
 // The audit is a DATA read, not a sim behaviour question: it re-walks the ladder against the
 // data files + override charFixes, grades the resolved column against the column record
@@ -1746,7 +1747,6 @@ export type FocusColumnStatus =
 
 export type FocusMultSource =
   | 'charFixes.focusChargeMult'
-  | 'PENDING_TEAM_ISOLATION pin (flat 2.5)'
   | 'characters.json chargeMultiplier'
   | 'gauge-per-shot.json fullChargeBonus'
   | 'no bonus in either column (x1.0, does not full-charge)';
@@ -1786,7 +1786,7 @@ const FOCUS_200_BASIS: Record<
   'vesti-tactical-upgrade': {
     status: 'unmeasured',
     basis:
-      'pinned flat 2.5× by PENDING_TEAM_ISOLATION until a focused solo recording isolates her own column (her kit build ⚑3 carries the recipe)',
+      'takes her datamined 200 (×2.0) — both datamines agree (chargeMultiplier 200, fullChargeBonus 200). The flat-2.5 PENDING_TEAM_ISOLATION pin was RETIRED 2026-08-18 (owner ruling): once the roster default was gone, 2.5 was an orphan with no provenance, so the pin substituted a baseless value for a doubly-datamined one. Still UNMEASURED — a focused solo recording would CONFIRM the column (her kit build ⚑3 carries the recipe); it no longer gates the value.',
   },
 };
 
@@ -1821,15 +1821,11 @@ function focusColumnStatus(
   );
 }
 
-/**
- * Mirror of the engine's pin set (PENDING_TEAM_ISOLATION in src/engine/sim.ts — not exported,
- * and this audit reads data files, not engine state). The fixture pins the only consequence
- * that matters here: no seated focus unit is a member, so the pin list cannot alter any row.
- */
-export const PENDING_TEAM_ISOLATION_MIRROR = new Set([
-  'vesti-tactical-upgrade',
-]);
-const FOCUS_CHARGE_GEN_FLAT = 2.5; // src/engine/sim.ts FOCUS_CHARGE_GEN — the pin's value
+// The engine's PENDING_TEAM_ISOLATION pin set and its FOCUS_CHARGE_GEN flat value are GONE
+// (owner ruling 2026-08-18), so the mirror of them is gone too — along with
+// scripts/tests/battery/pending-team-isolation-mirror.test.ts, which existed only to hold the
+// two in sync. Nothing pins a flat multiplier now: every unit resolves from its own datamines,
+// or takes x1.0 if neither column carries a bonus.
 /** Largest live column — the most extreme upward error a wrong column could carry. */
 const MAX_LIVE_FOCUS_COLUMN = 350;
 
@@ -1894,9 +1890,6 @@ export function auditFocusColumns(): FocusColumnReport[] {
     if (fixes?.focusChargeMult !== undefined) {
       resolvedMult = fixes.focusChargeMult;
       source = 'charFixes.focusChargeMult';
-    } else if (PENDING_TEAM_ISOLATION_MIRROR.has(focus)) {
-      resolvedMult = FOCUS_CHARGE_GEN_FLAT;
-      source = 'PENDING_TEAM_ISOLATION pin (flat 2.5)';
     } else {
       const charMult = c?.chargeMultiplier ?? 0;
       const fcb = gaugeTable[focus]?.fullChargeBonus;
@@ -2463,17 +2456,12 @@ export function creditScheduleFor(
       { charFixes?: { focusChargeMult?: number } } | undefined;
     const charMult = c.chargeMultiplier ?? 0;
     const fcb = row?.fullChargeBonus;
-    // No roster default since 2026-08-18: charge bonus from either datamine, else x1.0 (the unit
-    // does not full-charge). The magDumpRof arm is gone from the engine as unreachable.
+    // No flat multiplier left anywhere since 2026-08-18: charge bonus from either datamine, else
+    // x1.0 (the unit does not full-charge). The magDumpRof arm and the vesti-tactical-upgrade
+    // PENDING_TEAM_ISOLATION pin are both gone from the engine.
     const focusMult =
       ov?.charFixes?.focusChargeMult ??
-      (slug === 'vesti-tactical-upgrade'
-        ? 2.5 // FOCUS_CHARGE_GEN — PENDING_TEAM_ISOLATION evidence hold
-        : charMult > 0
-          ? charMult / 100
-          : fcb && fcb > 0
-            ? fcb / 100
-            : 1.0);
+      (charMult > 0 ? charMult / 100 : fcb && fcb > 0 ? fcb / 100 : 1.0);
     // UNFOCUSED_CHARGE_GEN = 1.0 (measured, battery 3 A1/A2)
     // basePerTrigger credit (2026-08-18): mirrors sim.ts gaugePerShot's baseGaugeProb path.
     const baseProb =

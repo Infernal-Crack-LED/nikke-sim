@@ -3,10 +3,11 @@
 //
 // THE QUESTION the audit answers: the focused charge unit's burst-gauge multiplier is sourced
 // per unit — the engine ladder (gaugePerShot(), src/engine/sim.ts): charFixes.focusChargeMult →
-// PENDING_TEAM_ISOLATION pin (flat 2.5) → characters.json chargeMultiplier (>0) →
-// gauge-per-shot.json fullChargeBonus (>0) → x1.0 (no bonus in either column = the unit does not
-// full-charge). There is NO roster default since 2026-08-18 (owner ruling; DECISIONS) — the old
-// `?? 250` tail and the magDumpRof arm are gone from the engine and from the mirror this pins.
+// characters.json chargeMultiplier (>0) → gauge-per-shot.json fullChargeBonus (>0) → x1.0 (no
+// bonus in either column = the unit does not full-charge). NO flat multiplier survives anywhere
+// in that ladder as of 2026-08-18 (owner ruling; DECISIONS) — the `?? 250` roster default, the
+// magDumpRof arm and the PENDING_TEAM_ISOLATION pin are all gone from the engine and from the
+// mirror this pins.
 // Does every off-count comp's focused charge unit resolve to a MEASURED or OWNER-CONFIRMED
 // column? The obvious version of this item —
 // "unfocused charge units are missing the full-charge bonus" — was already REFUTED by
@@ -31,10 +32,12 @@
 //     scaling the focused unit's whole rate to the most extreme live column (350) covers
 //     ≤22.4% of iron sweep's measured shortfall and ≤12.6% of T5's — and that is a ceiling,
 //     because skill-gen does not scale with the focus multiplier.
-//   * THE ONLY UNMEASURED COLUMN seats nowhere: vesti-tactical-upgrade's 200 is pinned flat
-//     2.5x by the engine's PENDING_TEAM_ISOLATION, and she appears in no off-count comp.
-//     The roster census grades every other live column measured (250/350/150) or
-//     owner-confirmed (cinderella's 200 via charFixes.focusChargeMult).
+//   * THE ONLY UNMEASURED COLUMN seats nowhere: vesti-tactical-upgrade takes her datamined 200
+//     (×2.0) and appears in no off-count comp. Her flat-2.5 PENDING_TEAM_ISOLATION pin was
+//     RETIRED 2026-08-18 (owner ruling) — the column is still unmeasured, but it is now the
+//     value the engine uses rather than one it withholds. The roster census grades every other
+//     live column measured (250/350/150) or owner-confirmed (cinderella's 200 via
+//     charFixes.focusChargeMult).
 //   * raven is the one source disagreement (characters.json chargeMultiplier 0 vs gauge row
 //     250); the engine's fcb fallback resolves her to the measured 250 family — documented in
 //     DECISIONS 2026-07-29 step-7, not a finding.
@@ -91,8 +94,8 @@ describe('focus-column audit (investigation-plan item 3)', () => {
       ].sort()
     );
     for (const r of charge) {
-      // the PRIMARY source — no charFixes.focusChargeMult, no magDumpRof or
-      // PENDING_TEAM_ISOLATION pin sits in any seated focus unit's path
+      // the PRIMARY source — no charFixes.focusChargeMult sits in any seated focus unit's
+      // path (the magDumpRof and PENDING_TEAM_ISOLATION pins no longer exist at all)
       expect(r.source).toBe('characters.json chargeMultiplier');
       expect(r.columnStatus).toBe('measured');
     }

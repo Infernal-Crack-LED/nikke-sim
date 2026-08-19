@@ -721,9 +721,13 @@ focus gauge bonus IS the unit's full-charge bonus, for every unit, and a unit wi
 either datamined column takes `UNFOCUSED_CHARGE_GEN` (×1.0) because it does not full-charge.
 `pascal` (RL/Iron) is the only such unit and the only one the old `?? 250` arm ever caught — she
 has `chargeFrames: 0`, so the default was handing her ×2.5 for a charge she never performs
-(7.00 → 2.80 per focused shot). `u.focusChargeMult` (`charFixes.focusChargeMult`) and the
-`PENDING_TEAM_ISOLATION` hold still take priority over both sources; the `magDumpRof` arm is gone
-as unreachable (its sole carrier, `cinderella` (RL/Electric), sets `focusChargeMult`).
+(7.00 → 2.80 per focused shot). `u.focusChargeMult` (`charFixes.focusChargeMult`) is now the ONLY
+thing taking priority over the two datamines — and its sole setter, `cinderella` (RL/Electric),
+pins 2.0, which is her own `chargeMultiplier/100` anyway. Both flat-2.5 pins are gone: `magDumpRof`
+as unreachable (same carrier, `focusChargeMult` short-circuits ahead of it) and
+`PENDING_TEAM_ISOLATION` by the same 2026-08-18 ruling — `vesti-tactical-upgrade` takes her
+datamined 200 (×2.0), since once the default was retired the flat 2.5 was an orphan with no
+provenance. **No flat focus multiplier survives anywhere in the engine.**
 
 The lint asked for here exists: `scripts/tests/data/gauge-per-shot-source.test.ts` fails if any
 SR/RL unit's two sources disagree, or if a `chargeMultiplier: 0` unit gains a gauge row outside the

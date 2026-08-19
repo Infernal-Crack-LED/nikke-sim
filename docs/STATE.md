@@ -81,7 +81,7 @@ faithfulness basis ([data/clean-weapons.md](data/clean-weapons.md)); pinned by
 | `RELOAD_TAIL_FRAMES`                        | 13 (0.21s)                                             | Additive reload tail: `round(base·0.975·(1−buff)) + 13`                                                                     | :163     |
 | `UNHITTABLE_FRAMES`                         | 60 (1s)                                                | Boss off-screen at each range transition (blocks burst casts)                                                               | :195     |
 | `BOSS_RANGE_SCRIPT`                         | 0/33/70/106/144/176s → mid/near/far/midfar/near/midfar | Test-boss range timeline                                                                                                    | :171     |
-| `FOCUS_CHARGE_GEN` / `UNFOCUSED_CHARGE_GEN` | 2.5 / 1.0                                              | Unfocused charge-gauge flat (measured). The FOCUSED multiplier is the unit's own full-charge bonus — `chargeMultiplier/100`, with NO roster default since 2026-08-18; `FOCUS_CHARGE_GEN` survives only as the value of the `vesti-tactical-upgrade` evidence hold. A unit with no bonus in either datamined column takes `UNFOCUSED_CHARGE_GEN` (see below) | :987     |
+| `UNFOCUSED_CHARGE_GEN`                      | 1.0                                                    | Unfocused charge-gauge flat (measured). The FOCUSED multiplier is ALWAYS the unit's own full-charge bonus — `chargeMultiplier/100`, no roster default and no per-unit flat pins since 2026-08-18 (`FOCUS_CHARGE_GEN` and `PENDING_TEAM_ISOLATION` both deleted). A unit with no bonus in either datamined column takes this value (see below) | :987     |
 | Base-5 `staticAtk`                          | Attacker 118,027 · Supporter 98,367 · Defender 78,707  | Combat-ATK basis (NOT battle-records ATK, NOT OL0) + a modeled relationship/bond bonus                                      | —        |
 
 ## 3. Burst rotation model (the live chain)
@@ -124,8 +124,9 @@ Standing rotation facts: focus-unit charge weapons make gauge at their OWN full-
 `gauge-per-shot.json` `fullChargeBonus` filling in where that row reads 0 (`raven`: row 250,
 `chargeFrames` 60). ×2.5 for the 250-family (the roster majority); alice 3.5× (measured),
 cinderella 2.0× (owner-confirmed TRUE 2026-07-29, `charFixes.focusChargeMult`),
-scarlet-black-shadow 1.5× (measured); vesti-tactical-upgrade pinned to the flat 2.5×
-(`PENDING_TEAM_ISOLATION` — sim-supported since 2026-08-01, her 200 column still unmeasured).
+scarlet-black-shadow 1.5× (measured); vesti-tactical-upgrade 2.0× (her datamined 200 — the flat-2.5
+`PENDING_TEAM_ISOLATION` pin was retired 2026-08-18, so her column is unmeasured but no longer
+withheld). **No unit is pinned to a flat multiplier any more.**
 **There is no roster default** (owner ruling 2026-08-12, re-affirmed 2026-08-18): a unit with no
 bonus in either datamined column does not full-charge and takes ×1.0. `pascal` is the only such
 unit — `chargeFrames` 0, so the retired `?? 250` default had been giving her ×2.5 for a charge she

@@ -34,29 +34,51 @@ lives. Newest first within each section.
     all 196 characters. No unit is in that state today.
   - **Also retired: the `magDumpRof` pin, as unreachable.** Its sole carrier, `cinderella`
     (RL/Electric), sets `charFixes.focusChargeMult` 2.0, which short-circuits ahead of it.
-  - **Blast radius: `pascal` only, and inert BY MECHANISM rather than by fixture.** The consumer
-    sweep is the census itself: across all 196 characters, `pascal` is the ONLY unit whose resolved
-    multiplier changes, because she is the only one with no bonus in either column — every other
-    charge unit keeps the value it already had. The removed `magDumpRof` arm changes nobody for the
-    same kind of reason: its sole carrier, `cinderella` (RL/Electric), sets `focusChargeMult`, which
-    outranked it already. The ENABLING CONDITION for the change to manifest at all is being the
-    CAMERA-FOCUSED unit (the bonus is focus-only), and `pascal` is seated in zero regression/
-    experiment comps and no ranked web board — focused or otherwise — so no graded fixture can
-    express it. Regression snapshot byte-identical and NOT regenerated; every measured full-burst
-    count preserved; `verify.sh` green at 4691 passed, 6 skipped, 314 files. Mutation-checked —
-    restoring the `?? 250` arm turns the `pascal` pin red (7 vs 2.8), so the pin is discriminating
-    rather than vacuously green.
-  - **STILL PINNED, and deliberately left open: `vesti-tactical-upgrade` (RL/Fire).** She keeps her
-    `PENDING_TEAM_ISOLATION` hold at the flat 2.5 rather than taking her datamined 200 (×2.0). The
-    `sim.ts` comment justifying that hold was refreshed 2026-08-13 — a day AFTER the ruling — on the
-    grounds her 200 has never been isolated on footage, so the pin "withholds an unmeasured value"
-    rather than asserting the column is wrong. Unpinning her would overturn a LATER deliberate
-    evidence decision, which is an owner call. The counter-argument, recorded but not enacted: 2.5
-    is now an orphan — not measured, not datamined for her, and no longer a roster default — so the
-    pin substitutes a value with NO provenance for one both datamines agree on, and holds her to a
-    footage standard the other 74 `chargeMultiplier`-sourced units do not meet. Board-inert either
-    way (zero comps). Pinned as-is by `scripts/tests/engine/focus-charge-bonus.test.ts`, which
-    states both sides.
+  - **Blast radius: `pascal` only among units, but she is NOT board-inert — the FOCUSED ranked
+    boards move.** The consumer sweep is the census: across all 196 characters, `pascal` is the ONLY
+    unit whose resolved multiplier changes, because she is the only one with no bonus in either
+    column — every other charge unit keeps the value it already had. The removed `magDumpRof` arm
+    changes nobody for the same kind of reason: its sole carrier, `cinderella` (RL/Electric), sets
+    `focusChargeMult`, which outranked it already.
+    - **GRADED comps: unaffected.** The regression snapshot is byte-identical and was NOT
+      regenerated, and every measured full-burst count is preserved — `pascal` seats in zero
+      regression/experiment comps. `verify.sh` green at 4691 passed, 6 skipped, 314 files.
+    - **RANKED WEB BOARDS: they DO move, substantially.** The enabling condition is being the
+      CAMERA-FOCUSED unit, and `web/public/burstgen.json` has a `focusedEntries` board that focuses
+      every unit in turn — so it expresses the change directly. Measured by rebuilding the board
+      with and without the retired arm: `pascal`'s focused entry goes **8.7 / 504 / 11 FBs → 3.72 /
+      238 / 10 FBs**, and her focused row now equals her unfocused row exactly, which is the
+      fingerprint of the fix (she takes no focus bonus). That is a CORRECTION, not a regression —
+      the old board was crediting her a ×2.5 full-charge bonus, and a whole extra full burst, for a
+      charge she never performs.
+    - ⚠ An earlier draft of this entry claimed she appeared in "no ranked web board". That was
+      **wrong and never actually tested**: the shell command meant to check it sat behind an `&&`
+      after a `grep -c` that returned 0 matches, so it exited non-zero and the board check never
+      ran. Recorded because the failure mode — an unexecuted verification read as a passing one —
+      is worth more than the correction.
+    - Mutation-checked: restoring the `?? 250` arm turns the `pascal` pin red (7 vs 2.8), so the pin
+      is discriminating rather than vacuously green.
+  - **`vesti-tactical-upgrade` (RL/Fire) — PIN RETIRED, same ruling, one turn later.** She was the
+    last unit held at the flat 2.5 by `PENDING_TEAM_ISOLATION`, on the grounds (a `sim.ts` comment
+    refreshed 2026-08-13) that her 200 column had never been isolated on footage, so the pin
+    "withheld an unmeasured value" rather than asserting the column was wrong. Escalated to the
+    owner rather than enacted, because unpinning would overturn a LATER deliberate evidence
+    decision; **owner ruled to unpin (2026-08-18).** The argument that carried: once the roster
+    default was gone, 2.5 was an ORPHAN — not measured, not datamined for her, and no longer a
+    default — so the pin substituted a value with NO provenance for one both datamines agree on
+    (`chargeMultiplier` 200 and `fullChargeBonus` 200), and held her to a footage standard the
+    other 74 `chargeMultiplier`-sourced units never met. She takes ×2.0; her column stays
+    UNMEASURED but is no longer withheld (a focused solo recording would CONFIRM it — her kit
+    build's ⚑3 recipe — and no longer gates it). **With her unpinned, `FOCUS_CHARGE_GEN` and
+    `PENDING_TEAM_ISOLATION` are DELETED from the engine: no flat focus multiplier survives
+    anywhere.** `scripts/tests/battery/pending-team-isolation-mirror.test.ts` is deleted with them
+    — it existed only to hold the mirror in sync with a set that no longer exists.
+    Blast radius, same split as `pascal` above: **GRADED comps unaffected** (she seats in zero
+    regression/experiment comps — `focusColumnCensus()` plus a grep of both comp files — so the
+    snapshot is byte-identical), but the **FOCUSED ranked board DOES move**: her
+    `web/public/burstgen.json` `focusedEntries` row goes **6.32 / 386.75 → 4.85 / 304.2** (her
+    full-burst count holds at 10). Her unfocused row is unchanged at 3.18 / 208, as expected —
+    the pin only ever applied to the focused case.
   - **Tooling (constraint #9).** `scripts/battery/gauge-substep-ledger.ts` lands with the change it
     supports — the instrument the focus-bonus test measures through, self-validating against the
     `maiden-ice-rose` labeled anchor (9.10 = 364 × 2.5 in two sub-steps). It was authored
