@@ -920,6 +920,12 @@
     "fullChargeBonus": 0,
     "source": "datamined"
   },
+  "queen": {
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
   "quency": {
     "basePerTrigger": 20,
     "targetPerTrigger": 40,
