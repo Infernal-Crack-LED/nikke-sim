@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-15",
+  "generatedAt": "2026-08-19",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -24,11 +24,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±8%": 10,
+      "±8%": 8,
       "±3% ✓": 10,
       "±15%": 10,
-      "±5%": 5,
-      ">15%": 10
+      "±5%": 6,
+      ">15%": 11
     }
   },
   "units": {
@@ -342,12 +342,12 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 1.099
+            "ratio": 1.1139
           }
         ],
         "n": 1,
-        "mean": 1.099,
-        "mad": 0.099,
+        "mean": 1.1139,
+        "mad": 0.1139,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -593,56 +593,56 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.8316
+            "ratio": 0.9003
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9042
+            "ratio": 0.9051
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9122
+            "ratio": 0.9131
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.89
+            "ratio": 0.8974
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.7641
+            "ratio": 0.7807
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8858
+            "ratio": 0.9012
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.8822
+            "ratio": 0.8823
           },
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.9048
+            "ratio": 0.905
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 0.827
+            "ratio": 0.8943
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9335
+            "ratio": 0.9343
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9262
+            "ratio": 0.9283
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.922
+            "ratio": 0.9215
           }
         ],
         "n": 12,
-        "mean": 0.882,
-        "mad": 0.118,
+        "mean": 0.897,
+        "mad": 0.103,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -730,12 +730,12 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.037
+            "ratio": 1.0348
           }
         ],
         "n": 1,
-        "mean": 1.037,
-        "mad": 0.037,
+        "mean": 1.0348,
+        "mad": 0.0348,
         "band": "±5%",
         "temp": "HOT ▲"
       }
@@ -1329,11 +1329,11 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9538
+            "ratio": 0.9539
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9493
+            "ratio": 0.9442
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
@@ -1341,8 +1341,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9652,
-        "mad": 0.0348,
+        "mean": 0.9635,
+        "mad": 0.0365,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -1396,11 +1396,11 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.8536
+            "ratio": 0.8551
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8289
+            "ratio": 0.8555
           },
           {
             "comp": "PB elec battery (boss Water)",
@@ -1412,7 +1412,7 @@
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 0.7232
+            "ratio": 0.8197
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
@@ -1424,8 +1424,8 @@
           }
         ],
         "n": 7,
-        "mean": 0.8849,
-        "mad": 0.1176,
+        "mean": 0.9027,
+        "mad": 0.0998,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -1466,17 +1466,17 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8948
+            "ratio": 0.9269
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9188
+            "ratio": 0.9239
           }
         ],
         "n": 2,
-        "mean": 0.9068,
-        "mad": 0.0932,
-        "band": "±15%",
+        "mean": 0.9254,
+        "mad": 0.0746,
+        "band": "±8%",
         "temp": "COLD ▼"
       }
     },
@@ -1692,7 +1692,7 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.8568
+            "ratio": 0.9447
           },
           {
             "comp": "T3 fire-weak (boss Wind)",
@@ -1700,15 +1700,15 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.1634
+            "ratio": 1.1626
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.158
+            "ratio": 1.1573
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9898
+            "ratio": 1.0003
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -1716,11 +1716,11 @@
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.902
+            "ratio": 0.9122
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9638
+            "ratio": 0.9718
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
@@ -1760,9 +1760,9 @@
           }
         ],
         "n": 17,
-        "mean": 1.0027,
-        "mad": 0.0506,
-        "band": "±8%",
+        "mean": 1.0095,
+        "mad": 0.0437,
+        "band": "±5%",
         "temp": "OK  ·"
       }
     },
@@ -1895,7 +1895,7 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9704
+            "ratio": 0.9997
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -1907,9 +1907,9 @@
           }
         ],
         "n": 3,
-        "mean": 1.0158,
-        "mad": 0.0356,
-        "band": "±5%",
+        "mean": 1.0256,
+        "mad": 0.0258,
+        "band": "±3% ✓",
         "temp": "OK  ·"
       }
     },
@@ -2097,12 +2097,12 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.0253
+            "ratio": 1.0242
           }
         ],
         "n": 1,
-        "mean": 1.0253,
-        "mad": 0.0253,
+        "mean": 1.0242,
+        "mad": 0.0242,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -3029,11 +3029,11 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0969
+            "ratio": 1.0936
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.0898
+            "ratio": 1.0906
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -3041,8 +3041,8 @@
           }
         ],
         "n": 3,
-        "mean": 1.0954,
-        "mad": 0.0954,
+        "mean": 1.0945,
+        "mad": 0.0945,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -3269,11 +3269,11 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.978
+            "ratio": 0.9764
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9995
+            "ratio": 0.9978
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -3281,7 +3281,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9879
+            "ratio": 0.9837
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
@@ -3305,8 +3305,8 @@
           }
         ],
         "n": 10,
-        "mean": 0.9855,
-        "mad": 0.0223,
+        "mean": 0.9848,
+        "mad": 0.0231,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -3502,11 +3502,11 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0005
+            "ratio": 0.9999
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.0309
+            "ratio": 1.0324
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -3514,8 +3514,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9834,
-        "mad": 0.0376,
+        "mean": 0.9837,
+        "mad": 0.0379,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -3894,29 +3894,29 @@
         "skill2: her Charge Speed immunity is enforced engine-side via charFixes.statImmunities ['chargeSpeedPct'] — the stat is stripped from any incoming KIT buff at application time, so no teammate grant (or debuff) can move her charge frames. Three documented scope limits: it covers the chargeSpeedPct stat only (a 'charge time is fixed at X sec' effect, chargeTimeClamp, is a different primitive and is not covered); it covers IN-BATTLE buff effects only, so cube (adjutant/quantum) and Overload (chargespd) Charge Speed still reach her — that is the ruled-correct game behaviour (owner 2026-08-14: a kit immunity of this shape does not suppress the holder's own gear), and it is inert on the scope-lock basis anyway (no cube, OL0), live only in the web app; and target SELECTION is unchanged (she still occupies a selector slot, which is what lets maxwell's bundled ATK reach her).",
         "burst: the 925% additional-damage nuke carries burstDesc:'allEnemies' (its kit line sits under '■ Affects all enemies.') — it reads the trina-family burstSkillAoeDamagePct amp when cast inside an amp window; no amp in the comp = byte-identical."
       ],
-      "note": "Raging/Gentle Current mode: Raging Current (Attack Damage +231% continuously) triggers on a full charge against the STAGE TARGET; Gentle Current (fixes charge at 1s) triggers on a full charge against a non-stage-target Rapture. In a solo raid there is a single boss = the stage target, so every full charge maintains Raging Current and Gentle Current never fires — S2 is modeled as a no-expiry self Attack Damage 231% buff on shotFired (earned on her first landed full charge, then refreshed permanent; 2026-07-26 gauntlet moved it off the t=0 passive shortcut, which over-credited the first charge by ~0.2%) and the Gentle Current branch is dropped. Her 'Immunity to Increase/Decrease Charge Speed effects, continuous' IS enforced engine-side: charFixes.statImmunities ['chargeSpeedPct'] strips that stat from every incoming KIT buff AT BUFF-APPLICATION TIME, for her only, in either direction — the rest of the same buff block still lands on her (slug `maxwell`, SR/Iron: her S1 bundles chargeSpeedPct 4.48 with atkPct 43.1 in one 10s Full-Burst-entry cast: the ATK applies, the charge speed does not) and other targets of that cast are unaffected. S1: ATK 160%/3s on Full Burst entry (self); Attack Damage 20.83%/60s from core full-charges, modeled as always-up via shotFired (assumes she lands core hits, an SR steady-state); charge-speed 12.74% to the lowest-ATK B3 ally (originally approximated as top-3-ATK allies — SUPERSEDED by the FIXED (review) entry below); and 40.5% additional damage per full charge that 'Activates 5 times' = 5 hits per full charge -> 202.5% flatDamage per shot (user-confirmed reading; validated vs a real scope-lock run, single-hit read left her 0.70 cold). Q10 MEASUREMENT-GATED (flag for manual review) — the rider's BURST-GAUGE credit: that aggregate carries NO gaugeHits, so the engine credits ONE gauge impact per full charge where the kit's 'Activates 5 times' delivers five (docs/data/burst-gauge.md §5 credits gauge per skill-damage impact at the caster's targetPerTrigger, no focus bonus; her hitsPerShot is 1 so the U28 divisor question does not reach her). Crediting all five was tested against committed bar-paint refill fixtures on 2026-08-17 and returned INCONCLUSIVE by 2-of-2 judges, so the shipped model stays at one: it moves both scored comps' refill toward the measured tape and lifts Full-Burst counts without overshooting any measured count, but leaves iron sweep BELOW and T5 ABOVE a liberalio-free control band, so no single per-sub-hit value reconciles both. Damage is bit-identical either way and all three liberalio-free controls are byte-identical, so the question is gauge-only. What would settle it: a maiden-ice-rose-style hand read of her per-pull gauge sub-steps (the comp-level refill estimator cannot separate a reduced per-sub-hit value from the board-wide charge-B3 tempo gap). Sizing arm: scripts/battery/liberalio-gaugehits-ab.ts --residual; audit + full result: docs/handoffs/2026-08-17-liberalio-gauge-credit-audit.md. Burst (self Attack Damage 50%/10s + 925% nuke) is faithful in the parser, so the burst slot is omitted. FIXED (review): the S1 charge-speed buff targets the 1 Burst-3 ally with the LOWEST final ATK (was mis-parsed as top-3-ATK allies); excludeSelf keeps her own S1 grant off herself (the engine-side statImmunities strip enforces the same rule against every other source). Remaining known gaps: the S1 20.83% Attack Damage rider is core-hit-gated via requiresCore (inert at core-rate 0; at any core exposure its 60s duration keeps it up, matching in-game). Q8: autofire (no 22f release latency) — her chargeFrames already reflect the full validated cycle — the datamined DB value, 90f = charge_time 150cs = 1.5s, with no charFixes override. That IS the stage-target value: the stage-target branch (Raging Current) modifies Attack Damage only, and the ONLY kit line that touches charge TIME is Gentle Current's 1s fix, which is the non-stage-target branch and can never fire in a solo raid. 2026-07-17: this now resolves from the datamined input_type='DOWN_Charge' (engine + web); the redundant charFixes.noBoltRecovery flag was removed. Q1 CALIBRATED (flag for manual review): her 202.5% full-charge procs (the rider is NOT core-gated — only the 20.83% line is; 'core-hit' was loose original wording) are exempt from the +30% range major (noRange) but DO take the +50% full-burst major by landing timing (noFb removed 2026-07-14) — calibrated vs two real scope-lock runs (T1 1.16->1.00, T5 1.25->1.10); mechanism unconfirmed (user researching). | 2026-07-14 noFb REMOVED from the 202.5 proc (panel-accepted): the flag was a Q1 calibration-era relic contradicting the DATAMINED U1 rule (function damage takes FB by actual landing timing; the cast-instant rule is burst-slot-scoped). noRange stays (datamine-confirmed). Post-landing MEASURED verification queued: liberalio-focus recording, proc popup in-FB vs out-FB. || Kit-autonomy gauntlet 2026-07-26: re-validated test-first — scripts/tests/units/liberalio.test.ts (26 assertions GREEN vs this override; every line pinned GREEN vs shipped and RED vs its nearest-wrong counterfactual: skill-level-9 magnitudes, the single-hit 40.5 rider misread, the top-3-ATK charge-speed misparse, the requiresCore gate, cast-before-FB nuke). Cross-family S2b (claude-fable-5) independently re-derived all nine lines with matching dispositions, no REAL-GOTCHA; two reviewer nuances reconciled in the test header. L7 (the charge-speed immunity) is pinned by the L7 cases in that test file: an external chargeSpeedPct grant leaves her charge frames untouched while a stat bundled in the SAME buff block still lands on her, the same grant DOES speed up a non-immune ally, and her own S1 grant still reaches its ally target. ONE ENCODING FIX, driven by the S5 blind test (claude-opus-5) and independently flagged by S2b: Raging Current's trigger moved passive -> shotFired, so the 231% is EARNED on her first landed full charge instead of live from t=0 (the kit says 'Activates when landing a Full Charge attack against the stage target'); the passive shortcut over-credited exactly one charge (~0.2% of her total, allies byte-identical). TIER 2 (scoped lowest-final-ATK Burst-3 selector + fullBurstEnter-vs-burstCast split + Q1-calibrated range/FB exemptions).",
+      "note": "Raging/Gentle Current mode: Raging Current (Attack Damage +231% continuously) triggers on a full charge against the STAGE TARGET; Gentle Current (fixes charge at 1s) triggers on a full charge against a non-stage-target Rapture. In a solo raid there is a single boss = the stage target, so every full charge maintains Raging Current and Gentle Current never fires — S2 is modeled as a no-expiry self Attack Damage 231% buff on shotFired (earned on her first landed full charge, then refreshed permanent; 2026-07-26 gauntlet moved it off the t=0 passive shortcut, which over-credited the first charge by ~0.2%) and the Gentle Current branch is dropped. Her 'Immunity to Increase/Decrease Charge Speed effects, continuous' IS enforced engine-side: charFixes.statImmunities ['chargeSpeedPct'] strips that stat from every incoming KIT buff AT BUFF-APPLICATION TIME, for her only, in either direction — the rest of the same buff block still lands on her (slug `maxwell`, SR/Iron: her S1 bundles chargeSpeedPct 4.48 with atkPct 43.1 in one 10s Full-Burst-entry cast: the ATK applies, the charge speed does not) and other targets of that cast are unaffected. S1: ATK 160%/3s on Full Burst entry (self); Attack Damage 20.83%/60s from core full-charges, modeled as always-up via shotFired (assumes she lands core hits, an SR steady-state); charge-speed 12.74% to the lowest-ATK B3 ally (originally approximated as top-3-ATK allies — SUPERSEDED by the FIXED (review) entry below); and 40.5% additional damage per full charge that 'Activates 5 times' = 5 hits per full charge -> 202.5% flatDamage per shot (user-confirmed reading; validated vs a real scope-lock run, single-hit read left her 0.70 cold). Q10 RESOLVED (2026-08-19, owner footage) — the rider's BURST-GAUGE credit: gaugeHits 5 enacted. The kit's 'Activates 5 times' delivers five gauge impacts per full charge at targetPerTrigger each (docs/data/burst-gauge.md §5; no focus bonus on skill gauge; hitsPerShot=1 so U28 divisor is a no-op). ENACTED after solo scope-lock recordings (docs/probes/solo/lib solo focused.mov + lib solo unfocused.mov) showed 3 shots to fill the burst gauge — matching the gaugeHits:5 prediction exactly (weapon 5.6% + skill 5×5.6%=28% = 33.6%/shot unfocused, 14%+28%=42% focused). The 2026-08-17 comp-level audit (docs/handoffs/2026-08-17-liberalio-gauge-credit-audit.md) was INCONCLUSIVE (estimator unstable across comps); the per-pull hand read the judges named as the settling measurement confirmed gaugeHits:5. Damage is bit-identical (gaugeHits only affects gauge credit, not the aggregated 202.5% damage instance). Burst (self Attack Damage 50%/10s + 925% nuke) is faithful in the parser, so the burst slot is omitted. FIXED (review): the S1 charge-speed buff targets the 1 Burst-3 ally with the LOWEST final ATK (was mis-parsed as top-3-ATK allies); excludeSelf keeps her own S1 grant off herself (the engine-side statImmunities strip enforces the same rule against every other source). Remaining known gaps: the S1 20.83% Attack Damage rider is core-hit-gated via requiresCore (inert at core-rate 0; at any core exposure its 60s duration keeps it up, matching in-game). Q8: autofire (no 22f release latency) — her chargeFrames already reflect the full validated cycle — the datamined DB value, 90f = charge_time 150cs = 1.5s, with no charFixes override. That IS the stage-target value: the stage-target branch (Raging Current) modifies Attack Damage only, and the ONLY kit line that touches charge TIME is Gentle Current's 1s fix, which is the non-stage-target branch and can never fire in a solo raid. 2026-07-17: this now resolves from the datamined input_type='DOWN_Charge' (engine + web); the redundant charFixes.noBoltRecovery flag was removed. Q1 CALIBRATED (flag for manual review): her 202.5% full-charge procs (the rider is NOT core-gated — only the 20.83% line is; 'core-hit' was loose original wording) are exempt from the +30% range major (noRange) but DO take the +50% full-burst major by landing timing (noFb removed 2026-07-14) — calibrated vs two real scope-lock runs (T1 1.16->1.00, T5 1.25->1.10); mechanism unconfirmed (user researching). | 2026-07-14 noFb REMOVED from the 202.5 proc (panel-accepted): the flag was a Q1 calibration-era relic contradicting the DATAMINED U1 rule (function damage takes FB by actual landing timing; the cast-instant rule is burst-slot-scoped). noRange stays (datamine-confirmed). Post-landing MEASURED verification queued: liberalio-focus recording, proc popup in-FB vs out-FB. || Kit-autonomy gauntlet 2026-07-26: re-validated test-first — scripts/tests/units/liberalio.test.ts (26 assertions GREEN vs this override; every line pinned GREEN vs shipped and RED vs its nearest-wrong counterfactual: skill-level-9 magnitudes, the single-hit 40.5 rider misread, the top-3-ATK charge-speed misparse, the requiresCore gate, cast-before-FB nuke). Cross-family S2b (claude-fable-5) independently re-derived all nine lines with matching dispositions, no REAL-GOTCHA; two reviewer nuances reconciled in the test header. L7 (the charge-speed immunity) is pinned by the L7 cases in that test file: an external chargeSpeedPct grant leaves her charge frames untouched while a stat bundled in the SAME buff block still lands on her, the same grant DOES speed up a non-immune ally, and her own S1 grant still reaches its ally target. ONE ENCODING FIX, driven by the S5 blind test (claude-opus-5) and independently flagged by S2b: Raging Current's trigger moved passive -> shotFired, so the 231% is EARNED on her first landed full charge instead of live from t=0 (the kit says 'Activates when landing a Full Charge attack against the stage target'); the passive shortcut over-credited exactly one charge (~0.2% of her total, allies byte-identical). TIER 2 (scoped lowest-final-ATK Burst-3 selector + fullBurstEnter-vs-burstCast split + Q1-calibrated range/FB exemptions).",
       "board": {
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.8631
+            "ratio": 0.9068
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8525
+            "ratio": 0.8962
           },
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.032
+            "ratio": 1.0661
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.9246
+            "ratio": 0.924
           }
         ],
         "n": 4,
-        "mean": 0.9181,
-        "mad": 0.098,
+        "mean": 0.9483,
+        "mad": 0.0848,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -4248,7 +4248,7 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 1.0048
+            "ratio": 1.0207
           },
           {
             "comp": "PF maiden solo (boss Water)",
@@ -4260,9 +4260,9 @@
           }
         ],
         "n": 3,
-        "mean": 0.9384,
-        "mad": 0.0787,
-        "band": "±8%",
+        "mean": 0.9437,
+        "mad": 0.084,
+        "band": "±15%",
         "temp": "COLD ▼"
       }
     },
@@ -4661,18 +4661,18 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.8832
+            "ratio": 0.9793
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 1.0146
+            "ratio": 1.0238
           }
         ],
         "n": 2,
-        "mean": 0.9489,
-        "mad": 0.0657,
-        "band": "±8%",
-        "temp": "COLD ▼"
+        "mean": 1.0015,
+        "mad": 0.0223,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "maxwell": {
@@ -4711,7 +4711,7 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9647
+            "ratio": 1.0723
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -4719,8 +4719,8 @@
           }
         ],
         "n": 2,
-        "mean": 1.0652,
-        "mad": 0.1005,
+        "mean": 1.119,
+        "mad": 0.119,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -5011,12 +5011,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.1915
+            "ratio": 1.2201
           }
         ],
         "n": 1,
-        "mean": 1.1915,
-        "mad": 0.1915,
+        "mean": 1.2201,
+        "mad": 0.2201,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -5073,14 +5073,14 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 1.0231
+            "ratio": 1.0668
           }
         ],
         "n": 1,
-        "mean": 1.0231,
-        "mad": 0.0231,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 1.0668,
+        "mad": 0.0668,
+        "band": "±8%",
+        "temp": "HOT ▲"
       }
     },
     "miranda": {
@@ -5472,14 +5472,14 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9743
+            "ratio": 1.0335
           }
         ],
         "n": 1,
-        "mean": 0.9743,
-        "mad": 0.0257,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 1.0335,
+        "mad": 0.0335,
+        "band": "±5%",
+        "temp": "HOT ▲"
       }
     },
     "neon": {
@@ -5597,7 +5597,7 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9675
+            "ratio": 1.0077
           },
           {
             "comp": "PB elec battery (boss Water)",
@@ -5609,8 +5609,8 @@
           }
         ],
         "n": 3,
-        "mean": 1.0403,
-        "mad": 0.062,
+        "mean": 1.0537,
+        "mad": 0.0537,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -5826,16 +5826,16 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.8786
+            "ratio": 0.879
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.8914
+            "ratio": 0.8929
           }
         ],
         "n": 2,
-        "mean": 0.885,
-        "mad": 0.115,
+        "mean": 0.8859,
+        "mad": 0.1141,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -6188,13 +6188,13 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 1.0744
+            "ratio": 1.1117
           }
         ],
         "n": 1,
-        "mean": 1.0744,
-        "mad": 0.0744,
-        "band": "±8%",
+        "mean": 1.1117,
+        "mad": 0.1117,
+        "band": "±15%",
         "temp": "HOT ▲"
       }
     },
@@ -6238,20 +6238,20 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.2756
+            "ratio": 1.2751
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.2318
+            "ratio": 1.2313
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.1312
+            "ratio": 1.1368
           }
         ],
         "n": 3,
-        "mean": 1.2129,
-        "mad": 0.2129,
+        "mean": 1.2144,
+        "mad": 0.2144,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -6567,11 +6567,11 @@
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8446
+            "ratio": 0.8488
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.8741
+            "ratio": 0.8797
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -6579,8 +6579,8 @@
           }
         ],
         "n": 5,
-        "mean": 0.9318,
-        "mad": 0.0734,
+        "mean": 0.9338,
+        "mad": 0.0715,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -6764,7 +6764,7 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.9799
+            "ratio": 0.9903
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
@@ -6772,8 +6772,8 @@
           }
         ],
         "n": 2,
-        "mean": 0.999,
-        "mad": 0.0191,
+        "mean": 1.0042,
+        "mad": 0.0139,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -7039,14 +7039,14 @@
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.0461
+            "ratio": 1.0605
           }
         ],
         "n": 3,
-        "mean": 1.0252,
-        "mad": 0.052,
+        "mean": 1.03,
+        "mad": 0.0568,
         "band": "±8%",
-        "temp": "OK  ·"
+        "temp": "HOT ▲"
       }
     },
     "rumani": {
@@ -7381,16 +7381,16 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.7644
+            "ratio": 0.7887
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.0007
+            "ratio": 1.0766
           }
         ],
         "n": 2,
-        "mean": 0.8826,
-        "mad": 0.1182,
+        "mean": 0.9327,
+        "mad": 0.144,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -7637,11 +7637,11 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.952
+            "ratio": 0.951
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9674
+            "ratio": 0.9664
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -7649,12 +7649,12 @@
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.99
+            "ratio": 0.9903
           }
         ],
         "n": 4,
-        "mean": 0.9804,
-        "mad": 0.0257,
+        "mean": 0.9799,
+        "mad": 0.0261,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -7782,7 +7782,7 @@
         "records": [
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.8154
+            "ratio": 0.8524
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
@@ -7790,8 +7790,8 @@
           }
         ],
         "n": 2,
-        "mean": 0.7923,
-        "mad": 0.2077,
+        "mean": 0.8108,
+        "mad": 0.1892,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -8009,12 +8009,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.58
+            "ratio": 0.6695
           }
         ],
         "n": 1,
-        "mean": 0.58,
-        "mad": 0.42,
+        "mean": 0.6695,
+        "mad": 0.3305,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -8147,17 +8147,17 @@
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 1.0839
+            "ratio": 1.1652
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.1861
+            "ratio": 1.2005
           }
         ],
         "n": 4,
-        "mean": 1.1394,
-        "mad": 0.1394,
-        "band": "±15%",
+        "mean": 1.1633,
+        "mad": 0.1633,
+        "band": ">15%",
         "temp": "HOT ▲"
       }
     },
@@ -8209,12 +8209,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9907
+            "ratio": 1.0231
           }
         ],
         "n": 1,
-        "mean": 0.9907,
-        "mad": 0.0093,
+        "mean": 1.0231,
+        "mad": 0.0231,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }

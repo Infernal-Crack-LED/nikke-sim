@@ -126,28 +126,26 @@ describe('focus-column audit (investigation-plan item 3)', () => {
     // Ceiling = the focused unit's WHOLE rate scaled from its resolved column to the largest
     // live column (350); an over-estimate because skill-gen does not scale with the focus
     // multiplier. Even so it cannot reach the measured shortfall on either filmed comp.
-    // iron sweep RE-PINNED 2026-08-14 (was 8.368 / 3.347 / 14.943 / 22.4): the `liberalio`
-    // Charge Speed immunity removes two of her charges per fight, which lowers the focused
-    // unit's own generation rate AND widens the comp's measured shortfall — so the ceiling
-    // covers even LESS of it than before (22.4% → 19.4%), strengthening the finding rather
-    // than threatening it. Re-derived by running the instrument
-    // (`npx tsx scripts/battery/fb-count-matrix.ts --focus-columns --json`), not hand-edited.
-    // Cause: DECISIONS 2026-08-14.
+    // iron sweep RE-PINNED 2026-08-19 (was 7.954 / 3.182 / 16.383 / 19.4): gaugeHits:5 on
+    // liberalio's 202.5 rider credits 5× skillGauge per trigger (was 1×), closing most of
+    // the comp's gauge shortfall (16.4 → 2.0 gauge/sec). The focus-column ceiling now
+    // covers 183% of the remaining shortfall — the finding is largely resolved. Values
+    // from `npx tsx scripts/battery/fb-count-matrix.ts --focus-columns --json`.
     const iron = byName('iron sweep (run G)');
-    expect(iron.focusPer60).toBeCloseTo(7.954, 3);
-    expect(iron.maxAltUpsideGaugePerSec).toBeCloseTo(3.182, 3);
-    expect(iron.shortfallRateGaugePerSec).toBeCloseTo(16.383, 2);
-    expect(iron.maxAltUpsideCoverPct).toBeCloseTo(19.4, 0);
+    expect(iron.focusPer60).toBeCloseTo(9.13, 3);
+    expect(iron.maxAltUpsideGaugePerSec).toBeCloseTo(3.652, 3);
+    expect(iron.shortfallRateGaugePerSec).toBeCloseTo(1.998, 2);
+    expect(iron.maxAltUpsideCoverPct).toBeCloseTo(182.7, 0);
 
     // T5's focused unit IS anis-star (middle slot): her skill impacts credit the full
     // datamined 2.8 gauge (hitsPerShot 1), which raises her whole-unit focused rate and
-    // narrows the comp's measured shortfall. Re-pinned 2026-08-18 (baseGaugeProb 0.25
-    // enactment increased anis-star's gauge credit). Values from the instrument's --json.
+    // narrows the comp's measured shortfall. Re-pinned 2026-08-19 (liberalio gaugeHits:5
+    // timing cascade shifted values). Values from the instrument's --json.
     const t5 = byName('T5 wind-weak');
-    expect(t5.focusPer60).toBeCloseTo(11.483, 3);
-    expect(t5.maxAltUpsideGaugePerSec).toBeCloseTo(4.593, 3);
-    expect(t5.shortfallRateGaugePerSec).toBeCloseTo(21.425, 2);
-    expect(t5.maxAltUpsideCoverPct).toBeCloseTo(21.4, 0);
+    expect(t5.focusPer60).toBeCloseTo(10.608, 3);
+    expect(t5.maxAltUpsideGaugePerSec).toBeCloseTo(4.243, 3);
+    expect(t5.shortfallRateGaugePerSec).toBeCloseTo(16.812, 2);
+    expect(t5.maxAltUpsideCoverPct).toBeCloseTo(25.2, 0);
 
     // the unfilmed comps carry no shortfall figure
     expect(byName('T1 wind-weak').maxAltUpsideCoverPct).toBeNull();

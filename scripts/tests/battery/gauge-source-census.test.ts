@@ -164,20 +164,16 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
 
     it('pins the deterministic unlocked/locked impact split per comp (drift guard)', () => {
       const pinned: Record<string, [number, number]> = {
-        // iron sweep RE-PINNED 2026-08-14 (was [24, 111]): the `liberalio` Charge Speed immunity
-        // re-phases this comp's Full Bursts, moving impacts across the unlocked/locked boundary.
-        // Re-derived from the instrument's own `--gauge-sources --json`; cause: DECISIONS
-        // 2026-08-14. Every other comp's split is unchanged — none seats a Charge Speed source.
-        'iron sweep (run G)': [26, 107],
-        // T5 / T1 / misc B3s / N5 seat anis-star: her full 2.8-gauge impact credit (hitsPerShot 1,
-        // no divisor) re-phases those comps' bursts, moving impacts across the unlocked/locked
-        // boundary. Values from the instrument's own `--gauge-sources --json` output.
-        // T5 and T1 seat anis-star: the baseGaugeProb 0.25 enactment (2026-08-18) increases
-        // her per-shot gauge credit, re-phasing burst timing and shifting impacts across the
-        // unlocked/locked boundary on both comps. Re-derived from the instrument's --json.
-        'T5 wind-weak': [68, 770],
-        'T1 wind-weak': [79, 808],
-        'N3 scarlet/liberalio iron': [35, 284],
+        // iron sweep RE-PINNED 2026-08-19 (was [26, 107]): gaugeHits:5 on liberalio's 202.5
+        // rider credits 5× skillGauge sub-hits per trigger, multiplying her unlocked skill
+        // impacts and re-phasing burst timing. Re-derived from the instrument's
+        // `--gauge-sources --json`.
+        'iron sweep (run G)': [105, 397],
+        // T5 / T1 / N3 seat liberalio: gaugeHits:5 re-phases burst timing on all liberalio-
+        // seated comps. Values from the instrument's `--gauge-sources --json`.
+        'T5 wind-weak': [141, 1072],
+        'T1 wind-weak': [142, 1213],
+        'N3 scarlet/liberalio iron': [88, 613],
         'misc B3s (run I order)': [76, 834],
         'N1 rapi/quency wind': [49, 269],
         // soda-tb and N5 seat gaugeHits carriers (little-mermaid 10, snow-white-heavy-arms 5/10);
@@ -251,41 +247,47 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
       expect(skillImpactGauge('anis-star')).toBeCloseTo(2.8, 6);
     });
 
-    it('non-damage skill applications: ZERO fresh applications in the filmed comps\u2019 steady windows', () => {
+    it('non-damage skill applications: fresh applications in steady windows', () => {
       // The _trick_ rule (burst-gauge.md §5, MEDIUM confidence, unmodeled) would feed the bar on
       // every non-damage skill application — but kit activations cluster on burstCast /
       // fullBurstEnter triggers (locked), so almost nothing FRESH lands in a refill window. The
       // class's lower bound is exactly zero of both filmed shortfalls; the upper bound rides
       // buff REFRESHES, which are not applications in-game.
-      for (const comp of ['iron sweep (run G)', 'T5 wind-weak']) {
-        const r = byName(comp);
-        expect(r.buffAppliesSteadyFresh).toBe(0);
-        expect(r.nonDmgAppGaugePerCycle.lower).toBe(0);
-        expect(r.shortfallPerCycleGauge).not.toBeNull();
-        expect(r.nonDmgAppGaugePerCycle.lower).toBeLessThan(
-          r.shortfallPerCycleGauge!
-        );
-      }
+      // iron sweep RE-PINNED 2026-08-19: gaugeHits:5 shifts burst timing, opening new steady
+      // windows where buff applies land fresh (was 0, now 5). T5 unchanged.
+      const iron = byName('iron sweep (run G)');
+      expect(iron.buffAppliesSteadyFresh).toBe(5);
+      expect(iron.nonDmgAppGaugePerCycle.lower).toBeGreaterThan(0);
+      expect(iron.shortfallPerCycleGauge).not.toBeNull();
+      expect(iron.nonDmgAppGaugePerCycle.lower).toBeLessThan(
+        iron.shortfallPerCycleGauge!
+      );
+      const t5 = byName('T5 wind-weak');
+      expect(t5.buffAppliesSteadyFresh).toBe(0);
+      expect(t5.nonDmgAppGaugePerCycle.lower).toBe(0);
+      expect(t5.shortfallPerCycleGauge).not.toBeNull();
+      expect(t5.nonDmgAppGaugePerCycle.lower).toBeLessThan(
+        t5.shortfallPerCycleGauge!
+      );
       // N5's lone fresh application is the only one across all 90 steady windows of the nine comps
       expect(byName('N5 snowwhite-HA fire').buffAppliesSteadyFresh).toBe(1);
     });
 
     it('pins the filmed comps\u2019 measured shortfall the estimates are held against', () => {
-      // iron sweep RE-PINNED 2026-08-14 (was 14.94 / 38.67): the `liberalio` Charge Speed
-      // immunity costs her two charges per fight, so the comp generates less gauge and its
-      // measured shortfall WIDENS. Re-derived by running the instrument
-      // (`npx tsx scripts/battery/fb-count-matrix.ts --gauge-sources --json`), not hand-edited.
-      // Cause: DECISIONS 2026-08-14. T5 is untouched — no Charge Speed source seated there.
+      // iron sweep RE-PINNED 2026-08-19 (was 16.38 / 40.76): gaugeHits:5 on liberalio's
+      // 202.5 rider credits 5× skillGauge per trigger, closing most of the comp's gauge
+      // shortfall (16.4 → 2.0 gauge/sec, 40.8 → 5.0 per cycle). The remaining ~2 gauge/sec
+      // shortfall is within the focus-column ceiling's reach. Re-derived from
+      // `--gauge-sources --json`.
       const iron = byName('iron sweep (run G)');
-      expect(iron.shortfallRateGaugePerSec).toBeCloseTo(16.38, 1);
-      expect(iron.shortfallPerCycleGauge).toBeCloseTo(40.76, 1);
-      // T5 seats anis-star: her full 2.8-gauge impact credit (hitsPerShot 1) plus the
-      // baseGaugeProb 0.25 enactment (2026-08-18) raises the comp's sim generation further,
-      // narrowing the sim-vs-filmed shortfall. The shortfall itself stays open (T5 remains a
-      // disabled comp). Re-pinned 2026-08-18 from `--gauge-sources --json`.
+      expect(iron.shortfallRateGaugePerSec).toBeCloseTo(1.998, 1);
+      expect(iron.shortfallPerCycleGauge).toBeCloseTo(4.972, 1);
+      // T5 seats anis-star + liberalio: gaugeHits:5 timing cascade narrowed the comp's
+      // sim-vs-filmed shortfall further. T5 remains a disabled comp pending footage
+      // verification. Re-pinned 2026-08-19 from `--gauge-sources --json`.
       const t5 = byName('T5 wind-weak');
-      expect(t5.shortfallRateGaugePerSec).toBeCloseTo(21.42, 1);
-      expect(t5.shortfallPerCycleGauge).toBeCloseTo(40.88, 1);
+      expect(t5.shortfallRateGaugePerSec).toBeCloseTo(16.81, 1);
+      expect(t5.shortfallPerCycleGauge).toBeCloseTo(32.08, 1);
     });
   });
 });

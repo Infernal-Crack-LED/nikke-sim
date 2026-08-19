@@ -48,9 +48,11 @@ describe('boss-element control (C1)', () => {
     expect(rep.gaugeIdenticalAcrossElements).toBe(true);
     expect(rep.maxGaugeDeltaVsDeclared).toBe(0);
     // Pin per-unit gauge values so a regression names the unit that moved.
+    // Re-pinned 2026-08-19: gaugeHits:5 on liberalio's 202.5 rider shifts her from ~213 to ~504
+    // (5× more skillGauge credit per trigger); other units drop slightly from timing cascade.
     const iron = rep.arms.find((a) => a.element === 'Iron')!;
     expect(iron.gaugeGenerated.map((g) => Math.round(g * 10) / 10)).toEqual([
-      121.8, 129.6, 212.5, 212.8, 268.2,
+      75.4, 93.6, 178.8, 504, 230.2,
     ]);
   });
 
