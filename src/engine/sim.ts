@@ -1418,9 +1418,12 @@ export function runSim(
   // observed ~1.42x vs predicted 1.5x (fullChargeBonus 150) — both within ~5% of their
   // per-unit datamined value and clearly off the flat 2.5x (which would read 14.0%/shot for
   // alice, observed 20.6%; 6.25%/shot for SBS, observed 3.55%). DECISIONS 2026-07-29.
-  // FOCUS_CHARGE_GEN remains the fallback for units with no datamined row (250 default,
-  // byte-identical to pre-2026-07-29 behavior) and the explicit pin for cinderella (below).
-  const FOCUS_CHARGE_GEN = 2.5;
+  // FOCUS_CHARGE_GEN IS GONE (owner ruling 2026-08-18, completing the 2026-08-12 ruling: "the
+  // gauge bonus = charge bonus on all units; get rid of the 250 fallback"). There is no flat
+  // focus constant anywhere in the engine now: the multiplier is ALWAYS the unit's own
+  // full-charge bonus, and a unit with no bonus in either datamined column takes
+  // UNFOCUSED_CHARGE_GEN. The last holdout was the vesti-tactical-upgrade
+  // PENDING_TEAM_ISOLATION pin, retired in the same ruling — see gaugePerShot().
   // UNFOCUSED_CHARGE_GEN — MEASURED 1.0 (test battery 3 A1/A2 pair, 2026-07-13):
   // takina UNfocused in a 2-unit fight steps the gauge +5.6-6.5%/shot (her flat 560
   // target; even the additive full_charge_burst_energy hypothesis is excluded — that
@@ -1429,19 +1432,6 @@ export function runSim(
   // compensating for per-unit skill-generation quirks and the (then-wrong) anis-star
   // shot row, both now modeled from measurements.
   const UNFOCUSED_CHARGE_GEN = 1.0;
-  // Units pinned to FOCUS_CHARGE_GEN instead of their per-unit fullChargeBonus.
-  // vesti-tactical-upgrade (RL/Fire; fullChargeBonus 200): her override landed 2026-08-01 and
-  // carries no charFixes.focusChargeMult, so this pin is LIVE — without it she would silently
-  // inherit her datamined 200 column, which has never been isolated on footage (her kit
-  // build's ⚑3 carries the recipe: a focused solo recording pins her real multiplier). The
-  // cinderella reads that once appeared to contradict the 200 column (~2.2-3.1x) were
-  // RETRACTED as reading errors when her own 2.0x was owner-confirmed TRUE (DECISIONS
-  // 2026-07-29 SUPERSEDES entry; docs/data/burst-gauge.md §4) — so this pin is NOT evidence
-  // the 200 column is wrong; it withholds an unmeasured value. Every other non-250 column is
-  // settled: alice 350 and scarlet-black-shadow 150 are measured + enacted, cinderella 200
-  // enacted via charFixes.focusChargeMult. (Implementation review 2026-07-29; comment
-  // refreshed 2026-08-13 to match the doc record.)
-  const PENDING_TEAM_ISOLATION = new Set(['vesti-tactical-upgrade']);
   const focusIdx =
     cfg.focusSlug !== undefined
       ? Math.max(
@@ -1503,21 +1493,47 @@ export function runSim(
     if (!isCharge) {
       return per + flat;
     }
-    // Per-unit focus multiplier is now SOURCED from characters.json chargeMultiplier
-    // (2026-08-09, gap #20 fix). data/gauge-per-shot.json's fullChargeBonus acts as an
-    // explicit override only when characters.json reports 0 (the non-charge marker for a
-    // handful of units, e.g. raven: chargeMultiplier 0 but gauge row 250 datamined).
-    // This removes the 6 synthesized class-modal rows and the 4 no-row 3.5x units
-    // (belorta/n102/yan/yuni) from silently defaulting to 2.5x.
-    // u.focusChargeMult (charFixes.focusChargeMult) and the magDumpRof/PENDING_TEAM_ISOLATION
-    // pins still take priority over both sources.
+    // THE FOCUS GAUGE BONUS IS THE UNIT'S FULL-CHARGE BONUS — one rule, every unit, NO ROSTER
+    // DEFAULT (owner ruling 2026-08-12, re-affirmed 2026-08-18: "the gauge bonus = charge bonus
+    // on all units; get rid of the 250 fallback unless there's a good code safety reason").
+    // Sourced from characters.json `chargeMultiplier`, with data/gauge-per-shot.json's
+    // `fullChargeBonus` (the datamined full_charge_burst_energy column) filling in where the
+    // character row reports 0 — the same quantity from two datamines, e.g. `raven`
+    // (chargeMultiplier 0, gauge row 250). Census of all 79 SR/RL units, 2026-08-18: 77 source
+    // straight from `chargeMultiplier` and there are exactly two exceptions, `raven` and
+    // `pascal`; scripts/tests/data/gauge-per-shot-source.test.ts holds the roster to it.
+    //
+    // WHY DROPPING THE OLD `?? 250` FALLBACK IS NOT A CODE-SAFETY LOSS: a unit with no charge
+    // bonus in EITHER column does not full-charge, so it takes no focus bonus — it falls to
+    // UNFOCUSED_CHARGE_GEN (x1.0, the measured unfocused value). `pascal` is that unit, and she
+    // is a real case rather than a hypothetical: an RL with `chargeFrames: 0` who fires without
+    // charging, to whom the class-modal default was handing a x2.5 focus bonus for a charge she
+    // never performs. A CHARGE-CAPABLE unit missing both columns would be a data hole, not a
+    // game fact — no unit is in that state today (verified across all 196 characters) and the
+    // source test fails loudly if one ever appears, which is the guard the magic default only
+    // pretended to be.
+    //
+    // The ONLY thing taking priority over the two datamines is `u.focusChargeMult`
+    // (charFixes.focusChargeMult), the per-unit override channel, set only by `cinderella`
+    // (RL/Electric, aka "cindy" — NOT `cinderella-crystal-wave`) at 2.0, which is her own
+    // chargeMultiplier/100 anyway. Both flat-2.5 pins this code used to carry are GONE:
+    //   * `u.magDumpRof` — unreachable; its sole carrier is that same `cinderella`, whose
+    //     `focusChargeMult` short-circuits ahead of it (both in her charFixes).
+    //   * PENDING_TEAM_ISOLATION (`vesti-tactical-upgrade`, RL/Fire — NOT the base `vesti`,
+    //     RL/Water) — RETIRED by owner ruling 2026-08-18. It had held her at a flat 2.5 while
+    //     her datamined 200 went un-isolated on footage, but once the roster default was gone
+    //     that 2.5 became an ORPHAN: not measured, not datamined for her, and no longer a
+    //     default — so the pin was substituting a value with NO provenance for one both
+    //     datamines agree on (chargeMultiplier 200 and fullChargeBonus 200), and holding her
+    //     to a footage standard the other 74 chargeMultiplier-sourced units never met. She now
+    //     takes her datamined 200 → x2.0. Her override's ⚑3 recipe (a focused solo recording)
+    //     still stands as the way to CONFIRM it, but it no longer gates the value.
     const charMult = u.char.chargeMultiplier;
     const fcb = entry?.fullChargeBonus;
+    const chargeBonusPct = charMult > 0 ? charMult : (fcb ?? 0);
     const focusMult =
       u.focusChargeMult ??
-      (u.magDumpRof || PENDING_TEAM_ISOLATION.has(u.char.slug)
-        ? FOCUS_CHARGE_GEN
-        : (charMult > 0 ? charMult : fcb && fcb > 0 ? fcb : 250) / 100);
+      (chargeBonusPct > 0 ? chargeBonusPct / 100 : UNFOCUSED_CHARGE_GEN);
     // basePerTrigger credit (2026-08-18, anis-star measurement): the game credits an extra
     // basePerTrigger × focus × aura on a fraction of focused charge shots. baseGaugeProb
     // (0–1) models the per-shot average; omit = 0 (no extra credit). Only fires for the

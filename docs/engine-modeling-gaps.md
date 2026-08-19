@@ -708,22 +708,110 @@ arcana-fortune-mate, isabel (per-unit SG landing residuals). Per-unit landing is
 (open-questions **A31 (U17)** — the class table stands, class-wide far 0.66 rejected); the open tail is
 isabel's mid/midfar clock-drift re-derive (**U27**). The pull-vs-pellet 10× lever stays open.
 
-### 20. `gauge-per-shot.json` `fullChargeBonus` — ✅ FIXED 2026-08-08 (recorded 2026-08-13)
+### 20. `gauge-per-shot.json` `fullChargeBonus` — ✅ CLOSED 2026-08-18 (sourcing 2026-08-08; default retired 2026-08-18)
 
 `gaugePerShot` sources the SR/RL full-charge focus multiplier from `characters.json`
-`chargeMultiplier`; `data/gauge-per-shot.json`'s `fullChargeBonus` is now an explicit override
+`chargeMultiplier`; `data/gauge-per-shot.json`'s `fullChargeBonus` is the explicit override
 only when `characters.json` reports 0 (the non-charge marker — `raven` is the one live case).
 That retires the 6 synthesized `class-modal-SR`/`class-modal-RL` rows as a live source and stops
-the four no-row 3.5x units (`belorta`, `n102`, `yan`, `yuni`) from silently running at the `?? 250`
-fallback. `u.focusChargeMult` (`charFixes.focusChargeMult`) and the `magDumpRof` /
-`PENDING_TEAM_ISOLATION` pins still take priority over both sources.
+the four no-row 3.5x units (`belorta`, `n102`, `yan`, `yuni`) from silently running at a fallback.
+
+**There is now NO roster default at all** (owner ruling 2026-08-12, re-affirmed 2026-08-18): the
+focus gauge bonus IS the unit's full-charge bonus, for every unit, and a unit with no bonus in
+either datamined column takes `UNFOCUSED_CHARGE_GEN` (×1.0) because it does not full-charge.
+`pascal` (RL/Iron) is the only such unit and the only one the old `?? 250` arm ever caught — she
+has `chargeFrames: 0`, so the default was handing her ×2.5 for a charge she never performs
+(7.00 → 2.80 per focused shot). `u.focusChargeMult` (`charFixes.focusChargeMult`) is now the ONLY
+thing taking priority over the two datamines — and its sole setter, `cinderella` (RL/Electric),
+pins 2.0, which is her own `chargeMultiplier/100` anyway. Both flat-2.5 pins are gone: `magDumpRof`
+as unreachable (same carrier, `focusChargeMult` short-circuits ahead of it) and
+`PENDING_TEAM_ISOLATION` by the same 2026-08-18 ruling — `vesti-tactical-upgrade` takes her
+datamined 200 (×2.0), since once the default was retired the flat 2.5 was an orphan with no
+provenance. **No flat focus multiplier survives anywhere in the engine.**
 
 The lint asked for here exists: `scripts/tests/data/gauge-per-shot-source.test.ts` fails if any
 SR/RL unit's two sources disagree, or if a `chargeMultiplier: 0` unit gains a gauge row outside the
-known exceptions, and pins the four no-row units so a future resync cannot reintroduce the silent
-fallback. Landed in `ccee21f7`; it carried no DECISIONS entry, so this section still read
-"not yet done" three days later and was queued as open work — the retroactive record is
-DECISIONS 2026-08-13 (burst-gauge economy cluster).
+known exceptions, and pins the four no-row units so a future resync cannot reintroduce a silent
+fallback. Since the default was retired it also fails if any **charge-capable** unit
+(`chargeFrames > 0`) resolves no bonus from either column — the guard that replaced the magic
+number, and what separates "does not charge" from "data went missing". Sourcing landed in
+`ccee21f7` (retroactive record: DECISIONS 2026-08-13); the default retirement in `8d92c8fe`
+(DECISIONS 2026-08-18).
+
+### 20d. `k`'s burst weapon swap costs her a rotation step — ⚑ OPEN (observed 2026-08-18)
+
+Surfaced by the gauge-table generator (§20 above), which corrected `k` (SMG/Electric) from the SMG
+class modal 20 to her datamined 40 — she fires **two muzzles** per pull, and the muzzle factor was
+never applied because she had no row at all. Corroborated: `crow` (SMG/Fire), `quency` (SMG/Electric
+— the base unit, NOT `quency-escape-queen`) and `soline` (SMG/Iron — NOT `soline-frost-ticket`,
+which is SG/Water) all carry the identical raw 2000, and the muzzle-2 treatment was already
+committed for `quency-escape-queen`.
+
+At the corrected value, her `liter`/`crown`/`k` fixture straddles a rotation boundary: **the swap arm
+completes 4 burst casts, the swap-removed arm completes 5.** Measured with everything else identical
+(`scripts/tests/units/k.test.ts`; k 111.9M / 1869 shots / 4 casts with the swap vs 114.6M / 2322
+shots / 5 casts without). The swap replaces ~20 pulls/s of SMG fire with ~2.4 pulls/s of SG fire for
+its 10s window, so the arms diverge in shot count by ~450 over the fight.
+
+WHY THIS IS NOT SELF-EVIDENTLY CORRECT: the swap window sits inside Full Burst, where the gauge lock
+discards every credit, so the swap should not be able to cost gauge directly — and indeed the swap
+arm ends with MORE uncapped `gaugeGenerated` (431.2 vs 406.8), which is the signature of it spending
+more time OUT of Full Burst rather than generating better. The causality is therefore unexplained:
+something other than gauge-during-the-window is moving her cast count, plausibly ammo/reload state
+on the revert. Until that is understood, whether the swap SHOULD cost a rotation step is open.
+
+CONSEQUENCE ALREADY TAKEN: the spec's `base.totals.k > noSwap.totals.k` assertion — which justified
+itself as isolating "the weapon choice alone" — was retired, because a 4-cast run versus a 5-cast run
+isolates nothing about weapons. It is replaced by a pin on the cast-count divergence itself, with an
+instruction to restore a real weapon comparison if the arms ever match again. To settle: trace her
+ammo/reload state across the swap revert, or build a fixture where both arms hold the same cast count.
+
+### 20c. U28 rider gauge: is one emission per PULL right, or one per HIT? — ⚑ OPEN (2026-08-18)
+
+The U28 gauge half landed 2026-08-13 (`src/engine/sim.ts`, the `extraHitDamagePct` rider path in
+`firePull()`), crediting `skillGauge(u, frame)` **once per pull**. `skillGauge` divides by
+`hitsPerShot`, so that credits `targetPerTrigger / hitsPerShot`. The rider's DAMAGE on the same line
+is `extraPerHit × hitsPerShot` — i.e. the aggregated call stands for `hitsPerShot` per-hit impacts.
+The equivalent `flatDamage` `hitCount: 1` encoding of the same kit line fires `hitsPerShot` times
+per pull and credits `targetPerTrigger` in total. **For a carrier with `hitsPerShot > 1` the two
+encodings therefore differ by a factor of `hitsPerShot`, while the engine comment and
+`scripts/tests/engine/rider-gauge-equivalence.test.ts` both assert they are equal.**
+
+The pin does not catch it: its fixture carrier is `nayuta` (SMG/Water, `hitsPerShot: 1`), where the
+two coincide exactly. The only discriminating carrier today is `modernia` (MG/Fire,
+`hitsPerShot: 2`); `neon-blue-ocean`, `neon-vision-eye` and `nayuta` are all `hitsPerShot: 1`.
+
+STATUS: an OBSERVATION derived by reading the arithmetic, not yet measured in-game — and the
+direction is genuinely arguable. The shipped reading ("`extraHitDamagePct` is a SUMMED stat dealt as
+a single impact, so the emission count matches the IMPACT count") is coherent; the competing reading
+("the aggregated call stands for N per-hit riders, so it should credit what N `flatDamage` riders
+credit") is what an unmerged branch (`audit/phase-2-gauge`, 2026-08-12) implemented via an
+`instances` parameter. Board-inert either way — every carrier's rider window closes inside the
+chain+FB gauge lock (`scripts/battery/u28-gauge-ab.ts --lock-census`). To settle: add a
+`hitsPerShot: 2` carrier to the equivalence fixture and decide which encoding is authoritative, or
+rule on it directly. Recorded here because that branch was never pushed and is being cleaned up;
+this is the one substantive item it held that did not carry forward.
+
+### 20b. `gaugeHits` authored count vs credits actually emitted — ⚑ OPEN (observed 2026-08-18)
+
+`4d60a624` (2026-08-15) added `gaugeHits` to the `flatDamage` effect schema: `gaugeHits = N` fires
+`skillGauge` N times while keeping the damage instance aggregated (`src/engine/sim.ts`, the
+`flatDamage` case; premise `e64e0432` — solo gauge-bar reads say the `snow-white-heavy-arms` volley
+generates PER HIT). **The authored counts and the observed credits do not obviously reconcile.**
+`snow-white-heavy-arms` (SR/Iron) authors `gaugeHits: 5` and `gaugeHits: 10` across her two
+`shotFired` + `flatDamage` blocks — 15 calls — while `scripts/battery/gauge-substep-ledger.ts`
+observes **six** rider credits per pull (1 weapon credit of 14.0 + 6 × 5.6), stable across pulls.
+
+STATUS: an OBSERVATION, n=1 ledger read, **not** a defect verdict — there are innocent explanations
+nobody has ruled out (the blocks may not both fire every pull; `sim.ts` has a separate
+projectile-landing credit path, `landingGaugeHits`). Recorded because it was found while porting the
+ledger and would otherwise live only in a test comment. Her team-level outcome is NOT unpinned: the
+N5 regression comp holds her at 12 full bursts against the measurement (`4d60a624`), and
+`scripts/tests/battery/multihit-crediting.test.ts` is the rule's own gate. Deliberately NOT pinned
+at 6 in `scripts/tests/gauge-substep-ledger.test.ts` — pinning an unexplained output would pin the
+defect with it. To settle: instrument which blocks fire per pull and whether the landing path
+double-counts, then either explain 6 or fix toward 15. Surfaced by the cross-family code review of
+`8d92c8fe`.
 
 ### 21. "Buff my NEXT round" per-pull `durationShots` budget — ✅ FIXED 2026-08-08
 
