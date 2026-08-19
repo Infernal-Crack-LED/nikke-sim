@@ -26,6 +26,92 @@ lives. Newest first within each section.
   recordings, consistent). Unit test: `scripts/tests/units/liberalio.test.ts` (32 tests,
   including gaugeHits:5 counterfactual).
 
+- **(2026-08-18) The camera-focus gauge bonus IS the unit's full-charge bonus — the `?? 250`
+  roster default is RETIRED.** Owner ruling 2026-08-12, re-affirmed 2026-08-18: _"we know that's
+  how that full charge bonus works — get rid of the 250 fallback unless there's a good code safety
+  reason for it, and implement the gauge bonus = charge bonus on all units."_ The modeling question
+  was already ANSWERED, so this was encode + `/code-review`, not `/scientific-method` (CLAUDE.md,
+  owner ruling 2026-08-11). Engine: `gaugePerShot()` in `src/engine/sim.ts`, commit `8d92c8fe`.
+  - **The rule.** One rule, every unit: the focus multiplier is `characters.json`
+    `chargeMultiplier / 100`, with `data/gauge-per-shot.json`'s `fullChargeBonus` (the datamined
+    `full_charge_burst_energy` column — the same quantity from a second datamine) filling in where
+    the character row reports 0. Census re-run against current main 2026-08-18: **79 SR/RL units,
+    77 source straight from `chargeMultiplier`, exactly two exceptions.**
+  - **Was there a "good code safety reason" to keep the default? No — it was inventing a value,
+    not guarding one.** `pascal` (RL/Iron) is the ONLY unit the fallback ever caught, and it was
+    wrong for her: `chargeFrames: 0` means she fires without charging, yet the class-modal default
+    handed her a ×2.5 focus bonus for a full charge she never performs. She now takes
+    `UNFOCUSED_CHARGE_GEN` (×1.0, the measured unfocused value) — 7.00 → 2.80 gauge per focused
+    shot, and identical focused vs unfocused.
+  - **What replaced it is a louder guard.** `raven` (RL/Iron) is the real distinction: her
+    character row reads 0 but `chargeFrames` is 60 — she genuinely charges, and the second column
+    carries her 250. `chargeFrames` separates "does not charge" from "data went missing", which a
+    magic number could not. `scripts/tests/data/gauge-per-shot-source.test.ts` now FAILS if any
+    charge-capable unit (`chargeFrames > 0`) resolves no bonus from either column, scanned across
+    all 196 characters. No unit is in that state today.
+  - **Also retired: the `magDumpRof` pin, as unreachable.** Its sole carrier, `cinderella`
+    (RL/Electric), sets `charFixes.focusChargeMult` 2.0, which short-circuits ahead of it.
+  - **Blast radius: `pascal` only among units, but she is NOT board-inert — the FOCUSED ranked
+    boards move.** The consumer sweep is the census: across all 196 characters, `pascal` is the ONLY
+    unit whose resolved multiplier changes, because she is the only one with no bonus in either
+    column — every other charge unit keeps the value it already had. The removed `magDumpRof` arm
+    changes nobody for the same kind of reason: its sole carrier, `cinderella` (RL/Electric), sets
+    `focusChargeMult`, which outranked it already.
+    - **GRADED comps: unaffected.** The regression snapshot is byte-identical and was NOT
+      regenerated, and every measured full-burst count is preserved — `pascal` seats in zero
+      regression/experiment comps. `verify.sh` green at 4691 passed, 6 skipped, 314 files.
+    - **RANKED WEB BOARDS: the PRIMARY burstgen board is unchanged; only the FOCUSED variant
+      moves.** The enabling condition is being the CAMERA-FOCUSED unit, and the documented burstgen
+      board is measured UNFOCUSED by construction — `docs/data/rank-boards.md`: camera focus is
+      parked on a non-charge no-op teammate, "so charge weapons generate at ×1.0 … the ×2.5 focused
+      charge bonus is a camera artifact a board cannot grant to every unit at once". A change to the
+      FOCUS multiplier therefore cannot reach it. Confirmed in the artifact: `pascal`'s `entries`
+      row holds at 3.72 / 238 / 10 and `vesti-tactical-upgrade`'s at 3.18 / 208 / 10, before and
+      after. The secondary `focusedEntries` board, which focuses every unit in turn, does move:
+      `pascal` **8.7 / 504 / 11 FBs → 3.72 / 238 / 10 FBs** (her focused row now equals her
+      unfocused row exactly — the fingerprint of taking no focus bonus), `vesti-tactical-upgrade`
+      6.32 / 386.75 → 4.85 / 304.2. Both are CORRECTIONS, not regressions: the old focused board
+      credited `pascal` a ×2.5 full-charge bonus, and a whole extra full burst, for a charge she
+      never performs.
+    - **`pascal` is the ONLY charge weapon in the roster with `chargeFrames: 0`** — 1 of 79 SR/RL
+      units, verified across all 196 characters — and the only unit taking ×1.0. The dangerous
+      inverse (a `chargeFrames: 0` unit that DOES carry a bonus column, so it silently takes a focus
+      bonus for a charge it never performs and nothing flags it) has zero members. Note that lacking
+      a datamined `gauge-per-shot.json` row is NOT what makes her unusual: 75 of 185 ranked burstgen
+      rows have no row and fall back to the weapon class modal, which is the designed default.
+    - ⚠ An earlier draft of this entry claimed she appeared in "no ranked web board". That was
+      **wrong and never actually tested**: the shell command meant to check it sat behind an `&&`
+      after a `grep -c` that returned 0 matches, so it exited non-zero and the board check never
+      ran. Recorded because the failure mode — an unexecuted verification read as a passing one —
+      is worth more than the correction.
+    - Mutation-checked: restoring the `?? 250` arm turns the `pascal` pin red (7 vs 2.8), so the pin
+      is discriminating rather than vacuously green.
+  - **`vesti-tactical-upgrade` (RL/Fire) — PIN RETIRED, same ruling, one turn later.** She was the
+    last unit held at the flat 2.5 by `PENDING_TEAM_ISOLATION`, on the grounds (a `sim.ts` comment
+    refreshed 2026-08-13) that her 200 column had never been isolated on footage, so the pin
+    "withheld an unmeasured value" rather than asserting the column was wrong. Escalated to the
+    owner rather than enacted, because unpinning would overturn a LATER deliberate evidence
+    decision; **owner ruled to unpin (2026-08-18).** The argument that carried: once the roster
+    default was gone, 2.5 was an ORPHAN — not measured, not datamined for her, and no longer a
+    default — so the pin substituted a value with NO provenance for one both datamines agree on
+    (`chargeMultiplier` 200 and `fullChargeBonus` 200), and held her to a footage standard the
+    other 74 `chargeMultiplier`-sourced units never met. She takes ×2.0; her column stays
+    UNMEASURED but is no longer withheld (a focused solo recording would CONFIRM it — her kit
+    build's ⚑3 recipe — and no longer gates it). **With her unpinned, `FOCUS_CHARGE_GEN` and
+    `PENDING_TEAM_ISOLATION` are DELETED from the engine: no flat focus multiplier survives
+    anywhere.** `scripts/tests/battery/pending-team-isolation-mirror.test.ts` is deleted with them
+    — it existed only to hold the mirror in sync with a set that no longer exists.
+    Blast radius, same split as `pascal` above: **GRADED comps unaffected** (she seats in zero
+    regression/experiment comps — `focusColumnCensus()` plus a grep of both comp files — so the
+    snapshot is byte-identical), but the **FOCUSED ranked board DOES move**: her
+    `web/public/burstgen.json` `focusedEntries` row goes **6.32 / 386.75 → 4.85 / 304.2** (her
+    full-burst count holds at 10). Her unfocused row is unchanged at 3.18 / 208, as expected —
+    the pin only ever applied to the focused case.
+  - **Tooling (constraint #9).** `scripts/battery/gauge-substep-ledger.ts` lands with the change it
+    supports — the instrument the focus-bonus test measures through, self-validating against the
+    `maiden-ice-rose` labeled anchor (9.10 = 364 × 2.5 in two sub-steps). It was authored
+    2026-08-12 on `audit/phase-2-gauge` and never merged; that branch is otherwise superseded.
+
 - **(2026-08-17) `trina` burst-amp magnitude CONFIRMED and granularity RULED (owner popup
   read).** Scarlet burst popup with/without Spread Roots: 11,069,312 / 1,955,754 → ratio
   **5.660** vs modeled **5.565** (burstSkillAoeDamagePct 435.6 + attackDamagePct 20.9 additive in

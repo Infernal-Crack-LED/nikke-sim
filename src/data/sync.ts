@@ -11,6 +11,7 @@ import type { OverrideFile } from '../skills/index.js';
 import { countsAsElements } from '../elements.js';
 import { deriveNicknames } from './nicknames.js';
 import { deriveWeaponFields, type WeaponShotDetail } from './weapon-fields.js';
+import { buildGaugePerShot } from './gauge-per-shot-gen.js';
 
 const SYNERGY_API =
   'https://api.nikke-synergy.com/rest/v1/attack_damage_characters';
@@ -423,11 +424,22 @@ async function main() {
 
   mkdirSync(new URL('../../data/', import.meta.url), { recursive: true });
   const out: DataFile = { syncedAt: new Date().toISOString(), characters };
-  // All four go through writeJsonArtifact so the file this writes is byte-identical to what the
+  // All of these go through writeJsonArtifact so the file this writes is byte-identical to what the
   // pre-commit hook would write — a sync then diffs by what actually CHANGED, not by re-indentation.
   await writeJsonArtifact(
     new URL('../../data/characters.json', import.meta.url),
     out
+  );
+  // Burst-gauge table, DERIVED from the datamined shot_detail rows we just wrote above (2026-08-18).
+  // It used to be hand-maintained, which meant a unit only got a row when somebody happened to look
+  // at it, and everyone else silently ran on a weapon class modal — wrong for 23 units whose
+  // datamined value was sitting in characters.json unread. Regenerating here keeps the two files
+  // from ever diverging again; hand-authored exceptions live in gauge-per-shot-gen.ts and win over
+  // the derived value. `scripts/tests/data/gauge-per-shot-generated.test.ts` fails if the committed
+  // file stops matching what this call would produce.
+  await writeJsonArtifact(
+    new URL('../../data/gauge-per-shot.json', import.meta.url),
+    buildGaugePerShot(characters)
   );
   await writeJsonArtifact(
     new URL('../../data/bossing-tiers.json', import.meta.url),

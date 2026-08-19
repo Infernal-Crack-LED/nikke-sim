@@ -1,0 +1,97 @@
+{
+  "slug": "centi",
+  "kitDescription": "Centi is an Iron rocket-launcher Defender whose job is keeping the team alive rather than dealing damage. At the start of battle she immediately casts her Skill 2, which puts a shared shield equal to 7% of her max HP on all allies for 5 seconds, and every full-charge shot she lands shaves time off Skill 2's cooldown so the shield comes back faster. If her shield is broken by enemy damage, the whole team is healed for 9.7% of her max HP. Her Burst II hits the 5 lowest-HP enemies for 145.46% of her ATK, lowers their DEF by 14.54% for 10 seconds, and raises her own max HP by 5% for 10 seconds. In a boss fight her offensive contribution is the burst nuke plus the team-wide damage gain from the DEF debuff.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "Fixture non-vacuity guard (centiBurstInstances > 0) — S5's controlComp pairs centi B2 with crown B2, so crown takes every stage-2 slot and centi casts zero bursts; fixture flaw, not an override divergence",
+      "S1-a/S2 structural shield assertions — S5 expects a shield block (maxHpPct 7 / 5s) on allies; driver deliberately UNMODELED shields (offensively inert at scope lock, no shield HP pool in engine v1)",
+      "S1-b cooldown-reduction assertions — S5 expects a skill2-CD-reduction encoding; driver UNMODELED it (CD reduction of an inert shield skill)",
+      "B-b self Max HP buff assertions — S5 expects a maxHpPct 5 / 10s self buff; driver UNMODELED it (no HP→ATK consumer on centi)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Forcefully uses Skill 2.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim — shield creation at t=0, offensively inert, no DPS impact in v1",
+        "blindSaid": "S2b: FAITHFUL-required, load-bearing for tandem shield consumers (t=0 force-cast, no double-cast); S6 modeled it as a battleStart shield block",
+        "formulaCheck": "Shield creation moves no damage bucket at scope lock (no incoming boss damage, no shield HP pool); the tandem-consumer risk S2b raises is real but comp-dependent and recorded in the driver note",
+        "fireRateOk": true,
+        "explanation": "Deliberate, recorded skip with a correct inertness argument for the scope-locked fixture. Acceptable DOCUMENTED_GAP; the tandem caveat (a shielded-trigger teammate would read this) is disclosed in the driver note, not hidden."
+      },
+      {
+        "kitLine": "Cooldown of Skill 2 ▼ 9.16%.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED — CD reduction of an offensively inert skill (S2 only makes shields)",
+        "blindSaid": "S2b: FIX, load-bearing, per-landing tick-down of the live S2 timer at RL cadence; S6 modeled as skillCooldownReductionSec 1.37 stacking maxStacks 4 with ⚑ flags (and guessed a 15s S2 base despite the datamined 9s cooldown in characters.json)",
+        "formulaCheck": "The reduced timer feeds only shield creation, which touches no damage bucket; inertness argument is sound. The 9.16%-of-what question (base vs remaining) never needs resolving while the target skill is inert.",
+        "fireRateOk": true,
+        "explanation": "Recorded gap whose downstream effect is itself a documented gap; no damage consequence at scope. S6's stacked-buff encoding with an invented maxStacks 4 haircut confirms the driver made the safer call."
+      },
+      {
+        "kitLine": "shield destroyed → Recovers 9.7% Max HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED — no shield-break model in v1, no shield entity to destroy",
+        "blindSaid": "S2b: UNMODELED (trigger unreachable at scope; expiry-vs-destruction trap named); S6 also unmodeled with the same reasoning",
+        "formulaCheck": "Trigger cannot fire at scope lock (boss deals no damage); all three parties converge",
+        "fireRateOk": true,
+        "explanation": "Full three-way agreement; the phantom-heal-on-expiry nearest-wrong is avoided by not modeling it at all."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Shield 7% of user's final Max HP, 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED — shield creation, offensively inert, no shielded consumer on centi's own kit",
+        "blindSaid": "S6 modeled as interval 15s shield block (⚑ cadence guess; actual datamined S2 cooldown is 9s per skillCooldownsSec, which S6 missed); S5 asserted it structurally and went red",
+        "formulaCheck": "Shields absorb incoming damage only; no outgoing-damage bucket is touched at scope lock",
+        "fireRateOk": true,
+        "explanation": "Recorded skip. S6's attempt to model it required an invented interval that contradicts the datamined 9s cooldown in the ground-truth packet — evidence that modeling it now would have been a fudge, so the gap is the correct call."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 145.46% of final ATK as damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 145.46, one instance (5-target collapses on lone boss), untagged, never takes the +50% FB major",
+        "blindSaid": "S5 asserted exactly this (instance count = cast count, atkPct 145.46, burst bucket, no fbMajorApplied) and these assertions PASSED against the driver override; S6 encoded identically",
+        "formulaCheck": "Matches the per-instance formula: rate 145.46% of FinalATK in the burst bucket, cast-time frame so no FB major — correct multiplicative position",
+        "fireRateOk": true,
+        "explanation": "Two independent derivations and the formula SSOT agree; fbMajorApplied discrimination against fullBurstEnter keying is pinned."
+      },
+      {
+        "kitLine": "DEF ▼ 14.54% for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy defPct -14.54, 10s (bossDefNow scales bossDef; mica precedent); discriminated against damageTakenPct laundering",
+        "blindSaid": "S6 claimed this MUST be unmodeled ('no enemy-DEF stat exists') — a blind misread of the engine's vocabulary; S5 asserted the line negatively (not damageTakenPct) and passed",
+        "formulaCheck": "DEF reduction lowers bossDef inside the per-instance formula, mechanically distinct from the Taken bucket; driver's counterfactual test proves the channels produce different totals",
+        "fireRateOk": true,
+        "explanation": "Correct channel, correct magnitude/duration from kit text, ~50% uptime on the 20s rotation, and the live-vs-inert check (removal moves team totals) passes. S6's dissent is a RECON_ERROR on the blind side."
+      },
+      {
+        "kitLine": "Max HP ▲ 5% for 10 sec.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED — no HP→ATK conversion for centi; would only strengthen the (inert) shield basis",
+        "blindSaid": "S6 modeled it (targetMaxHpPct 5/10s); S5 asserted it and went red; S2b scope note treats it as inert for DPS",
+        "formulaCheck": "Max HP feeds no damage bucket for centi (no atkOfMaxHpPct rider); the HP/DEF-scaler retention rule S6 cites applies to units with an HP-scaling consumer, which centi lacks",
+        "fireRateOk": true,
+        "explanation": "Recorded, correctly reasoned skip; S6's modeling of it adds an event stream with zero observable effect."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all five non-burst-damage lines are deliberately UNMODELED with verbatim prose and sound scope-lock inertness arguments (shields, shield-CD, shield-break heal, and self Max HP all touch no outgoing-damage bucket for centi), and the two offensively live burst lines are FAITHFUL — the 145.46% nuke is burstCast-keyed so it correctly never takes the FB major, and the DEF debuff rides the enemy defPct channel (mica precedent) with the damageTakenPct-laundering counterfactual explicitly discriminated and shown to move team totals differently. The blind re-derivations converged where it matters: S5's 7 reds decompose into its own fixture vacuity (crown B2 steals every stage-2 slot, so its burst assertions could never observe centi) plus assertions of lines the driver documented as gaps — i.e., zero undocumented divergences; S6 agreed on the burst nuke, and its one substantive dissent (DEF debuff 'cannot be modeled') is a blind misread of the engine's stat vocabulary, a RECON_ERROR in the driver's favor, while its attempt to model the shield lines required an invented 15s interval that contradicts the datamined 9s Skill 2 cooldown in the ground truth — retroactively validating the driver's gap decision. The same-model residual the owner should spot-check: the 'shields are inert' ruling is fixture-true but comp-false — in a real tandem comp with a shielded/recovery-trigger consumer (Crown-style), centi's unmodeled shield and heal lines would under-credit that teammate's procs, so if centi is ever benched into a consumer comp the tandem gap becomes live; also confirm the burst DEF debuff's bossDefNow routing against the mica pin one more time, since both the driver and this judge leaned on that single precedent.",
+  "model": "kimi-code/k3"
+}

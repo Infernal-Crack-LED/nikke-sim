@@ -1,0 +1,232 @@
+{
+  "slug": "centi",
+  "leakDetected": null,
+  "override": {
+    "slug": "centi",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "battleStart"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 7,
+            "durationSec": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "chargeCounter",
+          "count": 1
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "skillCooldownReductionSec",
+            "value": 1.37,
+            "maxStacks": 4
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 15
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 7,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 145.46
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 5,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when the shield created by Centi is destroyed. Affects all allies. Recovers 9.7% of the skill user's final Max HP as HP."
+      ],
+      "skill2": [],
+      "burst": ["DEF \u25bc 14.54% for 10 sec."]
+    },
+    "caveats": [
+      "\u2691 Skill 2 has NO activation clause in the kit text, so its cadence is modeled as an interval trigger with an UNMEASURED 15 sec period. The kit states no cooldown; the whole shield/heal duty cycle rides on this guess.",
+      "\u2691 'Cooldown of Skill 2 \u25bc 9.16%' is a PERCENT reduction, but the only schema stat is skillCooldownReductionSec (seconds). The 1.37 sec value is 9.16% of the guessed 15 sec base; both the base and the seconds conversion are unmeasured.",
+      "\u2691 The kit states no duration and no stack cap for the Skill-2 cooldown reduction. Her RL lands a full charge every ~1.2-1.5 sec, so an uncapped permanent stack would drive the Skill-2 interval to zero; maxStacks 4 is an invented haircut, not a kit value.",
+      "\u2691 The burst's DEF \u25bc 14.54% is NOT modeled: the StatKey vocabulary has no enemy-DEF-reduction stat (defPct is self-DEF and documented inert; damageTakenPct is a different multiplier bucket and would land the effect in the wrong place). This is a REAL team-wide damage gain that the override currently drops.",
+      "\u2691 The shield-destroyed heal is NOT modeled: its trigger (a Centi shield being BROKEN by damage) is unreachable at scope lock, where the boss deals no damage and shields only lapse by time. It is a cross-unit line (heal effects fire allies' 'recovery' triggers), so it is inert here but would matter against a damaging boss.",
+      "\u2691 Burst flatDamage crit-eligibility left unset \u2014 deferred to the engine's global rider-crit behaviour rather than pinned per-unit; the kit text says nothing.",
+      "\u2691 Base cadence (chargeFrames 60 / reloadFrames 111 / ammo 6) is datamined and known-unreliable; it sets the full-charge rate that drives the Skill-2 cooldown reduction, so a cadence error propagates straight into shield uptime."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Model: RL/Iron/Defender/Burst II shield-support. S1a 'Forcefully uses Skill 2' is encoded as a battleStart block carrying Skill 2's own payload (7% caster Max HP shield, 5 sec, all allies) so the t=0 forced cast is represented \u2014 the interval trigger on skill2 first fires at t=sec and would otherwise leave the opening uncovered. S1b keys off a chargeCounter{count:1} (fires on every full charge; the closest primitive to 'when landing a Full Charge attack' \u2014 at scope lock every RL shot lands, so land-vs-fire is equivalent) and grants a self skillCooldownReductionSec buff, which shortens interval-trigger timers, i.e. exactly the skill2 interval. S1c (heal on shield destruction) is unmodeled: its trigger cannot fire at scope lock. Burst is a burstCast flatDamage 145.46% of final ATK on the boss plus a self Max HP \u25b25%/10 sec (targetMaxHpPct; kept per the HP/DEF-scaler rule even though she carries no atkOfMaxHpPct consumer). The burst DEF \u25bc is unmodeled for lack of an enemy-DEF stat, not because it is inert. No noFb, no noRange, no core flags authored \u2014 burst-cast damage is engine-FB-exempt and riders are engine-force-noRange."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'battleStart'} on the forced-Skill-2 block (durationSec of the granted shield is respected, unlike a passive)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Forcefully uses Skill 2.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "battleStart -> target allies -> shield{maxHpPct:7, durationSec:5}, i.e. Skill 2's own payload fired at t=0; no primitive exists for 'cast another skill', so the payload is duplicated rather than referenced"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when landing a Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'chargeCounter', count:1} \u2014 fires once per full charge; no dedicated full-charge trigger kind exists, and 'landing' is scope-equivalent to firing on a partless boss with no misses"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Cooldown of Skill 2 \u25bc 9.16%.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "self buff{stat:'skillCooldownReductionSec', value:1.37 \u2691, maxStacks:4 \u2691} \u2014 percent-to-seconds conversion off a GUESSED 15 sec Skill-2 base; the stack cap is an invented haircut (kit states neither duration nor cap)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when the shield created by Centi is destroyed",
+      "status": "SKIPPED",
+      "effectOrReason": "trigger unreachable at scope lock \u2014 the v1 boss deals no damage, so a Centi shield lapses by time and is never DESTROYED. Schema has no shield-break trigger. Recorded verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 9.7% of ... Max HP as HP.",
+      "status": "SKIPPED",
+      "effectOrReason": "same block as above; would be heal{} to allies (firing their 'recovery' triggers \u2014 cross-unit relevant, e.g. on-recovery consumers), but its trigger never fires. NOT skipped on isolation/defensive grounds"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (self included \u2014 no excludeSelf)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Creates a Shield equal to 7% ... 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shield{maxHpPct:7, durationSec:5} on trigger {kind:'interval', sec:15 \u2691} \u2014 kit gives NO activation clause, so cadence is the always-\u2691 invented-trigger case; fires allies' 'shielded' triggers / satisfies requiresShielded gates"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 5 enemy unit(s), lowest HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} \u2014 single-boss scope collapses the 5-target selection to the one boss; no multi-enemy target primitive needed"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 145.46% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast -> flatDamage{atkPct:145.46}; no noFb/noRange/core authored (burst-cast damage is engine-FB-exempt, riders are engine-force-noRange, and the text says nothing about core strike)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF \u25bc 14.54% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "no enemy-DEF-reduction StatKey exists (defPct is self-DEF and inert; damageTakenPct is a distinct multiplier bucket, so folding it there would place a real mechanic in the wrong bucket). Recorded verbatim in unmodeled.burst; flagged as a genuine dropped team-wide damage gain"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP \u25b2 5% for 10 sec. (self)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "self buff{stat:'targetMaxHpPct', value:5, durationSec:10} \u2014 self-granted, so it WOULD feed an own atkOfMaxHpPct conversion; she has none, kept per the HP-scaler retention rule"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill2[0].trigger.sec",
+      "estimate": "15 sec",
+      "reasoning": "ALWAYS-\u2691 case 2: a kit line with NO activation clause gets an invented trigger + cadence. Skill 2's prose states only the effect, never a cooldown. 15 sec is a mid-range defender-skill guess, nothing more; it sets the entire shield duty cycle (5 sec shield on a 15 sec period = ~33% uptime), which is what any shield-gated teammate (requiresShielded / 'shielded' trigger) reads.",
+      "recipe": "Datamine the Skill-2 cooldown for centi. Failing that, take a focus recording of centi in a team and count shield-application VFX over a 180 sec fight: period = 180/(applications-1), with the battle-start forced cast as application #1. Cross-check that the count exceeds 180/15 once full charges start landing (the S1b reduction shortens it)."
+    },
+    {
+      "field": "override.skill1[1].effects[0].value",
+      "estimate": "1.37 sec (= 9.16% x 15 sec)",
+      "reasoning": "The kit states a PERCENT reduction; the only available stat is skillCooldownReductionSec, denominated in seconds. The conversion therefore inherits the guessed 15 sec base \u2014 if the real base is 20 sec the value is 1.83, if 10 sec it is 0.92. Percent-vs-seconds is also a semantic mismatch: the kit line most likely cuts the REMAINING cooldown per proc rather than granting a standing seconds-off buff, and the schema has no primitive for a one-shot cooldown pulse.",
+      "recipe": "Pin the Skill-2 base cooldown first (same recipe as above), then measure the EFFECTIVE shield period in a recording where centi is landing full charges continuously vs one where she is not (e.g. stunned / reloading-heavy opening). The delta in shield applications per minute gives the real per-charge reduction directly, without needing the percent-to-seconds fiction."
+    },
+    {
+      "field": "override.skill1[1].effects[0].maxStacks",
+      "estimate": "4 (invented cap)",
+      "reasoning": "ALWAYS-\u2691 case 4 (stack/currency steady-state). The kit states neither a duration nor a cap. Her charge economy \u2014 chargeFrames 60, ammo 6, reloadFrames 111 \u2014 lands roughly one full charge per 1.2-1.5 sec, i.e. ~10 per 15 sec window, so an uncapped permanent stack collapses the Skill-2 interval to zero within seconds and would give ~100% shield uptime. 4 stacks (~5.5 sec off a 15 sec base -> ~9.5 sec effective) is a deliberately conservative haircut chosen to avoid that degenerate case; it is NOT derived from the kit.",
+      "recipe": "Measure the effective shield period at steady state (mid-fight, after her charge cadence has stabilised) from a focus recording. effectiveInterval = base x (1 - 0.0916 x observedStacks) gives the real stack count; if the measured period is at or near the game's skill-cooldown floor, the correct model is a clamp rather than a stack cap."
+    },
+    {
+      "field": "override.unmodeled.burst[0] (DEF \u25bc 14.54% for 10 sec)",
+      "estimate": "unmodeled \u2014 worth roughly a low-single-digit % team damage gain while active",
+      "reasoning": "A boss DEF reduction acts on the flat DEF subtraction in the damage formula, which is a different mechanic from damageTakenPct (a multiplier-bucket term). The StatKey list has no enemy-DEF stat, and defPct is documented as self-DEF and inert. Encoding it as damageTakenPct would reproduce roughly the right direction in the wrong bucket and would compose incorrectly with any other Damage-Taken source \u2014 the exact fudge the measured>fudge rule forbids. It is dropped honestly instead.",
+      "recipe": "Needs an engine primitive (an enemy-DEF-down stat feeding the boss-DEF subtraction) before it can be modeled. Sizing: run the existing boss-DEF sensitivity path with DEF reduced 14.54% for 10 sec per centi burst and diff total team damage; that bounds the cost of the omission without changing any shipped value."
+    },
+    {
+      "field": "override.unmodeled.skill1[0] (shield-destroyed heal 9.7%)",
+      "estimate": "unmodeled \u2014 inert at scope lock, non-inert against a damaging boss",
+      "reasoning": "The trigger is shield DESTRUCTION (broken by incoming damage), not shield EXPIRY. At scope lock the boss deals no damage and nothing breaks a shield, so the line can never fire; modeling it on a 5 sec expiry timer would invent a trigger the kit does not state and would spam allies' 'recovery' triggers (an on-recovery consumer such as a heal-synergy teammate would then get free uptime). Skipped on TRIGGER inexpressibility, explicitly not on the 'heals do nothing' isolation reasoning the hard rules forbid.",
+      "recipe": "Only becomes measurable in a fight where the boss actually damages the team. If a shield-break trigger is ever added, the block is heal{} -> target allies on that trigger; until then the correct record is unmodeled + this flag."
+    },
+    {
+      "field": "base cadence tuple (chargeFrames 60 / reloadFrames 111 / ammo 6)",
+      "estimate": "as datamined \u2014 unverified",
+      "reasoning": "ALWAYS-\u2691 case 1: datamined cadence fields are known-unreliable, and here they are load-bearing beyond raw DPS \u2014 the full-charge rate is the trigger frequency for the Skill-2 cooldown reduction, so a cadence error propagates directly into shield uptime and therefore into any shield-gated teammate.",
+      "recipe": "Frame-count one magazine from a focus recording: charge-start to release for chargeFrames, last-shot to first-shot-of-next-magazine for reloadFrames, and count shots per magazine for ammo. Compare against data/ before trusting the derived charge rate."
+    },
+    {
+      "field": "override.burst[0].effects[0].crit",
+      "estimate": "left unset (engine default governs)",
+      "reasoning": "The kit text says nothing about critical hits on the burst damage, and the schema notes a global rider-crit behaviour that already decides this class of hit. Authoring crit:true or crit:false per-unit here would pin a behaviour on no evidence and could diverge from the roster-wide convention.",
+      "recipe": "Read burst popups in a centi focus recording: orange + crit icon on the burst number means it crits. If it does and the engine default is off, pin crit:true; a single clean recording settles it."
+    }
+  ],
+  "model": "claude-opus-5"
+}

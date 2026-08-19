@@ -1,0 +1,132 @@
+{
+  "slug": "queen",
+  "kitDescription": "Queen is a Fire-element shotgun Attacker whose kit is built for fighting Wind bosses, since Fire beats Wind. She permanently buffs her own elemental-advantage damage, defense, and attack damage from the start of battle, and gains a large 15-second ATK buff at battle start and again every time Full Burst ends. Her burst deals a heavy distributed-damage hit to all enemies; if a Wind enemy is present, the burst also grants her a 10-second ATK buff called 1 More, which in turn triggers an additional distributed-damage strike and would pass an ATK buff to Persona-state Burst III allies. When she enters Burst Stage 3 she gains a short Distributed Damage buff, and casting her burst wraps her in Fist of Justice, further raising her elemental-advantage damage and defense until Full Burst ends. Against non-Wind bosses, the 1 More chain and elemental-advantage lines simply never activate.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Nuke Boost: Elem Adv Atk Dmg \u25b213.59%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "battleStart self buff elemAdvantageDamagePct 13.59, no durationSec (permanent)",
+        "blindSaid": "S6: passive trigger, same stat/value; S5 Q1 asserts permanent application + zero movement on non-advantage boss",
+        "formulaCheck": "elemAdvantageDamagePct lives in the Element bucket (1.1 + terms/100) and applies only with advantage \u2014 correct bucket per SSOT \u00a71c (2026-07-14 placement ruling)",
+        "fireRateOk": true,
+        "explanation": "Driver, S6, and S2b all converge on stat, value, scope, permanence, and advantage-only activity. Driver's battleStart-with-no-expiry is behaviorally identical to S6's 'passive' for a continuous cannot-be-removed effect."
+      },
+      {
+        "kitLine": "Defense Master: DEF \u25b214.78%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "defPct 14.78 in the same battleStart block",
+        "blindSaid": "S6 same; S5 Q2 asserts application and inertness",
+        "formulaCheck": "defPct is offensively inert in v1; carried for kit completeness per the completeness rule",
+        "fireRateOk": true,
+        "explanation": "Pure stat record; three-way agreement."
+      },
+      {
+        "kitLine": "ATK \u25b250.28% for 15 sec (start + FB end)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "two blocks: battleStart + fullBurstEnd, atkPct 50.28 durationSec 15 each",
+        "blindSaid": "S6 identical two-block decomposition; S5 Q3 asserts frame-0 apply, \u22652 applications, expiresFrame\u2212frame == 900",
+        "formulaCheck": "atkPct is the plain ATK \u25b2 multiplier on staticAtk (\u00a71a) \u2014 correct bucket; fullBurstEnd (not fullBurstEnter) matches the prose timing",
+        "fireRateOk": true,
+        "explanation": "Both triggers present with correct 15s wall-clock duration; refreshes each FB end over the 180s fight."
+      },
+      {
+        "kitLine": "When 1 More takes effect: 548.99% dist",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + bossElementGate Wind, flatDamage atkPct 548.99 flavor distributed (added in round-1 fix)",
+        "blindSaid": "S6 independently derived the identical decomposition (plus an explicit crit:true); S5 Q4 asserts one rider per queen burstCast on Wind boss and ZERO on neutral boss",
+        "formulaCheck": "Rider is skill damage: noRange, no core, crits at caster rate; lands at cast so pre-FB (no +0.5). '1 More' only exists via her own Wind-gated burst buff, so burstCast+Wind-gate is the faithful trigger decomposition; S2b named the ungated version the kit's largest over-credit trap \u2014 it is gated",
+        "fireRateOk": true,
+        "explanation": "The prior round's SILENT_DROP is fixed and now matches the independent blind derivation. Residual: S6 adds explicit \"crit\": true while the driver omits it \u2014 faithful iff the engine's flatDamage path crits by default (the stored-hit crit-OFF exemption documented in the SSOT is specific to storedHit, implying flatDamage crits on by default). Unverifiable from this packet; treated as converged but listed as the owner spot-check."
+      },
+      {
+        "kitLine": "When Follow Up takes effect: 548.99% dist",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 (verbatim line); \u26911 in note: teammate-granted status, no engine trigger, estimate 0, recipe = externally-granted-status trigger primitive",
+        "blindSaid": "S6 also unmodeled with the same reasoning; S2b concurs (no source in fixture or kit); S5 Q5 asserts the unmodeled entry exists",
+        "formulaCheck": "n/a \u2014 no activation possible at scope",
+        "fireRateOk": true,
+        "explanation": "Deliberate, documented, recipe-flagged. Correct call: inventing a trigger would fabricate up to 548.99% of final ATK per phantom proc."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Attack Damage \u25b230% continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "battleStart self attackDamagePct 30, permanent",
+        "blindSaid": "S6 same (passive); S5 Q6 asserts permanence + removal reduces total",
+        "formulaCheck": "attackDamagePct composes additively inside DamageUp (\u00a71f) \u2014 correct bucket, dilution applies",
+        "fireRateOk": true,
+        "explanation": "Three-way agreement."
+      },
+      {
+        "kitLine": "Fist of Justice: Nuke Amp \u25b225.56% / Rakukaja DEF \u25b217.95%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast self, elemAdvantageDamagePct 25.56 + defPct 17.95, durationSec 10",
+        "blindSaid": "S6 same trigger/stats/values but durationSec 10.4; S5 Q7/Q8 assert application per burst cast and expiresFrame\u2212frame == 600",
+        "formulaCheck": "Correct buckets (Element-bucket adv term; inert DEF). Prose deactivation is 'when Full Burst ends', not a fixed 10s \u2014 the 10s constant is an approximation of the FB window; S6's 10.4 is no better sourced. Equivalent at scope lock (10s FB window), so faithful-in-effect",
+        "fireRateOk": true,
+        "explanation": "Converged. Minor hypothesis-level note: a fixed 10s can drift from the true FB-end boundary if the window length ever varies; no engine 'until FB end' duration primitive was cited by either writer."
+      },
+      {
+        "kitLine": "Entering Burst Stage 3: Dist Dmg \u25b290.01% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast self, distributedDamagePct 90.01 durationSec 10; \u26912 documents the same-frame ordering question vs the burst nuke and 1 More rider",
+        "blindSaid": "S6 uses stageEnter stage 3 instead of burstCast; S5 Q9 asserts count == burst count and 10s duration \u2014 both encodings pass",
+        "formulaCheck": "distributedDamagePct feeds the Distributed flavor bucket; prose duration is exactly 10 sec (matches). For this B3 unit, stage-3 entry IS her own cast, so burstCast and stageEnter are co-frame; the trigger-identity difference is non-load-bearing here. Whether the buff lands before the same-cast distributed nuke/rider resolve is an engine-ordering question the driver explicitly flagged (\u26912)",
+        "fireRateOk": true,
+        "explanation": "Faithful with the ordering caveat documented by the driver. The S5 test does not discriminate burstCast vs stageEnter (both green) \u2014 acceptable because they coincide for this unit."
+      },
+      {
+        "kitLine": "1 More: Baton Pass ATK\u25b235.2% caster, stacks 3",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2 (verbatim line); note cites the missing 'Persona state' gate primitive",
+        "blindSaid": "S6 MODELED it as burstCast + Wind gate, allies-except-self, casterAtkPct 35.2 maxStacks 3 \u2014 dropping the Persona-state and standard-B3 filters; S5 Q10 asserts the unmodeled entry exists (green vs driver)",
+        "formulaCheck": "casterAtkPct converts at application to flat ATK of caster's final ATK (\u00a71a) \u2014 S6's stat choice is right, but its target set would credit helm in the fixture, a non-Persona ally the prose excludes",
+        "fireRateOk": true,
+        "explanation": "Driver's gap is documented and defensible: S6's approximation over-credits non-Persona B3 allies (helm), which is exactly the fabrication the MEASURED > FUDGE rule forbids. Divergence resolved in the driver's favor; S6's modeling is the spurious side."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "All enemies: 1421.69% final ATK dist",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast enemy flatDamage atkPct 1421.69 flavor distributed",
+        "blindSaid": "S6 identical (plus explicit crit:true); S5 Q11 asserts one hit per cast at exactly 1421.69, bucket 'burst', and fbMajorApplied never true",
+        "formulaCheck": "Burst-cast direct damage is forced noFb \u2014 lands before Full Burst opens (MEASURED timing rule); Q11's no-fb-major assertion pins this",
+        "fireRateOk": true,
+        "explanation": "Converged on magnitude, flavor, and pre-FB timing. Same crit-flag residual as the 1 More rider."
+      },
+      {
+        "kitLine": "If Wind Code enemy: 1 More ATK\u25b230.27% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + bossElementGate Wind, self atkPct 30.27 durationSec 10",
+        "blindSaid": "S6 identical; S5 Q12 asserts one apply per cast on Wind boss, ZERO on neutral boss, and removal reduces total",
+        "formulaCheck": "atkPct bucket correct; Wind gate matches the prose's activation condition exactly (Fire attacker \u21d2 advantage only vs Wind)",
+        "fireRateOk": true,
+        "explanation": "Three-way agreement; the discriminating neutral-boss negative assertion passes."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0 (11/11 kit lines FAITHFUL or DOCUMENTED_GAP; the two gaps \u2014 Follow Up rider, Baton Pass \u2014 are deliberate, verbatim-documented, and recipe-flagged)",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs survive this round: the round-1 SILENT_DROP of the 1 More distributed rider is fixed and the driver's burstCast + bossElementGate-Wind decomposition now matches S6's independent blind derivation exactly, which is the strongest convergence signal available in a same-model gauntlet. S5's 30/30 green run against the shipped override is corroborated at every load-bearing point by counterfactual patches (each throws if the fixture goes stale) and by neutral-boss negative assertions that pin both Wind gates \u2014 the two largest over-credit traps in the kit (ungated 548.99% rider, ungated 30.27% ATK buff) are provably closed. The two divergences that remain are resolved in the driver's favor or are non-load-bearing: Baton Pass is a DOCUMENTED_GAP because S6's modeled version drops the Persona-state and B3-only filters and would wrongly buff helm, and the Distributed Damage 90.01% trigger (burstCast vs S6's stageEnter-3) is co-frame for this B3 unit, with the same-cast ordering question already \u2691-flagged by the driver. Same-model residual for the owner to spot-check: S6 adds explicit \"crit\": true to both flatDamage effects while the driver omits it \u2014 faithful only if the engine's flatDamage path crits at caster rate by default (the SSOT documents crit-OFF as specific to storedHit, implying so); a one-line engine confirmation closes this. Secondary micro-note: Fist of Justice's 'deactivates when Full Burst ends' is encoded as a fixed 10s, equivalent at scope lock but not the prose's semantics. Verdict GO; ship the override and tests as-is.",
+  "model": "kimi-code/k3"
+}

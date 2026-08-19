@@ -81,7 +81,7 @@ faithfulness basis ([data/clean-weapons.md](data/clean-weapons.md)); pinned by
 | `RELOAD_TAIL_FRAMES`                        | 13 (0.21s)                                             | Additive reload tail: `round(base·0.975·(1−buff)) + 13`                                                                     | :163     |
 | `UNHITTABLE_FRAMES`                         | 60 (1s)                                                | Boss off-screen at each range transition (blocks burst casts)                                                               | :195     |
 | `BOSS_RANGE_SCRIPT`                         | 0/33/70/106/144/176s → mid/near/far/midfar/near/midfar | Test-boss range timeline                                                                                                    | :171     |
-| `FOCUS_CHARGE_GEN` / `UNFOCUSED_CHARGE_GEN` | 2.5 / 1.0                                              | Camera-focus charge-gauge multiplier fallback vs unfocused flat — per-unit `fullChargeBonus/100` is the real multiplier (see below) | :987     |
+| `UNFOCUSED_CHARGE_GEN`                      | 1.0                                                    | Unfocused charge-gauge flat (measured). The FOCUSED multiplier is ALWAYS the unit's own full-charge bonus — `chargeMultiplier/100`, no roster default and no per-unit flat pins since 2026-08-18 (`FOCUS_CHARGE_GEN` and `PENDING_TEAM_ISOLATION` both deleted). A unit with no bonus in either datamined column takes this value (see below) | :987     |
 | Base-5 `staticAtk`                          | Attacker 118,027 · Supporter 98,367 · Defender 78,707  | Combat-ATK basis (NOT battle-records ATK, NOT OL0) + a modeled relationship/bond bonus                                      | —        |
 
 ## 3. Burst rotation model (the live chain)
@@ -119,11 +119,20 @@ reloads, or generates gauge; mags start full. On auto the chain is:
 - SR/RL release-fired charge weapons carry the 22f bolt/release latency (autofire exempt; +11f start
   recovery at fight-start).
 
-Standing rotation facts: focus-unit charge weapons make gauge at their per-unit `fullChargeBonus/100`
-multiplier (focus-only; middle slot by default) — ×2.5 for the 250-family (the roster majority);
-alice 3.5× (measured), cinderella 2.0× (owner-confirmed TRUE 2026-07-29, `charFixes.focusChargeMult`),
-scarlet-black-shadow 1.5× (measured); vesti-tactical-upgrade pinned to the flat 2.5×
-(`PENDING_TEAM_ISOLATION` — sim-supported since 2026-08-01, her 200 column still unmeasured).
+Standing rotation facts: focus-unit charge weapons make gauge at their OWN full-charge bonus
+(focus-only; middle slot by default) — sourced from `characters.json` `chargeMultiplier`, with
+`gauge-per-shot.json` `fullChargeBonus` filling in where that row reads 0 (`raven`: row 250,
+`chargeFrames` 60). ×2.5 for the 250-family (the roster majority); alice 3.5× (measured),
+cinderella 2.0× (owner-confirmed TRUE 2026-07-29, `charFixes.focusChargeMult`),
+scarlet-black-shadow 1.5× (measured); vesti-tactical-upgrade 2.0× (her datamined 200 — the flat-2.5
+`PENDING_TEAM_ISOLATION` pin was retired 2026-08-18, so her column is unmeasured but no longer
+withheld). **No unit is pinned to a flat multiplier any more.**
+**There is no roster default** (owner ruling 2026-08-12, re-affirmed 2026-08-18): a unit with no
+bonus in either datamined column does not full-charge and takes ×1.0. `pascal` is the only such
+unit — `chargeFrames` 0, so the retired `?? 250` default had been giving her ×2.5 for a charge she
+never performs (7.00 → 2.80 per focused shot). Census: 79 SR/RL units, 77 straight from
+`chargeMultiplier`, `raven` + `pascal` the only exceptions. A charge-capable unit missing both
+columns is a data hole, failed loudly by `scripts/tests/data/gauge-per-shot-source.test.ts`.
 **anis-star** carries a second focus-gated term: `baseGaugeProb` 0.25 adds
 `(0.25 × 140/100) × 2.5 × 1.06 = 0.9275%` extra gauge per focused shot (engine-live since
 2026-08-18; `data/gauge-per-shot.json` → `gaugePerShot()` in `sim.ts`).
@@ -315,7 +324,7 @@ amp-ineligible — `ark-ranger-black`, `diesel-winter-sweets`, `guillotine-winte
 | `burstSnapshotsPreFb`       | Burst damage resolves pre-FB/pre-stage                 | cinderella                                                                                                                                                                                                             |
 | `consolidation`             | Pellet-consolidation single-bullet mode                | dorothy-serendipity                                                                                                                                                                                                    |
 | `magDumpRof`                | Whole-magazine dump after a priming charge             | cinderella                                                                                                                                                                                                             |
-| `hitsPerShot`               | Base SG/MG pellet/belt-round count per pull            | **33 units** — char-static from `data/characters.json` (sync: `shot_count × muzzle_count`, with the `modernia` carve-out): 26 × 10 (every SG), 7 × 2. **No override sets it**; it is not a `charFixes` field. |
+| `hitsPerShot`               | Base SG/MG pellet/belt-round count per pull            | **34 units** — char-static from `data/characters.json` (sync: `shot_count × muzzle_count`, with the `modernia` carve-out): 27 × 10 (every SG), 7 × 2. **No override sets it**; it is not a `charFixes` field. |
 | `statImmunities`            | Stat keys this unit CANNOT RECEIVE — a kit buff carrying that stat is stripped of it at apply time, per target, in either direction (the rest of the same buff block still lands, other targets unaffected, selection unchanged). Enforced in `applyEffect`'s target loop (`src/engine/sim.ts`), visible under `DBG_BUFFS`; entries are APPLIED stat keys and `validate-structural.ts` rejects an alias/typo. | **1 unit** — `liberalio` (`["chargeSpeedPct"]`, skill 2 "Gains immunity to Increase/Decrease Charge Speed effects, continuous"). Live only where a teammate's kit grants that stat — the enabling carrier and comp are named in DECISIONS 2026-08-14. THREE scope limits: the `chargeSpeedPct` stat only (a `chargeTimeClamp` "charge time fixed at X sec" is a different primitive, NOT covered); IN-BATTLE BUFF EFFECTS only — cube/Overload gear stats bypass `applyEffect` and still apply, which is the ruled-correct behaviour (owner 2026-08-14), inert at scope lock and live only in the web app; non-`buff` effect kinds not covered. → DECISIONS 2026-08-14. |
 | `pullsPerSec`               | Per-unit measured fire-cadence override                | **1 unit** — `jill` (2.5/s, video-measured). `weaponSwap.pullsPerSec` has **4** users: `k` (2.4/s SG swap), `takina` (1.2/s), `velvet` (60/s), `neon-blue-ocean` (1.5/s). **Same-weapon swap fallback (2026-08-10):** when `u.swap.weapon` is undefined (the swap doesn't change weapon class) and `u.swap.pullsPerSec` is unset, the swap branch falls back to the unit's own `pullsPerSec` before the weapon-class default — provably inert for every carrier but `jill` today, since `u.pullsPerSec` (routed only from `charFixes.pullsPerSec`) has exactly one writer roster-wide. **MG-base swap gate (2026-08-16, `swapLeavesMgLadder`):** the fire loop's MG branch is keyed on the unit's BASE weapon class and used to run the wind-up ladder for a swapped gun too, silently discarding that swap's `pullsPerSec`/`weapon`. An MG-base unit whose swap declares either now leaves the ladder for the flat-cadence path; one that declares neither stays on it (a re-valued/re-flavored MG). Consumer sweep: `npx tsx scripts/census-mg-swap-carriers.ts` classifies every swap carrier by the branch that actually routes it and FAILS if a second diverted carrier appears — today `neon-blue-ocean` is the only unit the gate moves (the roster's other MG-base swap carrier is routed by the charge branch above it and never reaches the gate). |
 
