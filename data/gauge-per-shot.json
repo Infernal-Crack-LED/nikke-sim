@@ -1,719 +1,1247 @@
 {
   "2b": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "a2": {
-    "basePerTrigger": 130.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 260.0
+    "basePerTrigger": 130,
+    "targetPerTrigger": 260,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "ada": {
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 280.0
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "ade": {
+    "basePerTrigger": 25,
+    "targetPerTrigger": 50,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "ade-agent-bunny": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "admi": {
+    "basePerTrigger": 270,
+    "targetPerTrigger": 540,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "alice": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 350.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 350,
+    "source": "datamined"
   },
   "alice-wonderland-bunny": {
-    "basePerTrigger": 10.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 20.0
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "anchor": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "anchor-innocent-maid": {
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 280.0
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "anis": {
+    "basePerTrigger": 355,
+    "targetPerTrigger": 710,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "anis-sparkling-summer": {
-    "basePerTrigger": 250.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 500.0
+    "basePerTrigger": 250,
+    "targetPerTrigger": 500,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "anis-star": {
-    "baseGaugeProb": 0.25,
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
     "source": "MEASURED (battery 3 A3 solo, 2026-07-13): ~10.7-11.3%/pull = 280x2.5 focused shot + 280 proc skill-gen x her +6% aura. The synergy 16.8 is a folded aggregate (user hypothesis confirmed); the 840 estimate was wrong. baseGaugeProb 0.25 (2026-08-18): game credits extra basePerTrigger×focus×aura on ~25% of focused charge shots (anomaly A=3.71%, E4 PASS; owner ruling ≥11.11%/pull).",
-    "targetPerTrigger": 280.0
+    "baseGaugeProb": 0.25
+  },
+  "anne-miracle-fairy": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "arcana": {
-    "basePerTrigger": 150.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 300.0
+    "basePerTrigger": 150,
+    "targetPerTrigger": 300,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "arcana-fortune-mate": {
-    "basePerTrigger": 200.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-SG",
-    "targetPerTrigger": 400.0
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "aria": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "ark-ranger-black": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-AR",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "asuka": {
-    "basePerTrigger": 30.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 60.0
+    "basePerTrigger": 30,
+    "targetPerTrigger": 60,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "asuka-wille": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "avistar": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "bay": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "belorta": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 350,
+    "source": "datamined"
+  },
+  "biscuit": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "blanc": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "bready": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "brid": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "brid-silent-track": {
-    "basePerTrigger": 200.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-SG",
-    "targetPerTrigger": 400.0
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "carry-ar": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "class-modal-AR (synthetic standard carry, src/ranks/synthetics.ts)"
+  },
+  "carry-mg": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "class-modal-MG (synthetic standard carry, src/ranks/synthetics.ts)"
+  },
+  "carry-rl": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "class-modal-RL (synthetic standard carry, src/ranks/synthetics.ts)"
+  },
+  "carry-sg": {
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "class-modal-SG (synthetic standard carry, src/ranks/synthetics.ts)"
+  },
+  "carry-smg": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "class-modal-SMG (synthetic standard carry, src/ranks/synthetics.ts)"
+  },
+  "carry-sr": {
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "class-modal-SR (synthetic standard carry, src/ranks/synthetics.ts)"
+  },
+  "centi": {
+    "basePerTrigger": 345,
+    "targetPerTrigger": 690,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "chime": {
-    "basePerTrigger": 10.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 20.0
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "chisato": {
-    "basePerTrigger": 10.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-SMG",
-    "targetPerTrigger": 20.0
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "cinderella": {
     "basePerTrigger": 22.5,
-    "fullChargeBonus": 200.0,
-    "source": "datamined",
-    "targetPerTrigger": 45.0
+    "targetPerTrigger": 45,
+    "fullChargeBonus": 200,
+    "source": "datamined"
   },
   "cinderella-crystal-wave": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-MG",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "claire": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "clay": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "cocoa": {
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "crow": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "crown": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "crust": {
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 280.0
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "d": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "d-killer-wife": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "delta": {
+    "basePerTrigger": 265,
+    "targetPerTrigger": 530,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "delta-ninja-thief": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "diesel": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "diesel-winter-sweets": {
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
-    "source": "class-modal-RL",
-    "targetPerTrigger": 280.0
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "dolla": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "dorothy": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "dorothy-serendipity": {
-    "basePerTrigger": 200.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 400.0
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "drake": {
-    "basePerTrigger": 450.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 900.0
+    "basePerTrigger": 450,
+    "targetPerTrigger": 900,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "e-h": {
-    "basePerTrigger": 10.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-SMG",
-    "targetPerTrigger": 20.0
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "ein": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "elegg": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "elegg-boom-and-shock": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "emilia": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "emma": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "emma-tactical-upgrade": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "epinel": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "ether": {
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "eunhwa": {
-    "basePerTrigger": 290.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined (target_burst_energy_pershot 58000 → 580.0; differs from SR class-modal 560)",
-    "targetPerTrigger": 580.0
+    "basePerTrigger": 290,
+    "targetPerTrigger": 580,
+    "fullChargeBonus": 250,
+    "source": "datamined (target_burst_energy_pershot 58000 → 580.0; differs from SR class-modal 560)"
   },
   "eunhwa-tactical-upgrade": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "eve": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "exia": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "flora": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-MG",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "folkwang": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "frima": {
+    "basePerTrigger": 265,
+    "targetPerTrigger": 530,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "grave": {
-    "basePerTrigger": 45.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 90.0
+    "basePerTrigger": 45,
+    "targetPerTrigger": 90,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "guillotine": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "guillotine-winter-slayer": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "guilty": {
-    "basePerTrigger": 200.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 400.0
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "harran": {
+    "basePerTrigger": 290,
+    "targetPerTrigger": 580,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "helm": {
-    "basePerTrigger": 280.0,
-    "flatPerTrigger": 1431.0,
-    "fullChargeBonus": 250.0,
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
     "source": "datamined; flatPerTrigger 1431 = her S2 per-shot generation (synergy fixed_add 14.31 AND rl3 arithmetic 59.73 = 8.4 + 3x14.31, two independent confirmations)",
-    "targetPerTrigger": 560.0
+    "flatPerTrigger": 1431
   },
   "helm-aquamarine": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "himeno": {
+    "basePerTrigger": 290,
+    "targetPerTrigger": 580,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "idoll-flower": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "idoll-ocean": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "idoll-sun": {
+    "basePerTrigger": 25,
+    "targetPerTrigger": 50,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "isabel": {
-    "basePerTrigger": 200.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 400.0
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "jackal": {
+    "basePerTrigger": 355,
+    "targetPerTrigger": 710,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "jill": {
-    "basePerTrigger": 110.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 220.0
+    "basePerTrigger": 110,
+    "targetPerTrigger": 220,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "julia": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "k": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "kilo": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "kurumi": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "label": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-AR",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "laplace": {
-    "basePerTrigger": 145.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 290.0
+    "basePerTrigger": 145,
+    "targetPerTrigger": 290,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "laplace-ultimate-hero": {
+    "basePerTrigger": 150,
+    "targetPerTrigger": 300,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "leona": {
-    "basePerTrigger": 200.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 400.0
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "liberalio": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined; target_burst_energy_pershot 56000 / 100 = 5.6% per shot (was 3360 due to a misread of rl3 as x6 volley hits; weapon has hitsPerShot=1 and burstGaugePerShot=2.8)",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined; target_burst_energy_pershot 56000 / 100 = 5.6% per shot (was 3360 due to a misread of rl3 as x6 volley hits; weapon has hitsPerShot=1 and burstGaugePerShot=2.8)"
+  },
+  "lily": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "liter": {
-    "basePerTrigger": 10.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 20.0
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "little-mermaid": {
-    "basePerTrigger": 10.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 20.0
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "ludmilla": {
-    "basePerTrigger": 15.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined (target_burst_energy_pershot 3000 → 30.0; differs from SMG class-modal 20)",
-    "targetPerTrigger": 30.0
+    "basePerTrigger": 15,
+    "targetPerTrigger": 30,
+    "fullChargeBonus": 0,
+    "source": "datamined (target_burst_energy_pershot 3000 → 30.0; differs from SMG class-modal 20)"
   },
   "ludmilla-winter-owner": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "maiden": {
+    "basePerTrigger": 450,
+    "targetPerTrigger": 900,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "maiden-ice-rose": {
-    "basePerTrigger": 182.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 364.0
+    "basePerTrigger": 182,
+    "targetPerTrigger": 364,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "makima": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "mana": {
-    "basePerTrigger": 25.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 50.0
+    "basePerTrigger": 25,
+    "targetPerTrigger": 50,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "marciana": {
-    "basePerTrigger": 200.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 400.0
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "marciana-marine-study": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "mari": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "mary": {
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "mary-bay-goddess": {
+    "basePerTrigger": 265,
+    "targetPerTrigger": 530,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "mast": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "mast-romantic-maid": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "maxwell": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "maxwell-ordinary-mechanic": {
-    "basePerTrigger": 280.0,
-    "flatPerTrigger": 715.0,
-    "fullChargeBonus": 250.0,
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
     "source": "datamined; flatPerTrigger 715 = her S2 'Fills Burst Gauge by 7.15%' per Full Charge attack (skill2_detail description_value_07 = 7.15 at level 10)",
-    "targetPerTrigger": 560.0
+    "flatPerTrigger": 715
+  },
+  "mica": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "mica-snow-buddy": {
-    "basePerTrigger": 10.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 20.0
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "mihara": {
+    "basePerTrigger": 25,
+    "targetPerTrigger": 50,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "mihara-bonding-chain": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "milk": {
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "milk-blooming-bunny": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "mint": {
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
-    "source": "class-modal-RL",
-    "targetPerTrigger": 280.0
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "miranda": {
-    "basePerTrigger": 10.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 20.0
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "misato": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "modernia": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "moran": {
-    "basePerTrigger": 25.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 50.0
+    "basePerTrigger": 25,
+    "targetPerTrigger": 50,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "mori": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "n102": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 350,
+    "source": "datamined"
   },
   "naga": {
-    "basePerTrigger": 200.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 400.0
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "nayuta": {
-    "basePerTrigger": 10.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 20.0
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "neon": {
+    "basePerTrigger": 450,
+    "targetPerTrigger": 900,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "neon-blue-ocean": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "neon-vision-eye": {
-    "basePerTrigger": 300.0,
-    "fullChargeBonus": 250.0,
-    "source": "synergy-arena-corroborated (per-shot 3.0 = base 300; was class-modal 280)",
-    "targetPerTrigger": 600.0
+    "basePerTrigger": 300,
+    "targetPerTrigger": 600,
+    "fullChargeBonus": 250,
+    "source": "synergy-arena-corroborated (per-shot 3.0 = base 300; was class-modal 280)"
+  },
+  "nero": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "neve": {
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "nihilister": {
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "noah": {
+    "basePerTrigger": 300,
+    "targetPerTrigger": 600,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "noir": {
-    "basePerTrigger": 450.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 900.0
+    "basePerTrigger": 450,
+    "targetPerTrigger": 900,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "noise": {
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 280.0
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "noop-b1-ar": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-AR (synthetic Solo-framework no-op control)",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "class-modal-AR (synthetic Solo-framework no-op control)"
   },
   "noop-b2-sr": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "class-modal-SR (synthetic Solo-framework no-op control)",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "class-modal-SR (synthetic Solo-framework no-op control)"
   },
   "noop-b3-mg": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-MG (synthetic Solo-framework no-op control)",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "class-modal-MG (synthetic Solo-framework no-op control)"
   },
   "noop-b3-rl": {
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
-    "source": "class-modal-RL (synthetic Solo-framework no-op control)",
-    "targetPerTrigger": 280.0
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "class-modal-RL (synthetic Solo-framework no-op control)"
   },
   "noop-mg": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-MG (synthetic ammo-burn partner, src/ranks/synthetics.ts)",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "class-modal-MG (synthetic ammo-burn partner, src/ranks/synthetics.ts)"
   },
-  "carry-mg": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-MG (synthetic standard carry, src/ranks/synthetics.ts)",
-    "targetPerTrigger": 10.0
+  "novel": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
-  "carry-rl": {
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
-    "source": "class-modal-RL (synthetic standard carry, src/ranks/synthetics.ts)",
-    "targetPerTrigger": 280.0
+  "pascal": {
+    "basePerTrigger": 115,
+    "targetPerTrigger": 230,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
-  "carry-sg": {
-    "basePerTrigger": 200.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-SG (synthetic standard carry, src/ranks/synthetics.ts)",
-    "targetPerTrigger": 400.0
-  },
-  "carry-ar": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-AR (synthetic standard carry, src/ranks/synthetics.ts)",
-    "targetPerTrigger": 40.0
-  },
-  "carry-sr": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "class-modal-SR (synthetic standard carry, src/ranks/synthetics.ts)",
-    "targetPerTrigger": 560.0
-  },
-  "carry-smg": {
-    "basePerTrigger": 10.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-SMG (synthetic standard carry, src/ranks/synthetics.ts)",
-    "targetPerTrigger": 20.0
+  "pepper": {
+    "basePerTrigger": 450,
+    "targetPerTrigger": 900,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "phantom": {
-    "basePerTrigger": 25.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 50.0
+    "basePerTrigger": 25,
+    "targetPerTrigger": 50,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "poli": {
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "power": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "prika": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "class-modal-SR",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "privaty": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "privaty-unkind-maid": {
-    "basePerTrigger": 200.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 400.0
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "product-08": {
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "product-12": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "product-23": {
+    "basePerTrigger": 450,
+    "targetPerTrigger": 900,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "quency": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "quency-escape-queen": {
     "basePerTrigger": 14.8,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 29.6
+    "targetPerTrigger": 29.6,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "quiry": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "ram": {
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "rapi": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "rapi-red-hood": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "rapunzel": {
-    "basePerTrigger": 145.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 290.0
+    "basePerTrigger": 145,
+    "targetPerTrigger": 290,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "rapunzel-pure-grace": {
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "raven": {
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 280.0
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "red-hood": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "rei": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "rei-ayanami": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-MG",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "rei-ayanami-tentative-name": {
+    "basePerTrigger": 25,
+    "targetPerTrigger": 50,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "rem": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "rosanna": {
-    "basePerTrigger": 5.0,
-    "fullChargeBonus": 0.0,
-    "source": "class-modal-MG",
-    "targetPerTrigger": 10.0
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "rosanna-chic-ocean": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "rouge": {
-    "basePerTrigger": 290.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 580.0
+    "basePerTrigger": 290,
+    "targetPerTrigger": 580,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "rumani": {
+    "basePerTrigger": 325,
+    "targetPerTrigger": 650,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "rupee": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "rupee-winter-shopper": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "sakura": {
-    "basePerTrigger": 270.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 540.0
+    "basePerTrigger": 270,
+    "targetPerTrigger": 540,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "sakura-bloom-in-summer": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "sakura-suzuhara": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "scarlet": {
-    "basePerTrigger": 45.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 90.0
+    "basePerTrigger": 45,
+    "targetPerTrigger": 90,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "scarlet-black-shadow": {
-    "basePerTrigger": 125.0,
-    "fullChargeBonus": 150.0,
-    "source": "datamined",
-    "targetPerTrigger": 250.0
+    "basePerTrigger": 125,
+    "targetPerTrigger": 250,
+    "fullChargeBonus": 150,
+    "source": "datamined"
+  },
+  "signal": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "sin": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "snow-crane": {
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "snow-white": {
-    "basePerTrigger": 25.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 50.0
+    "basePerTrigger": 25,
+    "targetPerTrigger": 50,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "snow-white-heavy-arms": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "class-modal-SR",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "snow-white-innocent-days": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "soda": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "soda-twinkling-bunny": {
-    "basePerTrigger": 450.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 900.0
+    "basePerTrigger": 450,
+    "targetPerTrigger": 900,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "soldier-eg": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "soldier-fa": {
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "soldier-ow": {
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "soline": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "soline-frost-ticket": {
-    "basePerTrigger": 200.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 400.0
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "sora": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "sugar": {
-    "basePerTrigger": 450.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined; characters.json role.weapon.shot_detail.burst_energy_pershot=4500 / target_burst_energy_pershot=9000 (identical to drake/noir; rl3=27 also identical to both) were already present but this row fell back to the SG class-modal value instead of reading them",
-    "targetPerTrigger": 900.0
+    "basePerTrigger": 450,
+    "targetPerTrigger": 900,
+    "fullChargeBonus": 0,
+    "source": "datamined; characters.json role.weapon.shot_detail.burst_energy_pershot=4500 / target_burst_energy_pershot=9000 (identical to drake/noir; rl3=27 also identical to both) were already present but this row fell back to the SG class-modal value instead of reading them"
   },
   "takina": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "class-modal-SR",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "tia": {
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 280.0
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "tove": {
-    "basePerTrigger": 20.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 40.0
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "trina": {
-    "basePerTrigger": 360.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 720.0
+    "basePerTrigger": 360,
+    "targetPerTrigger": 720,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "trony": {
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "velvet": {
-    "basePerTrigger": 280.0,
-    "fullChargeBonus": 250.0,
-    "source": "class-modal-SR",
-    "targetPerTrigger": 560.0
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "vesti": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
   },
   "vesti-tactical-upgrade": {
-    "basePerTrigger": 65.0,
-    "fullChargeBonus": 200.0,
-    "source": "datamined",
-    "targetPerTrigger": 130.0
+    "basePerTrigger": 65,
+    "targetPerTrigger": 130,
+    "fullChargeBonus": 200,
+    "source": "datamined"
   },
   "viper": {
-    "basePerTrigger": 450.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 900.0
+    "basePerTrigger": 450,
+    "targetPerTrigger": 900,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   },
   "volume": {
-    "basePerTrigger": 10.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 20.0
+    "basePerTrigger": 10,
+    "targetPerTrigger": 20,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "yan": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 350,
+    "source": "datamined"
   },
   "yulha": {
-    "basePerTrigger": 275.0,
-    "fullChargeBonus": 250.0,
-    "source": "datamined",
-    "targetPerTrigger": 550.0
+    "basePerTrigger": 275,
+    "targetPerTrigger": 550,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "yuni": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 350,
+    "source": "datamined"
   },
   "zwei": {
-    "basePerTrigger": 350.0,
-    "fullChargeBonus": 0.0,
-    "source": "datamined",
-    "targetPerTrigger": 700.0
+    "basePerTrigger": 350,
+    "targetPerTrigger": 700,
+    "fullChargeBonus": 0,
+    "source": "datamined"
   }
 }

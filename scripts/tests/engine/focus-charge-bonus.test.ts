@@ -48,10 +48,17 @@ describe('a unit that never full-charges takes NO focus bonus', () => {
   it('pascal generates the same per shot focused and unfocused', () => {
     // THE CASE THE RULING FIXED. pascal (RL/Iron) has chargeFrames 0 — she fires without
     // charging — yet the retired `?? 250` class-modal default handed her a x2.5 focus bonus for
-    // a full charge she never performs (7.00 per shot). She now takes UNFOCUSED_CHARGE_GEN
-    // (x1.0, the measured unfocused value), so focus makes no difference to her at all: 2.80
-    // either way. That is why the fallback had to GO rather than be re-pointed at another
-    // number — it was inventing a value, not guarding one.
+    // a full charge she never performs. She now takes UNFOCUSED_CHARGE_GEN (x1.0, the measured
+    // unfocused value), so focus makes no difference to her at all. That is why the fallback had
+    // to GO rather than be re-pointed at another number — it was inventing a value, not
+    // guarding one.
+    //
+    // 2.30 = her datamined targetPerTrigger 230 at x1.0. Note TWO separate corrections compose
+    // here and should not be conflated: the focus multiplier went 2.5 -> 1.0 (this ruling), and
+    // her per-trigger value went 280 -> 230 when data/gauge-per-shot.json became generated from
+    // the datamine (2026-08-18) instead of falling back to the RL class modal. Under the old
+    // modal she read 7.00 focused; the multiplier fix alone would have made that 2.80; both
+    // together give 2.30.
     const focused = weaponCredit('pascal');
     const [unfocused] = gaugeSubstepLedger({
       // focusIdx defaults to Math.min(2, len-1) = slot 2 for a 3-unit team (the LAST slot,
@@ -59,7 +66,7 @@ describe('a unit that never full-charges takes NO focus bonus', () => {
       slugs: ['pascal', 'liter', 'crown'],
       bossElement: null,
     });
-    expect(focused).toBeCloseTo(2.8, 2);
+    expect(focused).toBeCloseTo(2.3, 2);
     expect(unfocused.families[0].delta).toBeCloseTo(focused, 4);
   });
 });

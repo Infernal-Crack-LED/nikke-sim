@@ -32,7 +32,21 @@ export interface WeaponShotDetail {
   charge_time: number;
   full_charge_damage: number;
   reload_time: number;
+  /** Burst-gauge energy per trigger pull vs a NON-target enemy (10,000 energy = a full bar). */
   burst_energy_pershot: number;
+  /**
+   * Burst-gauge energy per trigger pull vs the STAGE TARGET (the raid boss, and the practice
+   * target) — universally exactly 2× `burst_energy_pershot` across the table. This is the column
+   * the engine actually bills gauge from; the old "boss ×2" rule IS this field.
+   * Optional: declared late (2026-08-18) and not guaranteed present on every upstream row.
+   */
+  target_burst_energy_pershot?: number;
+  /**
+   * Camera-focus full-charge gauge multiplier, as a percent (25000 → ×2.5). A plain /100 scale —
+   * NOT a per-trigger energy value, so the shotgun per-pellet and multi-muzzle factors do not
+   * apply to it. 0 means the unit takes no focus bonus.
+   */
+  full_charge_burst_energy?: number;
   weapon_type: string;
 }
 

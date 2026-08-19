@@ -28,9 +28,13 @@ const CHARGE_WEAPONS = new Set(['SR', 'RL']);
 // fullChargeBonus is positive (the row is the explicit override).
 const CHARGE_MULT_ZERO_EXCEPTIONS = new Set(['raven']);
 
-// Units with no gauge row but a non-modal chargeMultiplier. They will now use
-// characters.json instead of the class-modal fallback.
-const NO_ROW_NON_MODAL = new Set(['belorta', 'n102', 'yan', 'yuni']);
+// Units that USED to have no gauge row while carrying a non-modal chargeMultiplier — the case
+// this file was written to keep visible, because they silently ran on the class-modal fallback.
+// Since data/gauge-per-shot.json became GENERATED from the datamine (2026-08-18,
+// src/data/gauge-per-shot-gen.ts) the no-row state no longer exists for any of them: every unit
+// with a datamined column now has a row. They are kept here as the regression anchor — the
+// assertion below flipped from "these have no row" to "these resolve from their own datamine".
+const FORMERLY_NO_ROW_NON_MODAL = new Set(['belorta', 'n102', 'yan', 'yuni']);
 
 describe('gauge-per-shot fullChargeBonus source', () => {
   const slugs = Object.keys(characters).filter((slug) =>
@@ -98,13 +102,18 @@ describe('gauge-per-shot fullChargeBonus source', () => {
     expect(holes).toEqual([]);
   });
 
-  it('flags no-row units with a positive chargeMultiplier so they do not fall back silently', () => {
-    for (const slug of NO_ROW_NON_MODAL) {
+  it('the formerly-no-row 3.5x units now carry their own datamined row', () => {
+    // These four were the standing example of the silent-fallback problem: chargeMultiplier 350
+    // in characters.json, no gauge row, so the engine billed them at the class modal anyway.
+    // The generator closed that by construction — assert the FIX, not the old hole.
+    for (const slug of FORMERLY_NO_ROW_NON_MODAL) {
       const c = characters[slug];
       expect(c.chargeMultiplier).toBe(350);
-      expect(
-        (gaugeTable as Record<string, { fullChargeBonus?: number }>)[slug]
-      ).toBeUndefined();
+      const row = (gaugeTable as Record<string, { fullChargeBonus?: number }>)[
+        slug
+      ];
+      expect(row).toBeDefined();
+      expect(row.fullChargeBonus).toBe(350);
     }
   });
 });
