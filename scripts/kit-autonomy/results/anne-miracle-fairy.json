@@ -1,0 +1,108 @@
+{
+  "slug": "anne-miracle-fairy",
+  "kitDescription": "Anne: Miracle Fairy is a Wind rocket-launcher Supporter with a 60-second Burst II cooldown, built entirely around healing and team support. Every 3 normal attacks she heals all Supporter-class allies for a portion of attack damage over a 5-second window. While her HP stays above 90% she passively raises all allies' incoming healing, and when her magazine's last bullet lands while she is healthy, she cuts all enemies' incoming healing by a large amount for 10 seconds. Her burst heals all Attacker allies based on her own final max HP and grants them a large ATK buff for 10 seconds. Once per battle, the same burst can also revive one incapacitated Attacker ally at 99% HP.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "fixture non-vacuity > she casts her own burst at least once (anne casts 0 bursts in controlComp — crown, the fixture's own B2 at 40s CD, takes every stage-2 slot over anne's 60s CD; probe: burstCasts {liter:10, crown:10, helm:5})",
+      "burst: raw-percentage atkPct, not a caster-scaled flat ATK add (blind's casterAtkPct>1000 filter matched 23 buffs — all casterIdx 1 = crown's own kit; anne emits none because she never casts in that comp)",
+      "burst: class-scoped to Attacker allies — never the caster (zero beneficiaries; downstream of anne never casting)",
+      "burst: widening the buff to all allies moves damage (totals identical; downstream of anne never casting)",
+      "skill1: both heals damage-inert / would move if scoped to all allies (widening moved nothing — probe shows crown's on-recovery consumer saturated by helm's every-full-charge team heal, 161 distinct firing frames ≈1127s coverage of 180s, so anne's widened heal adds zero marginal uptime)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates after 3 normal attacks",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount{count:3} repeating; hitsPerShot 1 so pulls == rounds; cadence tuple ⚑-flagged with recipe",
+        "blindSaid": "S2b + S5 + S6 all independently chose hitCount:3, explicitly rejecting interval/shotFired/once-only",
+        "formulaCheck": "§2b: per-shot hit-count trigger is the correct primitive; repeating every-3 matches 'Activates after 3 normal attacks'",
+        "fireRateOk": true,
+        "explanation": "Three independent derivations converge on the trigger identity; the driver spec pins it structurally and non-vacuity asserts ≥9 shots so multiple procs occur."
+      },
+      {
+        "kitLine": "Affects all Supporter allies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "alliesOfClass{cls:'Supporter'}; spec proves asuka (Attacker) receives nothing while the all-allies counterfactual demonstrably feeds her",
+        "blindSaid": "S2b/S5/S6 all Supporter-scoped; S5's widened-heal counterfactual went flat only because crown's consumer was helm-saturated (fixture artifact)",
+        "formulaCheck": "§11 class scoping; exclusion of crown (Defender) and Attackers verified behaviorally in the driver's A2 pair",
+        "fireRateOk": true,
+        "explanation": "Class scope is real and discriminating in the driver's fixture; the S5 counterfactual failure is explained by consumer saturation, not by the encoding."
+      },
+      {
+        "kitLine": "Restores HP 6.07% of attack, 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "heal magnitude in unmodeled (no HP pool); event surface modeled as heal ticks:5 intervalSec:1 with ⚑ granularity estimate + caveat",
+        "blindSaid": "S6 modeled the same event with ticks:1; S5 self-skipped the magnitude assertion as unassertable; S2b noted ticks better preserve refresh semantics",
+        "formulaCheck": "No HP pool exists in the engine; recovery-event modeling is the tandem convention; ticks:5≈kit's per-attack healing at ~1 shot/sec RL cadence is flagged as estimate, not asserted as measured",
+        "fireRateOk": true,
+        "explanation": "Magnitude honestly flagged with the event half modeled; the ticks:5-vs-ticks:1 difference is inert today (no Supporter recovery consumer exists) and documented as ⚑ by the driver."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Incoming Healing ▲ 23.46%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill2 with dual reason (no HP pool for the gate, no incoming-healing StatKey); never re-encoded as any stat",
+        "blindSaid": "S2b UNMODELED; S5 asserted value 23.46 appears on no buff and no effect; S6 recorded verbatim with empty-effects placeholder",
+        "formulaCheck": "No StatKey or HP model exists for healing-received; the dangerous pattern-match into a damage stat is absent from both override and event log",
+        "fireRateOk": true,
+        "explanation": "Correctly inert and documented; driver's A5 pins that anne originates atkPct only."
+      },
+      {
+        "kitLine": "Incoming Healing ▼ 78.93% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill2 with an explicit anti-pattern note: NOT damageTakenPct, which S2b flagged as the kit's most dangerous misread",
+        "blindSaid": "S2b/S5/S6 all agree it must stay inert; S5 asserted no 78.93-valued buff anywhere and no damageTakenPct effect in the override",
+        "formulaCheck": "The boss never heals and no enemy-healing model exists; encoding it as damageTakenPct 78.93 on lastBullet would be a ~79% team over-credit — confirmed absent",
+        "fireRateOk": true,
+        "explanation": "The single most catastrophic potential misread in the kit is both avoided and explicitly documented against."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Restores HP 38.61% of final max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "heal effect, burstCast trigger, alliesOfClass{Attacker}, one event per cast; magnitude verbatim in unmodeled (no HP pool)",
+        "blindSaid": "S2b: heal event on burstCast, Attacker-scoped, must NOT be casterMaxHpPct; S5/S6 identical; convergence 3/3",
+        "formulaCheck": "§1a/§11: an instant restore is not a Max-HP grant; driver's A3 proves asuka's recovery delta equals exactly anne's cast count, and no maxHpFlat/atkOfCasterMaxHpPct buff exists",
+        "fireRateOk": true,
+        "explanation": "Correct trigger (her own cast, not fullBurstEnter), correct class scope, correct event-not-grant semantics; magnitude honestly unmodeled."
+      },
+      {
+        "kitLine": "ATK ▲ 77.22% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff atkPct 77.22 durationSec 10 on burstCast, alliesOfClass{Attacker}; spec pins raw 77.22 value, 600-frame expiry, cast-frame identity, 2-Attacker holder set, and liveness (strip drops both Attackers, nobody else)",
+        "blindSaid": "S2b/S5/S6 identical encoding; the Burst-II fullBurstEnter trap was pre-registered by S2b and is guarded both structurally and by frame identity",
+        "formulaCheck": "§1a: plain ATK ▲ is target-scaled atkPct (not caster-flat); §8: burst-cast effects resolve pre-Full-Burst, so burstCast keying is the faithful window placement; DamageUp/Major unaffected",
+        "fireRateOk": true,
+        "explanation": "The kit's only damage-relevant line is encoded correctly on all four axes (stat, value, duration, trigger) and proven live and cleanly scoped."
+      },
+      {
+        "kitLine": "Revives with 99% HP, once per battle",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.burst with ⚑ meta-defining flag, estimate (zero damage impact at scope), and recipe (needs HP pool + death/revive model); rapunzel precedent cited",
+        "blindSaid": "S2b UNMODELED (nobody is ever incapacitated); S5 self-documented skip; S6 empty-effects placeholder + verbatim record",
+        "formulaCheck": "No incapacitation/revive primitive exists; the boss deals no damage so the condition can never be met; emitting a fake second heal would be the flagged misread — absent",
+        "fireRateOk": true,
+        "explanation": "Honest, tiered, recipe-bearing flag for a genuinely unrepresentable line; exactly the DOCUMENTED_GAP shape the contract rewards."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: all six kit lines are FAITHFUL or DOCUMENTED_GAP, and every load-bearing encoding (S1 hitCount:3 → Supporter-scoped heal event; burst burstCast → Attacker-scoped heal + atkPct 77.22/10s) converged across three independent derivations (S2b spec, S5 test, S6 override — 3/3 load-bearing agreement). The five S5 REDs are RECON_ERRORs, not divergences: the blind test chose controlComp, whose own B2 (crown, 40s CD) out-rotates anne (60s CD) for the single stage-2 slot so anne casts zero bursts — the exact hazard S2b's own notes pre-registered — and probe evidence (burstCasts by slug, casterAtkPct all from crown, helm saturating crown's recovery consumer at 161 frames ≈1127s coverage) mechanically explains every red, including the counter-intuitive flat WIDE_HEALS result. The driver's spec avoids the trap by fielding anne as sole B2 and adds non-vacuity gates, cast-frame identity pins, and working counterfactuals (all-allies retarget, fullBurstEnter re-key, line strips), so discrimination holds: each load-bearing assertion demonstrably fails under its named nearest-wrong model in the driver's fixture. The most dangerous misread (Incoming Healing ▼78.93% → damageTakenPct boss debuff) is absent from both override and event log and is explicitly documented against. For GO nothing must change. Same-model residual for the owner to spot-check: (1) the S1 tick granularity (driver ticks:5/intervalSec:1 vs blind ticks:1) is an unmeasured ⚑ either way and currently inert — if a Supporter-class recovery consumer ever lands in the roster, re-derive it from footage; (2) the convergence is same-family on S5/S6 (both claude-opus-5), so the shared heal-event/tandem convention itself — not any per-line encoding — is the thing no agent here independently questioned.",
+  "model": "kimi-code/k3"
+}

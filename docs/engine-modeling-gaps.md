@@ -30,7 +30,7 @@
 | `advantageVs` | 2 | rapi-red-hood, sugar |
 | `alliesLowestAtk` | 1 | liberalio |
 | `alliesLowestHp` | 10 | blanc, ether, mary, misato, naga, pascal, pepper, poli, … |
-| `alliesOfClass` | 3 | biscuit, d, quiry |
+| `alliesOfClass` | 4 | anne-miracle-fairy, biscuit, d, quiry |
 | `alliesOfElement` | 14 | alice-wonderland-bunny, anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, flora, guillotine-winter-slayer, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
 | `alliesOfWeapon` | 11 | arcana-fortune-mate, d-killer-wife, drake, himeno, leona, miranda, neon, noir, … |
@@ -74,7 +74,7 @@
 | `hasTrueNormals` | 0 | _none_ |
 | `highestAllyAtkPct` | 1 | guilty |
 | `highestAllyMaxHpPct` | 2 | quency, sin |
-| `hitCount` | 66 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, … |
+| `hitCount` | 67 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, anne-miracle-fairy, ark-ranger-black, asuka-wille, blanc, … |
 | `hitRatePct` | 20 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
 | `hitsPerShot` | 35 _(char-data)_ | aigis, anis-sparkling-summer, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 11 | clay, ether, eunhwa-tactical-upgrade, kurumi, mihara-bonding-chain, modernia, privaty-unkind-maid, soda-twinkling-bunny, … |
@@ -695,10 +695,11 @@ review pending): cinderella-crystal-wave (`MG`_/`Snipe`, pierce only in Snipe) a
 pair (`solo`_/`duet` — mutually referencing, flip both together). Full action item + per-unit mode inventory: `docs/handoffs/QUEUE.md`
 backlog (new item 6).
 
-### 18. Kill-gated / revive / boss-death effects that never fire — ~4 units
+### 18. Kill-gated / revive / boss-death effects that never fire — ~5 units
 
 Immortal solo boss. Units: volume (kill-gated ATK ▲12.6% can never trigger), mana, mihara-bonding-chain,
-moran.
+moran, anne-miracle-fairy (burst revive of 1 incapacitated Attacker at 99% HP, once per battle — no
+death/revive/HP-pool primitive; meta-defining in real play, offensively inert at scope).
 
 ### 19. SG pull-vs-pellet `hitCount` 10× lever + per-unit SG landing — SG cluster
 

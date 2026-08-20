@@ -1,0 +1,100 @@
+{
+  "slug": "anne-miracle-fairy",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 3
+      },
+      "target": {
+        "kind": "alliesOfClass",
+        "cls": "Supporter"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": []
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": []
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfClass",
+        "cls": "Attacker"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 77.22,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfClass",
+        "cls": "Attacker"
+      },
+      "effects": []
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Restores HP equal to 6.07% of attack damage. Lasts for 5 sec. — HP AMOUNT unmodeled (no HP pool at scope lock); the recovery EVENT is emitted so on-recovery consumers (e.g. crown) fire."
+    ],
+    "skill2": [
+      "Incoming Healing ▲ 23.46%. — no incomingHealingPct StatKey; heal magnitudes are unmodeled, so this scales nothing. Recorded, not enacted.",
+      "Activates when above 90% HP. — HP-state gate; no HP pool at scope lock (boss deals no damage), so the condition is trivially TRUE and the block is authored ungated.",
+      "Incoming Healing ▼ 78.93% for 10 sec (all enemies). — enemy incoming-healing debuff; the boss is not healed in v1 and there is no stat for it. Fully inert."
+    ],
+    "burst": [
+      "Restores HP equal to 38.61% of the skill user's final max HP. — HP AMOUNT unmodeled; the recovery EVENT is emitted.",
+      "Affects 1 incapacitated Attacker ally unit(s) at random. Revives with 99% HP. Activates once per battle. — no death/incapacitation model at scope lock; nobody is ever incapacitated, so the revive can never fire."
+    ]
+  },
+  "caveats": [
+    "⚑ skill1 trigger threshold: 'after 3 normal attacks' encoded as hitCount count:3 counting LANDED rounds (perPull omitted). She is RL/hitsPerShot 1, so pulls == rounds and the reading is unambiguous for THIS unit.",
+    "⚑ skill1 'Lasts for 5 sec' is NOT a heal duration in this model — the 6.07%-of-attack-damage lifesteal window is unmodeled (no HP pool); the block emits ONE recovery event per 3rd attack. If a teammate's on-recovery consumer proves to need per-second refresh, re-encode as heal.ticks with intervalSec.",
+    "⚑ burst is authored on burstCast (her OWN cast, Burst II) per the trigger-fidelity rule: the block sits in HER burst slot. In a comp where another Burst II casts instead, this correctly does not fire.",
+    "This unit is a pure Supporter with ZERO damage effects of her own. Her entire measurable contribution is the burst ATK ▲77.22% to Attacker allies plus recovery events; everything else in the kit is healing-magnitude or HP-state text that scope lock cannot express. Board movement will be ~0 on any comp with no Attacker."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Anne: Miracle Fairy (RL/Wind/Supporter/Burst II) is a healer-buffer: the only stat-bearing line in the whole kit is the burst's ATK ▲77.22%/10s to Attacker allies. Heals are emitted as recovery EVENTS (no HP amount — v1 models no HP pool) specifically so heal-synergy consumers still fire; the Incoming Healing ▲/▼ pair and the once-per-battle revive have no engine surface at scope lock and are recorded verbatim in `unmodeled`. Both HP-state gates ('above 90% HP') are trivially satisfied at scope lock (the boss deals no damage) and are therefore authored ungated rather than dropped."
+}

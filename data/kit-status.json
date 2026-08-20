@@ -647,6 +647,50 @@
         "temp": "COLD ▼"
       }
     },
+    "anne-miracle-fairy": {
+      "name": "Anne: Miracle Fairy",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-19",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-19: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/anne-miracle-fairy.json + scripts/kit-autonomy/manual-review/anne-miracle-fairy.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "date": "2026-08-19",
+      "evidence": "kit-autonomy gauntlet 2026-08-19; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; blind S5 suite 10 pass / 5 RED all ruled RECON_ERROR by the judge (contested-B2 fixture vacuity + crown/helm fixture artifacts) / 4 self-documented skips vs driver override; blind S6 override 3/3 load-bearing blocks identical",
+      "residual": "spot-check cluster: (1) S1 tick granularity — ticks:5/intervalSec:1 approximates the kit's per-ATTACK healing inside the 5-sec window at the ~1-shot/sec RL cadence; presently inert (no Supporter-class recovery consumer exists), re-derive from footage if one ever ships; (2) cadence tuple datamine (RL pullsPerSec / reloadFrames 141 / chargeFrames 60) — rounds/min + reload gap from any anne focus video; (3) the revive is META-DEFINING but unmodeled (no death/revive/HP-pool primitive) — the kit's entire real-play raid value is outside the sim",
+      "unmodeled": {
+        "skill1": [
+          "Restores HP equal to 6.07% of attack damage. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+        ],
+        "skill2": [
+          "■ Affects all allies. Activates when above 90% HP.\nIncoming Healing ▲ 23.46%. — doubly unrepresentable: the self-HP gate has no HP pool to read, and there is no incoming-healing StatKey nor any HP pool for it to amplify. Inert at v1 scope (healing has no engine model).",
+          "■ Activates when the last bullet hits the target while this unit's HP is at 90% or above. Affects all enemies.\nIncoming Healing ▼ 78.93% for 10 sec. — unrepresentable: the self-HP gate has no HP pool to read, and there is no enemy-incoming-healing model (the boss never heals — no enemy healing mechanic exists). Inert at v1 scope. NOT pattern-matchable into a damageTakenPct boss debuff — that is a DIFFERENT mechanic and would wrongly credit the whole team (cross-family S2b flagged this as the kit's most dangerous misread)."
+        ],
+        "burst": [
+          "Restores HP equal to 38.61% of the skill user's final max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.",
+          "■ Affects 1 incapacitated Attacker ally unit(s) at random.\nRevives with 99% HP. Activates once per battle. — ⚑ UNMODELED, meta-defining: the v1 engine has no death/revive/HP-pool primitive (immortal boss, no ally is ever incapacitated), so the condition can never fire. Offensively inert at scope; in real play this line is the reason Anne is fielded. Estimate: zero damage impact — the entire raid value of the kit is unmodeled. Recipe: needs an HP pool + a death/revive model before it can be enacted. Tier: meta-defining (rapunzel resurrect precedent)."
+        ]
+      },
+      "caveats": [
+        "skill1: the 5-sec Fairy Dance window is approximated as one recovery event per second (ticks:5 intervalSec:1) — the kit heals per ATTACK inside the window ('6.07% of attack damage'); at the ~1-shot/sec RL cadence (chargeFrames 60) the two coincide, so the per-window event count tracks the kit while the cadence is datamine-estimated. ⚑ presently inert: no Supporter-class on-recovery consumer exists in the roster, so nothing reads these events today (biscuit's Supporter-lifesteal precedent class).",
+        "skill1/burst: cadence tuple (mandatory ⚑, datamine-unreliable): RL pullsPerSec / reloadFrames 141 / chargeFrames 60 — drives the every-3-normals S1 proc cadence and gauge fill; NOT escalated (6-shot RL at class charge rate — quiry precedent). Recipe: rounds/min + reload gap from any anne-miracle-fairy focus video.",
+        "burst: both lines key to her OWN burst cast (burstCast, not fullBurstEnter — the Burst-II trap); the ATK buff therefore applies ~0.9s BEFORE the Full Burst window opens (the stage-3 cast + FB-start lag rides inside its 10s window), which is the kit-faithful coverage, not an approximation.",
+        "skill2: the 'above 90% HP' / '90% or above' gates would be permanently satisfied at scope lock (nobody takes damage), but both lines are unmodeled regardless (no incoming-healing StatKey, no enemy-healing model), so the gate representation is moot."
+      ],
+      "note": "No real-fight recording yet — every ⚑ below is an unmeasured estimate. Structure is test-pinned (scripts/tests/units/anne-miracle-fairy.test.ts). anne-miracle-fairy (Anne: Miracle Fairy) — RL/Wind/Supporter/Burst II, cd 60s, ammo 6, chargeFrames 60, reloadFrames 141, Missilis. NEW unit (no base counterpart) — a PURE sustain/support kit: no damage effect, no DoT, no weapon swap, no ammo/reload/fire-rate modifier, no gauge line. MODELED TODAY: (1) skill1 Fairy Dance — every 3 normal attacks (hitCount 3; hitsPerShot 1 so hits == pulls) opens a 5-sec healing window for all SUPPORTER-class allies (includes Anne herself): encoded as a heal effect with ticks:5 intervalSec:1 (one recovery event per second across the window ≈ the kit's per-attack healing at the ~1-shot/sec RL cadence; ⚑ granularity estimate). The 6.07%-of-attack-damage MAGNITUDE rides in unmodeled (no HP pool) — the block exists for its TANDEM value (it would fire Supporter-class teammates' 'recovery' triggers); no Supporter on-recovery consumer exists in the roster today, so the channel is faithfully encoded but presently inert. (2) burst line 1 — all ATTACKER-class allies: heal on her own burstCast (one recovery event per cast; the 38.61%-of-caster-final-max-HP magnitude unmodeled, event-only like every heal). (3) burst line 2 — all ATTACKER-class allies: ATK ▲ 77.22% for 10s (atkPct, plain target-% stat; the kit's only damage-relevant line), keyed to her OWN burstCast — the Burst-II trap (fullBurstEnter would shift the window ~0.9s late and mis-attribute rotations another Burst II took) is pinned structurally and by frame identity in the spec. DELIBERATELY UNMODELED (verbatim in `unmodeled`): both skill2 lines — the allies' Incoming Healing ▲ 23.46% (self-HP >90% gate + no incoming-healing StatKey + no HP pool: doubly unrepresentable, inert) and the enemies' Incoming Healing ▼ 78.93%/10s on last-bullet-with-own-HP≥90% (HP gate + no enemy-healing model — the boss never heals; explicitly NOT a damageTakenPct debuff, which would be the catastrophic pattern-match); and the burst RESURRECT of 1 incapacitated Attacker at 99% HP once per battle (⚑ meta-defining: no death/revive/HP-pool primitive — rapunzel precedent; zero damage impact, the entire real-play value of the kit unmodeled, recipe recorded). EVIDENCE TIER: all live values are kit-text-literal (3 / 5-sec / 77.22 / 10s — DATAMINED L10); the only estimates are the S1 tick granularity and the cadence tuple. FAITHFULNESS CORE: damage-neutrality for her OWN damage — she sims byte-identical to the bare weapon for her own total (proven in the spec, group A1); her board footprint is entirely cross-unit: the Attacker-class ATK grant (live) plus two class-scoped recovery channels (tandem-only). TIER 2 (class-scoped buffs ×3 lines, burstCast-vs-fullBurstEnter trigger identity, meta-defining revive ⚑). Kit-autonomy gauntlet 2026-08-19."
+    },
     "arcana": {
       "name": "Arcana",
       "burst": "II",

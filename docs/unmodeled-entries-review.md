@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 208 | 44.8% |
-| Missing engine primitive / trigger | 95 | 20.5% |
-| Other / see caveats | 94 | 20.3% |
-| Out-of-domain / parser unsupported | 30 | 6.5% |
-| Partless boss | 10 | 2.2% |
+| Defensive / HP / shield / aggro | 212 | 45.2% |
+| Missing engine primitive / trigger | 96 | 20.5% |
+| Other / see caveats | 94 | 20.0% |
+| Out-of-domain / parser unsupported | 30 | 6.4% |
+| Partless boss | 10 | 2.1% |
 | Weapon-state / shot-count approximation | 9 | 1.9% |
 | Self-status / stack gate | 8 | 1.7% |
 | RNG / probabilistic | 6 | 1.3% |
 | Measurement-gated / unverified cadence | 4 | 0.9% |
-| **Total** | **464** | 100.0% |
+| **Total** | **469** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (208)
+### Defensive / HP / shield / aggro (212)
 
 **A2** (a2)
 
@@ -78,6 +78,19 @@ Incoming healing ▲ 150% for 15 sec. (no healing-received channel — no HP poo
   - *Why:* HasB1 (Everyone's Star): the ATK riders are replaced by re-entering burst at Stage 1 (burstEligibility stage 1); its ally Max-HP portion is dropped (defensive; ally-granted Max HP feeds nothing); the 1.26% per-full-charge heal is modeled as an event-only heal per pull (formation hasB1 — Everyone's Star), driving on-recovery consumers (enacted 2026-08-09, owner faithfulness ruling; the HP amount has no engine consumer)
 - **burst:** DEF ▲ 55.01% for 10 sec.
   - *Why:* DEF 55.01% and Explosion Radius 100% remain documented UNMODELED — defensive/AoE-radius, offensively inert; the hasB1 1.26% full-charge heal is now modeled event-only (crown-recovery tandem, enacted 2026-08-09 — the fable reviewer independently re-derived the same tandem-heal concern).]
+
+**Anne: Miracle Fairy** (anne-miracle-fairy)
+
+- **skill1:** Restores HP equal to 6.07% of attack damage. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* skill1: the 5-sec Fairy Dance window is approximated as one recovery event per second (ticks:5 intervalSec:1) — the kit heals per ATTACK inside the window ('6.07% of attack damage'); at the ~1-shot/sec RL cadence (chargeFrames 60) the two coincide, so the per-window event count tracks the kit while the cadence is datamine-estimated. ⚑ presently inert: no Supporter-class on-recovery consumer exists in the roster, so nothing reads these events today (biscuit's Supporter-lifesteal precedent class).
+- **skill2:** ■ Affects all allies. Activates when above 90% HP.
+Incoming Healing ▲ 23.46%. — doubly unrepresentable: the self-HP gate has no HP pool to read, and there is no incoming-healing StatKey nor any HP pool for it to amplify. Inert at v1 scope (healing has no engine model).
+  - *Why:* skill2: the 'above 90% HP' / '90% or above' gates would be permanently satisfied at scope lock (nobody takes damage), but both lines are unmodeled regardless (no incoming-healing StatKey, no enemy-healing model), so the gate representation is moot.
+- **skill2:** ■ Activates when the last bullet hits the target while this unit's HP is at 90% or above. Affects all enemies.
+Incoming Healing ▼ 78.93% for 10 sec. — unrepresentable: the self-HP gate has no HP pool to read, and there is no enemy-incoming-healing model (the boss never heals — no enemy healing mechanic exists). Inert at v1 scope. NOT pattern-matchable into a damageTakenPct boss debuff — that is a DIFFERENT mechanic and would wrongly credit the whole team (cross-family S2b flagged this as the kit's most dangerous misread).
+  - *Why:* skill2: the 'above 90% HP' / '90% or above' gates would be permanently satisfied at scope lock (nobody takes damage), but both lines are unmodeled regardless (no incoming-healing StatKey, no enemy-healing model), so the gate representation is moot.
+- **burst:** Restores HP equal to 38.61% of the skill user's final max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
+  - *Why:* burst: both lines key to her OWN burst cast (burstCast, not fullBurstEnter — the Burst-II trap); the ATK buff therefore applies ~0.9s BEFORE the Full Burst window opens (the stage-3 cast + FB-start lag rides inside its 10s window), which is the kit-faithful coverage, not an approximation.
 
 **Asuka** (asuka)
 
@@ -754,7 +767,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Missing engine primitive / trigger (95)
+### Missing engine primitive / trigger (96)
 
 **A2** (a2)
 
@@ -785,6 +798,12 @@ Attract: Taunts all enemies for 5 sec.
 
 - **burst:** Explosion Radius ▲ 100% for 10 sec.
   - *Why:* DEF 55.01% and Explosion Radius 100% remain documented UNMODELED — defensive/AoE-radius, offensively inert; the hasB1 1.26% full-charge heal is now modeled event-only (crown-recovery tandem, enacted 2026-08-09 — the fable reviewer independently re-derived the same tandem-heal concern).]
+
+**Anne: Miracle Fairy** (anne-miracle-fairy)
+
+- **burst:** ■ Affects 1 incapacitated Attacker ally unit(s) at random.
+Revives with 99% HP. Activates once per battle. — ⚑ UNMODELED, meta-defining: the v1 engine has no death/revive/HP-pool primitive (immortal boss, no ally is ever incapacitated), so the condition can never fire. Offensively inert at scope; in real play this line is the reason Anne is fielded. Estimate: zero damage impact — the entire raid value of the kit is unmodeled. Recipe: needs an HP pool + a death/revive model before it can be enacted. Tier: meta-defining (rapunzel resurrect precedent).
+  - *Why:* skill1/burst: cadence tuple (mandatory ⚑, datamine-unreliable): RL pullsPerSec / reloadFrames 141 / chargeFrames 60 — drives the every-3-normals S1 proc cadence and gauge fill; NOT escalated (6-shot RL at class charge rate — quiry precedent). Recipe: rounds/min + reload gap from any anne-miracle-fairy focus video.
 
 **Ark Ranger Black** (ark-ranger-black)
 

@@ -64,7 +64,7 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | --- | --- | --- | --- | --- | --- |
 | `atkOfCasterMaxHpPct` | FinalATK | flat ATK add of `% × caster's liveMaxHp` snapshotted at apply; stored as `casterAtkPct` | always | 1 | maxwell-ordinary-mechanic |
 | `atkOfMaxHpPct` | FinalATK | flat ATK add of `% × liveMaxHp`, **re-read every frame** | always | 4 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose |
-| `atkPct` | FinalATK | `staticAtk × (1 + Σ/100)` — dilutes against other ATK ▲% | always | 79 | a2, ada, ade-agent-bunny, alice, anis-star, arcana-fortune-mate, ark-ranger-black, asuka, … |
+| `atkPct` | FinalATK | `staticAtk × (1 + Σ/100)` — dilutes against other ATK ▲% | always | 80 | a2, ada, ade-agent-bunny, alice, anis-star, anne-miracle-fairy, arcana-fortune-mate, ark-ranger-black, … |
 | `casterAtkPct` | FinalATK | flat ATK add, resolved at apply to `caster.staticAtk × %` — does NOT dilute | always | 49 | ada, ade, ade-agent-bunny, anchor-innocent-maid, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
 | `defPct` | FinalATK | ENEMY-targeted at a nonzero value: scales cfg.bossDef by (1 + Σ/100), floor 0 (the DEF ▼ channel, 2026-08-10); SELF/ally-targeted stays read by nothing — own DEF does not enter own damage | enemy-targeted buffs only; sub-0.1% at the graded surfaces (scope-lock bossDef 140), live at the web raid DEF defaults | 34 | anchor, anis, bay, centi, crow, crown, crust, delta, … |
 | `highestAllyAtkPct` | FinalATK | flat ATK add of `max(all staticAtk) × %` at apply; stored as `casterAtkPct` | always | 1 | guilty |

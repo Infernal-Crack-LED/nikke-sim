@@ -1,0 +1,235 @@
+{
+  "slug": "anne-miracle-fairy",
+  "leakDetected": null,
+  "override": {
+    "slug": "anne-miracle-fairy",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 3
+        },
+        "target": {
+          "kind": "alliesOfClass",
+          "cls": "Supporter"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": []
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": []
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfClass",
+          "cls": "Attacker"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          },
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 77.22,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfClass",
+          "cls": "Attacker"
+        },
+        "effects": []
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Restores HP equal to 6.07% of attack damage. Lasts for 5 sec. — HP AMOUNT unmodeled (no HP pool at scope lock); the recovery EVENT is emitted so on-recovery consumers (e.g. crown) fire."
+      ],
+      "skill2": [
+        "Incoming Healing ▲ 23.46%. — no incomingHealingPct StatKey; heal magnitudes are unmodeled, so this scales nothing. Recorded, not enacted.",
+        "Activates when above 90% HP. — HP-state gate; no HP pool at scope lock (boss deals no damage), so the condition is trivially TRUE and the block is authored ungated.",
+        "Incoming Healing ▼ 78.93% for 10 sec (all enemies). — enemy incoming-healing debuff; the boss is not healed in v1 and there is no stat for it. Fully inert."
+      ],
+      "burst": [
+        "Restores HP equal to 38.61% of the skill user's final max HP. — HP AMOUNT unmodeled; the recovery EVENT is emitted.",
+        "Affects 1 incapacitated Attacker ally unit(s) at random. Revives with 99% HP. Activates once per battle. — no death/incapacitation model at scope lock; nobody is ever incapacitated, so the revive can never fire."
+      ]
+    },
+    "caveats": [
+      "⚑ skill1 trigger threshold: 'after 3 normal attacks' encoded as hitCount count:3 counting LANDED rounds (perPull omitted). She is RL/hitsPerShot 1, so pulls == rounds and the reading is unambiguous for THIS unit.",
+      "⚑ skill1 'Lasts for 5 sec' is NOT a heal duration in this model — the 6.07%-of-attack-damage lifesteal window is unmodeled (no HP pool); the block emits ONE recovery event per 3rd attack. If a teammate's on-recovery consumer proves to need per-second refresh, re-encode as heal.ticks with intervalSec.",
+      "⚑ burst is authored on burstCast (her OWN cast, Burst II) per the trigger-fidelity rule: the block sits in HER burst slot. In a comp where another Burst II casts instead, this correctly does not fire.",
+      "This unit is a pure Supporter with ZERO damage effects of her own. Her entire measurable contribution is the burst ATK ▲77.22% to Attacker allies plus recovery events; everything else in the kit is healing-magnitude or HP-state text that scope lock cannot express. Board movement will be ~0 on any comp with no Attacker."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Anne: Miracle Fairy (RL/Wind/Supporter/Burst II) is a healer-buffer: the only stat-bearing line in the whole kit is the burst's ATK ▲77.22%/10s to Attacker allies. Heals are emitted as recovery EVENTS (no HP amount — v1 models no HP pool) specifically so heal-synergy consumers still fire; the Incoming Healing ▲/▼ pair and the once-per-battle revive have no engine surface at scope lock and are recorded verbatim in `unmodeled`. Both HP-state gates ('above 90% HP') are trivially satisfied at scope lock (the boss deals no damage) and are therefore authored ungated rather than dropped."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 3 normal attacks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:3}; RL hitsPerShot 1 so rounds==pulls"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all Supporter allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesOfClass{cls:'Supporter'} (includes self — no except-self clause)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Restores HP equal to 6.07% of atk dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal{ticks:1} — event only, no HP amount modeled. HARD RULE: heal lines are never skipped on isolation (tandem consumers)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Lasts for 5 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "duration of the lifesteal WINDOW, not of a buff; the heal magnitude it governs is unmodeled, so the window has nothing to bound"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies (block present with empty effects — the stat it would carry has no StatKey)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when above 90% HP",
+      "status": "SKIPPED",
+      "effectOrReason": "HP-state gate; no HP pool at scope lock so it is trivially true — authored ungated, not dropped silently"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Incoming Healing ▲ 23.46%",
+      "status": "SKIPPED",
+      "effectOrReason": "no incomingHealingPct in StatKey; heal amounts are unmodeled so it scales nothing. NOT a damage stat — no fudge substitute"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when last bullet hits + HP >= 90%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger lastBullet (HP gate trivially true); block present, effects empty"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all enemies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Incoming Healing ▼78.93% for 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "enemy incoming-healing debuff — the boss is never healed in v1 and no StatKey exists. Fully inert; NOT a damageTakenPct (different mechanic — do not repurpose)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all Attacker allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesOfClass{cls:'Attacker'} — she is a Supporter so this never self-applies"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Restores HP = 38.61% of user max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal{ticks:1} — event only; the %-of-caster-max-HP amount is unmodeled"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 77.22% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff{stat:'atkPct', value:77.22, durationSec:10} on burstCast — the kit's ONLY damage-bearing line"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 1 incapacitated Attacker ally",
+      "status": "SKIPPED",
+      "effectOrReason": "no incapacitation/death model at scope lock; the target set is permanently empty"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Revives with 99% HP; once per battle",
+      "status": "SKIPPED",
+      "effectOrReason": "revive has no engine surface (no HP pool, nobody dies); oncePerBattle bookkeeping moot"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger.count",
+      "estimate": "hitCount{count:3}, landed rounds (perPull omitted)",
+      "reasoning": "'after 3 normal attacks' is a hit-count trigger, and the HARD RULE says hitCount counts ROUNDS not pulls. She is RL with hitsPerShot 1, so the two readings coincide and this ⚑ is low-risk for THIS unit — it would matter only if a future buff changed her pellet/hit economy.",
+      "recipe": "Focus recording: count her rocket pulls between successive green heal numbers on Supporter allies. 3 pulls per heal confirms; any other spacing refutes."
+    },
+    {
+      "field": "skill1[0].effects[0] — heal ticks/interval",
+      "estimate": "ticks:1 (one recovery event per trigger)",
+      "reasoning": "The line is a 5-second LIFESTEAL window (6.07% of attack damage), not a 'recovers X% every 1 sec' HoT — the schema's ticks:N form is specified for the explicit per-second wording, which this kit does not use. But in-game the window would emit a recovery on every attack that lands inside it, so a downstream on-recovery consumer (crown-style) may see far more events than ticks:1 grants.",
+      "recipe": "Pair her with a `recovery`-trigger consumer and count that consumer's buffApply events per rotation against the sim. If real >> sim, re-encode as heal{ticks:N, intervalSec} sized to her fire cadence across 5 sec."
+    },
+    {
+      "field": "skill2 — 'above 90% HP' gates (both blocks)",
+      "estimate": "Gate trivially TRUE; authored ungated",
+      "reasoning": "Scope-lock boss deals no damage and nothing in the team drains HP, so she never leaves >90% HP. Encoding a gate the engine cannot evaluate (there is no HP-fraction primitive in the Block gate set) would be a fabricated mechanic. Both effects are inert anyway, so the gate choice moves nothing today — it becomes load-bearing only if incoming-healing ever gains a StatKey AND boss damage is modeled.",
+      "recipe": "None available at scope lock. Would need a boss that deals damage plus an HP pool; re-evaluate when either lands."
+    },
+    {
+      "field": "burst[0].trigger",
+      "estimate": "burstCast (not fullBurstEnter)",
+      "reasoning": "TRIGGER IDENTITY hard rule: effects in a unit's OWN burst block key to burst-cast, and burst-cast damage/buffs land BEFORE Full Burst opens. She is Burst II, so in a comp with another Burst II she may not cast at all — fullBurstEnter would over-credit her ATK buff on every rotation she sat out.",
+      "recipe": "Already discriminable in-sim: run a comp with two Burst II units and confirm the ATK ▲77.22 buffApply appears only on rotations she actually casts (burstCast event with her srcSlot)."
+    },
+    {
+      "field": "skill2 / burst — inert-line encoding (empty effects[])",
+      "estimate": "Blocks kept with empty effects arrays",
+      "reasoning": "The two Incoming Healing lines and the revive have no representable effect, and `ignored` blocks are validator-rejected. Blocks are retained (with the trigger/target faithfully encoded) so the structure is auditable and a future StatKey drops straight in; the text lives verbatim in `unmodeled`. If the validator rejects empty effects[] arrays, collapse those blocks and rely on `unmodeled` alone — the model is damage-identical either way.",
+      "recipe": "Run scripts/skills/validate-overrides.ts on the file; if empty-effects blocks are rejected, delete them (unmodeled already carries the audit record)."
+    },
+    {
+      "field": "whole-unit — measurable footprint",
+      "estimate": "Exactly ONE damage-moving line in the entire kit (burst atkPct 77.22 → Attackers)",
+      "reasoning": "Whole-picture check: RL/Supporter with no flatDamage, no DoT, no weapon-state modifier, no gauge line, no debuff the engine reads. Her sim contribution is her own rocket damage plus one ally ATK buff. A hand-tune that finds her 'under-modeled' should look for a MISSING kit line or a heal-synergy teammate, not for a knob on this override — there is no knob here to fit with.",
+      "recipe": "A/B: toggle the burst atkPct block off and confirm the ONLY delta on any comp is the Attacker allies' damage during her 10s windows; her own total must be bit-identical."
+    }
+  ],
+  "model": "claude-opus-5"
+}
