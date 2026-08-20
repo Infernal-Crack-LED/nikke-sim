@@ -18,6 +18,16 @@ import { existsSync, readFileSync } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { join, normalize, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  GAME_NAME,
+  HOME_CTAS,
+  HOME_FEATURES,
+  HOME_HERO_AFTER,
+  HOME_HERO_BEFORE,
+  HOME_SECTION_TITLE,
+  SITE_NAME,
+  dev,
+} from '../share/site-identity.js';
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -533,50 +543,70 @@ function charactersStaticHtml(): string {
   );
 }
 
-// Static / landing body: mirrors LandingPage.tsx so crawlers see the same
-// headline, cards, and promos without executing JS.
-function homeStaticHtml(): string {
-  const maidenBlurb =
-    'A NIKKE: Goddess of Victory info & strategy Discord bot that serves up character data on demand. Built for my union cluster, Maiden’s Bakery, but it works in any Nikke-oriented server.';
-  const refittingName = 'Refitting Room';
-  const refittingBlurb =
-    'My other game tool: a Girls’ Frontline 2: Exilium squad planner. Browse dolls and weapons, filter by class, phase, and weapon type, and assemble a team — all running in the browser.';
+// Static / landing body: the SAME copy LandingPage.tsx renders, read from
+// src/share/site-identity.ts rather than hand-copied here. Both surfaces build
+// from one array, so a reworded blurb changes them together — this body is the
+// one Google indexes and the one nobody looks at, which is exactly why it must
+// not be able to drift silently. scripts/tests/landing-copy-parity.test.ts is
+// the guard.
+export function homeStaticHtml(): string {
+  const features = HOME_FEATURES.map(
+    (f) =>
+      `<a class="home-feature" href="${escapeAttr(f.href)}">` +
+      `<h2>${escapeAttr(f.title)}</h2>` +
+      `<p>${escapeAttr(f.blurb)}</p>` +
+      `<span class="home-feature-cta">${escapeAttr(f.cta)} \u2192</span></a>`
+  ).join('');
+
+  const ctas = HOME_CTAS.map(
+    (c) =>
+      `<a class="${escapeAttr(c.style)}" href="${escapeAttr(c.href)}">${escapeAttr(c.label)}</a>`
+  ).join('');
+
+  const callout = (
+    avatar: string,
+    avatarClass: string,
+    heading: string,
+    blurb: string,
+    link: { href: string; label: string; style: string }
+  ): string =>
+    '<section class="home-callout">' +
+    `<img class="home-callout-avatar${avatarClass}" src="${escapeAttr(avatar)}" alt="" width="72" height="72" />` +
+    `<div class="home-callout-body"><h2>${escapeAttr(heading)}</h2><p>${escapeAttr(blurb)}</p>` +
+    `<a class="${escapeAttr(link.style)}" href="${escapeAttr(link.href)}" target="_blank" rel="noreferrer">${escapeAttr(link.label)}</a>` +
+    '</div></section>';
+
   return (
     '<div class="app home-page">' +
     '<section class="home-hero">' +
     '<img class="home-hero-logo" src="/favicon.svg" alt="" width="56" height="56" />' +
-    '<h1>Nikke Simulator</h1>' +
-    '<p>Plan, build, and share <strong>NIKKE: Goddess of Victory</strong> squads. Browse every Nikke, assemble teams, optimize overload lines, and compare DPS — all in one place.</p>' +
-    '<div class="home-cta-row">' +
-    '<a class="btn-solid" href="/teambuilder">Build a Team</a>' +
-    '<a class="btn-outline" href="/characters">Browse Characters</a>' +
-    '</div>' +
+    `<h1>${escapeAttr(SITE_NAME)}</h1>` +
+    `<p>${escapeAttr(HOME_HERO_BEFORE)}<strong>${escapeAttr(GAME_NAME)}</strong>${escapeAttr(HOME_HERO_AFTER)}</p>` +
+    `<div class="home-cta-row">${ctas}</div>` +
     '</section>' +
     '<section class="home-section">' +
-    '<h2 class="home-section-title">Everything you need to plan a squad</h2>' +
-    '<div class="home-feature-grid">' +
-    '<a class="home-feature" href="/sim"><h2>Team Simulator</h2><p>Run a frame-tick damage simulation for your squad against a custom boss. Per-unit DPS, share breakdowns, and full-burst counts.</p><span class="home-feature-cta">Open the sim →</span></a>' +
-    '<a class="home-feature" href="/teambuilder"><h2>Team Builder</h2><p>Assemble up to five Nikkes and see team effects, elemental synergies, and burst coverage at a glance.</p><span class="home-feature-cta">Build a team →</span></a>' +
-    '<a class="home-feature" href="/ranks"><h2>DPS Rankings</h2><p>Ranked damage under standardized frameworks: neutral, elementally advantaged, with and without supports.</p><span class="home-feature-cta">View rankings →</span></a>' +
-    '<a class="home-feature" href="/roster"><h2>Roster Generator</h2><p>Generate the best solo-raid or union-raid roster teams from your unit pool, accounting for element, burst rotation, and overload synergy.</p><span class="home-feature-cta">Generate rosters →</span></a>' +
-    '<a class="home-feature" href="/overload"><h2>Overload Optimizer</h2><p>Find the best overload lines for any Nikke, estimate rolling costs, and check charge-speed breakpoints.</p><span class="home-feature-cta">Optimize lines →</span></a>' +
-    '<a class="home-feature" href="/builder"><h2>Infographic Generator</h2><p>Build and download shareable infographics for teams, DPS charts, unit comparisons, rank boards, and pull odds.</p><span class="home-feature-cta">Open builder →</span></a>' +
-    '</div>' +
+    `<h2 class="home-section-title">${escapeAttr(HOME_SECTION_TITLE)}</h2>` +
+    `<div class="home-feature-grid">${features}</div>` +
     '</section>' +
-    '<section class="home-callout">' +
-    '<img class="home-callout-avatar" src="/maiden.gif" alt="" width="72" height="72" />' +
-    '<div class="home-callout-body"><h2>Meet Maiden</h2><p>' +
-    escapeAttr(maidenBlurb) +
-    '</p><a class="btn-primary discord" href="https://discord.com/discovery/applications/1523719703950790946" target="_blank" rel="noreferrer">Add Maiden to your server</a></div>' +
-    '</section>' +
-    '<section class="home-callout">' +
-    '<img class="home-callout-avatar square" src="/refittingroom-icon.png" alt="" width="72" height="72" />' +
-    '<div class="home-callout-body"><h2>' +
-    escapeAttr(refittingName) +
-    '</h2><p>' +
-    escapeAttr(refittingBlurb) +
-    '</p><a class="btn-outline" href="https://refittingroom.app" target="_blank" rel="noreferrer">Visit Refitting Room</a></div>' +
-    '</section>' +
+    callout('/maiden.gif', '', `Meet ${dev.maiden.name}`, dev.maiden.blurb, {
+      href: dev.maiden.addToServer,
+      label: `Add ${dev.maiden.name} to your server`,
+      style: 'btn-primary discord',
+    }) +
+    // Half of a reciprocal link with refittingroom.app, whose own server-
+    // rendered body links back here. A link only the React tree emits is a
+    // link no crawler ever counts.
+    callout(
+      '/refittingroom-icon.png',
+      ' square',
+      dev.refittingroom.name,
+      dev.refittingroom.blurb,
+      {
+        href: dev.refittingroom.url,
+        label: `Visit ${dev.refittingroom.name}`,
+        style: 'btn-outline',
+      }
+    ) +
     '</div>'
   );
 }

@@ -14,42 +14,12 @@ export interface Social {
   icon: SocialIcon;
 }
 
-export const dev = {
-  name: 'Max',
-  greeting: "Hi, I'm Max",
-  bio: 'I’m an independent developer who builds self-hosted AI systems and tools, along with some passion projects for games I like.',
-  // the flagship project (the Maiden bot)
-  maiden: {
-    name: 'Maiden',
-    blurb:
-      'A NIKKE: Goddess of Victory info & strategy Discord bot that serves up character data on demand. Built for my union cluster, Maiden’s Bakery, but it works in any Nikke-oriented server.',
-    botUrl: 'https://github.com/Infernal-Crack-LED/bakery-bot',
-    discordInvite: 'https://discord.gg/3Yx4pHB88R',
-    addToServer:
-      'https://discord.com/discovery/applications/1523719703950790946',
-  },
-  // the GFL2-side companion bot, kept here so both sites cross-link
-  helen: {
-    name: 'Helen',
-    blurb:
-      'A Girls’ Frontline 2: Exilium info & team-building Discord bot that serves up doll kits, weapon data, and shareable squad cards on demand. Works in any GFL2-oriented server.',
-    addToServer:
-      'https://discord.com/discovery/applications/1538690317363191922',
-  },
-  // the sister site — the two share a brand mark, so they cross-link
-  refittingroom: {
-    name: 'Refitting Room',
-    url: 'https://refittingroom.app',
-    blurb:
-      'My other game tool: a Girls’ Frontline 2: Exilium squad planner. Browse dolls and weapons, filter by class, phase, and weapon type, and assemble a team — all running in the browser.',
-  },
-  // Google Form the community submits test fights through — collects the fight
-  // metadata plus the damage screenshot + full-fight video as file uploads
-  // (Forms drops the files into a Drive folder automatically). Replace the
-  // placeholder below with the published form's "viewform" responder URL.
-  testingFormUrl:
-    'https://docs.google.com/forms/d/e/1FAIpQLSelnurU40O0vyKsols1lPEJs7_NRZHuTH2ZiamrmlJpj3ZDbQ/viewform',
-} as const;
+// The dev bio and companion-project blurbs live in src/share because the
+// server renders them into the crawlable landing-page body too (see
+// src/share/site-identity.ts). Re-exported here so this module stays the one
+// import site the web app reaches for.
+export { dev } from '../../src/share/site-identity';
+import { dev } from '../../src/share/site-identity';
 
 // Social buttons — rendered as brand tiles in the shared site footer.
 export const socials: Social[] = [
