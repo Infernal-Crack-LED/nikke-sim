@@ -119,7 +119,7 @@ describe('sustain board', () => {
     for (const slug of cands) {
       expect(slug in SUSTAIN_TABLE || HOOKS.has(slug), slug).toBe(true);
     }
-    expect(cands.size).toBe(51);
+    expect(cands.size).toBe(52);
   });
 
   it('sustainRank dual-enters profiled units with the flag', () => {

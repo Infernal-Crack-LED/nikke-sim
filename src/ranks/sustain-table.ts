@@ -833,6 +833,26 @@ export const SUSTAIN_TABLE: Record<string, SustainLine[]> = {
       zero: 'requires 2 allies below 30%/50% HP — never happens at scope lock',
     },
   ],
+  yukiko: [
+    {
+      slot: 'skill1',
+      kind: 'heal',
+      trigger: 'interval',
+      intervalSec: 3,
+      maxHpPct: 5.7,
+      targets: 5,
+      note: "Media (Persona state) — every 3 sec, all allies, 5.7% of the skill user's final Max HP",
+    },
+    {
+      slot: 'skill2',
+      kind: 'heal',
+      trigger: 'burstCast',
+      maxHpPct: 5.7,
+      ticks: 3,
+      targets: 5,
+      note: 'Mediarama (Scarlet Flower state) — every 3 sec inside the cast→Full-Burst-end window = exactly three activations per cast (+3/+6/+9s); the 1-sec tick spacing is table vocabulary, the PER-CAST magnitude (3 × 5.7% × 5 targets) is kit-literal',
+    },
+  ],
   yuni: [
     {
       slot: 'skill2',

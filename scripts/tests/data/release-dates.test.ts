@@ -72,12 +72,20 @@ describe('release dates are well-formed', () => {
     expect(malformed).toEqual([]);
   });
 
-  // Synergy has no row for anne-miracle-fairy, so there is no date to source. That is the ONLY
-  // acceptable reason for a null, and it is worth noticing if the count grows.
-  it('exactly one unit has no release date', () => {
+  // A null is acceptable ONLY when Synergy has no row for the unit, so there is no date to
+  // source — that is worth noticing every time the list grows. Audit-verified 2026-08-19
+  // (`npx tsx scripts/audit-release-dates.ts --all`: 199 characters, 0 findings): aigis and
+  // yukiko (the Persona-collab roster sync) join anne-miracle-fairy as "ok (no date)" —
+  // Synergy carries no rows for them yet. When a row lands upstream, `npm run sync` fills the
+  // date and this list must shrink accordingly.
+  it('only the Synergy-rowless units have no release date', () => {
     const undated = Object.entries(characters)
       .filter(([, c]) => c.releaseDate == null)
       .map(([slug]) => slug);
-    expect(undated).toEqual(['anne-miracle-fairy']);
+    expect([...undated].sort()).toEqual([
+      'aigis',
+      'anne-miracle-fairy',
+      'yukiko',
+    ]);
   });
 });
