@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-08-20T02:01:28.960Z",
+  "syncedAt": "2026-08-20T02:42:35.816Z",
   "characters": {
     "2b": {
       "slug": "2b",
@@ -2896,6 +2896,383 @@
         "maxLevel": 1200,
         "critDamage": 150,
         "resourceId": 172
+      }
+    },
+    "aigis": {
+      "slug": "aigis",
+      "name": "Aigis",
+      "imageUrl": "https://sg-tools-cdn.blablalink.com/wt-08/yq-88/1f6ff1c1e31a21e02982c6dd157297ec.png",
+      "weapon": "SMG",
+      "burst": "II",
+      "burstCooldownSec": 40,
+      "class": "Supporter",
+      "element": "Iron",
+      "manufacturer": "Abnormal",
+      "normalAttackMultiplier": 10.12,
+      "coreAttackMultiplier": 250,
+      "ammo": 120,
+      "reloadFrames": 81,
+      "chargeFrames": 0,
+      "chargeMultiplier": 0,
+      "hitsPerShot": 2,
+      "rl3": null,
+      "releaseDate": null,
+      "burstGaugePerShot": 0.1,
+      "treasure": false,
+      "skills": {
+        "skill1": "■ Activates at the start of battle. Affects self.\nPersona - Palladion: This effect is continuous and cannot be removed.\nFunction: Aigis strengthens herself using her Persona.\nEffect 1: Tarukaja: ATK ▲ 21.12% continuously. This effect cannot be removed.\nEffect 2: Rakukaja: DEF ▲ 21.12% continuously. This effect cannot be removed.",
+        "skill2": "■ Activates when using Burst Skill as long as this unit is still alive.\nPapillon Heart: This effect is continuous and cannot be removed.\nFunction: Aigis strengthens her allies.\nEffect 1: Affects all allies. Matarukaja: ATK ▲ 21.12% of the skill user's ATK continuously. This effect cannot be removed.\nEffect 2: Affects all allies. Marakukaja: DEF ▲ 21.12% of the skill user's DEF continuously. This effect cannot be removed.\nDeactivation condition: When Full Burst ends.",
+        "burst": "■ Affects all enemies.\nDeals 396% of final ATK as distributed damage."
+      },
+      "role": {
+        "weapon": {
+          "shot_id": 1087201,
+          "shot_detail": {
+            "id": 1087201,
+            "damage": 506,
+            "max_ammo": 120,
+            "shake_id": 2,
+            "ShakeType": "Fire_SMG",
+            "fire_type": "Instant",
+            "zoom_rate": 0,
+            "input_type": "DOWN",
+            "shot_count": 1,
+            "ShakeWeight": 120,
+            "attack_type": "Metal",
+            "camera_work": "camera_work_01",
+            "charge_time": 0,
+            "penetration": 0,
+            "reload_time": 100,
+            "shot_timing": "Concurrence",
+            "spot_radius": 0,
+            "weapon_type": "SMG",
+            "is_targeting": true,
+            "muzzle_count": 2,
+            "rate_of_fire": 1440,
+            "name_localkey": "Submachine Gun",
+            "prefer_target": "TargetAR",
+            "reload_bullet": 10000,
+            "counter_enermy": "Metal_Type",
+            "multi_aim_range": 0,
+            "spot_last_delay": 20,
+            "core_damage_rate": 25000,
+            "end_rate_of_fire": 1440,
+            "spot_first_delay": 20,
+            "center_shot_count": 0,
+            "reload_start_ammo": 119,
+            "full_charge_damage": 10000,
+            "multi_target_count": 0,
+            "spot_radius_object": 0,
+            "uptype_fire_timing": 0,
+            "burst_energy_pershot": 1000,
+            "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+            "maintain_fire_stance": 0,
+            "spot_explosion_range": 0,
+            "use_function_id_list": [0],
+            "accuracy_change_speed": 0,
+            "hurt_function_id_list": [0],
+            "spot_projectile_speed": 0,
+            "accuracy_change_pershot": 0,
+            "prefer_target_condition": "None",
+            "rate_of_fire_reset_time": 0,
+            "full_charge_burst_energy": 0,
+            "end_accuracy_circle_scale": 110,
+            "auto_accuracy_change_speed": 0,
+            "rate_of_fire_change_pershot": 0,
+            "start_accuracy_circle_scale": 110,
+            "target_burst_energy_pershot": 2000,
+            "auto_accuracy_change_pershot": 0,
+            "auto_end_accuracy_circle_scale": 110,
+            "auto_start_accuracy_circle_scale": 110
+          },
+          "bonusrange_max": 35,
+          "bonusrange_min": 15
+        },
+        "burstMeta": {
+          "burst_duration": 1000,
+          "use_burst_skill": "Step2",
+          "burst_apply_delay": 1,
+          "change_burst_step": "Step3"
+        },
+        "skillDetails": {
+          "skill1_id": 2872101,
+          "skill2_id": 2872201,
+          "skill1_table": "StateEffect",
+          "skill2_table": "StateEffect",
+          "skill1_detail": {
+            "id": 2872101,
+            "icon": "icn_skill_atkup_01",
+            "group_id": 28721,
+            "skill_level": 1,
+            "name_localkey": "Persona: Palladion",
+            "next_level_id": 2872102,
+            "level_up_cost_id": 50102,
+            "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Persona - Palladion: This effect is continuous and cannot be removed.\nFunction: Aigis strengthens herself using her Persona.\nEffect 1: Tarukaja: ATK ▲ {description_value_01}% continuously. This effect cannot be removed.\nEffect 2: Rakukaja: DEF ▲ {description_value_02}% continuously. This effect cannot be removed.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "12.48",
+                  "13.44",
+                  "14.4",
+                  "15.36",
+                  "16.32",
+                  "17.28",
+                  "18.24",
+                  "19.2",
+                  "20.16",
+                  "21.12"
+                ]
+              },
+              {
+                "description_value": [
+                  "12.48",
+                  "13.44",
+                  "14.4",
+                  "15.36",
+                  "16.32",
+                  "17.28",
+                  "18.24",
+                  "19.2",
+                  "20.16",
+                  "21.12"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 1"
+          },
+          "skill2_detail": {
+            "id": 2872201,
+            "icon": "icn_skill_defup_01",
+            "group_id": 28722,
+            "skill_level": 1,
+            "name_localkey": "Papillon Heart",
+            "next_level_id": 2872202,
+            "level_up_cost_id": 50202,
+            "description_localkey": "■ Activates when using Burst Skill as long as this unit is still alive.\n<color=#00AEFF>Papillon Heart: This effect is continuous and cannot be removed.\nFunction: Aigis strengthens her allies.\nEffect 1: Affects all allies. Matarukaja: ATK ▲ {description_value_01}% of the skill user's ATK continuously. This effect cannot be removed.\nEffect 2: Affects all allies. Marakukaja: DEF ▲ {description_value_02}% of the skill user's DEF continuously. This effect cannot be removed.\n<word_group=10097>Deactivation condition</word_group>: When Full Burst ends.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "12.48",
+                  "13.44",
+                  "14.4",
+                  "15.36",
+                  "16.32",
+                  "17.28",
+                  "18.24",
+                  "19.2",
+                  "20.16",
+                  "21.12"
+                ]
+              },
+              {
+                "description_value": [
+                  "12.48",
+                  "13.44",
+                  "14.4",
+                  "15.36",
+                  "16.32",
+                  "17.28",
+                  "18.24",
+                  "19.2",
+                  "20.16",
+                  "21.12"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 2"
+          },
+          "ulti_skill_id": 1872301,
+          "ulti_skill_detail": {
+            "id": 1872301,
+            "icon": "icn_skill_c872_ult",
+            "group_id": 18723,
+            "shake_id": 1,
+            "skill_type": "InstantNumber",
+            "attack_type": "Iron",
+            "skill_level": 1,
+            "counter_type": "Metal_Type",
+            "duration_type": "None",
+            "name_localkey": "Heat Wave",
+            "next_level_id": 1872302,
+            "prefer_target": "LowDefence",
+            "resource_name": "c872_ulti",
+            "duration_value": 0,
+            "skill_cooltime": 2000,
+            "level_up_cost_id": 50302,
+            "skill_value_data": [
+              {
+                "skill_value": 23400,
+                "skill_value_type": "Percent"
+              },
+              {
+                "skill_value": 1,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              }
+            ],
+            "skill_cooltime_list": [
+              2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
+            ],
+            "description_localkey": "■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as <word_group=10019>distributed damage</word_group>.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "234",
+                  "252",
+                  "270",
+                  "288",
+                  "306",
+                  "324",
+                  "342",
+                  "360",
+                  "378",
+                  "396"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "prefer_target_condition": "IncludeNoneTargetLast",
+            "info_description_localkey": "Burst Skill",
+            "after_use_function_id_list": [0],
+            "after_hurt_function_id_list": [0],
+            "before_use_function_id_list": [0],
+            "before_hurt_function_id_list": [187230101]
+          }
+        },
+        "statScaling": {
+          "grow_grade": 587202,
+          "grade_core_id": 101,
+          "stat_enhance_id": 3303,
+          "stat_enhance_detail": {
+            "id": 3303,
+            "core_hp": 200,
+            "grade_hp": 2300,
+            "core_attack": 200,
+            "grade_ratio": 200,
+            "core_defence": 200,
+            "grade_attack": 18,
+            "grade_defence": 90,
+            "core_bio_resist": 0,
+            "grade_bio_resist": 0,
+            "core_metal_resist": 0,
+            "core_energy_resist": 0,
+            "grade_metal_resist": 0,
+            "grade_energy_resist": 0
+          }
+        },
+        "element": {
+          "element_id": [500001],
+          "element_details": [
+            {
+              "id": 500001,
+              "element": "Iron",
+              "group_id": 5000005,
+              "element_icon": "icn_element_iron",
+              "weak_element_id": 300001,
+              "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+              "element_name_localekey": "Iron",
+              "element_code_name_localekey": "Code: D.M.T.R."
+            }
+          ]
+        },
+        "piece": {
+          "piece_id": 5100872,
+          "piece_detail": {
+            "id": 5100872,
+            "class": "Attacker",
+            "order": 87200,
+            "use_id": 0,
+            "use_type": "None",
+            "item_rare": "SR",
+            "item_type": "Piece",
+            "stack_max": 9999999,
+            "use_value": 0,
+            "corporation": "ABNORMAL",
+            "resource_id": 872,
+            "item_sub_type": "CharacterPiece",
+            "name_localkey": "Aigis's Spare Body",
+            "use_limit_count": false,
+            "inventory_filter": ["etc"],
+            "description_localkey": "Used for a Nikke's Limit Break.\nSpare Bodies for a fully enhanced Nikke will be converted into Body Labels."
+          }
+        },
+        "meta": {
+          "id": 587201,
+          "class": "Supporter",
+          "order": 30028,
+          "name_code": 3019,
+          "corporation": "ABNORMAL",
+          "resource_id": 872,
+          "name_localkey": "Aigis",
+          "original_rare": "SR",
+          "critical_ratio": 1500,
+          "category_type_1": "None",
+          "category_type_2": "None",
+          "category_type_3": "None",
+          "critical_damage": 15000,
+          "eff_category_type": "Walk",
+          "eff_category_value": 0
+        }
+      },
+      "generatorSupported": false,
+      "simSupported": false,
+      "baseStats": {
+        "hp": 11500,
+        "atk": 450,
+        "def": 78,
+        "core": {
+          "hp": 200,
+          "atk": 200,
+          "def": 200
+        },
+        "grade": {
+          "hp": 2300,
+          "atk": 18,
+          "def": 90,
+          "ratio": 200
+        },
+        "critRate": 15,
+        "maxLevel": 1400,
+        "critDamage": 150,
+        "resourceId": 872
       }
     },
     "alice": {
@@ -94769,6 +95146,552 @@
         "maxLevel": 1200,
         "critDamage": 150,
         "resourceId": 201
+      }
+    },
+    "yukiko": {
+      "slug": "yukiko",
+      "name": "Yukiko",
+      "imageUrl": "https://sg-tools-cdn.blablalink.com/ul-96/bf-09/8d722e8fc6a4302d3e31caca15fb9502.png",
+      "weapon": "MG",
+      "burst": "III",
+      "burstCooldownSec": 40,
+      "class": "Attacker",
+      "element": "Fire",
+      "manufacturer": "Abnormal",
+      "normalAttackMultiplier": 5.57,
+      "coreAttackMultiplier": 200,
+      "ammo": 300,
+      "reloadFrames": 171,
+      "chargeFrames": 0,
+      "chargeMultiplier": 0,
+      "hitsPerShot": 1,
+      "rl3": null,
+      "releaseDate": null,
+      "burstGaugePerShot": 0.05,
+      "treasure": false,
+      "skills": {
+        "skill1": "■ Activates at the start of battle. Affects self.\nPersona - Konohana Sakuya: This effect is continuous and cannot be removed. \nFunction: Yukiko heals her allies using her Persona.\nEffect 1: Activates every 3 sec. Affects all allies. Media: Restores HP equal to 5.7% of the skill user's final max HP.\n■ Activates at the start of battle and when Full Burst ends. Affects self.\nATK ▲ 65.37% for 15 sec.\n■ Activates when 1 More takes effect. Affects all enemies.\nDeals 400.31% of final ATK as distributed damage.",
+        "skill2": "■ Activates at the start of battle. Affects self.\nAttack Damage ▲ 55.31% continuously.\n■ Activates when using Burst Skill. \nScarlet Flower: This effect is continuous and cannot be removed.\nFunction: Yukiko strengthens herself.\nEffect 1: Activates every 3 sec. Affects all allies. Mediarama: Restores HP equal to 5.7% of the skill user's final max HP.\nEffect 2: Affects self. Fire Amp: Distributed Damage ▲ 90.01% continuously. This effect cannot be removed.\nEffect 3: Affects self. Scarlet Protection: Damage taken from Water Code enemies ▼ 17.95% continuously. This effect cannot be removed.\nDeactivation condition: When Full Burst ends.\n■ Activates when entering Burst Stage 3. Affects self.\nElemental Advantage Attack Damage ▲ 48.15% for 10 sec.\n■ Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state.\nFollow Up: ATK ▲ 80.25% of the skill user's ATK for 25 sec.",
+        "burst": "■ Affects all enemies.\nDeals 1258.79% of final ATK as distributed damage.\n■ Activates if a Wind Code enemy is present. Affects self.\n1 More: ATK ▲ 45.33% for 10 sec."
+      },
+      "role": {
+        "weapon": {
+          "shot_id": 1087101,
+          "shot_detail": {
+            "id": 1087101,
+            "damage": 557,
+            "max_ammo": 300,
+            "shake_id": 2,
+            "ShakeType": "Fire_MG",
+            "fire_type": "Instant",
+            "zoom_rate": 0,
+            "input_type": "DOWN",
+            "shot_count": 1,
+            "ShakeWeight": 120,
+            "attack_type": "Metal",
+            "camera_work": "camera_work_01",
+            "charge_time": 0,
+            "penetration": 0,
+            "reload_time": 250,
+            "shot_timing": "Concurrence",
+            "spot_radius": 0,
+            "weapon_type": "MG",
+            "is_targeting": false,
+            "muzzle_count": 1,
+            "rate_of_fire": 60,
+            "name_localkey": "Machine Gun",
+            "prefer_target": "TargetPS",
+            "reload_bullet": 10000,
+            "counter_enermy": "Metal_Type",
+            "multi_aim_range": 0,
+            "spot_last_delay": 20,
+            "core_damage_rate": 20000,
+            "end_rate_of_fire": 4200,
+            "spot_first_delay": 20,
+            "center_shot_count": 0,
+            "reload_start_ammo": 299,
+            "full_charge_damage": 10000,
+            "multi_target_count": 0,
+            "spot_radius_object": 0,
+            "uptype_fire_timing": 0,
+            "burst_energy_pershot": 500,
+            "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+            "maintain_fire_stance": 0,
+            "spot_explosion_range": 0,
+            "use_function_id_list": [0],
+            "accuracy_change_speed": 150,
+            "hurt_function_id_list": [0],
+            "spot_projectile_speed": 0,
+            "accuracy_change_pershot": 7,
+            "prefer_target_condition": "None",
+            "rate_of_fire_reset_time": 100,
+            "full_charge_burst_energy": 0,
+            "end_accuracy_circle_scale": 10,
+            "auto_accuracy_change_speed": 150,
+            "rate_of_fire_change_pershot": 100,
+            "start_accuracy_circle_scale": 250,
+            "target_burst_energy_pershot": 1000,
+            "auto_accuracy_change_pershot": 7,
+            "auto_end_accuracy_circle_scale": 10,
+            "auto_start_accuracy_circle_scale": 250
+          },
+          "bonusrange_max": 55,
+          "bonusrange_min": 35
+        },
+        "burstMeta": {
+          "burst_duration": 1000,
+          "use_burst_skill": "Step3",
+          "burst_apply_delay": 1,
+          "change_burst_step": "StepFull"
+        },
+        "skillDetails": {
+          "skill1_id": 2871101,
+          "skill2_id": 2871201,
+          "skill1_table": "StateEffect",
+          "skill2_table": "StateEffect",
+          "skill1_detail": {
+            "id": 2871101,
+            "icon": "icn_skill_damageshareinstant",
+            "group_id": 28711,
+            "skill_level": 1,
+            "name_localkey": "Persona: Konohana Sakuya",
+            "next_level_id": 2871102,
+            "level_up_cost_id": 10102,
+            "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Persona - Konohana Sakuya: This effect is continuous and cannot be removed. \nFunction: Yukiko heals her allies using her Persona.\nEffect 1: Activates every {description_value_01} sec. Affects all allies. Media: Restores HP equal to {description_value_02}% of the skill user's <word_group=10025>final</word_group> max HP.</color>\n■ Activates at the start of battle and when Full Burst ends. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_04}% for {description_value_05} sec.</color>\n■ Activates when 1 More takes effect. Affects all enemies.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as <word_group=10019>distributed damage</word_group>.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3"
+                ]
+              },
+              {
+                "description_value": [
+                  "3.37",
+                  "3.63",
+                  "3.88",
+                  "4.14",
+                  "4.4",
+                  "4.67",
+                  "4.93",
+                  "5.18",
+                  "5.44",
+                  "5.7"
+                ]
+              },
+              {
+                "description_value": [
+                  "236.54",
+                  "254.74",
+                  "272.94",
+                  "291.13",
+                  "309.33",
+                  "327.53",
+                  "345.72",
+                  "363.92",
+                  "382.12",
+                  "400.31"
+                ]
+              },
+              {
+                "description_value": [
+                  "38.62",
+                  "41.6",
+                  "44.57",
+                  "47.54",
+                  "50.51",
+                  "53.48",
+                  "56.45",
+                  "59.42",
+                  "62.4",
+                  "65.37"
+                ]
+              },
+              {
+                "description_value": [
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15",
+                  "15"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 1"
+          },
+          "skill2_detail": {
+            "id": 2871201,
+            "icon": "icn_skill_atkup_01",
+            "group_id": 28712,
+            "skill_level": 1,
+            "name_localkey": "Scarlet Flower",
+            "next_level_id": 2871202,
+            "level_up_cost_id": 10202,
+            "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Attack Damage ▲ {description_value_10}% continuously.</color>\n■ Activates when using Burst Skill. \n<color=#00AEFF>Scarlet Flower: This effect is continuous and cannot be removed.\nFunction: Yukiko strengthens herself.\nEffect 1: Activates every {description_value_01} sec. Affects all allies. Mediarama: Restores HP equal to {description_value_02}% of the skill user's <word_group=10025>final</word_group> max HP.\nEffect 2: Affects self. Fire Amp: <word_group=10019>Distributed Damage</word_group> ▲ {description_value_03}% continuously. This effect cannot be removed.\nEffect 3: Affects self. Scarlet Protection: <word_group=10108>Damage taken from Water Code enemies</word_group> ▼ {description_value_04}% continuously. This effect cannot be removed.\n<word_group=10097>Deactivation condition</word_group>: When Full Burst ends.</color>\n■ Activates when entering Burst Stage 3. Affects self.\n<color=#00AEFF><word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_05}% for {description_value_06} sec.</color>\n■ Activates when 1 More takes effect. Affects all <word_group=10082>standard Burst {description_value_07} allies</word_group> (except the skill user) in the Persona state.\n<color=#00AEFF>Follow Up: ATK ▲ {description_value_08}% of the skill user's ATK for {description_value_09} sec.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3"
+                ]
+              },
+              {
+                "description_value": [
+                  "3.37",
+                  "3.63",
+                  "3.88",
+                  "4.14",
+                  "4.4",
+                  "4.67",
+                  "4.93",
+                  "5.18",
+                  "5.44",
+                  "5.7"
+                ]
+              },
+              {
+                "description_value": [
+                  "53.18",
+                  "57.28",
+                  "61.37",
+                  "65.46",
+                  "69.55",
+                  "73.64",
+                  "77.73",
+                  "81.82",
+                  "85.92",
+                  "90.01"
+                ]
+              },
+              {
+                "description_value": [
+                  "10.6",
+                  "11.42",
+                  "12.24",
+                  "13.05",
+                  "13.87",
+                  "14.68",
+                  "15.5",
+                  "16.32",
+                  "17.13",
+                  "17.95"
+                ]
+              },
+              {
+                "description_value": [
+                  "28.45",
+                  "30.64",
+                  "32.83",
+                  "35.02",
+                  "37.2",
+                  "39.39",
+                  "41.58",
+                  "43.77",
+                  "45.96",
+                  "48.15"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3"
+                ]
+              },
+              {
+                "description_value": [
+                  "47.42",
+                  "51.07",
+                  "54.72",
+                  "58.36",
+                  "62.01",
+                  "65.66",
+                  "69.31",
+                  "72.96",
+                  "76.6",
+                  "80.25"
+                ]
+              },
+              {
+                "description_value": [
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25"
+                ]
+              },
+              {
+                "description_value": [
+                  "32.68",
+                  "35.2",
+                  "37.71",
+                  "40.22",
+                  "42.74",
+                  "45.25",
+                  "47.77",
+                  "50.28",
+                  "52.8",
+                  "55.31"
+                ]
+              },
+              {}
+            ],
+            "info_description_localkey": "Skill 2"
+          },
+          "ulti_skill_id": 1871301,
+          "ulti_skill_detail": {
+            "id": 1871301,
+            "icon": "icn_skill_c871_ult",
+            "group_id": 18713,
+            "shake_id": 1,
+            "skill_type": "InstantNumber",
+            "attack_type": "Fire",
+            "skill_level": 1,
+            "counter_type": "Metal_Type",
+            "duration_type": "None",
+            "name_localkey": "Maragidyne",
+            "next_level_id": 1871302,
+            "prefer_target": "LowDefence",
+            "resource_name": "c871_ulti",
+            "duration_value": 0,
+            "skill_cooltime": 4000,
+            "level_up_cost_id": 10302,
+            "skill_value_data": [
+              {
+                "skill_value": 74383,
+                "skill_value_type": "Percent"
+              },
+              {
+                "skill_value": 1,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              }
+            ],
+            "skill_cooltime_list": [
+              4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
+            ],
+            "description_localkey": "■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as <word_group=10019>distributed damage</word_group>.</color>\n■ Activates if a Wind Code enemy is present. Affects self.\n<color=#00AEFF>1 More: ATK ▲ {description_value_02}% for {description_value_03} sec.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "743.83",
+                  "801.05",
+                  "858.27",
+                  "915.49",
+                  "972.7",
+                  "1029.92",
+                  "1087.14",
+                  "1144.36",
+                  "1201.58",
+                  "1258.79"
+                ]
+              },
+              {
+                "description_value": [
+                  "26.79",
+                  "28.85",
+                  "30.91",
+                  "32.97",
+                  "35.03",
+                  "37.09",
+                  "39.15",
+                  "41.21",
+                  "43.27",
+                  "45.33"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "prefer_target_condition": "IncludeNoneTargetLast",
+            "info_description_localkey": "Burst Skill",
+            "after_use_function_id_list": [0],
+            "after_hurt_function_id_list": [187130102, 187130103],
+            "before_use_function_id_list": [0],
+            "before_hurt_function_id_list": [187130101]
+          }
+        },
+        "statScaling": {
+          "grow_grade": 587102,
+          "grade_core_id": 1,
+          "stat_enhance_id": 5106,
+          "stat_enhance_detail": {
+            "id": 5106,
+            "core_hp": 200,
+            "grade_hp": 3000,
+            "core_attack": 200,
+            "grade_ratio": 200,
+            "core_defence": 200,
+            "grade_attack": 20,
+            "grade_defence": 100,
+            "core_bio_resist": 0,
+            "grade_bio_resist": 0,
+            "core_metal_resist": 0,
+            "core_energy_resist": 0,
+            "grade_metal_resist": 0,
+            "grade_energy_resist": 0
+          }
+        },
+        "element": {
+          "element_id": [100001],
+          "element_details": [
+            {
+              "id": 100001,
+              "element": "Fire",
+              "group_id": 5000001,
+              "element_icon": "icn_element_fire",
+              "weak_element_id": 200001,
+              "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+              "element_name_localekey": "Fire",
+              "element_code_name_localekey": "Code: H.S.T.A."
+            }
+          ]
+        },
+        "piece": {
+          "piece_id": 5100871,
+          "piece_detail": {
+            "id": 5100871,
+            "class": "Attacker",
+            "order": 87100,
+            "use_id": 0,
+            "use_type": "None",
+            "item_rare": "SSR",
+            "item_type": "Piece",
+            "stack_max": 9999999,
+            "use_value": 0,
+            "corporation": "ABNORMAL",
+            "resource_id": 871,
+            "item_sub_type": "CharacterPiece",
+            "name_localkey": "Yukiko's Spare Body",
+            "use_limit_count": false,
+            "inventory_filter": ["etc"],
+            "description_localkey": "Used for a Nikke's Limit Break.\nSpare Bodies for a fully enhanced Nikke will be converted into Body Labels."
+          }
+        },
+        "meta": {
+          "id": 587101,
+          "class": "Attacker",
+          "order": 10181,
+          "name_code": 5180,
+          "corporation": "ABNORMAL",
+          "resource_id": 871,
+          "name_localkey": "Yukiko",
+          "original_rare": "SSR",
+          "critical_ratio": 1500,
+          "category_type_1": "None",
+          "category_type_2": "None",
+          "category_type_3": "None",
+          "critical_damage": 15000,
+          "eff_category_type": "Walk",
+          "eff_category_value": 0
+        }
+      },
+      "generatorSupported": false,
+      "simSupported": false,
+      "baseStats": {
+        "hp": 13500,
+        "atk": 600,
+        "def": 75,
+        "core": {
+          "hp": 200,
+          "atk": 200,
+          "def": 200
+        },
+        "grade": {
+          "hp": 3000,
+          "atk": 20,
+          "def": 100,
+          "ratio": 200
+        },
+        "critRate": 15,
+        "maxLevel": 1400,
+        "critDamage": 150,
+        "resourceId": 871
       }
     },
     "yulha": {

@@ -233,6 +233,7 @@
       "charge-damage-buffer",
       "damage-reduction"
     ],
+    "aigis": ["buffer", "attack-buffer", "def-buffer", "distributed-damage"],
     "alice": [
       "attack-buffer",
       "charge-buffer",
@@ -881,6 +882,14 @@
     ],
     "volume": ["buffer", "attack-buffer", "burst-cdr"],
     "yan": ["buffer", "attack-buffer", "charge-damage-buffer"],
+    "yukiko": [
+      "buffer",
+      "attack-buffer",
+      "ele-buffer",
+      "distributed-buffer",
+      "healer",
+      "distributed-damage"
+    ],
     "yulha": ["buffer", "attack-buffer", "damage-share"],
     "yuni": ["buffer", "def-buffer", "charge-buffer", "ammo-buffer", "healer"],
     "zwei": ["buffer", "pierce-buffer", "healer", "pierce"]
