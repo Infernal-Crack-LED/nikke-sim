@@ -35,6 +35,12 @@
     "fullChargeBonus": 250,
     "source": "datamined"
   },
+  "aigis": {
+    "basePerTrigger": 20,
+    "targetPerTrigger": 40,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
   "alice": {
     "basePerTrigger": 280,
     "targetPerTrigger": 560,
@@ -1230,6 +1236,12 @@
     "basePerTrigger": 140,
     "targetPerTrigger": 280,
     "fullChargeBonus": 350,
+    "source": "datamined"
+  },
+  "yukiko": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
     "source": "datamined"
   },
   "yulha": {

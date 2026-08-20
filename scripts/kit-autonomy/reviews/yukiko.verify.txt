@@ -1,0 +1,8 @@
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m28 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m 20:14:42
+[2m   Duration [22m 794ms[2m (transform 90ms, setup 0ms, import 717ms, tests 26ms, environment 0ms)[22m
+
+S2d GREEN — full run: 28/28 tests pass (see above) vs the driver override src/skills/overrides/yukiko.json.
+RED phase (pre-override, new unit): suite failed "yukiko: no override on disk" — the honest RED state.
+Post-fix history: 3 float-precision failures (1.9001000000000001 vs 1.9001 — fixed via toFixed(6) reader) and 1 heal-phase failure (engine heal fires its first tick on the block frame; the kit's "Activates every 3 sec" reads first activation at cast+3s — fixed with block delaySec 3, matching the interval first-fire phase convention).

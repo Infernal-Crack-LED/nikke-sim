@@ -1,0 +1,142 @@
+{
+  "slug": "yukiko",
+  "kitDescription": "Yukiko is a Fire MG attacker whose kit mixes sustained self-buffs with a Wind-conditional burst payoff. From battle start she permanently gains 55.31% Attack Damage, heals all allies every 3 seconds through her Persona, and re-arms a 15-second 65.37% ATK buff at battle start and every time a Full Burst ends. When she uses her burst she deals 1258.79% of final ATK as distributed damage to all enemies and enters the Scarlet Flower state until that Full Burst ends, during which she heals allies every 3 seconds and gains 90.01% Distributed Damage (her Fire Amp), which boosts her own burst nuke. She also gains 48.15% Elemental Advantage Attack Damage for 10 seconds every time the chain enters Burst Stage 3, which only pays off against Wind bosses. If a Wind Code enemy is present when she bursts, '1 More' triggers: she gains 45.33% ATK for 10 seconds, her Skill 1 fires a 400.31% distributed hit, and her Follow Up would grant 80.25% of her ATK to other Burst-III allies in the Persona state — a target set no current roster unit satisfies.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Persona - Konohana Sakuya: continuous",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim: named state container, no Persona-state primitive; the heal it wraps IS modeled",
+        "blindSaid": "S6 implicitly folds it into the interval heal block; S2b listed it unmodeled-verbatim",
+        "formulaCheck": "display-only at scope (nothing dispels); no engine consumer",
+        "fireRateOk": true,
+        "explanation": "Container line with no mechanical payload beyond the wrapped heal; documented, not dropped."
+      },
+      {
+        "kitLine": "Media: heals all allies every 3 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval sec:3, target allies, heal event; magnitude 5.7% verbatim in unmodeled (no HP pool)",
+        "blindSaid": "S6 identical block; S5 pins ~3s cadence via crown's recovery consumer (≥10-event delta, heal-off removes it)",
+        "formulaCheck": "heal emits recovery events; on-recovery consumers (crown attackDamagePct 20.99) read the event, never the amount — driver Y1 asserts ≥58 firings on the exact 3s grid with first fire at t=3 (engine interval phase convention)",
+        "fireRateOk": true,
+        "explanation": "Cadence, target set, and consumer wiring all verified two independent ways; magnitude is a documented gap, which is the correct split."
+      },
+      {
+        "kitLine": "ATK ▲ 65.37% for 15 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "two blocks: battleStart + fullBurstEnd, atkPct 65.37, durationSec 15, self",
+        "blindSaid": "S6 identical; S2b specced exactly this with fullBurstEnter as the nearest-wrong",
+        "formulaCheck": "plain ATK ▲ dilutes into the (1+ATK%) sum — correct bucket; driver Y2 asserts application frames == {0} ∪ fullBurstEnd frames and expires = apply+900; battle-start-only counterfactual fires exactly once",
+        "fireRateOk": true,
+        "explanation": "Trigger identity (FB END, not enter) is the load-bearing read and is pinned against both wrong models."
+      },
+      {
+        "kitLine": "1 More: 400.31% distributed",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + bossElementGate Wind, flatDamage 400.31 distributed; documented caveat that engine slot order (skill1 before skill2) keeps the same-cast Fire Amp off this hit, with a popup-measurement recipe",
+        "blindSaid": "S6 identical encoding (same slot order → same amp exclusion); S5 asserts zero events vs Fire boss and liveness when the gate is stripped",
+        "formulaCheck": "distributed flavor → reads Distributed Damage ▲ buffs and the Taken-bucket distributed term; skill damage: crits at caster rate, no core/range — all consistent; gate-inert vs the Fire control boss as specced",
+        "fireRateOk": true,
+        "explanation": "Wind-gate wiring verified by inertness + gate-removal liveness from both suites. The amp-exclusion on this hit is a documented engine-order artifact, convergent with the blind encoding — recorded, not a gotcha."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Attack Damage ▲ 55.31% continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "battleStart, attackDamagePct 55.31, no expiry, self",
+        "blindSaid": "S6 used trigger passive — behaviorally identical at scope (frame 0, no expiry); S5 asserts removal moves only yukiko's total and zero leaked applications",
+        "formulaCheck": "attackDamagePct is the DamageUp-bucket additive term — the right bucket; atkPct misplacement is S2b's named nearest-wrong and the driver's encoding avoids it",
+        "fireRateOk": true,
+        "explanation": "Kit says 'Activates at the start of battle' — driver's battleStart is the more literal trigger; no behavioral divergence from the blind's passive."
+      },
+      {
+        "kitLine": "Mediarama: heals every 3 sec in state",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + delaySec 3, heal ticks:3 intervalSec:3 → activations at cast+3/+6/+9s, inside the 622f state window (a +12s tick would fall past FB end); phase convention ⚑-flagged in caveats",
+        "blindSaid": "S6 encoded a SINGLE instant heal on the cast frame — and its own caveat claims ticks the block does not carry (flag/block inconsistency); S5 asserted only that a second heal source exists",
+        "formulaCheck": "kit says 'Activates every 3 sec' — a one-shot cast-frame heal contradicts the prose; the driver's 3-tick reading matches the prose and the engine's interval first-fire convention (t=sec); driver Y5d pins exact frames cast+180/360/540 and nothing outside cast windows",
+        "fireRateOk": true,
+        "explanation": "Driver divergence from the blind is corroborated by the prose: the blind's instant-heal block is a misread (RECON-class on the blind side). First-tick phase is a flagged convention, documented."
+      },
+      {
+        "kitLine": "Fire Amp: Distributed Damage ▲ 90.01%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, distributedDamagePct 90.01, durationSec 10.37 (622f = measured 22f pre-delay + 10s FB), self; covers the same-cast nuke per cited U10 same-cast rule",
+        "blindSaid": "S6 same stat/value, durationSec 10.4 (624f — 2 frames past FB end); S5 SKIPPED the same-cast-amp-on-nuke question as measurement-gated",
+        "formulaCheck": "distributedDamagePct is the flavor-gated DamageUp member — the nuke reads ×1.9001 while MG normals are byte-identical (driver Y5 proves both); amp-as-attackDamagePct counterfactual lifts normals and fails. Same-cast application to the nuke: SSOT is silent for this exact shape (measured rule covers earlier-cast buffs and FB-entry auras); S2b independently specced amp-before-hit as the faithful model, and in-game the state is active during its own burst",
+        "fireRateOk": true,
+        "explanation": "Flavor scoping and window are verified; the same-cast ordering direction rests on the driver's U10 citation, which I cannot independently verify from the packet — S5 explicitly declined to pin it. Documented with a popup recipe; listed as the top owner spot-check, not a gotcha."
+      },
+      {
+        "kitLine": "Scarlet Protection: Water taken ▼17.95%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim: no incoming-damage model, offense-inert, no consumer",
+        "blindSaid": "S6 unmodeled verbatim identically; S2b UNMODELED; S5 skip",
+        "formulaCheck": "defensive damage-taken reduction; v1 engine models no incoming damage — inert by construction",
+        "fireRateOk": true,
+        "explanation": "Unanimous across all four agents; correctly recorded, not silently dropped."
+      },
+      {
+        "kitLine": "Elem Advantage Attack Damage ▲48.15%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "stageEnter stage:3, elemAdvantageDamagePct 48.15, durationSec 10, self",
+        "blindSaid": "S6 identical; S5 ordinal discriminator (burstCast occurs between apply and the following FB start) confirms stageEnter leads the cast; S2b specced Element bucket with Fire-boss inertness",
+        "formulaCheck": "elemAdvantageDamagePct lives in the Element bucket, live only with advantage (§1c) — driver Y6 proves removal moves Wind-boss damage, is exactly inert vs Fire, and the attackDamagePct misplacement counterfactual moves the Fire-boss total (the taxonomy-#8 over-credit, discriminated)",
+        "fireRateOk": true,
+        "explanation": "Bucket placement and trigger identity both independently pinned; fires every rotation including helm-led ones as specced."
+      },
+      {
+        "kitLine": "Follow Up: ATK ▲ 80.25% of user ATK",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim with recipe: no Persona-state primitive AND no roster carrier (skill user excluded by the kit) → true target set is empty in every sim-able team; encoding ungated would actively buff any B3 ally",
+        "blindSaid": "S6 ENCODED it with alliesLowestAtk{count:4, burst III, excludeSelf} — explicitly dropping the Persona filter (its own ⚑ admits over-credit); S5 skip + zero-event inertness assert (which cannot discriminate the two encodings on a Fire boss); S2b specced GAP",
+        "formulaCheck": "casterAtkPct converts at application to a flat add of caster final ATK × 0.8025 — a large grant; the kit's target clause ('in the Persona state', 'except the skill user') makes the set provably empty today, so the driver's empty-set read is the faithful one and the blind's stand-in is the over-credit",
+        "fireRateOk": true,
+        "explanation": "Driver-wins divergence: the blind's own flag concedes the dropped filter over-credits. Driver's unmodeled-with-recipe matches S2b's GAP disposition and the prose. Not a finding against the driver."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "1258.79% distributed to all enemies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast flatDamage 1258.79 distributed; fbMajorApplied false, inFullBurst false, once per cast, crit-eligible, takes the Fire Amp (×1.9001) per documented same-cast order",
+        "blindSaid": "S6 identical block; S5 asserts one burst-bucket event per cast with fbMajorApplied !== true and >2% total drop on removal",
+        "formulaCheck": "burst-cast direct damage lands 22f before FB opens — no +50%, no entry auras (MEASURED boundary rule, §1b); distributed flavor reads the Distributed bucket correctly; amp interaction documented (see skill2 Fire Amp finding)",
+        "fireRateOk": true,
+        "explanation": "Timing, flavor, magnitude and cadence all verified; the only soft edge is the documented same-cast amp ordering."
+      },
+      {
+        "kitLine": "1 More: ATK ▲ 45.33% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + bossElementGate Wind, atkPct 45.33, durationSec 10, self",
+        "blindSaid": "S6 identical; S5 asserts zero applications vs Fire boss and ≥2 with stat atkPct once the gate is stripped; S2b named the dropped-gate cascade the top shared-prior risk",
+        "formulaCheck": "generic ATK ▲ into the (1+ATK%) sum — correct; the gate keeps the entire 1 More cluster inert on the Fire control fixture, verified by both suites; re-key recipe (if 1 More fires on any weakness hit) documented in caveats",
+        "fireRateOk": true,
+        "explanation": "Gate, value, duration and target all convergent across driver, both blinds, and the reviewer."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: every kit line is either FAITHFUL against prose + formula or a verbatim DOCUMENTED_GAP with a recipe, and the S5 blind suite runs GREEN (10 pass / 5 self-documented skips / 0 fail) against the shipped override. The two blind divergences resolve in the driver's favor: the blind's Follow Up encoding drops the Persona-state filter its own flag admits over-credits (the kit's 'except the skill user' + 'in the Persona state' clauses make the target set provably empty on today's roster, so the driver's unmodeled-with-recipe is the faithful read, matching S2b's GAP disposition), and the blind's single-instant Mediarama contradicts the kit's 'Activates every 3 sec' where the driver's 3-tick +3/+6/+9s encoding matches prose and is frame-pinned. Discrimination holds: every load-bearing assertion fails under its named nearest-wrong (battle-start-only ATK, burst-keyed heal cadence, ungated 1 More, amp-as-attackDamagePct, elemAdv-in-DamageUp, gate removal) and counterfactuals assert non-vacuity. Three same-model residuals for the owner to spot-check: (1) the same-cast Fire-Amp-on-nuke ordering — driver pins amp-applies citing the U10 measured rule, but S5 independently judged exactly this MEASUREMENT-GATED and the packet's SSOT only settles earlier-cast buffs and entry auras; S2b's spec supports the driver's direction, so this is a documented, directionally-corroborated pin — one Wind-boss focus-video popup of the nuke with/without the amp closes it; (2) the '1 More = own burst vs Wind' reading converged across all agents but rests on a literal prose read — an ally-sourced/weakness-hit 1 More (Persona team mechanic) would re-key three lines, recipe documented; (3) the blind's flag that hitsPerShot 1 on an MG is a suspicious datamine inherit — base-stat territory, out of override scope, worth a cadence probe before trusting her MG damage share. None of these blocks GO: all are documented, none is an undocumented divergence from prose or formula.",
+  "model": "kimi-code/k3"
+}

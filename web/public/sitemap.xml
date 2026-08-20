@@ -121,6 +121,10 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://nikkesim.app/unit/aigis</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://nikkesim.app/unit/alice</loc>
     <priority>0.7</priority>
   </url>
@@ -870,6 +874,10 @@
   </url>
   <url>
     <loc>https://nikkesim.app/unit/yan</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://nikkesim.app/unit/yukiko</loc>
     <priority>0.7</priority>
   </url>
   <url>

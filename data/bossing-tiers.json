@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-18",
+  "updated": "2026-08-20",
   "source": "bakery-bot DB nikke_characters.prydwen_tiers.bossing",
   "tiers": {
     "2b": "B",
@@ -8,6 +8,7 @@
     "ade": "D",
     "ade-agent-bunny": "S",
     "admi": "D",
+    "aigis": "?",
     "alice": "S",
     "alice-wonderland-bunny": "B",
     "anchor": "F",
@@ -196,6 +197,7 @@
     "viper": "B",
     "volume": "A",
     "yan": "E",
+    "yukiko": "?",
     "yulha": "B",
     "yuni": "F",
     "zwei": "S",

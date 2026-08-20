@@ -1,0 +1,107 @@
+{
+  "slug": "anne-miracle-fairy",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Restores HP = 6.07% of attack damage",
+      "disposition": "FAITHFUL",
+      "scope": "Lifesteal-style recovery for Supporter allies; HP amounts are unmodeled (no HP pool), so the modeled surface is the heal-EVENT emission that fires recipients' 'recovery' triggers (tandem rule — never skip heal lines on isolation).",
+      "durationSemantics": "'Lasts for 5 sec' = durationSec 5 wall-clock window (a lifesteal/HoT window, not rounds — the word 'sec' is literal). If encoded as a heal, ticks over the window (e.g. ticks with intervalSec 1) better preserves on-recovery refresh semantics than a single instant event.",
+      "triggerIdentity": "hitCount count:3 — 'Activates after 3 normal attacks', repeating every 3. RL hitsPerShot 1 so rounds == trigger pulls (perPull moot). NOT interval, NOT once-only, NOT shotFired.",
+      "targetSet": "alliesOfClass 'Supporter' (includes Anne herself — she is a Supporter). Crown (Defender) and any Attacker are EXCLUDED.",
+      "nearestWrongModel": "Target flattened to 'allies' (all) — every 3-shot proc then emits a recovery event to crown (Defender, the roster's on-recovery consumer), lighting her recovery-gated team buffs and over-crediting the whole comp. Secondary misread: a once-only trigger instead of repeating every-3.",
+      "distinguishingAssertion": "With crown in the comp, count crown's recovery-triggered buffApply events with the shipped override vs skill1 stripped via withPatchedOverride — the counts MUST be equal (green under Supporter-scoped target, red under an 'allies' misread). Structural: skill1 block has trigger {kind:'hitCount',count:3} and target {kind:'alliesOfClass',cls:'Supporter'}.",
+      "inertness": "totals() for every unit unchanged when skill1 is stripped (no Supporter in a standard fixture consumes recovery); crown receives ZERO recovery events from Anne's skill1.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Incoming Healing ▲ 23.46%",
+      "disposition": "UNMODELED",
+      "scope": "Healing-received stat on allies; no StatKey exists for incoming healing and heal AMOUNTS are unmodeled, so the line has no consumer.",
+      "durationSemantics": "Conditional passive — active while above 90% HP; at scope lock nobody takes damage so the gate is permanently satisfied (still inert).",
+      "triggerIdentity": "HP-threshold passive ('Activates when above 90% HP') — always-true at scope; do NOT invent an HP-tracking primitive for it.",
+      "targetSet": "All allies (including self).",
+      "nearestWrongModel": "Pattern-matching the ▲ into some modeled stat (attackDamagePct or similar) or into a heal effect on an invented cadence — spurious buffApply / recovery traffic from a line that should emit nothing.",
+      "distinguishingAssertion": "Event log contains NO buffApply and no recovery-consumer movement sourced from Anne's skill2 block A; totals identical with skill2 stripped via withPatchedOverride.",
+      "inertness": "Zero damage movement, zero events. Verbatim line must appear in unmodeled.skill2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Incoming Healing ▼ 78.93% for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Debuff on healing RECEIVED by enemies; the boss never heals in this sim, so it is inert. There is also no incoming-healing StatKey.",
+      "durationSemantics": "Would-be durationSec 10 — irrelevant while unmodeled.",
+      "triggerIdentity": "lastBullet (per-magazine; ammo 6 → every 6th round / reload start), gated on OWN HP ≥ 90% (always true at scope — no incoming damage).",
+      "targetSet": "All enemies (a boss-held debuff — would emit buffApply with casterIdx===null if it were modeled).",
+      "nearestWrongModel": "The catastrophic pattern-match: '▼ on all enemies' encoded as damageTakenPct 78.93 boss debuff, refreshed every magazine — a massive team-wide over-credit. This is the single most dangerous misread in the kit.",
+      "distinguishingAssertion": "NO buffApply with stat 'damageTakenPct' matching value 78.93 (casterIdx===null) appears at Anne's last-bullet cadence; totals for ALL FIVE units are identical with skill2 stripped (red by a huge margin under the damageTaken misread).",
+      "inertness": "Entire comp's damage unmoved by skill2's existence.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Restores HP = 38.61% of user's max HP",
+      "disposition": "FAITHFUL",
+      "scope": "An instant HEAL ('Restores HP'), NOT a Max HP grant — must not be encoded as casterMaxHpPct/targetMaxHpPct. Modeled surface is the heal-event emission to Attacker allies (fires their 'recovery' triggers).",
+      "durationSemantics": "Instant, one event per burst cast — no duration on the heal itself.",
+      "triggerIdentity": "burstCast (Anne's OWN Burst II cast), NOT fullBurstEnter — burst-cast effects land before the Full Burst window opens.",
+      "targetSet": "alliesOfClass 'Attacker' — excludes Anne (Supporter) by class, excludes crown (Defender) and liter (Supporter).",
+      "nearestWrongModel": "(i) Encoded as a casterMaxHpPct Max-HP BUFF — emits spurious buffApply {stat:'maxHpFlat'} instead of a heal event; (ii) target flattened to 'allies', feeding crown's on-recovery trigger every rotation.",
+      "distinguishingAssertion": "No buffApply with stat 'maxHpFlat' is sourced from Anne's burst; crown's recovery-triggered buffApply count is identical with this heal effect stripped. Structural: burst block carries {kind:'heal'} with target {kind:'alliesOfClass',cls:'Attacker'} on a burstCast trigger.",
+      "inertness": "Crown receives zero recovery events from Anne's burst; zero maxHpFlat buffApply traffic from Anne.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 77.22% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK buff — atkPct (scales each TARGET's own ATK). No normal-attack / charge / crit scoping in the text.",
+      "durationSemantics": "durationSec 10 — expiresFrame − applyFrame = 600 at 60fps. Not rounds, not stacks.",
+      "triggerIdentity": "burstCast (stage 2, Anne's own cast). Buff applies PRE-Full-Burst — the apply frame precedes the following fullBurstStart by the measured chain gap (30f B2→B3 + 22f → FB), so the 10s window covers slightly different shots than a fullBurstEnter keying would.",
+      "targetSet": "alliesOfClass 'Attacker' ONLY — Anne (Supporter), liter (Supporter), crown (Defender) must never hold it.",
+      "nearestWrongModel": "(i) Target 'allies' — over-credits liter/crown/self; (ii) fullBurstEnter keying — window starts ~0.9s late AND fires on FBs Anne didn't burst into whenever another Burst II unit casts; (iii) casterAtkPct — a flat add off Anne's Supporter staticAtk (98,367) instead of scaling each Attacker's own ATK, which also changes the emitted buffApply value from raw 77.22 to a flat-resolved ATK number.",
+      "distinguishingAssertion": "Every buffApply {stat:'atkPct', value:77.22} from Anne's burst has targetSlug in the Attacker-class set only; the apply frame is STRICTLY BEFORE the next fullBurstStart frame; expiresFrame − applyFrame === 600; the emitted value is the raw 77.22 (atkPct is a plain-percentage stat, not flat-resolved). Red under any of the three misreads.",
+      "inertness": "liter, crown, and Anne herself receive no atkPct 77.22 buffApply; non-Attacker units' totals are unmoved by stripping this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Revives with 99% HP, once per battle",
+      "disposition": "UNMODELED",
+      "scope": "Revive of an incapacitated Attacker — no unit is ever incapacitated in this sim (the boss deals no damage), so the condition can never be met.",
+      "durationSemantics": "Once per battle (would-be), conditional on an incapacitated ally existing at cast time.",
+      "triggerIdentity": "Rides the burst cast, gated on an incapacitated-Attacker condition that is never satisfiable at scope.",
+      "targetSet": "1 incapacitated Attacker ally at random.",
+      "nearestWrongModel": "Emitting a heal/recovery event to a random Attacker on every burst while ignoring the incapacitated gate — spurious recovery traffic on top of burst line 1's legitimate heal.",
+      "distinguishingAssertion": "Anne's burst emits exactly ONE heal-shaped effect (the 38.61% line) — no second recovery emission; the revive line appears verbatim in unmodeled.burst.",
+      "inertness": "Zero events, zero damage from this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Restores HP = 6.07% of attack damage",
+    "burst:Restores HP = 38.61% of user's max HP",
+    "burst:ATK ▲ 77.22% for 10 sec"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Incoming Healing ▲ 23.46%.",
+      "Incoming Healing ▼ 78.93% for 10 sec."
+    ],
+    "burst": [
+      "Revives with 99% HP. Activates once per battle."
+    ]
+  },
+  "notes": "FIXTURE HAZARD (reconcile first): Anne is Burst II, and controlComp's fixed comp already carries crown in the B2 slot — a second B2 means only one casts per rotation, and if Anne never casts, BOTH burstCast-keyed load-bearing lines silently never fire and every test goes vacuously green. The driver must either build the comp so Anne is the casting B2 or assert burstCast events with her srcSlot before asserting anything downstream. OBSERVABILITY: cfg.onEvent has NO heal/recovery event kind (shot/damage/buffApply/buffRemove/reload/burstCast/fullBurstStart/fullBurstEnd), so heal emissions are observable only through a consumer's buffApply — the natural probe is crown (Defender, on-recovery consumer), and the sharp adversarial fact is that crown sits in NEITHER of Anne's class-scoped heal target sets (Supporter for S1, Attacker for burst), so the class scoping is damage-VISIBLE in the fixture: assert crown's recovery-driven buffApply count is invariant to Anne's presence/stripping. Expected shared-prior misreads, in order of damage: (1) 'Incoming Healing ▼ 78.93%' on all enemies pattern-matched into a damageTakenPct boss debuff — guard with a whole-comp totals-invariance assertion under a skill2 strip; (2) class-scoped 'all Attacker/Supporter allies' flattened to 'allies' — guarded via the crown probe; (3) the burst ATK buff keyed to fullBurstEnter instead of burstCast — guarded by the apply-frame < fullBurstStart assertion. HP gates ('above 90%' / '90% or above') are permanently satisfied at scope lock (no incoming damage) — encoding them as always-on is correct today; do not invent an HP-tracking primitive. All magnitudes are kit-text literals (DATAMINED); none of the ALWAYS-⚑ fields are implicated by these lines. Environment note: no tools were available, so this JSON could not be written to scripts/kit-autonomy/reviews/anne-miracle-fairy.test-review.json — the orchestrator must persist it.",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,200 @@
+{
+  "note": "NEW unit (no base counterpart) — Persona-style kit ('1 More', 'Persona state'). SKILL1: the every-3s Media heal is MODELED as recovery EVENTS (interval 3s, all allies) — the magnitude (5.7% of the skill user's final max HP) has no engine consumer (no HP pool), but the events are board-relevant: they drive on-recovery consumers (crown's 'when recovery takes effect' team Attack Damage). The battle-start + Full-Burst-end ATK ▲ 65.37%/15s is two blocks on the two named triggers. The 'when 1 More takes effect' 400.31% distributed hit keys to THE 1 MORE EVENT — her own burst cast against a Wind boss (burstCast + bossElementGate Wind): her burst's own '1 More' line activates 'if a Wind Code enemy is present', and Fire's elemental advantage over Wind is the weakness hit; S1/S2's 'when 1 More takes effect' clauses key to that same event. SKILL2: battle-start Attack Damage ▲ 55.31% is permanent (battleStart, no duration). The Scarlet Flower state activates on Burst Skill use and DEACTIVATES when Full Burst ends — encoded as burstCast-keyed blocks with the window derived from the engine's measured FB timing (cast → FB end = 22f pre-delay + 10s FB = 622f ≈ 10.37s): Mediarama heal (3 ticks at +3/+6/+9s, event-only), Fire Amp distributedDamagePct 90.01 (own multiplicative bucket, flavor-gated to her distributed hits), and the stage-3-entry Elemental Advantage Attack Damage ▲ 48.15%/10s sits in the ELEMENT bucket (elemAdvantageDamagePct — active only while advantaged; a Damage-Up placement is the classic over-credit and is discriminated in the spec test). BURST: the 1258.79% distributed nuke is cast-instant (no +50% Full Burst major — the cast lands 22f before FB opens), TAGGED burstDesc 'allEnemies' (her clause is the literal string trina's Burst-Skill-Damage amp quotes — literal-only per owner ruling 2026-08-10 — so the nuke is amp-eligible; the skill1 1 More hit stays untagged, amps never reach skill procs), and takes the Fire Amp by the measured same-cast rule (U10: live buffs at cast DO apply; the skill2 state block resolves before the burst slot on the cast frame). The 1 More ATK ▲ 45.33%/10s is Wind-gated. Kit-autonomy gauntlet 2026-08-19: cross-family S2b (claude-fable-5) independent review converged FAITHFUL on all 9 load-bearing lines (leakDetected null); the two non-encodable lines (Scarlet Protection damage-taken reduction; the Follow Up grant to 'standard Burst 3 allies in the Persona state') are verbatim in unmodeled with recipes — the Follow Up has no Persona-state primitive to gate on and no roster carrier, so its target set is empty in every sim-able team today.",
+  "unmodeled": {
+    "skill1": [
+      "Persona - Konohana Sakuya: This effect is continuous and cannot be removed. — named state container: the engine has no Persona-state primitive. The healing function it wraps IS modeled (skill1 interval block — recovery events every 3s to all allies); the state NAME / undispellable flag is display-only at scope (nothing dispels).",
+      "Function: Yukiko heals her allies using her Persona. — same state wrapper; the healing function is the modeled interval block above.",
+      "Media: Restores HP equal to 5.7% of the skill user's final max HP. — magnitude only: no HP pool is modeled, so the number has no engine consumer; the recovery EVENT is modeled, which is the board-relevant half (on-recovery consumers read the event, never the amount)."
+    ],
+    "skill2": [
+      "Scarlet Flower: This effect is continuous and cannot be removed. Function: Yukiko strengthens herself. — named state container; its three effects and its cast→Full-Burst-end window ARE modeled (skill2 burstCast blocks, 622f window). 'Continuous and cannot be removed' reads UNDISPELLABLE, not unending — the kit's own deactivation condition ('When Full Burst ends') ends it.",
+      "Effect 1: Mediarama: Restores HP equal to 5.7% of the skill user's final max HP. — magnitude only (no HP pool); the recovery EVENTS are modeled (3 ticks per state window, +3/+6/+9s).",
+      "Effect 3: Affects self. Scarlet Protection: Damage taken from Water Code enemies ▼ 17.95% continuously. This effect cannot be removed. — defensive: the v1 engine models no incoming damage (the boss deals none), so the line is offense-inert and has no consumer.",
+      "■ Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state. Follow Up: ATK ▲ 80.25% of the skill user's ATK for 25 sec. — no Persona-state primitive exists and NO roster unit carries Persona state (the skill user is excluded by the kit's own targeting), so the target set is empty in every team the sim can field today; encoding it without the Persona gate would wrongly grant the buff to ANY Burst 3 ally. Recipe when Persona-state units land: add a persona-state tag + target filter, then encode on the 1 More event (burstCast + bossElementGate 'Wind', target = B3 allies minus self, buff casterAtkPct 80.25, durationSec 25)."
+    ],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 3
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "battleStart"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 65.37,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 65.37,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "bossElementGate": "Wind",
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 400.31,
+          "flavor": "distributed"
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "battleStart"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 55.31
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "delaySec": 3,
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 3,
+          "intervalSec": 3
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 90.01,
+          "durationSec": 10.37
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 48.15,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1258.79,
+          "flavor": "distributed",
+          "burstDesc": "allEnemies"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "bossElementGate": "Wind",
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 45.33,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "skill1/burst: the three '1 More' lines (S1 400.31% hit, burst ATK ▲ 45.33%, and the unmodeled Follow Up) all key to ONE event — her burst cast against a Wind boss (bossElementGate 'Wind'). If footage shows 1 More triggering on ANY elemental-weakness hit (not just her burst), re-key S1/S2 to that event.",
+    "skill2: the Scarlet Flower window is encoded as durationSec 10.37 — DERIVED from the engine's measured Full Burst timing (cast → FB end = 22f pre-delay + 10s window = 622 frames), not from a kit number; the kit gives only the deactivation condition ('when Full Burst ends'). A Full Burst extension from another unit would not stretch this window (no 'until FB end' duration primitive).",
+    "skill1/skill2/burst: cast-frame simultaneity — the engine resolves blocks skill1 → skill2 → burst on the cast frame, so the Fire Amp (skill2) DOES cover the burst nuke (matching the measured same-cast rule, U10) but NOT the S1 400.31% 1 More hit (skill1 resolves first). In game all three land simultaneously; a focus-video popup of the 400.31% hit vs a Wind boss decides whether the amp should reach it.",
+    "burst: the 1258.79% nuke is TAGGED burstDesc 'allEnemies' — her clause is the literal string trina's amp quotes ('Burst Skill damage of skills with \"Affects all enemies\"', owner ruling 2026-08-10: literal-only), so the nuke is amp-eligible whenever such an amp is live. The skill1 400.31% 1 More hit stays untagged: the amps amplify Burst Skill damage only, never skill procs. Enforced roster-wide by scripts/tests/census-burst-amp-scope.test.ts.",
+    "skill1/skill2: heals are event-only — no HP amounts are modeled, so the 5.7% magnitudes are unmodeled; the recovery events drive on-recovery consumers (crown), which is the board-relevant half. The state heal carries delaySec 3 so its first activation lands 3 sec AFTER the state activates ('Activates every 3 sec' — the engine's interval first-fire phase convention, t=sec not t=0; ⚑ a focus video can pin the phase).",
+    "skill2: the Mediarama window (delaySec 3 + 3 ticks at 3s) ends at cast+9s, inside the 10.37s Scarlet Flower window — a fourth tick at +12s would fall after Full Burst ends, so the kit's 'every 3 sec' inside the state produces exactly three activations per cast."
+  ]
+}

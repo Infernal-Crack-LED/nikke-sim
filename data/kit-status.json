@@ -647,6 +647,50 @@
         "temp": "COLD ▼"
       }
     },
+    "anne-miracle-fairy": {
+      "name": "Anne: Miracle Fairy",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-19",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-19: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/anne-miracle-fairy.json + scripts/kit-autonomy/manual-review/anne-miracle-fairy.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "date": "2026-08-19",
+      "evidence": "kit-autonomy gauntlet 2026-08-19; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; blind S5 suite 10 pass / 5 RED all ruled RECON_ERROR by the judge (contested-B2 fixture vacuity + crown/helm fixture artifacts) / 4 self-documented skips vs driver override; blind S6 override 3/3 load-bearing blocks identical",
+      "residual": "spot-check cluster: (1) S1 tick granularity — ticks:5/intervalSec:1 approximates the kit's per-ATTACK healing inside the 5-sec window at the ~1-shot/sec RL cadence; presently inert (no Supporter-class recovery consumer exists), re-derive from footage if one ever ships; (2) cadence tuple datamine (RL pullsPerSec / reloadFrames 141 / chargeFrames 60) — rounds/min + reload gap from any anne focus video; (3) the revive is META-DEFINING but unmodeled (no death/revive/HP-pool primitive) — the kit's entire real-play raid value is outside the sim",
+      "unmodeled": {
+        "skill1": [
+          "Restores HP equal to 6.07% of attack damage. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill1 slot), which is the board-relevant half — on-recovery consumers read the event, never the amount."
+        ],
+        "skill2": [
+          "■ Affects all allies. Activates when above 90% HP.\nIncoming Healing ▲ 23.46%. — doubly unrepresentable: the self-HP gate has no HP pool to read, and there is no incoming-healing StatKey nor any HP pool for it to amplify. Inert at v1 scope (healing has no engine model).",
+          "■ Activates when the last bullet hits the target while this unit's HP is at 90% or above. Affects all enemies.\nIncoming Healing ▼ 78.93% for 10 sec. — unrepresentable: the self-HP gate has no HP pool to read, and there is no enemy-incoming-healing model (the boss never heals — no enemy healing mechanic exists). Inert at v1 scope. NOT pattern-matchable into a damageTakenPct boss debuff — that is a DIFFERENT mechanic and would wrongly credit the whole team (cross-family S2b flagged this as the kit's most dangerous misread)."
+        ],
+        "burst": [
+          "Restores HP equal to 38.61% of the skill user's final max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.",
+          "■ Affects 1 incapacitated Attacker ally unit(s) at random.\nRevives with 99% HP. Activates once per battle. — ⚑ UNMODELED, meta-defining: the v1 engine has no death/revive/HP-pool primitive (immortal boss, no ally is ever incapacitated), so the condition can never fire. Offensively inert at scope; in real play this line is the reason Anne is fielded. Estimate: zero damage impact — the entire raid value of the kit is unmodeled. Recipe: needs an HP pool + a death/revive model before it can be enacted. Tier: meta-defining (rapunzel resurrect precedent)."
+        ]
+      },
+      "caveats": [
+        "skill1: the 5-sec Fairy Dance window is approximated as one recovery event per second (ticks:5 intervalSec:1) — the kit heals per ATTACK inside the window ('6.07% of attack damage'); at the ~1-shot/sec RL cadence (chargeFrames 60) the two coincide, so the per-window event count tracks the kit while the cadence is datamine-estimated. ⚑ presently inert: no Supporter-class on-recovery consumer exists in the roster, so nothing reads these events today (biscuit's Supporter-lifesteal precedent class).",
+        "skill1/burst: cadence tuple (mandatory ⚑, datamine-unreliable): RL pullsPerSec / reloadFrames 141 / chargeFrames 60 — drives the every-3-normals S1 proc cadence and gauge fill; NOT escalated (6-shot RL at class charge rate — quiry precedent). Recipe: rounds/min + reload gap from any anne-miracle-fairy focus video.",
+        "burst: both lines key to her OWN burst cast (burstCast, not fullBurstEnter — the Burst-II trap); the ATK buff therefore applies ~0.9s BEFORE the Full Burst window opens (the stage-3 cast + FB-start lag rides inside its 10s window), which is the kit-faithful coverage, not an approximation.",
+        "skill2: the 'above 90% HP' / '90% or above' gates would be permanently satisfied at scope lock (nobody takes damage), but both lines are unmodeled regardless (no incoming-healing StatKey, no enemy-healing model), so the gate representation is moot."
+      ],
+      "note": "No real-fight recording yet — every ⚑ below is an unmeasured estimate. Structure is test-pinned (scripts/tests/units/anne-miracle-fairy.test.ts). anne-miracle-fairy (Anne: Miracle Fairy) — RL/Wind/Supporter/Burst II, cd 60s, ammo 6, chargeFrames 60, reloadFrames 141, Missilis. NEW unit (no base counterpart) — a PURE sustain/support kit: no damage effect, no DoT, no weapon swap, no ammo/reload/fire-rate modifier, no gauge line. MODELED TODAY: (1) skill1 Fairy Dance — every 3 normal attacks (hitCount 3; hitsPerShot 1 so hits == pulls) opens a 5-sec healing window for all SUPPORTER-class allies (includes Anne herself): encoded as a heal effect with ticks:5 intervalSec:1 (one recovery event per second across the window ≈ the kit's per-attack healing at the ~1-shot/sec RL cadence; ⚑ granularity estimate). The 6.07%-of-attack-damage MAGNITUDE rides in unmodeled (no HP pool) — the block exists for its TANDEM value (it would fire Supporter-class teammates' 'recovery' triggers); no Supporter on-recovery consumer exists in the roster today, so the channel is faithfully encoded but presently inert. (2) burst line 1 — all ATTACKER-class allies: heal on her own burstCast (one recovery event per cast; the 38.61%-of-caster-final-max-HP magnitude unmodeled, event-only like every heal). (3) burst line 2 — all ATTACKER-class allies: ATK ▲ 77.22% for 10s (atkPct, plain target-% stat; the kit's only damage-relevant line), keyed to her OWN burstCast — the Burst-II trap (fullBurstEnter would shift the window ~0.9s late and mis-attribute rotations another Burst II took) is pinned structurally and by frame identity in the spec. DELIBERATELY UNMODELED (verbatim in `unmodeled`): both skill2 lines — the allies' Incoming Healing ▲ 23.46% (self-HP >90% gate + no incoming-healing StatKey + no HP pool: doubly unrepresentable, inert) and the enemies' Incoming Healing ▼ 78.93%/10s on last-bullet-with-own-HP≥90% (HP gate + no enemy-healing model — the boss never heals; explicitly NOT a damageTakenPct debuff, which would be the catastrophic pattern-match); and the burst RESURRECT of 1 incapacitated Attacker at 99% HP once per battle (⚑ meta-defining: no death/revive/HP-pool primitive — rapunzel precedent; zero damage impact, the entire real-play value of the kit unmodeled, recipe recorded). EVIDENCE TIER: all live values are kit-text-literal (3 / 5-sec / 77.22 / 10s — DATAMINED L10); the only estimates are the S1 tick granularity and the cadence tuple. FAITHFULNESS CORE: damage-neutrality for her OWN damage — she sims byte-identical to the bare weapon for her own total (proven in the spec, group A1); her board footprint is entirely cross-unit: the Attacker-class ATK grant (live) plus two class-scoped recovery channels (tandem-only). TIER 2 (class-scoped buffs ×3 lines, burstCast-vs-fullBurstEnter trigger identity, meta-defining revive ⚑). Kit-autonomy gauntlet 2026-08-19."
+    },
     "arcana": {
       "name": "Arcana",
       "burst": "II",
@@ -8481,6 +8525,53 @@
       },
       "note": "Yan (slug yan — the unique roster entry with this base name, lint-clean; NOT rei-ayanami / rei-ayanami-tentative-name) — Tetra Fire RL Supporter, Burst I, 20s CD, ammo 6, chargeFrames 90, reloadFrames 141, normalMult 61.3, chargeMultiplier 350. FROM-SCRATCH kit-autonomy build 2026-08-05 (no prior override; baseline was bare weapon, simSupported:false). S1 'Struck Dumb': 'Activates at the beginning of Full Burst' = fullBurstEnter (the FB window opening), NOT burstCast — her B1 cast lands BEFORE the window opens (helm H7 precedent), and fullBurstEnter fires on every team rotation regardless of who cast B1, faithful to the any-team-FB wording. chargeDamagePct is additive percentage points in the charge bucket (the kit says 'Charge Damage ▲' — a flat additive, not chargeDamageMultPct which would scale base charge damage); it pays off only on charged hits (her own RL normals and any RL/SR teammate's), and is held inert by non-charge allies. S2 'The More, the Merrier': 'when performing a Full Charge attack' = shotFired — every RL trigger pull IS a full charge (pinned in the unit test: every `shot` event of hers carries charged:true; frima precedent for the SR analogue). ATK ▲2.77% is plain atkPct (a percentage of each target's OWN ATK, not a flat add off the caster's ATK). Critical Rate ▲1.33% is the UNSCOPED critRatePct (no 'of normal attacks' wording — the inverse of the usual scope trap; it lifts every ally's crit on every bucket). The kit names NO stack counter: default maxStacks 1, so re-fires REFRESH the 5s window without stacking; her ~1.9s/shot cadence bridges the 141f reload, so near-permanent uptime is EMERGENT from refresh, not encoded as a passive (a passive would apply at t=0 before her first charge lands — rejected by test). BURST 'Fat Cat': burstCast → enemy flatDamage 348.73 (burst bucket; 'enemies within attack range' collapses to the single scope-lock boss). The B1 cast precedes the FB window, so the nuke never takes the +50% FB major. Cross-family: S2b claude-fable-5, S5/S6 claude-opus-5, S7 kimi-code/k3. Kit-autonomy gauntlet 2026-08-05.",
       "board": null
+    },
+    "yukiko": {
+      "name": "Yukiko",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-19",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-19: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/yukiko.json + scripts/kit-autonomy/manual-review/yukiko.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Persona - Konohana Sakuya: This effect is continuous and cannot be removed. — named state container: the engine has no Persona-state primitive. The healing function it wraps IS modeled (skill1 interval block — recovery events every 3s to all allies); the state NAME / undispellable flag is display-only at scope (nothing dispels).",
+          "Function: Yukiko heals her allies using her Persona. — same state wrapper; the healing function is the modeled interval block above.",
+          "Media: Restores HP equal to 5.7% of the skill user's final max HP. — magnitude only: no HP pool is modeled, so the number has no engine consumer; the recovery EVENT is modeled, which is the board-relevant half (on-recovery consumers read the event, never the amount)."
+        ],
+        "skill2": [
+          "Scarlet Flower: This effect is continuous and cannot be removed. Function: Yukiko strengthens herself. — named state container; its three effects and its cast→Full-Burst-end window ARE modeled (skill2 burstCast blocks, 622f window). 'Continuous and cannot be removed' reads UNDISPELLABLE, not unending — the kit's own deactivation condition ('When Full Burst ends') ends it.",
+          "Effect 1: Mediarama: Restores HP equal to 5.7% of the skill user's final max HP. — magnitude only (no HP pool); the recovery EVENTS are modeled (3 ticks per state window, +3/+6/+9s).",
+          "Effect 3: Affects self. Scarlet Protection: Damage taken from Water Code enemies ▼ 17.95% continuously. This effect cannot be removed. — defensive: the v1 engine models no incoming damage (the boss deals none), so the line is offense-inert and has no consumer.",
+          "■ Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state. Follow Up: ATK ▲ 80.25% of the skill user's ATK for 25 sec. — no Persona-state primitive exists and NO roster unit carries Persona state (the skill user is excluded by the kit's own targeting), so the target set is empty in every team the sim can field today; encoding it without the Persona gate would wrongly grant the buff to ANY Burst 3 ally. Recipe when Persona-state units land: add a persona-state tag + target filter, then encode on the 1 More event (burstCast + bossElementGate 'Wind', target = B3 allies minus self, buff casterAtkPct 80.25, durationSec 25)."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1/burst: the three '1 More' lines (S1 400.31% hit, burst ATK ▲ 45.33%, and the unmodeled Follow Up) all key to ONE event — her burst cast against a Wind boss (bossElementGate 'Wind'). If footage shows 1 More triggering on ANY elemental-weakness hit (not just her burst), re-key S1/S2 to that event.",
+        "skill2: the Scarlet Flower window is encoded as durationSec 10.37 — DERIVED from the engine's measured Full Burst timing (cast → FB end = 22f pre-delay + 10s window = 622 frames), not from a kit number; the kit gives only the deactivation condition ('when Full Burst ends'). A Full Burst extension from another unit would not stretch this window (no 'until FB end' duration primitive).",
+        "skill1/skill2/burst: cast-frame simultaneity — the engine resolves blocks skill1 → skill2 → burst on the cast frame, so the Fire Amp (skill2) DOES cover the burst nuke (matching the measured same-cast rule, U10) but NOT the S1 400.31% 1 More hit (skill1 resolves first). In game all three land simultaneously; a focus-video popup of the 400.31% hit vs a Wind boss decides whether the amp should reach it.",
+        "burst: the 1258.79% nuke is TAGGED burstDesc 'allEnemies' — her clause is the literal string trina's amp quotes ('Burst Skill damage of skills with \"Affects all enemies\"', owner ruling 2026-08-10: literal-only), so the nuke is amp-eligible whenever such an amp is live. The skill1 400.31% 1 More hit stays untagged: the amps amplify Burst Skill damage only, never skill procs. Enforced roster-wide by scripts/tests/census-burst-amp-scope.test.ts.",
+        "skill1/skill2: heals are event-only — no HP amounts are modeled, so the 5.7% magnitudes are unmodeled; the recovery events drive on-recovery consumers (crown), which is the board-relevant half. The state heal carries delaySec 3 so its first activation lands 3 sec AFTER the state activates ('Activates every 3 sec' — the engine's interval first-fire phase convention, t=sec not t=0; ⚑ a focus video can pin the phase).",
+        "skill2: the Mediarama window (delaySec 3 + 3 ticks at 3s) ends at cast+9s, inside the 10.37s Scarlet Flower window — a fourth tick at +12s would fall after Full Burst ends, so the kit's 'every 3 sec' inside the state produces exactly three activations per cast."
+      ],
+      "note": "NEW unit (no base counterpart) — Persona-style kit ('1 More', 'Persona state'). SKILL1: the every-3s Media heal is MODELED as recovery EVENTS (interval 3s, all allies) — the magnitude (5.7% of the skill user's final max HP) has no engine consumer (no HP pool), but the events are board-relevant: they drive on-recovery consumers (crown's 'when recovery takes effect' team Attack Damage). The battle-start + Full-Burst-end ATK ▲ 65.37%/15s is two blocks on the two named triggers. The 'when 1 More takes effect' 400.31% distributed hit keys to THE 1 MORE EVENT — her own burst cast against a Wind boss (burstCast + bossElementGate Wind): her burst's own '1 More' line activates 'if a Wind Code enemy is present', and Fire's elemental advantage over Wind is the weakness hit; S1/S2's 'when 1 More takes effect' clauses key to that same event. SKILL2: battle-start Attack Damage ▲ 55.31% is permanent (battleStart, no duration). The Scarlet Flower state activates on Burst Skill use and DEACTIVATES when Full Burst ends — encoded as burstCast-keyed blocks with the window derived from the engine's measured FB timing (cast → FB end = 22f pre-delay + 10s FB = 622f ≈ 10.37s): Mediarama heal (3 ticks at +3/+6/+9s, event-only), Fire Amp distributedDamagePct 90.01 (own multiplicative bucket, flavor-gated to her distributed hits), and the stage-3-entry Elemental Advantage Attack Damage ▲ 48.15%/10s sits in the ELEMENT bucket (elemAdvantageDamagePct — active only while advantaged; a Damage-Up placement is the classic over-credit and is discriminated in the spec test). BURST: the 1258.79% distributed nuke is cast-instant (no +50% Full Burst major — the cast lands 22f before FB opens), TAGGED burstDesc 'allEnemies' (her clause is the literal string trina's Burst-Skill-Damage amp quotes — literal-only per owner ruling 2026-08-10 — so the nuke is amp-eligible; the skill1 1 More hit stays untagged, amps never reach skill procs), and takes the Fire Amp by the measured same-cast rule (U10: live buffs at cast DO apply; the skill2 state block resolves before the burst slot on the cast frame). The 1 More ATK ▲ 45.33%/10s is Wind-gated. Kit-autonomy gauntlet 2026-08-19: cross-family S2b (claude-fable-5) independent review converged FAITHFUL on all 9 load-bearing lines (leakDetected null); the two non-encodable lines (Scarlet Protection damage-taken reduction; the Follow Up grant to 'standard Burst 3 allies in the Persona state') are verbatim in unmodeled with recipes — the Follow Up has no Persona-state primitive to gate on and no roster carrier, so its target set is empty in every sim-able team today.",
+      "board": null,
+      "date": "2026-08-19",
+      "evidence": "kit-autonomy gauntlet 2026-08-19; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; blind S5 suite 10 pass/5 self-documented skips vs driver override; judge ruled all 4 blind-vs-driver divergences for the driver",
+      "residual": "spot-check cluster: (1) same-cast Fire-Amp-on-nuke ordering — one Wind-boss focus-video popup of the 1258.79% nuke with/without the x1.9001 amp closes it; (2) '1 More = own burst vs Wind' literal read — an ally-sourced/any-weakness-hit 1 More would re-key three lines (recipe in caveats); (3) hitsPerShot 1 on an MG is a datamine inherit — base-stat territory, worth a cadence probe before trusting her MG damage share",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     },
     "yulha": {
       "name": "Yulha",

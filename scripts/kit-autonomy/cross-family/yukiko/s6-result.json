@@ -1,0 +1,348 @@
+{
+  "slug": "yukiko",
+  "leakDetected": null,
+  "override": {
+    "slug": "yukiko",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 3
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal"
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "battleStart"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 65.37,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 65.37,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "bossElementGate": "Wind",
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 400.31,
+            "flavor": "distributed"
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 55.31
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 3,
+            "intervalSec": 3
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "distributedDamagePct",
+            "value": 90.01,
+            "durationSec": 10.4
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "stageEnter",
+          "stage": 3
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "elemAdvantageDamagePct",
+            "value": 48.15,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesLowestAtk",
+          "count": 4,
+          "burst": "III",
+          "excludeSelf": true
+        },
+        "bossElementGate": "Wind",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 80.25,
+            "durationSec": 25
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 1258.79,
+            "flavor": "distributed"
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "bossElementGate": "Wind",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 45.33,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Effect 3: Affects self. Scarlet Protection: Damage taken from Water Code enemies \u25bc 17.95% continuously. This effect cannot be removed."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "\u2691 1 More: the burst's 1 More clause is literally gated on a Wind Code enemy being present, and BOTH the skill1 400.31% distributed hit and the skill2 Follow Up ATK grant are keyed to '1 More takes effect'. All three carry bossElementGate:'Wind', so all three are INERT against a non-Wind boss (including the neutral scope-lock boss). If in-game 1 More actually fires unconditionally and only the ATK\u25b245.33% is Wind-gated, this under-credits her by an entire 400.31% rider plus a team ATK grant \u2014 read the highest-priority open item before trusting any damage number.",
+      "\u2691 Scarlet Flower duration: the kit states an EVENT deactivation ('When Full Burst ends'), not a timer. Encoded as durationSec 10.4 on the self Distributed Damage \u25b290.01% (own Burst-III cast \u2192 22f chain gap \u2192 10s Full Burst). Any rotation where she does not complete the chain, or a Full Burst extended by an ally, makes this wrong in both directions.",
+      "\u2691 Follow Up target set: the kit says 'all standard Burst 3 allies (except the skill user) in the Persona state'. The schema has no Persona-state facet, so the block targets alliesLowestAtk{count:4, burst:'III', excludeSelf:true} \u2014 the B3-except-self filter is faithful (count 4 \u2265 the population, so the ATK ranking never bites), the 'in the Persona state' clause is DROPPED and OVER-CREDITS any B3 ally that is not a Persona unit.",
+      "\u2691 Heals carry no HP amount: the engine's heal effect emits recovery events only, so the 5.7%-of-final-max-HP magnitude on both Media (skill1) and Mediarama (skill2) is unmodeled. Both are also modeled as SEPARATE 3-second channels, so during her Scarlet Flower window a heal-synergy teammate (on-recovery consumers) receives roughly double the recovery events it may actually get in game.",
+      "\u2691 Cadence: MG datamine fields (reloadFrames 171, rate_of_fire, hitsPerShot 1) are the known-unreliable family and are inherited unchanged from base stats \u2014 hitsPerShot 1 on an MG is itself suspicious.",
+      "Scarlet Protection (Water Code damage taken \u25bc17.95%) is defensive with no consumer at scope (immortal boss, no HP pool) and is recorded in unmodeled, not as a block."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Second, independent prose\u2192JSON read of yukiko (MG/Fire/Attacker/Burst III) authored BLIND from raw kit text + the schema; no override, test, probe data, board output or git history consulted. Damage surface: burst 1258.79% distributed + a 400.31% distributed rider on 1 More, both boosted by her own Fire Amp Distributed Damage \u25b290.01% while Scarlet Flower is live. Sustain surface: Attack Damage \u25b255.31% continuous, a 15s ATK \u25b265.37% re-armed at battle start and every Full Burst end, Elemental Advantage Attack Damage \u25b248.15% at Burst Stage 3 entry (Element bucket, live only with advantage), and a 25s casterAtkPct \u25b280.25% Follow Up to B3 allies. Support surface: two independent 3-second heal channels (Media continuous, Mediarama only during Scarlet Flower) that emit recovery events for on-recovery consumers. Three blocks are Wind-gated via the 1 More clause and are therefore inert on a non-Wind boss."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Persona - Konohana Sakuya (continuous)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "State wrapper with no standalone stat \u2014 realized by its Effect 1 heal block; 'cannot be removed' is the default (nothing dispels in sim)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 1: every 3 sec, allies, Media",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger interval{sec:3} / target allies / heal. Continuous from battle start, so an interval trigger rather than a bounded ticks list. HP amount (5.7% of final max HP) is not representable \u2014 recovery event only."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK \u25b2 65.37% for 15 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Split into TWO blocks per the dual activation clause: battleStart/self and fullBurstEnd/self, each buff atkPct 65.37 durationSec 15 (same caster slot + stat + value, so re-arming refreshes rather than stacks)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 400.31% \u2026 distributed damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast / target enemy / flatDamage atkPct 400.31 flavor 'distributed', bossElementGate 'Wind'. '1 More takes effect' resolves to her own burst cast under the burst slot's Wind-presence condition. noFb NOT set \u2014 a burst-cast rider is FB-exempt by timing (lands before the window opens), not by a per-kit flag."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack Damage \u25b2 55.31% continuously",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger passive / self / buff attackDamagePct 55.31, no duration. 'Activates at the start of battle' + 'continuously' is behaviourally identical to battleStart-with-no-duration; passive chosen because the buff can never lapse."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Scarlet Flower (on Burst Skill use)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "State wrapper realized by its three effect blocks. Trigger identity read literally: 'when using Burst Skill' = burstCast (fires only on rotations SHE bursts), never fullBurstEnter."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 1: every 3 sec \u2026 Mediarama",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast / target allies / heal{ticks:3, intervalSec:3} \u2014 a bounded 3-tick heal-over-time inside the Scarlet Flower window (\u2691 tick count derives from the estimated window length)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 2: Distributed Damage \u25b2 90.01%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast / self / buff distributedDamagePct 90.01 durationSec 10.4 \u2691. Feeds her own distributed-flavored burst hit and the 400.31% rider."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 3: Water dmg taken \u25bc 17.95%",
+      "status": "SKIPPED",
+      "effectOrReason": "Damage-taken reduction against a Water Code enemy \u2014 purely defensive with no damage consumer (boss deals no damage at scope, no HP pool). Recorded verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deactivation: When Full Burst ends",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Expressed as the durationSec 10.4 bound on Effect 2 and the 3-tick bound on Effect 1 (own B3 cast \u2192 22f chain gap \u2192 10s Full Burst). \u2691 event-vs-timer approximation."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Elem Adv Attack Damage \u25b248.15%/10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger stageEnter{stage:3} / self / buff elemAdvantageDamagePct 48.15 durationSec 10. stageEnter, not stageCast: 'entering Burst Stage 3' leads her own stage-3 cast by the 30f chain gap. Element bucket, live only under elemental advantage (Fire \u2192 Wind)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Follow Up: ATK \u25b2 80.25% for 25 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast / target alliesLowestAtk{count:4, burst:'III', excludeSelf:true} / buff casterAtkPct 80.25 durationSec 25, bossElementGate 'Wind'. '% of the skill user's ATK' = casterAtkPct (flat add), not atkPct. The 'in the Persona state' filter is unrepresentable and dropped (over-credit \u2691)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1258.79% \u2026 distributed damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast / target enemy / flatDamage atkPct 1258.79 flavor 'distributed'. No burstDesc tag (that family is only for the jackal/trina Burst-Skill-Damage amplifiers)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "1 More: ATK \u25b2 45.33% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast / self / buff atkPct 45.33 durationSec 10, bossElementGate 'Wind' \u2014 the literal 'if a Wind Code enemy is present' condition, and the source of the 1 More status the two skill riders key off."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[3].bossElementGate / skill2[4].bossElementGate / burst[1].bossElementGate",
+      "estimate": "'Wind' on all three (1 More requires a Wind Code enemy) \u2014 so all three blocks are inert on a non-Wind boss",
+      "reasoning": "Only the burst's 1 More line states the Wind condition; skill1's 400.31% distributed hit and skill2's Follow Up say only 'Activates when 1 More takes effect'. Read literally, 1 More exists only when a Wind Code enemy is present, so the gate propagates to both dependents. The alternative reading \u2014 1 More is a generic burst-cast status and only the ATK\u25b245.33% needs Wind \u2014 is equally consistent with the prose and would make her rider damage always-on. This is the single largest fork in the whole model.",
+      "recipe": "One focus recording of yukiko against a NON-Wind boss: watch for a distributed-damage popup on her burst cast beyond the 1258.79% burst hit, and check whether B3 allies gain a flat ATK add at her cast. Any second cast-frame popup \u21d2 1 More is not Wind-gated \u21d2 drop bossElementGate from skill1[3] and skill2[4] (keep it on burst[1])."
+    },
+    {
+      "field": "skill2[2].effects[0].durationSec (Fire Amp 90.01%)",
+      "estimate": "10.4 sec",
+      "reasoning": "Kit gives an EVENT deactivation ('When Full Burst ends'), which the buff schema cannot express. Her own Burst-III cast is followed by the measured 22-frame gap into Full Burst plus a 10s Full Burst \u21d2 ~10.37s. Rounded to 10.4. Wrong whenever she does not complete the chain herself, and short whenever an ally extends Full Burst (fullBurstExtend).",
+      "recipe": "Rotation log (ROT=1) on a comp containing yukiko: read the frame delta from her burstCast event to the following fullBurstEnd, average over \u22653 rotations, and set durationSec to that delta. Re-check on a comp with a Full-Burst extender."
+    },
+    {
+      "field": "skill2[1].effects[0].ticks (Mediarama)",
+      "estimate": "ticks 3, intervalSec 3",
+      "reasoning": "'Activates every 3 sec' inside a ~10.4s window with the standard first-fire-at-t=interval convention gives ticks at 3/6/9 sec = 3 events. If the state instead heals immediately at cast (t=0) it is 4 events. Only matters for on-recovery consumers (heal-synergy teammates), not for yukiko's own damage.",
+      "recipe": "Frame-count the green heal numbers over her Scarlet Flower window in a focus recording; or, on a comp with a documented on-recovery consumer, count that consumer's buffApply events per rotation and solve for the tick count."
+    },
+    {
+      "field": "skill2[4].target (Follow Up target set)",
+      "estimate": "alliesLowestAtk{count:4, burst:'III', excludeSelf:true} \u2014 all B3 allies except her, Persona filter dropped",
+      "reasoning": "'all standard Burst 3 allies (except the skill user) in the Persona state' has two filters; the schema expresses B3-except-self exactly (count 4 \u2265 the largest possible ally population, so the lowest-ATK ranking never binds) but has no Persona-state facet. 'Standard' likely also excludes \u039b-burst units, which the burst:'III' literal match already handles. The dropped Persona clause OVER-CREDITS any B3 ally that is not a Persona unit \u2014 potentially the entire grant is dead in practice if Persona is exclusive to the collab units.",
+      "recipe": "Owner ruling on what 'the Persona state' admits (self-only Persona collab units vs anyone yukiko has healed). If it is collab-exclusive and no other Persona unit is on the roster, delete the block and move the line to unmodeled.skill2 rather than shipping a phantom team ATK buff."
+    },
+    {
+      "field": "base cadence (reloadFrames 171, rate_of_fire, hitsPerShot 1)",
+      "estimate": "inherited unchanged from the datamine",
+      "reasoning": "The datamined cadence tuple is the known-unreliable field family, and hitsPerShot 1 on an MG is anomalous against the rest of the MG roster \u2014 an MG's per-trigger hit count drives both damage and the burst-gauge feed, so a wrong value scales her whole normal-attack surface and her rotation.",
+      "recipe": "Count trigger pulls and damage popups over one full magazine in a focus recording and compare against 300 ammo / 171 reload frames; correct the base stat rather than compensating inside the override."
+    },
+    {
+      "field": "skill1[0] / skill2[1] heal channels (Media vs Mediarama)",
+      "estimate": "modeled as two independent 3-second channels",
+      "reasoning": "Both lines heal 5.7% of final max HP every 3 sec to all allies; skill1's is continuous, skill2's runs only during Scarlet Flower. If the game runs them on ONE shared timer (Mediarama upgrading Media in place, which the naming suggests) rather than two, the sim emits roughly twice the recovery events during her Full Burst window \u2014 inert for her own damage, but it double-fires any on-recovery consumer's trigger.",
+      "recipe": "Focus recording: during Scarlet Flower, count green heal numbers per ally per 3-second interval \u2014 one number per interval \u21d2 shared timer (delete the skill2 heal block or gate it), two \u21d2 independent channels as modeled."
+    },
+    {
+      "field": "skill1[3] noFb (400.31% distributed rider)",
+      "estimate": "not set (default OFF)",
+      "reasoning": "Per-kit noFb is measured-only and must never be authored blind. The rider is keyed to burstCast, so it lands before the Full Burst window opens and is FB-exempt by TIMING regardless \u2014 setting noFb would be a redundant unmeasured flag.",
+      "recipe": "If a popup-read ever shows this rider carrying the +50% Full Burst major, revisit the trigger identity (fullBurstEnter rather than burstCast) before reaching for noFb."
+    }
+  ],
+  "model": "claude-opus-5"
+}

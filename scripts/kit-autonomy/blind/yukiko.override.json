@@ -1,0 +1,213 @@
+{
+  "slug": "yukiko",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 3
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "battleStart"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 65.37,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 65.37,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "bossElementGate": "Wind",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 400.31,
+          "flavor": "distributed"
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 55.31
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 3,
+          "intervalSec": 3
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 90.01,
+          "durationSec": 10.4
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 48.15,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesLowestAtk",
+        "count": 4,
+        "burst": "III",
+        "excludeSelf": true
+      },
+      "bossElementGate": "Wind",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 80.25,
+          "durationSec": 25
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1258.79,
+          "flavor": "distributed"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "bossElementGate": "Wind",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 45.33,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Effect 3: Affects self. Scarlet Protection: Damage taken from Water Code enemies \u25bc 17.95% continuously. This effect cannot be removed."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 1 More: the burst's 1 More clause is literally gated on a Wind Code enemy being present, and BOTH the skill1 400.31% distributed hit and the skill2 Follow Up ATK grant are keyed to '1 More takes effect'. All three carry bossElementGate:'Wind', so all three are INERT against a non-Wind boss (including the neutral scope-lock boss). If in-game 1 More actually fires unconditionally and only the ATK\u25b245.33% is Wind-gated, this under-credits her by an entire 400.31% rider plus a team ATK grant \u2014 read the highest-priority open item before trusting any damage number.",
+    "\u2691 Scarlet Flower duration: the kit states an EVENT deactivation ('When Full Burst ends'), not a timer. Encoded as durationSec 10.4 on the self Distributed Damage \u25b290.01% (own Burst-III cast \u2192 22f chain gap \u2192 10s Full Burst). Any rotation where she does not complete the chain, or a Full Burst extended by an ally, makes this wrong in both directions.",
+    "\u2691 Follow Up target set: the kit says 'all standard Burst 3 allies (except the skill user) in the Persona state'. The schema has no Persona-state facet, so the block targets alliesLowestAtk{count:4, burst:'III', excludeSelf:true} \u2014 the B3-except-self filter is faithful (count 4 \u2265 the population, so the ATK ranking never bites), the 'in the Persona state' clause is DROPPED and OVER-CREDITS any B3 ally that is not a Persona unit.",
+    "\u2691 Heals carry no HP amount: the engine's heal effect emits recovery events only, so the 5.7%-of-final-max-HP magnitude on both Media (skill1) and Mediarama (skill2) is unmodeled. Both are also modeled as SEPARATE 3-second channels, so during her Scarlet Flower window a heal-synergy teammate (on-recovery consumers) receives roughly double the recovery events it may actually get in game.",
+    "\u2691 Cadence: MG datamine fields (reloadFrames 171, rate_of_fire, hitsPerShot 1) are the known-unreliable family and are inherited unchanged from base stats \u2014 hitsPerShot 1 on an MG is itself suspicious.",
+    "Scarlet Protection (Water Code damage taken \u25bc17.95%) is defensive with no consumer at scope (immortal boss, no HP pool) and is recorded in unmodeled, not as a block."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Second, independent prose\u2192JSON read of yukiko (MG/Fire/Attacker/Burst III) authored BLIND from raw kit text + the schema; no override, test, probe data, board output or git history consulted. Damage surface: burst 1258.79% distributed + a 400.31% distributed rider on 1 More, both boosted by her own Fire Amp Distributed Damage \u25b290.01% while Scarlet Flower is live. Sustain surface: Attack Damage \u25b255.31% continuous, a 15s ATK \u25b265.37% re-armed at battle start and every Full Burst end, Elemental Advantage Attack Damage \u25b248.15% at Burst Stage 3 entry (Element bucket, live only with advantage), and a 25s casterAtkPct \u25b280.25% Follow Up to B3 allies. Support surface: two independent 3-second heal channels (Media continuous, Mediarama only during Scarlet Flower) that emit recovery events for on-recovery consumers. Three blocks are Wind-gated via the 1 More clause and are therefore inert on a non-Wind boss."
+}
