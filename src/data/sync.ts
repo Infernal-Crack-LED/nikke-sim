@@ -75,6 +75,12 @@ const titleCase = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
 const firstReleaseDate = (v: string | null | undefined): string | null =>
   v?.match(/\d{4}-\d{2}-\d{2}/)?.[0] ?? null;
 
+// Hardcoded release dates for units that nikke-synergy doesn't carry yet.
+// Remove an entry once synergy picks it up — the API path will take over.
+const MANUAL_RELEASE_DATES: Record<string, string> = {
+  yukiko: '2026-08-20',
+};
+
 // Shape of the DB's nikke_characters.sheet_data jsonb (the community Tsareena build sheet), as
 // measured against the live table 2026-07-28: top-level keys are exactly {build, priority,
 // annotations}; `build` carries 9 keys on all 88 populated rows plus the sparse `notes` (37) and
@@ -308,6 +314,7 @@ async function main() {
       releaseDate:
         (isTreasure ? firstReleaseDate(treasureRow?.release_date) : null) ??
         a.releaseDate ??
+        MANUAL_RELEASE_DATES[row.id] ??
         null,
       // Clean datamined burst gauge — reference only; the engine reads data/gauge-per-shot.json.
       burstGaugePerShot: wf
