@@ -226,7 +226,17 @@ export function convert(
   const muzzles = shot?.muzzle_count ?? 1;
   let v = raw / 100;
   if (weapon === 'SG') {
-    v *= shotCount > 0 ? shotCount : 10;
+    // A shotgun row carries its gauge PER PELLET, so shot_count is load-bearing. An earlier
+    // version substituted 10 when it was missing or 0 — that invented a 10× on a data hole,
+    // which is exactly the MEASURED>FUDGE failure this generator exists to remove. No SG unit is
+    // in that state today; if one ever appears, it is a broken datamine and must be loud.
+    if (shotCount <= 0) {
+      throw new Error(
+        `gauge-per-shot: SG row has shot_count=${shotCount}, so its per-pellet value cannot be ` +
+          `converted to a per-trigger one. Fix the datamine rather than assuming 10 pellets.`
+      );
+    }
+    v *= shotCount;
   }
   if (muzzles > 1) {
     v *= muzzles;
