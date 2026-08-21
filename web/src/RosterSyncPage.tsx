@@ -109,8 +109,11 @@ function describeError(err: unknown): {
           retryAfterSec: err.body?.retryAfterSec,
         };
       case 502:
+        // blablalink answers the same way for a private roster and for an
+        // account that simply isn't in the region we asked about (the reporting
+        // KR user got this exact error on NA), so the copy names both.
         return {
-          msg: "Couldn't read that roster. It's usually because the roster is private — follow the steps below to make it visible, then Sync again.",
+          msg: "Couldn't read that roster. Either it's private, or your account is in a different region — check the region next to the link, or follow the steps below to make the roster visible, then Sync again.",
           unprivate: true,
         };
       case 500:

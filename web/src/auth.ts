@@ -295,21 +295,28 @@ export function decodeNikkeList(code: string): string[] | null {
 // once, and reading the wrong one returns an EMPTY roster rather than an error —
 // so the region is the user's choice and the sim asks for it.
 //
-// ⚠ The ids are measured (81–85 are accepted, 79/80/86 are rejected) but the
-// id→NAME pairing below is NOT yet confirmed against blablalink's own region
-// list. Confirm before relying on the labels.
+// The ids are measured (81–85 accepted, 79/80/86 rejected). The id→NAME pairing
+// is anchored on two points and inferred for the rest:
+//   82 = NA    owner-confirmed — 82 is what every roster read used before the
+//              region became selectable, and that default was NA. It is also
+//              the region most stored rosters resolve on (10 of 13).
+//   83 = KR    owner-confirmed — the reporting user is on KR and their roster
+//              resolves only on 83 (105 units, deterministic over repeats).
+// 81/84/85 (JP/SEA/Global) keep blablalink's own ordering for this game id and
+// are NOT confirmed. Confirm them against the site's region list before relying
+// on those three labels.
 export interface NikkeRegion {
   areaId: number;
   label: string;
 }
 export const NIKKE_REGIONS: NikkeRegion[] = [
   { areaId: 81, label: 'JP' },
-  { areaId: 82, label: 'KR' },
-  { areaId: 83, label: 'NA' },
+  { areaId: 82, label: 'NA' },
+  { areaId: 83, label: 'KR' },
   { areaId: 84, label: 'SEA' },
   { areaId: 85, label: 'Global' },
 ];
-export const DEFAULT_REGION_AREA_ID = 83; // NA
+export const DEFAULT_REGION_AREA_ID = 82; // NA
 
 // Roster sync: one call reads (DB-served) or force-refreshes (live) a roster and,
 // on success, auto-links the open id as the user's current account. `openid`
