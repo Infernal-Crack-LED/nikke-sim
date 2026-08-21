@@ -115,7 +115,7 @@ const COMPS: Comp[] = [
     ],
     boss: 'Electric',
     realFullBursts: [13, 14], // video, docs/probes/u8 g
-    disabled: true, // sim reads 12 FBs (was 11 before liberalio gaugeHits:5, 2026-08-19); open burst-generation shortfall, see QUEUE.md
+    disabled: true, // sim reads 12 FBs (was 11 before liberalio gaugeHits:5, 2026-08-19); ACCEPTED as fight jitter by owner ruling 2026-08-21 (DECISIONS) — permanently off the FB-count sheet, generation rate verified at parity with the footage (probe-runs 2026-08-21)
   },
   {
     name: 'T2 elec-weak',

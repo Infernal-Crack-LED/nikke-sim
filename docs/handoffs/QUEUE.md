@@ -82,32 +82,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    Classification: MIXED/INCONCLUSIVE (closure 0.2579 stands after noise-corrected ceiling test,
    source-hunt fix, and symmetric-E_min analysis — all three 2026-08-16). Application-gauge engine
    landed 2026-08-16 (owner rulings ×3). `anis-star` carve-out removal enacted 2026-08-16 (PR #125
-   merged). Opening-window timing promoted to owner ruling 2026-08-16 (DECISIONS). Open:
-   - **Iron-sweep FB shortfall — narrowed 88% by `liberalio` gaugeHits:5 (2026-08-19, DECISIONS).**
-     Shortfall collapsed 16.4 → 2.0 gauge/sec (40.8 → 5.0 per cycle). Residual ~2 gauge/sec is
-     within the focus-column ceiling's reach. **Footage verification RAN 2026-08-21** (probe-runs):
-     with a now-exact credit schedule (builder fixed: applicationGauge channel + two frame-boundary
-     locks), the sim's refill-window generation is at parity with the video (rho 0.974, median
-     1.02) — the residual is NOT a generation-rate shortfall. The count miss persists (12 on all 20
-     seeds + deterministic vs measured 13–14) and localizes to cycle STRUCTURE: sim chain-to-chain
-     ~16.0s vs measured 14.388s, refill windows stretching late-fight. Classification stays
-     MIXED/INCONCLUSIVE (closure 0.4641 with the exact schedule). `iron sweep (run G)` stays
-     disabled; the open question is why sim refill windows stretch, not what gauge is missing.
-     **Cycle-structure findings + ammo-counter check (2026-08-21):** real reloads cluster at/after
-     bar-fill while the sim schedules them inside refills; takina's swap tail (~0.7–1.0s into the
-     refill) and cadence replicate on footage; liberalio never reloads mid-refill in either
-     observed real gap. All numbers + per-window tables:
-     **→ [2026-08-21-irong-cycle-structure.md](2026-08-21-irong-cycle-structure.md)**
-     The `anis-star` U28 encoding-audit read **ran and dead-ended**:
-     the N1b calibration read (2026-08-17,
-     `docs/probe-data/n1b-anis-star-calibration-read-2026-08-17.json`) neither confirmed nor
-     refuted `rawOverTrue ≈ 1.064` — her pulls have no resolvable sub-steps, so the
-     maiden-ice-rose-anchored method fails structurally on her bar. The 2026-08-18 pre-registered
-     rerun (`docs/probe-data/anis-star-e4-recovery-2026-08-18.json`, deliverable archived) then
-     CONFIRMED measured-elevation (11.3–11.6 vs shipped 10.39/pull), and the anomaly was ENACTED
-     2026-08-18 as `baseGaugeProb: 0.25` (DECISIONS 2026-08-18, commit `9352d531`). What remains
-     of U28 — the `hitsPerShot > 1` divisor generalization — has no viable probe and is tracked in
-     open-questions U28, not here.
+   merged). Opening-window timing promoted to owner ruling 2026-08-16 (DECISIONS). The
+   iron-sweep (run G) residual is CLOSED by owner ruling 2026-08-21 (accepted fight jitter —
+   verified at generation-rate parity on footage; the fight stays off the FB-count sheet;
+   DECISIONS). The `anis-star` magnitude anomaly was enacted 2026-08-18 as `baseGaugeProb: 0.25`
+   (DECISIONS); U28's surviving divisor half is in open-questions U28. Open:
    - **Clean-bin-time vs full-window denominator validation — PARTIALLY LANDED.**
      `fbDuration` now requires/defaults to a pinned `estimator` (`paint` for calibrated controls),
      and `validateCleanBinDenominator` in `scripts/probe/fill-trace-compare.ts` compares both

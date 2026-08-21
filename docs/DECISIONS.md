@@ -9,6 +9,22 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-21) `iron sweep (run G)` FB-count residual CLOSED as accepted fight jitter — the
+  fight stays off the FB-count regression sheet permanently.** The 2026-08-21 fill-trace re-run
+  (probe-runs.md) had shown the sim's refill-window generation at parity with the video
+  (rho 0.974) with an endpoint-exact credit schedule, localizing the 12-vs-13/14 miss to cycle
+  structure (reload/magazine phasing vs the burst cycle). The ammo-counter reads on the u8 g
+  footage confirmed the phasing drift (real reloads cluster at/after bar-fill; the sim schedules
+  them inside refills) — and the owner ruled this expected and not actionable: one bullet firing
+  at a different time early in the fight shifts phasing enough to move the last,
+  boundary-straddling full burst (the sim's 13th chain opens 8 frames past the fight end).
+  `scripts/regression.ts` keeps `disabled: true` with this ruling cited. Same ruling RETRACTS the
+  session's takina `N/99` ammo reads (she shows no ammo counter during her weapon swap — the
+  decrementing label was a misread of a different HUD element); the liberalio/MBB/DKW phasing
+  reads stand. Full record: `docs/handoffs/closed/2026-08-21-irong-cycle-structure.md`. The OTHER
+  three disabled comps (T5 wind-weak, PA MiKa, N3 scarlet/liberalio iron) are NOT covered by this
+  ruling — no footage check was run on them.
+
 - **(2026-08-19) `liberalio` gaugeHits:5 on the 202.5% full-charge rider RESOLVED (owner
   scope-lock footage).** Two solo scope-lock recordings both show 3 shots to fill the burst
   gauge, re-deriving the 2026-08-17 INCONCLUSIVE/LOG premise-gate outcome to a clear RESOLVED.
