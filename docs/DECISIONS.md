@@ -22,8 +22,8 @@ lives. Newest first within each section.
   session's takina `N/99` ammo reads (she shows no ammo counter during her weapon swap — the
   decrementing label was a misread of a different HUD element); the liberalio/MBB/DKW phasing
   reads stand. Full record: `docs/handoffs/closed/2026-08-21-irong-cycle-structure.md`. The OTHER
-  three disabled comps (T5 wind-weak, PA MiKa, N3 scarlet/liberalio iron) are NOT covered by this
-  ruling — no footage check was run on them.
+  three disabled comps (T5 wind-weak, T1 wind-weak, N3 scarlet/liberalio iron) are NOT covered by
+  this ruling — no footage check was run on them.
 
 - **(2026-08-19) `liberalio` gaugeHits:5 on the 202.5% full-charge rider RESOLVED (owner
   scope-lock footage).** Two solo scope-lock recordings both show 3 shots to fill the burst
