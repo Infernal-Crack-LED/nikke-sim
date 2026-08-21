@@ -115,7 +115,7 @@ const COMPS: Comp[] = [
     ],
     boss: 'Electric',
     realFullBursts: [13, 14], // video, docs/probes/u8 g
-    disabled: true, // sim reads 11 FBs; open burst-generation shortfall, see QUEUE.md
+    disabled: true, // sim reads 12 FBs (was 11 before liberalio gaugeHits:5, 2026-08-19); open burst-generation shortfall, see QUEUE.md
   },
   {
     name: 'T2 elec-weak',

@@ -651,9 +651,12 @@ natural probe~~ **CLOSED 2026-08-16 — structurally dead, not just unmeasured:*
 window is coincident with her own `fullBurstExtend`-extended (15s) Full Burst, so it sits entirely
 inside the FB gauge lock (CLAUDE.md verified facts: nothing generates during the chain or Full
 Burst), never inside the FB-end→chain-start generating window — a bar recording there reads
-flat/locked throughout and teaches nothing about the divisor. The live candidate is `anis-star`
-(rider fires on normal weapon shots, outside FB — see the recording ask in QUEUE.md). Until
-then: do NOT author a true-flavored rider (the flavor half of the asymmetry is unchanged). The
+flat/locked throughout and teaches nothing about the divisor. `anis-star` is also out: ruled
+non-multi-hit (2026-08-16 below), and her per-pull magnitude thread CLOSED by enactment
+2026-08-18 (below). There is currently NO live probe candidate — every SG carrier's skill hits
+land inside the FB gauge lock (zero exposure). Until a `hitsPerShot > 1` carrier generating
+outside the lock is found: do NOT author a true-flavored rider (the flavor half of the asymmetry
+is unchanged). The
 "do not re-encode a unit between the two primitives" rule is LIFTED for gauge as of 2026-08-13.
 **2026-08-14 (gauge-source census, investigation-plan item 2):** an EXISTING labeled fixture already
 bears on the divisor — `anis-star` (RL) battery-3-A3 solo (probe-runs.md) measured ~10.7–11.3%/pull.
@@ -690,7 +693,8 @@ focus`. ⇒ For a GENUINE multi-muzzle unit, the engine's `targetPerTrigger / hi
    measured FB pin byte-identical. She now sits at hitsPerShot 1 where the divisor is a no-op,
    so **she no longer bears on the divisor question**; what remains of U28's divisor half rides
    on genuine multi-hit units only (`modernia` MG ÷2, the SG ÷10), gated on the `modernia`
-   Destroy-Mode bar read. **The magnitude half stays open**: her post-change solo decomposition
+   Destroy-Mode bar read. **The magnitude half** (CLOSED 2026-08-18 by the `baseGaugeProb`
+   enactment, below): her post-change solo decomposition
    (700 + 280) × 1.06 = 10.39%/pull moves TOWARD the 2026-08-15 count-to-fill exclusion bound
    (steady ≥ ~10.96) but is still excluded.
 
@@ -700,15 +704,24 @@ focus`. ⇒ For a GENUINE multi-muzzle unit, the engine's `targetPerTrigger / hi
    (`docs/handoffs/scientific-method-harness.md`, LOG with a SPLIT 2-of-2) measured the
    classified-steady per-pull credit at **11.32 (CI [10.745, 11.894])** on solo #2 and **11.15
    (CI [10.800, 11.500])** on the independently-calibrated A3 footage — both excluding 10.388, same
-   direction, different calibration mechanisms. **It is still not settled, for one specific reason:**
-   `rawOverTrue = 1.064`, a standing instrument-gain claim in A3's own `series30fps.calibration`
-   block, would move the estimate to ~10.64 with a CI containing 10.388, and the run's pre-registered
-   gain test could not adjudicate an externally written-down gain constant.
+   direction, different calibration mechanisms. **Settled 2026-08-18 — CLOSED by enactment.** The
+   N1b render-scale calibration read (2026-08-17,
+   `docs/probe-data/n1b-anis-star-calibration-read-2026-08-17.json`) ran the blocking measurement
+   and failed STRUCTURALLY: her pulls land in a single 60fps frame with no resolvable weapon/rider
+   sub-steps, so the `maiden-ice-rose`-anchored gain method can neither confirm nor refute
+   `rawOverTrue ≈ 1.064` on her bar — and that constant is now known to be ANCHOR-SPECIFIC, a
+   carry on any other bar, not a validated universal reader gain. The 2026-08-18 pre-registered
+   re-run superseded calibration with anomaly recovery (A = 3.71% = `basePerTrigger` 140 × 2.5
+   focus × 1.06 aura; E4 PASS — all 3 upward departures recover:
+   `docs/probe-data/anis-star-e4-recovery-2026-08-18.json`), and owner ruling N1c (9 pulls fill
+   the bar ⇒ per-pull ≥ 11.11% > shipped 10.388%) settled the direction. ENACTED 2026-08-18 as
+   `baseGaugeProb: 0.25` in `data/gauge-per-shot.json` (DECISIONS 2026-08-18, commit `9352d531`;
+   focused-shot credit 8.3475, was 7.42). Full trail: `docs/handoffs/scientific-method-harness.md`
+   2026-08-17/18 entries.
 
-   ⇒ **The blocking measurement is now a render-scale calibration read on `anis-star`'s own solo
-   bar** — apply the `maiden-ice-rose`-anchored method to this footage and confirm or refute
-   `rawOverTrue ≈ 1.064` for this bar. Until that exists, another magnitude run cannot separate a
-   real elevation from a reader gain.
+**What remains open in U28:** the `/hitsPerShot` divisor generalization above (externally
+corroborated, no live probe), the 3.45% measured vs 3.64% modeled rider sub-step residual on the
+`maiden-ice-rose` anchor, and the SUMMED-stat emission asymmetry in §1's residual note.
 
 ### U27 — isabel's mid/midfar SG landing needs a clock-drift-corrected re-derive (split out of U17, 2026-07-22)
 
