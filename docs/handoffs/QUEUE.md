@@ -93,6 +93,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      ~16.0s vs measured 14.388s, refill windows stretching late-fight. Classification stays
      MIXED/INCONCLUSIVE (closure 0.4641 with the exact schedule). `iron sweep (run G)` stays
      disabled; the open question is why sim refill windows stretch, not what gauge is missing.
+     **Cycle-structure findings + ammo-counter check (2026-08-21):** real reloads cluster at/after
+     bar-fill while the sim schedules them inside refills; takina's swap tail (~0.7–1.0s into the
+     refill) and cadence replicate on footage; liberalio never reloads mid-refill in either
+     observed real gap. All numbers + per-window tables:
+     **→ [2026-08-21-irong-cycle-structure.md](2026-08-21-irong-cycle-structure.md)**
      The `anis-star` U28 encoding-audit read **ran and dead-ended**:
      the N1b calibration read (2026-08-17,
      `docs/probe-data/n1b-anis-star-calibration-read-2026-08-17.json`) neither confirmed nor
