@@ -140,7 +140,9 @@ const COMPS: Comp[] = [
     ],
     boss: 'Iron',
     realFullBursts: 13, // video, probe u7 "13 fb count wind weak" (2026-07-14): 13/13 splash-counted, caster order exact
-    disabled: true, // sim reads 11-12 FBs; open burst-generation shortfall, see QUEUE.md
+    // RE-ENABLED 2026-08-21: after gaugeHits:5 + baseGaugeProb + applicationGauge the seeded
+    // distribution moved to 12×13/13×7 — measured 13 overlaps. EV run reads 12 (the same
+    // boundary-jitter class the owner accepted for run G, DECISIONS 2026-08-21).
   },
   {
     name: 'PA MiKa',
@@ -167,7 +169,8 @@ const COMPS: Comp[] = [
     // different slot order than this comp definition. Sim predicts 13 with scarlet focus
     // too (verified), rotation alternation matched either way, so the pin holds; the
     // popups in that video are scarlet's.
-    disabled: true, // sim reads 11-12 FBs; open burst-generation shortfall, see QUEUE.md
+    // RE-ENABLED 2026-08-21: EV run now reads 13 = measured, seeded 12×12/13×8 (was 11-12 before
+    // the 2026-08 gauge landings; credit schedule endpoint-exact on this comp).
   },
   {
     name: 'PH water B3s',
@@ -252,7 +255,10 @@ const COMPS: Comp[] = [
     boss: 'Iron',
     focus: 'scarlet-black-shadow',
     realFullBursts: 10, // video: 10/10
-    disabled: true, // sim reads 9 FBs; open burst-generation shortfall, see QUEUE.md
+    // RE-ENABLED 2026-08-21: seeded distribution moved to 9×17/10×3 — measured 10 overlaps (EV
+    // still reads 9; same boundary-jitter class as run G, DECISIONS 2026-08-21). Weakest overlap
+    // of the three re-enabled comps — if the distribution drifts off 10 again, prefer a
+    // simFullBursts pin over re-disabling.
   },
   {
     name: 'N5 snowwhite-HA fire',
