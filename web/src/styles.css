@@ -3085,6 +3085,21 @@ a.teambuilder-card {
   outline: none;
   border-color: var(--accent);
 }
+/* Region picker — sits next to the open-id input and never shrinks, so the
+   input (flex: 1 1 320px) absorbs the width instead. */
+.roster-region-select {
+  flex: 0 0 auto;
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 11px;
+  font-size: 13px;
+}
+.roster-region-select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
 .roster-input-hint {
   font-size: 12px;
   margin: 10px 0 0;

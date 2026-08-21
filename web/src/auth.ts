@@ -84,6 +84,7 @@ export interface SyncedUnitLoadout {
 export interface RosterResponse {
   source: 'db' | 'live';
   openId: string;
+  areaId?: number; // the NIKKE region this roster was read from (see NIKKE_REGIONS)
   count: number;
   characters: RosterCharacter[];
   details?: unknown[]; // present only when details=1
@@ -289,13 +290,40 @@ export function decodeNikkeList(code: string): string[] | null {
   }
 }
 
+// The NIKKE regions blablalink serves under intl game 29080, as `nikke_area_id`
+// values. A blablalink account can hold a roster in more than one region at
+// once, and reading the wrong one returns an EMPTY roster rather than an error —
+// so the region is the user's choice and the sim asks for it.
+//
+// The ids and names are blablalink's own, read from its region list
+// (GET /api/lip/direct/commodity/Game/GetRegionList?game_id=29080, 2026-08-21):
+//   81 Japan · 82 NA · 83 Korea · 84 Global · 85 SEA
+// Pinned by a test in the backend (blablalinkUser.test.ts); re-derive with its
+// fetchNikkeRegionList() if blablalink ever adds a region.
+//
+// Ordered most-populated first rather than by id, so the two regions nearly
+// every user is in are the first two they see.
+export interface NikkeRegion {
+  areaId: number;
+  label: string;
+}
+export const NIKKE_REGIONS: NikkeRegion[] = [
+  { areaId: 82, label: 'NA' },
+  { areaId: 84, label: 'Global' },
+  { areaId: 81, label: 'Japan' },
+  { areaId: 83, label: 'Korea' },
+  { areaId: 85, label: 'SEA' },
+];
+export const DEFAULT_REGION_AREA_ID = 82; // NA
+
 // Roster sync: one call reads (DB-served) or force-refreshes (live) a roster and,
 // on success, auto-links the open id as the user's current account. `openid`
 // accepts a raw id, a "29080-<id>" string, or a full blablalink profile URL — the
-// backend decodes it, so pass whatever the user pasted.
+// backend decodes it, so pass whatever the user pasted. `area` picks the NIKKE
+// region; omitting it reuses whatever region the account last synced from.
 export const fetchRoster = (
   openid: string,
-  opts: { details?: boolean; refresh?: boolean } = {}
+  opts: { details?: boolean; refresh?: boolean; area?: number } = {}
 ) => {
   const p = new URLSearchParams({ openid });
   if (opts.details) {
@@ -303,6 +331,9 @@ export const fetchRoster = (
   }
   if (opts.refresh) {
     p.set('refresh', '1');
+  }
+  if (opts.area != null) {
+    p.set('area', String(opts.area));
   }
   return apiEx<RosterResponse>(`/api/blabla-roster?${p.toString()}`);
 };
