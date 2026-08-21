@@ -4,6 +4,8 @@ import { BrandIcon } from './social-icons';
 import { manifestThumbUrl } from './portraitManifest';
 import {
   ApiError,
+  DEFAULT_REGION_AREA_ID,
+  NIKKE_REGIONS,
   deleteNikkeAccount,
   fetchNikkeAccounts,
   fetchRoster,
@@ -38,6 +40,13 @@ const UNIT_BY_CODE: Record<
   }
   return map;
 })();
+
+// The region's display name, for messages that name the region the user picked.
+function regionLabel(areaId: number): string {
+  return (
+    NIKKE_REGIONS.find((r) => r.areaId === areaId)?.label ?? `area ${areaId}`
+  );
+}
 
 // "3 minutes ago" / "just now" — coarse, good enough for staleness signalling.
 function timeAgo(iso: string | null): string {
@@ -218,6 +227,10 @@ export function RosterSyncPage({
   const [accounts, setAccounts] = useState<NikkeAccount[] | null>(null);
   const [roster, setRoster] = useState<RosterResponse | null>(null);
   const [input, setInput] = useState('');
+  // The NIKKE region to read the roster from. Defaults to NA; a roster that
+  // comes back from another region re-points it, so a returning user sees the
+  // region they actually synced rather than the default.
+  const [areaId, setAreaId] = useState<number>(DEFAULT_REGION_AREA_ID);
   const [busy, setBusy] = useState(false); // a live sync is in flight
   const [loadingInitial, setLoadingInitial] = useState(false);
   const [error, setError] = useState<ReturnType<typeof describeError> | null>(
@@ -253,6 +266,9 @@ export function RosterSyncPage({
           const r = await fetchRoster(cur.openId, { details: true });
           if (!cancelled) {
             setRoster(r);
+            if (r.areaId) {
+              setAreaId(r.areaId);
+            }
           }
         }
       } catch (e) {
@@ -283,7 +299,20 @@ export function RosterSyncPage({
     setBusy(true);
     setError(null);
     try {
-      const r = await fetchRoster(id, { details: true, refresh });
+      const r = await fetchRoster(id, { details: true, refresh, area: areaId });
+      // Reading a region the account has no roster in is not an error to
+      // blablalink — it answers an empty list. That is nearly always a wrong
+      // region pick rather than an empty account, so say so and keep whatever
+      // roster is already on screen instead of replacing it with nothing.
+      if (r.count === 0) {
+        setError({
+          msg:
+            `No units found in ${regionLabel(areaId)}. If your NIKKE account ` +
+            `is in a different region, pick that region and Sync again.`,
+          unprivate: false,
+        });
+        return;
+      }
       setRoster(r);
       setShowSwitch(false);
       setInput('');
@@ -312,9 +341,15 @@ export function RosterSyncPage({
       const accs = await setNikkeAccount(openId);
       setAccounts(accs);
       const cur = accs.find((a) => a.current);
-      setRoster(
-        cur?.syncedAt ? await fetchRoster(cur.openId, { details: true }) : null
-      );
+      // No `area` here on purpose — the server reuses whatever region this
+      // account last synced from, and the answer re-points the dropdown.
+      const r = cur?.syncedAt
+        ? await fetchRoster(cur.openId, { details: true })
+        : null;
+      setRoster(r);
+      if (r?.areaId) {
+        setAreaId(r.areaId);
+      }
     } catch (e) {
       setError(describeError(e));
     } finally {
@@ -429,6 +464,19 @@ export function RosterSyncPage({
                     }
                   }}
                 />
+                <select
+                  className="roster-region-select"
+                  aria-label="NIKKE region"
+                  value={areaId}
+                  disabled={busy}
+                  onChange={(e) => setAreaId(Number(e.target.value))}
+                >
+                  {NIKKE_REGIONS.map((r) => (
+                    <option key={r.areaId} value={r.areaId}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
                 <button
                   className="share-btn"
                   disabled={busy}
@@ -449,7 +497,7 @@ export function RosterSyncPage({
               <p className="muted roster-input-hint">
                 Open your blablalink profile — the address bar shows something
                 like <code>blablalink.com/user?openid=…</code>. Paste that whole
-                link.
+                link, and pick the region your NIKKE account plays on.
               </p>
             </div>
           )}

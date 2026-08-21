@@ -84,6 +84,7 @@ export interface SyncedUnitLoadout {
 export interface RosterResponse {
   source: 'db' | 'live';
   openId: string;
+  areaId?: number; // the NIKKE region this roster was read from (see NIKKE_REGIONS)
   count: number;
   characters: RosterCharacter[];
   details?: unknown[]; // present only when details=1
@@ -289,13 +290,35 @@ export function decodeNikkeList(code: string): string[] | null {
   }
 }
 
+// The NIKKE regions blablalink serves under intl game 29080, as `nikke_area_id`
+// values. A blablalink account can hold a roster in more than one region at
+// once, and reading the wrong one returns an EMPTY roster rather than an error —
+// so the region is the user's choice and the sim asks for it.
+//
+// ⚠ The ids are measured (81–85 are accepted, 79/80/86 are rejected) but the
+// id→NAME pairing below is NOT yet confirmed against blablalink's own region
+// list. Confirm before relying on the labels.
+export interface NikkeRegion {
+  areaId: number;
+  label: string;
+}
+export const NIKKE_REGIONS: NikkeRegion[] = [
+  { areaId: 81, label: 'JP' },
+  { areaId: 82, label: 'KR' },
+  { areaId: 83, label: 'NA' },
+  { areaId: 84, label: 'SEA' },
+  { areaId: 85, label: 'Global' },
+];
+export const DEFAULT_REGION_AREA_ID = 83; // NA
+
 // Roster sync: one call reads (DB-served) or force-refreshes (live) a roster and,
 // on success, auto-links the open id as the user's current account. `openid`
 // accepts a raw id, a "29080-<id>" string, or a full blablalink profile URL — the
-// backend decodes it, so pass whatever the user pasted.
+// backend decodes it, so pass whatever the user pasted. `area` picks the NIKKE
+// region; omitting it reuses whatever region the account last synced from.
 export const fetchRoster = (
   openid: string,
-  opts: { details?: boolean; refresh?: boolean } = {}
+  opts: { details?: boolean; refresh?: boolean; area?: number } = {}
 ) => {
   const p = new URLSearchParams({ openid });
   if (opts.details) {
@@ -303,6 +326,9 @@ export const fetchRoster = (
   }
   if (opts.refresh) {
     p.set('refresh', '1');
+  }
+  if (opts.area != null) {
+    p.set('area', String(opts.area));
   }
   return apiEx<RosterResponse>(`/api/blabla-roster?${p.toString()}`);
 };
