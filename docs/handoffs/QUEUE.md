@@ -17,7 +17,7 @@
 > `docs/open-questions.md` (single U-numbering — move it to `docs/answered-questions.md` with the
 > answer inline, no new A-number).
 >
-> **Last audited 2026-08-18** — every claim below was re-verified against the tree (branch merge
+> **Last audited 2026-08-21** — every claim below was re-verified against the tree (branch merge
 > state, file/symbol existence, test skips, doc paths). Landed narration deleted; dangling pointers
 > repaired.
 
@@ -54,17 +54,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
-> **Autonomous queue — empty as of 2026-08-18.** The lower-value notes below are not ordered work;
+> **Autonomous queue — empty as of 2026-08-21.** The lower-value notes below are not ordered work;
 > take them only if the owner adds one to the queue. The numbered threads below stay as reference
 > detail and are mostly footage-gated — do NOT start there.
 >
-> _Empty as of 2026-08-18 — all unblocked items landed or archived to `docs/handoffs/closed/`._
+> _Empty as of 2026-08-21 — all unblocked items landed or archived to `docs/handoffs/closed/`._
 >
-> Also unblocked but lower value: `mihara-bonding-chain`'s fit exposure (thread 1 — localize the
-> over-model, do not restore the 12-stack average); the clean-bin-time vs full-window denominator
-> settlement against a known-ground-truth fixture (turns the standing MAR caveat into a measured bias
-> bound); and the batched `cinderella`/`eve`/`julia` `gaugeHits` census rows — findings-only, and the
-> 2026-08-17 run gives NO support for crediting them at full value.
+> Also unblocked but lower value: the clean-bin-time vs full-window denominator settlement against
+> a known-ground-truth fixture (thread 2 — turns the standing MAR caveat into a measured bias
+> bound).
 
 1. **Faithfulness sweep residue** (batch docs archived 2026-08-13 in
    `docs/handoffs/closed/2026-08-10-faithfulness-batch{1..8}-findings.md`). Most items closed by
@@ -87,9 +85,24 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    merged). Opening-window timing promoted to owner ruling 2026-08-16 (DECISIONS). Open:
    - **Iron-sweep FB shortfall — narrowed 88% by `liberalio` gaugeHits:5 (2026-08-19, DECISIONS).**
      Shortfall collapsed 16.4 → 2.0 gauge/sec (40.8 → 5.0 per cycle). Residual ~2 gauge/sec is
-     within the focus-column ceiling's reach. The `anis-star` U28 divisor read remains as the
-     encoding audit path. `iron sweep (run G)` regression comp stays disabled pending footage
-     verification of the residual.
+     within the focus-column ceiling's reach. **Footage verification RAN 2026-08-21** (probe-runs):
+     with a now-exact credit schedule (builder fixed: applicationGauge channel + two frame-boundary
+     locks), the sim's refill-window generation is at parity with the video (rho 0.974, median
+     1.02) — the residual is NOT a generation-rate shortfall. The count miss persists (12 on all 20
+     seeds + deterministic vs measured 13–14) and localizes to cycle STRUCTURE: sim chain-to-chain
+     ~16.0s vs measured 14.388s, refill windows stretching late-fight. Classification stays
+     MIXED/INCONCLUSIVE (closure 0.4641 with the exact schedule). `iron sweep (run G)` stays
+     disabled; the open question is why sim refill windows stretch, not what gauge is missing.
+     The `anis-star` U28 encoding-audit read **ran and dead-ended**:
+     the N1b calibration read (2026-08-17,
+     `docs/probe-data/n1b-anis-star-calibration-read-2026-08-17.json`) neither confirmed nor
+     refuted `rawOverTrue ≈ 1.064` — her pulls have no resolvable sub-steps, so the
+     maiden-ice-rose-anchored method fails structurally on her bar. The 2026-08-18 pre-registered
+     rerun (`docs/probe-data/anis-star-e4-recovery-2026-08-18.json`, deliverable archived) then
+     CONFIRMED measured-elevation (11.3–11.6 vs shipped 10.39/pull), and the anomaly was ENACTED
+     2026-08-18 as `baseGaugeProb: 0.25` (DECISIONS 2026-08-18, commit `9352d531`). What remains
+     of U28 — the `hitsPerShot > 1` divisor generalization — has no viable probe and is tracked in
+     open-questions U28, not here.
    - **Clean-bin-time vs full-window denominator validation — PARTIALLY LANDED.**
      `fbDuration` now requires/defaults to a pinned `estimator` (`paint` for calibrated controls),
      and `validateCleanBinDenominator` in `scripts/probe/fill-trace-compare.ts` compares both

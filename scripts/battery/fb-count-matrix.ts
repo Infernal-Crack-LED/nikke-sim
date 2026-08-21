@@ -2065,7 +2065,7 @@ function printFocusColumns(
 // ============================================================================
 
 /** Where a credit came from. `fill` bypasses addGauge (no DBG_GAUGE line, no event). */
-export type GaugeCreditKind = 'shot' | 'skill' | 'fill';
+export type GaugeCreditKind = 'shot' | 'skill' | 'fill' | 'application';
 
 export interface GaugeCredit {
   frame: number;
@@ -2161,6 +2161,7 @@ interface RawBlock {
   formation?: string;
   teamHas?: unknown;
   delaySec?: number;
+  target?: { kind: string };
   trigger: { kind: string; count?: number };
   effects: EffectDef[];
 }
@@ -2500,6 +2501,81 @@ export function creditScheduleFor(
   // event's (slug, srcSlot, atkPct) against the override's own flatDamage coefficients.
   const skillGaugeHits = buildSkillGaugeHitsLookup(comp, warn);
 
+  // ---- applicationGauge (owner rulings 2026-08-16; sim.ts `isGeneratingApplication` +
+  // `applicationGauge`, which this MIRRORS — keep in lockstep): a qualifying non-damage
+  // enemy-debuff application credits the caster's `targetPerTrigger` ONCE per application event,
+  // refreshes included, at the full per-trigger value (no focus multiplier, no gaugeHits). The
+  // engine fires the credit inside `applyBlockEffects`, which emits no event of its own, so the
+  // application instant is recovered from the `buffApply` event the debuff's own `applyBuff`
+  // emits (enemyBuffs key = `${ownerIdx}:${slot}:${stat}:${value}`, targetSlug null = the boss).
+  // A qualifying block whose effects produce NO buffApply event — a pure `targetStatus` block, or
+  // enemy debuffs the engine never writes to `enemyBuffs` (only damageTakenPct/
+  // distributedDamagePct > 0 and defPct ≠ 0 are applied) — cannot be placed this way and is
+  // flagged LOUD instead of silently dropped. A slot carrying MORE THAN ONE qualifying block is
+  // likewise flagged: the event key cannot tell their applications apart.
+  const APP_NONGEN = new Set(['noah', 'snow-white-heavy-arms']);
+  const APP_NONGEN_TRIGGERS = new Set(['shotFired', 'chargeCounter']);
+  // appCredit[slug][slot] = per-application gauge amount (pre-burstGenPct), or absent.
+  const appCredit: Record<string, Map<string, number>> = {};
+  for (const s of slugs) {
+    appCredit[s] = new Map();
+    if (APP_NONGEN.has(s)) {
+      continue;
+    }
+    const row = gaugeTable[s] as { targetPerTrigger?: number } | undefined;
+    const per =
+      (row?.targetPerTrigger ??
+        CENSUS_GAUGE_MODAL_BY_WEAPON[data.characters[s].weapon] ??
+        40) / 100;
+    const bySlot = new Map<string, { qualifying: number; visible: number }>();
+    for (const b of activeRawBlocksAll(s, comp.modes?.[s])) {
+      const qualifies =
+        b.target?.kind === 'enemy' &&
+        !APP_NONGEN_TRIGGERS.has(b.trigger.kind) &&
+        b.effects.length > 0 &&
+        b.effects.every(
+          (e) => e.kind === 'buff' || e.kind === 'targetStatus'
+        ) &&
+        b.effects.some(
+          (e) =>
+            'durationSec' in e &&
+            typeof e.durationSec === 'number' &&
+            e.durationSec > 0 &&
+            e.durationSec < 900
+        );
+      if (!qualifies) {
+        continue;
+      }
+      // event-visibility mirrors sim.ts applyEffect's enemy branch exactly.
+      const visible = b.effects.some(
+        (e) =>
+          e.kind === 'buff' &&
+          (((e.stat === 'damageTakenPct' ||
+            e.stat === 'distributedDamagePct') &&
+            e.value > 0) ||
+            (e.stat === 'defPct' && e.value !== 0))
+      );
+      const rec = bySlot.get(b.slot) ?? { qualifying: 0, visible: 0 };
+      rec.qualifying++;
+      if (visible) {
+        rec.visible++;
+      }
+      bySlot.set(b.slot, rec);
+    }
+    for (const [slot, rec] of bySlot) {
+      if (rec.qualifying === 1 && rec.visible === 1) {
+        appCredit[s].set(slot, per);
+      } else {
+        warn(
+          `${s}: applicationGauge block(s) on ${slot} (${rec.qualifying} qualifying, ` +
+            `${rec.visible} event-visible) — this reconstruction places application credits ` +
+            'only for a slot with exactly one qualifying, buffApply-visible block, so its ' +
+            'application credits are MISSING (the endpoint check is the arbiter)'
+        );
+      }
+    }
+  }
+
   // ---- fold the frame-ordered event stream into the schedule.
   const credits: GaugeCredit[] = [];
   const perUnitScheduled: Record<string, number> = {};
@@ -2533,6 +2609,11 @@ export function creditScheduleFor(
   const teamAmmoResidual = new Map<number, number>(
     fillBlocks.map((_, i) => [i, 0])
   );
+  // One application event can apply several buff effects (one buffApply each) while the engine
+  // credits ONCE per application — dedupe per (frame, unit, slot). ⚠ A qualifying block firing
+  // twice on the SAME frame would be under-credited by this; no current override does that, and
+  // the endpoint check is the arbiter.
+  const appSeen = new Set<string>();
   for (const ev of events) {
     if (ev.kind === 'shot') {
       const c = data.characters[ev.slug];
@@ -2583,6 +2664,86 @@ export function creditScheduleFor(
       const hits = skillGaugeHits(ev.slug, ev.srcSlot, ev.atkPct);
       for (let h = 0; h < hits; h++) {
         push(ev.frame, ev.slug, ev.unitIdx, 'skill', amount);
+      }
+    } else if (ev.kind === 'buffApply' && ev.targetSlug === null) {
+      // applicationGauge: an enemy-debuff application on the boss (targetSlug null = the
+      // enemyBuffs list; applyBuff passes no casterIdx on that branch, so the caster rides the
+      // event key's `${ownerIdx}:${slot}:` prefix). Only slots with exactly one qualifying,
+      // event-visible block are credited (see the appCredit table above); anything else was
+      // already flagged into `unreconstructed`.
+      const m = /^(\d+):([^:]+):/.exec(ev.key);
+      if (m) {
+        const uIdx = Number(m[1]);
+        const slot = m[2];
+        const slug = slugs[uIdx];
+        const per = slug !== undefined ? appCredit[slug]?.get(slot) : undefined;
+        if (slug !== undefined && per !== undefined) {
+          const seenKey = `${ev.frame}:${uIdx}:${slot}`;
+          if (!appSeen.has(seenKey)) {
+            appSeen.add(seenKey);
+            // An application landing exactly ON a window's opening fullBurstEnd frame is still
+            // gauge-LOCKED in the engine: its sources (delaySec resolutions, interval blocks,
+            // fullBurstEnd triggers) all run BEFORE the stage=0 reset in the frame loop (sim.ts:
+            // pendingBlocks → intervalBlocks → fullBurstEnd). ⚠ A hitCount/lastBullet-triggered
+            // debuff landing on that exact frame would fire post-reset (unlocked) — none seats
+            // here today; the endpoint check is the arbiter.
+            const w = windowAt(ev.frame);
+            if (!(w > 0 && ev.frame === windows[w].startFrame)) {
+              push(
+                ev.frame,
+                slug,
+                uIdx,
+                'application',
+                per * (1 + burstGenPctAt(slug, ev.frame) / 100)
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ---- gauge-full TAIL lock. The chain gate (sim.ts "burst rotation") runs BEFORE weapon firing
+  // within its frame, so the frame the bar REACHES 100 is the last unlocked frame; from the next
+  // frame `stage !== 0` swallows every credit. Mid-fight windows already end there (their lock
+  // frame is B1-cast − PRE_B1_FRAMES = gauge-full + 1), but a window whose chain never completes
+  // IN-FIGHT (the B1 cast falls past the fight end) has no lock frame and would over-credit the
+  // tail. Reconstruct the lock from the credits themselves: per window, the first frame whose
+  // cumulative unlocked sum fills the bar; everything after it is locked.
+  {
+    const drop = new Set<GaugeCredit>();
+    for (const w of windows) {
+      let acc = 0;
+      let fillFrame = -1;
+      const wc = credits
+        .filter((c) => c.window === w.index)
+        .sort((a, b) => a.frame - b.frame);
+      for (const c of wc) {
+        acc += c.amount;
+        if (acc >= 100 - 1e-9) {
+          fillFrame = c.frame;
+          break;
+        }
+      }
+      if (fillFrame < 0) {
+        continue;
+      }
+      for (const c of wc) {
+        if (c.frame > fillFrame) {
+          drop.add(c);
+        }
+      }
+    }
+    if (drop.size) {
+      for (const c of drop) {
+        perUnitScheduled[c.slug] -= c.amount;
+        windows[c.window].credits--;
+        windows[c.window].gauge -= c.amount;
+      }
+      for (let i = credits.length - 1; i >= 0; i--) {
+        if (drop.has(credits[i])) {
+          credits.splice(i, 1);
+        }
       }
     }
   }

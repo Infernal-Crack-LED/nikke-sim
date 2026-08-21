@@ -8329,8 +8329,57 @@ keeps its own basis (datamine + comp-level FB pins) — no solo observable touch
 confirm or refute `rawOverTrue ≈ 1.064` for this bar. Until that exists, a third magnitude run only
 re-fights this argument.
 
+> SUPERSEDED (2026-08-18) — the calibration read ran and failed structurally (N1b,
+> `docs/probe-data/n1b-anis-star-calibration-read-2026-08-17.json`: her pulls land in a single 60fps
+> frame with no resolvable weapon/rider sub-steps, so the method can neither confirm nor refute the
+> gain on her bar). The anomaly-recovery re-run (E4 PASS) plus owner ruling N1c (9 pulls fill the
+> bar ⇒ ≥ 11.11%/pull) settled the direction instead — enacted as `baseGaugeProb: 0.25`
+> (DECISIONS 2026-08-18).
+
 **Reported, unexplained, used by nothing:** a +547,955 damage step at the W4 opener (a third
 magnitude, 14.1% above the tier-A 480,330) and the W4 rendered-100.0 → green-full gap spanning two
 pulls. The post-verdict candidate check put 2 of 3 upward departures within one render column of the
 declared 3.71 pp and the third 0.97 off; the downward departure (W4p7) is unexplained by it. That
 check is descriptive at n=3 — it identifies no mechanism.
+
+## 2026-08-21 — iron sweep (run G) fill-trace re-run against the current engine: generation rate at parity, the full-burst-count miss is structural
+
+**What.** Re-ran the refill-window fill-trace classification for `iron sweep (run G)` with a FRESH
+credit schedule from the current engine (liberalio `gaugeHits:5`, anis-star `baseGaugeProb`, the
+application-gauge channel all live) against the committed 2026-08-14 replay bundle's reader trace
+(`docs/probe-data/fill-trace-u8-g-iron-sweep.json` — the video side is unchanged).
+
+**Enabler — two schedule-builder blind spots fixed** (`scripts/battery/fb-count-matrix.ts`, engine
+untouched):
+
+1. **The application-gauge channel was invisible to the builder.** takina's S2 enemy debuff credits
+   her datamined 560 per-trigger gauge per application (owner ruling 2026-08-16, engine
+   `applicationGauge`), but the builder reconstructed only shot/skill/fill credits and did not even
+   flag the omission — iron sweep's endpoint check failed by exactly her 7 unlocked applications
+   (39.2 = 7 × 5.6). The builder now mirrors `isGeneratingApplication` and recovers application
+   instants from the debuff's own `buffApply` events (deduped one credit per application).
+2. **Two frame-boundary locks were mis-placed.** (a) An application landing exactly on the
+   fullBurstEnd frame is still gauge-locked in the engine (delaySec/interval/fullBurstEnd-triggered
+   blocks all run before the stage reset in the frame loop). (b) The gauge-full TAIL lock: when the
+   bar fills in a window whose chain never completes in-fight (the B1 cast falls past 180s), there
+   is no cast event to derive the lock from, so the builder kept crediting past gauge-full. The lock
+   is now reconstructed from the credits themselves (first frame whose cumulative fills the bar).
+   Endpoint residual: iron sweep 39.2 → **0.000** (all five units exact); T5 wind-weak 11.315 →
+   **0.106** — the "baseGaugeProb timing-cascade artifact" behind the 2026-08-19 tolerance widening
+   was mostly this tail lock, not the expected-value model.
+
+**Result — the residual is real but no longer generational.** With the exact schedule the basis
+checks (B1–B4) pass for the first time on this comp, and the pooled fill rate is at parity with the
+video: sim 41.81 gauge per clean-bin second vs the real bar's 40.72 (rho 0.974; median per-window
+1.02). The classification stays MIXED/INCONCLUSIVE — the O×S closure residual is 0.4641 with the
+exact schedule (was 0.2579 with the 2026-08-14 one). The full-burst-count gap persists: sim reads
+**12 on the deterministic run and all 20 Monte Carlo seeds** vs the measured 13–14. With the rate
+at parity, the miss localizes to cycle STRUCTURE: sim refill windows run 1.8–4.1s against the real
+2.0–3.6s (totals 29.1s vs 25.7s over 11 windows) and the sim's chain-to-chain period is ~16.0s vs
+the measured 14.388s. The sim also over-generates into the 100-clamp (1218 scheduled vs 1100
+needed over 11 windows); the real fight's own clamp waste is invisible to the trace by
+construction, so that asymmetry identifies no mechanism by itself.
+
+**Consequence.** `iron sweep (run G)` stays `disabled: true` in `scripts/regression.ts` — the
+residual is verified real, and it is now a cycle-structure question (why sim refill windows stretch
+late-fight), not a generation-rate shortfall. QUEUE.md thread 2 updated accordingly.
