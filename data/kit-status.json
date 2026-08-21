@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-19",
+  "generatedAt": "2026-08-21",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -14,21 +14,21 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 184,
+      "unit-tested": 186,
       "authored": 1
     },
     "tier": {
-      "MODEL_ONLY": 151,
+      "MODEL_ONLY": 153,
       "VALIDATED": 10,
       "MEASURED": 14,
       "CALIBRATED": 10
     },
     "band": {
       "±8%": 8,
-      "±3% ✓": 10,
+      "±5%": 8,
       "±15%": 10,
-      "±5%": 6,
-      ">15%": 11
+      "±3% ✓": 9,
+      ">15%": 10
     }
   },
   "units": {
@@ -250,14 +250,14 @@
         "records": [
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.9711
+            "ratio": 0.969
           }
         ],
         "n": 1,
-        "mean": 0.9711,
-        "mad": 0.0289,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 0.969,
+        "mad": 0.031,
+        "band": "±5%",
+        "temp": "COLD ▼"
       }
     },
     "admi": {
@@ -662,13 +662,12 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
-      "board": null,
+      "evidence": "kit-autonomy gauntlet 2026-08-19; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; blind S5 suite 10 pass / 5 RED all ruled RECON_ERROR by the judge (contested-B2 fixture vacuity + crown/helm fixture artifacts) / 4 self-documented skips vs driver override; blind S6 override 3/3 load-bearing blocks identical",
+      "date": "2026-08-19",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
-      "date": "2026-08-19",
-      "evidence": "kit-autonomy gauntlet 2026-08-19; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; blind S5 suite 10 pass / 5 RED all ruled RECON_ERROR by the judge (contested-B2 fixture vacuity + crown/helm fixture artifacts) / 4 self-documented skips vs driver override; blind S6 override 3/3 load-bearing blocks identical",
       "residual": "spot-check cluster: (1) S1 tick granularity — ticks:5/intervalSec:1 approximates the kit's per-ATTACK healing inside the 5-sec window at the ~1-shot/sec RL cadence; presently inert (no Supporter-class recovery consumer exists), re-derive from footage if one ever ships; (2) cadence tuple datamine (RL pullsPerSec / reloadFrames 141 / chargeFrames 60) — rounds/min + reload gap from any anne focus video; (3) the revive is META-DEFINING but unmodeled (no death/revive/HP-pool primitive) — the kit's entire real-play raid value is outside the sim",
       "unmodeled": {
         "skill1": [
@@ -689,7 +688,8 @@
         "burst: both lines key to her OWN burst cast (burstCast, not fullBurstEnter — the Burst-II trap); the ATK buff therefore applies ~0.9s BEFORE the Full Burst window opens (the stage-3 cast + FB-start lag rides inside its 10s window), which is the kit-faithful coverage, not an approximation.",
         "skill2: the 'above 90% HP' / '90% or above' gates would be permanently satisfied at scope lock (nobody takes damage), but both lines are unmodeled regardless (no incoming-healing StatKey, no enemy-healing model), so the gate representation is moot."
       ],
-      "note": "No real-fight recording yet — every ⚑ below is an unmeasured estimate. Structure is test-pinned (scripts/tests/units/anne-miracle-fairy.test.ts). anne-miracle-fairy (Anne: Miracle Fairy) — RL/Wind/Supporter/Burst II, cd 60s, ammo 6, chargeFrames 60, reloadFrames 141, Missilis. NEW unit (no base counterpart) — a PURE sustain/support kit: no damage effect, no DoT, no weapon swap, no ammo/reload/fire-rate modifier, no gauge line. MODELED TODAY: (1) skill1 Fairy Dance — every 3 normal attacks (hitCount 3; hitsPerShot 1 so hits == pulls) opens a 5-sec healing window for all SUPPORTER-class allies (includes Anne herself): encoded as a heal effect with ticks:5 intervalSec:1 (one recovery event per second across the window ≈ the kit's per-attack healing at the ~1-shot/sec RL cadence; ⚑ granularity estimate). The 6.07%-of-attack-damage MAGNITUDE rides in unmodeled (no HP pool) — the block exists for its TANDEM value (it would fire Supporter-class teammates' 'recovery' triggers); no Supporter on-recovery consumer exists in the roster today, so the channel is faithfully encoded but presently inert. (2) burst line 1 — all ATTACKER-class allies: heal on her own burstCast (one recovery event per cast; the 38.61%-of-caster-final-max-HP magnitude unmodeled, event-only like every heal). (3) burst line 2 — all ATTACKER-class allies: ATK ▲ 77.22% for 10s (atkPct, plain target-% stat; the kit's only damage-relevant line), keyed to her OWN burstCast — the Burst-II trap (fullBurstEnter would shift the window ~0.9s late and mis-attribute rotations another Burst II took) is pinned structurally and by frame identity in the spec. DELIBERATELY UNMODELED (verbatim in `unmodeled`): both skill2 lines — the allies' Incoming Healing ▲ 23.46% (self-HP >90% gate + no incoming-healing StatKey + no HP pool: doubly unrepresentable, inert) and the enemies' Incoming Healing ▼ 78.93%/10s on last-bullet-with-own-HP≥90% (HP gate + no enemy-healing model — the boss never heals; explicitly NOT a damageTakenPct debuff, which would be the catastrophic pattern-match); and the burst RESURRECT of 1 incapacitated Attacker at 99% HP once per battle (⚑ meta-defining: no death/revive/HP-pool primitive — rapunzel precedent; zero damage impact, the entire real-play value of the kit unmodeled, recipe recorded). EVIDENCE TIER: all live values are kit-text-literal (3 / 5-sec / 77.22 / 10s — DATAMINED L10); the only estimates are the S1 tick granularity and the cadence tuple. FAITHFULNESS CORE: damage-neutrality for her OWN damage — she sims byte-identical to the bare weapon for her own total (proven in the spec, group A1); her board footprint is entirely cross-unit: the Attacker-class ATK grant (live) plus two class-scoped recovery channels (tandem-only). TIER 2 (class-scoped buffs ×3 lines, burstCast-vs-fullBurstEnter trigger identity, meta-defining revive ⚑). Kit-autonomy gauntlet 2026-08-19."
+      "note": "No real-fight recording yet — every ⚑ below is an unmeasured estimate. Structure is test-pinned (scripts/tests/units/anne-miracle-fairy.test.ts). anne-miracle-fairy (Anne: Miracle Fairy) — RL/Wind/Supporter/Burst II, cd 60s, ammo 6, chargeFrames 60, reloadFrames 141, Missilis. NEW unit (no base counterpart) — a PURE sustain/support kit: no damage effect, no DoT, no weapon swap, no ammo/reload/fire-rate modifier, no gauge line. MODELED TODAY: (1) skill1 Fairy Dance — every 3 normal attacks (hitCount 3; hitsPerShot 1 so hits == pulls) opens a 5-sec healing window for all SUPPORTER-class allies (includes Anne herself): encoded as a heal effect with ticks:5 intervalSec:1 (one recovery event per second across the window ≈ the kit's per-attack healing at the ~1-shot/sec RL cadence; ⚑ granularity estimate). The 6.07%-of-attack-damage MAGNITUDE rides in unmodeled (no HP pool) — the block exists for its TANDEM value (it would fire Supporter-class teammates' 'recovery' triggers); no Supporter on-recovery consumer exists in the roster today, so the channel is faithfully encoded but presently inert. (2) burst line 1 — all ATTACKER-class allies: heal on her own burstCast (one recovery event per cast; the 38.61%-of-caster-final-max-HP magnitude unmodeled, event-only like every heal). (3) burst line 2 — all ATTACKER-class allies: ATK ▲ 77.22% for 10s (atkPct, plain target-% stat; the kit's only damage-relevant line), keyed to her OWN burstCast — the Burst-II trap (fullBurstEnter would shift the window ~0.9s late and mis-attribute rotations another Burst II took) is pinned structurally and by frame identity in the spec. DELIBERATELY UNMODELED (verbatim in `unmodeled`): both skill2 lines — the allies' Incoming Healing ▲ 23.46% (self-HP >90% gate + no incoming-healing StatKey + no HP pool: doubly unrepresentable, inert) and the enemies' Incoming Healing ▼ 78.93%/10s on last-bullet-with-own-HP≥90% (HP gate + no enemy-healing model — the boss never heals; explicitly NOT a damageTakenPct debuff, which would be the catastrophic pattern-match); and the burst RESURRECT of 1 incapacitated Attacker at 99% HP once per battle (⚑ meta-defining: no death/revive/HP-pool primitive — rapunzel precedent; zero damage impact, the entire real-play value of the kit unmodeled, recipe recorded). EVIDENCE TIER: all live values are kit-text-literal (3 / 5-sec / 77.22 / 10s — DATAMINED L10); the only estimates are the S1 tick granularity and the cadence tuple. FAITHFULNESS CORE: damage-neutrality for her OWN damage — she sims byte-identical to the bare weapon for her own total (proven in the spec, group A1); her board footprint is entirely cross-unit: the Attacker-class ATK grant (live) plus two class-scoped recovery channels (tandem-only). TIER 2 (class-scoped buffs ×3 lines, burstCast-vs-fullBurstEnter trigger identity, meta-defining revive ⚑). Kit-autonomy gauntlet 2026-08-19.",
+      "board": null
     },
     "arcana": {
       "name": "Arcana",
@@ -1777,7 +1777,7 @@
           },
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9776
+            "ratio": 0.9757
           },
           {
             "comp": "T4 water-weak (boss Fire)",
@@ -1841,8 +1841,8 @@
           }
         ],
         "n": 17,
-        "mean": 1.0095,
-        "mad": 0.0437,
+        "mean": 1.0093,
+        "mad": 0.0438,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -3346,7 +3346,7 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.0244
+            "ratio": 1.0226
           },
           {
             "comp": "T4 water-weak (boss Fire)",
@@ -3386,8 +3386,8 @@
           }
         ],
         "n": 10,
-        "mean": 0.9848,
-        "mad": 0.0231,
+        "mean": 0.9846,
+        "mad": 0.0229,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -4129,7 +4129,7 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9829
+            "ratio": 0.9827
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -4141,7 +4141,7 @@
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.9835
+            "ratio": 0.9871
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
@@ -4165,8 +4165,8 @@
           }
         ],
         "n": 9,
-        "mean": 0.9774,
-        "mad": 0.0257,
+        "mean": 0.9778,
+        "mad": 0.0254,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -4337,12 +4337,12 @@
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.7896
+            "ratio": 0.7914
           }
         ],
         "n": 3,
-        "mean": 0.9437,
-        "mad": 0.084,
+        "mean": 0.9443,
+        "mad": 0.0834,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -4796,12 +4796,12 @@
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.1657
+            "ratio": 1.1686
           }
         ],
         "n": 2,
-        "mean": 1.119,
-        "mad": 0.119,
+        "mean": 1.1205,
+        "mad": 0.1205,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -4979,34 +4979,35 @@
           "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.",
           "Restraint Chain ▲ 1, up to 10."
         ],
-        "burst": []
+        "burst": [
+          "Dragging Chain: Deals 50.05% of final ATK as sustained damage every 1 sec. Mirrors the stack count of Ensnaring Chains on each target for 10 sec. This effect cannot be removed."
+        ]
       },
       "caveats": [
-        "skill1: the Restraint dump's timing is kit-silent ('at a specific timing') — modeled at battle start and at Full-Burst end (⚑)",
-        "skill1: the permanent Ensnaring DoT is LIVE — `perResource {ensnaring, 25.08}` recomputes each tick from the current stack count, so there is no fitted stack number in this file. The burst ships the full kit 1001%/s and cancels the pool to zero, which is why the window sums to 1001 without a decomposition.",
-        "skill2: the 40-normals-in-Full-Burst Ensnaring generation is a real `hitCount:40` block carrying `fbGate:'inFb'` AND `countScope:'gated'` — the kit scopes the COUNTING to Full Burst ('+1 per 40 normals during Full Burst'), so out-of-window normals must not advance the counter. Without the count scope she over-generates by ~19% (127 vs 107 gains per fight), though the 20-stack cap absorbs most of it.",
-        "⚑ FIT-EXPOSED by the live pool, and this is a real residual, NOT a number to turn back. The retired 12-stack average sat BELOW what the kit's own generation produces (the pool time-averages ~13.4 stacks), so she moved 1.034 -> 1.179 HOT on her 2 graded comps when the fitted value was removed. Her measured full-burst count is unchanged (11 vs measured 11), so the movement is magnitude, not rotation. Same class as the snow-white-heavy-arms stage-entry exposure: the fitted number was absorbing an over-model elsewhere in her kit, and finding it is the follow-up. Do not restore the average.",
-        "skill2: 'when the skill user is incapacitated → Ensnaring Chains stacks ▲20' is inert — the boss deals no damage at scope lock, so she is never incapacitated.",
-        "skill2: 'when an enemy is neutralized → Restraint Chain ▲1, up to 10' is inert — the boss never dies at scope lock.",
-        "skill1: in a multi-B3 comp the fullBurstEnd Restraint dump can over-fire, because the kit's 'if this unit has just used her Burst Skill' gate is only exact when she is the sole B3. Benign on the graded comps."
+        "skill1: Restraint Chains are a live resource (restraint [0..10]). They recharge to 10 at every fullBurstEnd and are consumed over 4s (0.4s per stack), each consumption dealing 50.06% damage and adding +1 Ensnaring.",
+        "skill2: the 40-normals-in-Full-Burst trigger ALSO consumes 1 Restraint Chain and deals 50.06% damage per proc (the stack-gain and Restraint-consumption are the same event).",
+        "skill1: the permanent Ensnaring DoT is LIVE — perResource {ensnaring, 25.08} recomputes each tick from the current stack count.",
+        "skill2: the 40-normals-in-Full-Burst Ensnaring generation carries fbGate:\"inFb\" AND countScope:\"gated\".",
+        "skill1: the fullBurstEnd recharge/consumption fires on every Full Burst end. The kit text says 'if this unit has just used her Burst Skill', but measured stack behavior (reaches 20 before burst) and board ratio (1.020) both require it every FB end in multi-B3 comps.",
+        "skill2: incapacitated +20 and enemy-neutralized +1 lines are inert at scope lock."
       ],
-      "note": "Mihara: Bonding Chain — MG/Fire. Board: 1.034 HOT on 2 graded comps (0.99 / 1.08). Ensnaring Chains is modeled as a LIVE stack pool (owner ruling 2026-08-13: model the stacks, do not average them), on the engine's resource-scaled DoT primitive. Kit-faithfulness is pinned test-first in scripts/tests/units/mihara-bonding-chain.test.ts (13 tests, groups M1-M5).\nRESTRAINT CHAINS: charged to 10 at battle start and refilled to 10 at each Full-Burst end after her own burst; the S1 'specific timing' attack then dumps all of them, one 50.06% hit per chain. Modeled as a 500.6% (10 x 50.06) flatDamage dump on a passive at battle start and again on fullBurstEnd — she is the team's Burst III, so Full-Burst end coincides with her burst end.\nENSNARING CHAINS: a sustained-damage DoT capped at 20 stacks, fed by the Restraint hits and by S2's +1 per 40 normals during Full Burst. Her burst CANCELS Ensnaring to 0; it rebuilds +10 from the Restraint dump at the following FB end and +1 per 40 normals during FB windows, reaching the 20 cap before her next burst. Shipped as a LIVE pool: `resources.ensnaring` [0..20], a permanent DoT carrying `perResource {ensnaring, 25.08}` so each tick's magnitude is the CURRENT stack count x 25.08, +10 resource blocks on the two Restraint dumps, +1 on a `hitCount:40` block gated to Full Burst, and a -20 on her burst that clamps the pool to zero. There is no fitted stack number left in this file — the stack trajectory emerges from the kit's own generation and spend.\nBURST — Dragging Chain mirrors the 20 Ensnaring stacks for 10s, i.e. the full 1001%/s (20 x 50.05), and cancels Ensnaring. With a live pool the no-double-count property is STRUCTURAL rather than arithmetic: the cancel zeroes the pool, the baseline DoT reads that zero and stops contributing on its own, so the window sums to exactly 1001%/s. The superseded model could not switch a static baseline off, so it shipped a 700 DELTA (1001 - 301) to subtract it — a decomposition that only held while the baseline was a constant. Removing the cancel is now the double-count counterfactual, and the spec pins it.\nDoTs correctly inherit S2's stageEnter-3 sustainedDamagePct +59.98% / 10s through the Damage-Up bucket.\nHer burst damage is a dot, and its kit clause is NOT one of the burst-amp literals, so the 'burstDesc is authorable on flatDamage only' engine gap is MOOT for her — there is nothing to tag and no eligibility claim to make.\nNOT MODELED, by disposition: S2's 'when the skill user is incapacitated → Ensnaring +20' (defensive; the boss deals no damage) and 'when an enemy is neutralized → Restraint +1' (the boss never dies). S2's 40-normals-in-Full-Burst Ensnaring generation is not a discrete block but is FOLDED into the 12-stack average above — deliberately, not skipped.\nIn a multi-B3 comp the S1 fullBurstEnd dump can over-fire, since the kit's 'if this unit has just used her Burst Skill' gate is only exact when she is the sole B3. Benign on the graded comps; recorded as a kit-status finding rather than pinned as correct.",
+      "note": "Mihara: Bonding Chain — MG/Fire. Board now 1.020 OK on 2 graded comps after restraint-pacing fix (2026-08-21). Ensnaring Chains is modeled as a LIVE stack pool.\nRESTRAINT CHAINS: a live resource `restraint` [0..10], initial 10, recharged to 10 at every fullBurstEnd, and consumed at 0.4s per stack over 4s. Each consumption deals 50.06% damage and adds +1 Ensnaring stack.\nS2 STACK GENERATION: the 40-normals-in-Full-Burst trigger is the same event as consuming one Restraint Chain: it deals 50.06%, consumes 1 restraint, and adds +1 Ensnaring.\nBURST: Dragging Chain mirrors 20 Ensnaring stacks (1001%/s) for 10s and cancels Ensnaring.",
       "board": {
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.1263
+            "ratio": 0.988
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.2301
+            "ratio": 1.0716
           }
         ],
         "n": 2,
-        "mean": 1.1782,
-        "mad": 0.1782,
-        "band": ">15%",
-        "temp": "HOT ▲"
+        "mean": 1.0298,
+        "mad": 0.0418,
+        "band": "±5%",
+        "temp": "OK  ·"
       }
     },
     "milk": {
@@ -6674,7 +6675,7 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9639
+            "ratio": 0.9607
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -6694,8 +6695,8 @@
           }
         ],
         "n": 5,
-        "mean": 0.9338,
-        "mad": 0.0715,
+        "mean": 0.9331,
+        "mad": 0.0721,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -8541,6 +8542,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-08-19; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; blind S5 suite 10 pass/5 self-documented skips vs driver override; judge ruled all 4 blind-vs-driver divergences for the driver",
+      "date": "2026-08-19",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "spot-check cluster: (1) same-cast Fire-Amp-on-nuke ordering — one Wind-boss focus-video popup of the 1258.79% nuke with/without the x1.9001 amp closes it; (2) '1 More = own burst vs Wind' literal read — an ally-sourced/any-weakness-hit 1 More would re-key three lines (recipe in caveats); (3) hitsPerShot 1 on an MG is a datamine inherit — base-stat territory, worth a cadence probe before trusting her MG damage share",
       "unmodeled": {
         "skill1": [
           "Persona - Konohana Sakuya: This effect is continuous and cannot be removed. — named state container: the engine has no Persona-state primitive. The healing function it wraps IS modeled (skill1 interval block — recovery events every 3s to all allies); the state NAME / undispellable flag is display-only at scope (nothing dispels).",
@@ -8564,14 +8572,7 @@
         "skill2: the Mediarama window (delaySec 3 + 3 ticks at 3s) ends at cast+9s, inside the 10.37s Scarlet Flower window — a fourth tick at +12s would fall after Full Burst ends, so the kit's 'every 3 sec' inside the state produces exactly three activations per cast."
       ],
       "note": "NEW unit (no base counterpart) — Persona-style kit ('1 More', 'Persona state'). SKILL1: the every-3s Media heal is MODELED as recovery EVENTS (interval 3s, all allies) — the magnitude (5.7% of the skill user's final max HP) has no engine consumer (no HP pool), but the events are board-relevant: they drive on-recovery consumers (crown's 'when recovery takes effect' team Attack Damage). The battle-start + Full-Burst-end ATK ▲ 65.37%/15s is two blocks on the two named triggers. The 'when 1 More takes effect' 400.31% distributed hit keys to THE 1 MORE EVENT — her own burst cast against a Wind boss (burstCast + bossElementGate Wind): her burst's own '1 More' line activates 'if a Wind Code enemy is present', and Fire's elemental advantage over Wind is the weakness hit; S1/S2's 'when 1 More takes effect' clauses key to that same event. SKILL2: battle-start Attack Damage ▲ 55.31% is permanent (battleStart, no duration). The Scarlet Flower state activates on Burst Skill use and DEACTIVATES when Full Burst ends — encoded as burstCast-keyed blocks with the window derived from the engine's measured FB timing (cast → FB end = 22f pre-delay + 10s FB = 622f ≈ 10.37s): Mediarama heal (3 ticks at +3/+6/+9s, event-only), Fire Amp distributedDamagePct 90.01 (own multiplicative bucket, flavor-gated to her distributed hits), and the stage-3-entry Elemental Advantage Attack Damage ▲ 48.15%/10s sits in the ELEMENT bucket (elemAdvantageDamagePct — active only while advantaged; a Damage-Up placement is the classic over-credit and is discriminated in the spec test). BURST: the 1258.79% distributed nuke is cast-instant (no +50% Full Burst major — the cast lands 22f before FB opens), TAGGED burstDesc 'allEnemies' (her clause is the literal string trina's Burst-Skill-Damage amp quotes — literal-only per owner ruling 2026-08-10 — so the nuke is amp-eligible; the skill1 1 More hit stays untagged, amps never reach skill procs), and takes the Fire Amp by the measured same-cast rule (U10: live buffs at cast DO apply; the skill2 state block resolves before the burst slot on the cast frame). The 1 More ATK ▲ 45.33%/10s is Wind-gated. Kit-autonomy gauntlet 2026-08-19: cross-family S2b (claude-fable-5) independent review converged FAITHFUL on all 9 load-bearing lines (leakDetected null); the two non-encodable lines (Scarlet Protection damage-taken reduction; the Follow Up grant to 'standard Burst 3 allies in the Persona state') are verbatim in unmodeled with recipes — the Follow Up has no Persona-state primitive to gate on and no roster carrier, so its target set is empty in every sim-able team today.",
-      "board": null,
-      "date": "2026-08-19",
-      "evidence": "kit-autonomy gauntlet 2026-08-19; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; blind S5 suite 10 pass/5 self-documented skips vs driver override; judge ruled all 4 blind-vs-driver divergences for the driver",
-      "residual": "spot-check cluster: (1) same-cast Fire-Amp-on-nuke ordering — one Wind-boss focus-video popup of the 1258.79% nuke with/without the x1.9001 amp closes it; (2) '1 More = own burst vs Wind' literal read — an ally-sourced/any-weakness-hit 1 More would re-key three lines (recipe in caveats); (3) hitsPerShot 1 on an MG is a datamine inherit — base-stat territory, worth a cadence probe before trusting her MG damage share",
-      "graded": {
-        "teams": 0,
-        "within3pct": 0
-      }
+      "board": null
     },
     "yulha": {
       "name": "Yulha",

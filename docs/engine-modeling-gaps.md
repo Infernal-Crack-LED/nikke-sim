@@ -57,7 +57,7 @@
 | `convertExcess` | 1 | red-hood |
 | `countInFb` | 7 | claire, frima, quiry, rapi-red-hood, scarlet-black-shadow, snow-crane, snow-white-innocent-days |
 | `critRateNormalPct` | 3 | biscuit, helm, julia |
-| `delaySec` | 9 | arcana-fortune-mate, asuka-wille, dorothy, flora, grave, neon-vision-eye, rapi-red-hood, snow-white, … |
+| `delaySec` | 10 | arcana-fortune-mate, asuka-wille, dorothy, flora, grave, mihara-bonding-chain, neon-vision-eye, rapi-red-hood, … |
 | `durationShots` | 14 | asuka-wille, d-killer-wife, emilia, eunhwa, harran, helm, miranda, neon, … |
 | `escalating` | 11 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, mary-bay-goddess, mihara, … |
 | `everyN` | 8 | clay, harran, mast-romantic-maid, mint, neon-vision-eye, phantom, power, soda-twinkling-bunny |
@@ -106,7 +106,7 @@
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 5 | asuka, kilo, mori, naga, rapunzel-pure-grace |
 | `requiresTargetStatus` | 13 | asuka-wille, d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, … |
-| `resourceGate` | 24 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace, … |
+| `resourceGate` | 25 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace, … |
 | `sameWeapon` | 4 | chisato, clay, frima, jill |
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |

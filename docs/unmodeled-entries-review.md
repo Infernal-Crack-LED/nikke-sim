@@ -11,16 +11,16 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 212 | 45.2% |
-| Missing engine primitive / trigger | 96 | 20.5% |
-| Other / see caveats | 94 | 20.0% |
+| Defensive / HP / shield / aggro | 212 | 45.1% |
+| Missing engine primitive / trigger | 96 | 20.4% |
+| Other / see caveats | 95 | 20.2% |
 | Out-of-domain / parser unsupported | 30 | 6.4% |
 | Partless boss | 10 | 2.1% |
 | Weapon-state / shot-count approximation | 9 | 1.9% |
 | Self-status / stack gate | 8 | 1.7% |
 | RNG / probabilistic | 6 | 1.3% |
 | Measurement-gated / unverified cadence | 4 | 0.9% |
-| **Total** | **469** | 100.0% |
+| **Total** | **470** | 100.0% |
 
 ## Entries by reason
 
@@ -1173,7 +1173,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Other / see caveats (94)
+### Other / see caveats (95)
 
 **A2** (a2)
 
@@ -1290,11 +1290,13 @@ Explosion Radius ▲ 15.01% for 10 sec.
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
 - **skill2:** Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.
-  - *Why:* skill2: 'when the skill user is incapacitated → Ensnaring Chains stacks ▲20' is inert — the boss deals no damage at scope lock, so she is never incapacitated.
+  - *Why:* skill2: the 40-normals-in-Full-Burst Ensnaring generation carries fbGate:"inFb" AND countScope:"gated".
 - **skill2:** Ensnaring Chains stacks ▲ 20.
-  - *Why:* skill2: 'when the skill user is incapacitated → Ensnaring Chains stacks ▲20' is inert — the boss deals no damage at scope lock, so she is never incapacitated.
+  - *Why:* skill2: the 40-normals-in-Full-Burst Ensnaring generation carries fbGate:"inFb" AND countScope:"gated".
 - **skill2:** Restraint Chain ▲ 1, up to 10.
-  - *Why:* skill2: 'when an enemy is neutralized → Restraint Chain ▲1, up to 10' is inert — the boss never dies at scope lock.
+  - *Why:* skill2: the 40-normals-in-Full-Burst trigger ALSO consumes 1 Restraint Chain and deals 50.06% damage per proc (the stack-gain and Restraint-consumption are the same event).
+- **burst:** Dragging Chain: Deals 50.05% of final ATK as sustained damage every 1 sec. Mirrors the stack count of Ensnaring Chains on each target for 10 sec. This effect cannot be removed.
+  - *Why:* skill2: the 40-normals-in-Full-Burst trigger ALSO consumes 1 Restraint Chain and deals 50.06% damage per proc (the stack-gain and Restraint-consumption are the same event).
 
 **Milk: Blooming Bunny** (milk-blooming-bunny)
 
@@ -1591,7 +1593,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
 - **skill2:** Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.
-  - *Why:* skill2: 'when the skill user is incapacitated → Ensnaring Chains stacks ▲20' is inert — the boss deals no damage at scope lock, so she is never incapacitated.
+  - *Why:* skill2: incapacitated +20 and enemy-neutralized +1 lines are inert at scope lock.
 
 **Milk: Blooming Bunny** (milk-blooming-bunny)
 

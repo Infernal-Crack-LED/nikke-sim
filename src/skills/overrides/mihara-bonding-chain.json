@@ -8,7 +8,9 @@
       "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.",
       "Restraint Chain \u25b2 1, up to 10."
     ],
-    "burst": []
+    "burst": [
+      "Dragging Chain: Deals 50.05% of final ATK as sustained damage every 1 sec. Mirrors the stack count of Ensnaring Chains on each target for 10 sec. This effect cannot be removed."
+    ]
   },
   "caveats": [
     "skill1: Restraint Chains are a live resource (restraint [0..10]). They recharge to 10 at every fullBurstEnd and are consumed over 4s (0.4s per stack), each consumption dealing 50.06% damage and adding +1 Ensnaring.",
@@ -54,36 +56,6 @@
           "kind": "resource",
           "name": "restraint",
           "delta": 10
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 0.0,
-      "resourceGate": {
-        "name": "restraint",
-        "min": 1
-      },
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "restraint",
-          "delta": -1
-        },
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        },
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
         }
       ]
     },
@@ -333,6 +305,36 @@
         "kind": "fullBurstEnd"
       },
       "delaySec": 3.6,
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "delaySec": 4.0,
       "resourceGate": {
         "name": "restraint",
         "min": 1

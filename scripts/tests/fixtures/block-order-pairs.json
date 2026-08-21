@@ -161,6 +161,896 @@
         "order": "producer-first"
       }
     ],
+    "mihara-bonding-chain": [
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 1,
+        "consumer": 2,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 1,
+        "consumer": 3,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 1,
+        "consumer": 4,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 1,
+        "consumer": 5,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 1,
+        "consumer": 6,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 1,
+        "consumer": 7,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 1,
+        "consumer": 8,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 1,
+        "consumer": 9,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 1,
+        "consumer": 10,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 1,
+        "consumer": 11,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 2,
+        "consumer": 2,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 2,
+        "consumer": 3,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 2,
+        "consumer": 4,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 2,
+        "consumer": 5,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 2,
+        "consumer": 6,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 2,
+        "consumer": 7,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 2,
+        "consumer": 8,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 2,
+        "consumer": 9,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 2,
+        "consumer": 10,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 2,
+        "consumer": 11,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 3,
+        "consumer": 2,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 3,
+        "consumer": 3,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 3,
+        "consumer": 4,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 3,
+        "consumer": 5,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 3,
+        "consumer": 6,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 3,
+        "consumer": 7,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 3,
+        "consumer": 8,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 3,
+        "consumer": 9,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 3,
+        "consumer": 10,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 3,
+        "consumer": 11,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 4,
+        "consumer": 2,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 4,
+        "consumer": 3,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 4,
+        "consumer": 4,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 4,
+        "consumer": 5,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 4,
+        "consumer": 6,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 4,
+        "consumer": 7,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 4,
+        "consumer": 8,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 4,
+        "consumer": 9,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 4,
+        "consumer": 10,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 4,
+        "consumer": 11,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 5,
+        "consumer": 2,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 5,
+        "consumer": 3,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 5,
+        "consumer": 4,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 5,
+        "consumer": 5,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 5,
+        "consumer": 6,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 5,
+        "consumer": 7,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 5,
+        "consumer": 8,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 5,
+        "consumer": 9,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 5,
+        "consumer": 10,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 5,
+        "consumer": 11,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 6,
+        "consumer": 2,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 6,
+        "consumer": 3,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 6,
+        "consumer": 4,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 6,
+        "consumer": 5,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 6,
+        "consumer": 6,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 6,
+        "consumer": 7,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 6,
+        "consumer": 8,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 6,
+        "consumer": 9,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 6,
+        "consumer": 10,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 6,
+        "consumer": 11,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 7,
+        "consumer": 2,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 7,
+        "consumer": 3,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 7,
+        "consumer": 4,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 7,
+        "consumer": 5,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 7,
+        "consumer": 6,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 7,
+        "consumer": 7,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 7,
+        "consumer": 8,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 7,
+        "consumer": 9,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 7,
+        "consumer": 10,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 7,
+        "consumer": 11,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 8,
+        "consumer": 2,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 8,
+        "consumer": 3,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 8,
+        "consumer": 4,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 8,
+        "consumer": 5,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 8,
+        "consumer": 6,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 8,
+        "consumer": 7,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 8,
+        "consumer": 8,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 8,
+        "consumer": 9,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 8,
+        "consumer": 10,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 8,
+        "consumer": 11,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 9,
+        "consumer": 2,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 9,
+        "consumer": 3,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 9,
+        "consumer": 4,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 9,
+        "consumer": 5,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 9,
+        "consumer": 6,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 9,
+        "consumer": 7,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 9,
+        "consumer": 8,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 9,
+        "consumer": 9,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 9,
+        "consumer": 10,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 9,
+        "consumer": 11,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 10,
+        "consumer": 2,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 10,
+        "consumer": 3,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 10,
+        "consumer": 4,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 10,
+        "consumer": 5,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 10,
+        "consumer": 6,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 10,
+        "consumer": 7,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 10,
+        "consumer": 8,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 10,
+        "consumer": 9,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 10,
+        "consumer": 10,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 10,
+        "consumer": 11,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 11,
+        "consumer": 2,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 11,
+        "consumer": 3,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 11,
+        "consumer": 4,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 11,
+        "consumer": 5,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 11,
+        "consumer": 6,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 11,
+        "consumer": 7,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 11,
+        "consumer": 8,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 11,
+        "consumer": 9,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 11,
+        "consumer": 10,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 11,
+        "consumer": 11,
+        "order": "same-block"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "restraint",
+        "producer": 1,
+        "consumer": 1,
+        "order": "same-block"
+      }
+    ],
     "pepper": [
       {
         "slot": "burst",
