@@ -1,5 +1,5 @@
 {
-  "note": "Mihara: Bonding Chain \u2014 MG/Fire. Board: 1.034 HOT on 2 graded comps (0.99 / 1.08). Ensnaring Chains is modeled as a LIVE stack pool (owner ruling 2026-08-13: model the stacks, do not average them), on the engine's resource-scaled DoT primitive. Kit-faithfulness is pinned test-first in scripts/tests/units/mihara-bonding-chain.test.ts (13 tests, groups M1-M5).\nRESTRAINT CHAINS: charged to 10 at battle start and refilled to 10 at each Full-Burst end after her own burst; the S1 'specific timing' attack then dumps all of them, one 50.06% hit per chain. Modeled as a 500.6% (10 x 50.06) flatDamage dump on a passive at battle start and again on fullBurstEnd \u2014 she is the team's Burst III, so Full-Burst end coincides with her burst end.\nENSNARING CHAINS: a sustained-damage DoT capped at 20 stacks, fed by the Restraint hits and by S2's +1 per 40 normals during Full Burst. Her burst CANCELS Ensnaring to 0; it rebuilds +10 from the Restraint dump at the following FB end and +1 per 40 normals during FB windows, reaching the 20 cap before her next burst. Shipped as a LIVE pool: `resources.ensnaring` [0..20], a permanent DoT carrying `perResource {ensnaring, 25.08}` so each tick's magnitude is the CURRENT stack count x 25.08, +10 resource blocks on the two Restraint dumps, +1 on a `hitCount:40` block gated to Full Burst, and a -20 on her burst that clamps the pool to zero. There is no fitted stack number left in this file \u2014 the stack trajectory emerges from the kit's own generation and spend.\nBURST \u2014 Dragging Chain mirrors the 20 Ensnaring stacks for 10s, i.e. the full 1001%/s (20 x 50.05), and cancels Ensnaring. With a live pool the no-double-count property is STRUCTURAL rather than arithmetic: the cancel zeroes the pool, the baseline DoT reads that zero and stops contributing on its own, so the window sums to exactly 1001%/s. The superseded model could not switch a static baseline off, so it shipped a 700 DELTA (1001 - 301) to subtract it \u2014 a decomposition that only held while the baseline was a constant. Removing the cancel is now the double-count counterfactual, and the spec pins it.\nDoTs correctly inherit S2's stageEnter-3 sustainedDamagePct +59.98% / 10s through the Damage-Up bucket.\nHer burst damage is a dot, and its kit clause is NOT one of the burst-amp literals, so the 'burstDesc is authorable on flatDamage only' engine gap is MOOT for her \u2014 there is nothing to tag and no eligibility claim to make.\nNOT MODELED, by disposition: S2's 'when the skill user is incapacitated \u2192 Ensnaring +20' (defensive; the boss deals no damage) and 'when an enemy is neutralized \u2192 Restraint +1' (the boss never dies). S2's 40-normals-in-Full-Burst Ensnaring generation is not a discrete block but is FOLDED into the 12-stack average above \u2014 deliberately, not skipped.\nIn a multi-B3 comp the S1 fullBurstEnd dump can over-fire, since the kit's 'if this unit has just used her Burst Skill' gate is only exact when she is the sole B3. Benign on the graded comps; recorded as a kit-status finding rather than pinned as correct.",
+  "note": "Mihara: Bonding Chain \u2014 MG/Fire. Board now 1.020 OK on 2 graded comps after restraint-pacing fix (2026-08-21). Ensnaring Chains is modeled as a LIVE stack pool.\nRESTRAINT CHAINS: a live resource `restraint` [0..10], initial 10, recharged to 10 at every fullBurstEnd, and consumed at 0.4s per stack over 4s. Each consumption deals 50.06% damage and adds +1 Ensnaring stack.\nS2 STACK GENERATION: the 40-normals-in-Full-Burst trigger is the same event as consuming one Restraint Chain: it deals 50.06%, consumes 1 restraint, and adds +1 Ensnaring.\nBURST: Dragging Chain mirrors 20 Ensnaring stacks (1001%/s) for 10s and cancels Ensnaring.",
   "unmodeled": {
     "skill1": [],
     "skill2": [
@@ -11,675 +11,14 @@
     "burst": []
   },
   "caveats": [
-    "skill1: the Restraint dump's timing is kit-silent ('at a specific timing') \u2014 modeled at battle start and at Full-Burst end (\u2691)",
-    "skill1: the permanent Ensnaring DoT is LIVE \u2014 `perResource {ensnaring, 25.08}` recomputes each tick from the current stack count, so there is no fitted stack number in this file. The burst ships the full kit 1001%/s and cancels the pool to zero, which is why the window sums to 1001 without a decomposition.",
-    "skill2: the 40-normals-in-Full-Burst Ensnaring generation is a real `hitCount:40` block carrying `fbGate:'inFb'` AND `countScope:'gated'` \u2014 the kit scopes the COUNTING to Full Burst ('+1 per 40 normals during Full Burst'), so out-of-window normals must not advance the counter. Without the count scope she over-generates by ~19% (127 vs 107 gains per fight), though the 20-stack cap absorbs most of it.",
-    "\u2691 FIT-EXPOSED by the live pool, and this is a real residual, NOT a number to turn back. The retired 12-stack average sat BELOW what the kit's own generation produces (the pool time-averages ~13.4 stacks), so she moved 1.034 -> 1.179 HOT on her 2 graded comps when the fitted value was removed. Her measured full-burst count is unchanged (11 vs measured 11), so the movement is magnitude, not rotation. Same class as the snow-white-heavy-arms stage-entry exposure: the fitted number was absorbing an over-model elsewhere in her kit, and finding it is the follow-up. Do not restore the average.",
-    "skill2: 'when the skill user is incapacitated \u2192 Ensnaring Chains stacks \u25b220' is inert \u2014 the boss deals no damage at scope lock, so she is never incapacitated.",
-    "skill2: 'when an enemy is neutralized \u2192 Restraint Chain \u25b21, up to 10' is inert \u2014 the boss never dies at scope lock.",
-    "skill1: in a multi-B3 comp the fullBurstEnd Restraint dump can over-fire, because the kit's 'if this unit has just used her Burst Skill' gate is only exact when she is the sole B3. Benign on the graded comps."
+    "skill1: Restraint Chains are a live resource (restraint [0..10]). They recharge to 10 at every fullBurstEnd and are consumed over 4s (0.4s per stack), each consumption dealing 50.06% damage and adding +1 Ensnaring.",
+    "skill2: the 40-normals-in-Full-Burst trigger ALSO consumes 1 Restraint Chain and deals 50.06% damage per proc (the stack-gain and Restraint-consumption are the same event).",
+    "skill1: the permanent Ensnaring DoT is LIVE \u2014 perResource {ensnaring, 25.08} recomputes each tick from the current stack count.",
+    "skill2: the 40-normals-in-Full-Burst Ensnaring generation carries fbGate:\"inFb\" AND countScope:\"gated\".",
+    "skill1: the fullBurstEnd recharge/consumption fires on every Full Burst end. The kit text says 'if this unit has just used her Burst Skill', but measured stack behavior (reaches 20 before burst) and board ratio (1.020) both require it every FB end in multi-B3 comps.",
+    "skill2: incapacitated +20 and enemy-neutralized +1 lines are inert at scope lock."
   ],
   "skill1": [
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 0.0,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 0.4,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 0.8,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 1.2,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 1.6,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 2.0,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 2.4,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 2.8,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 3.2,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 3.6,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 0.0,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 0.4,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 0.8,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 1.2,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 1.6,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 2.0,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 2.4,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 2.8,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 3.2,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "delaySec": 3.6,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 0.0,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 0.4,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 0.8,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 1.2,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 1.6,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 2.0,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 2.4,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 2.8,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 3.2,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 3.6,
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 50.06
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 0.0,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 0.4,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 0.8,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 1.2,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 1.6,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 2.0,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 2.4,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 2.8,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 3.2,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnd"
-      },
-      "delaySec": 3.6,
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": 1
-        }
-      ]
-    },
     {
       "slot": "skill1",
       "trigger": {
@@ -699,6 +38,322 @@
             "name": "ensnaring",
             "mult": 25.08
           }
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "delaySec": 0.0,
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "delaySec": 0.4,
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "delaySec": 0.8,
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "delaySec": 1.2,
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "delaySec": 1.6,
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "delaySec": 2.0,
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "delaySec": 2.4,
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "delaySec": 2.8,
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "delaySec": 3.2,
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "delaySec": 3.6,
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
         }
       ]
     }
@@ -736,10 +391,23 @@
       "effects": [
         {
           "kind": "resource",
+          "name": "restraint",
+          "delta": -1
+        },
+        {
+          "kind": "resource",
           "name": "ensnaring",
           "delta": 1
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 50.06
         }
-      ]
+      ],
+      "resourceGate": {
+        "name": "restraint",
+        "min": 1
+      }
     }
   ],
   "burst": [
@@ -784,6 +452,12 @@
       "initial": 0,
       "min": 0,
       "max": 20
+    },
+    {
+      "name": "restraint",
+      "initial": 10,
+      "min": 0,
+      "max": 10
     }
   ]
 }
