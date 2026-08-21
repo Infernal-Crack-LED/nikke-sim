@@ -295,26 +295,24 @@ export function decodeNikkeList(code: string): string[] | null {
 // once, and reading the wrong one returns an EMPTY roster rather than an error —
 // so the region is the user's choice and the sim asks for it.
 //
-// The ids are measured (81–85 accepted, 79/80/86 rejected). The id→NAME pairing
-// is anchored on two points and inferred for the rest:
-//   82 = NA    owner-confirmed — 82 is what every roster read used before the
-//              region became selectable, and that default was NA. It is also
-//              the region most stored rosters resolve on (10 of 13).
-//   83 = KR    owner-confirmed — the reporting user is on KR and their roster
-//              resolves only on 83 (105 units, deterministic over repeats).
-// 81/84/85 (JP/SEA/Global) keep blablalink's own ordering for this game id and
-// are NOT confirmed. Confirm them against the site's region list before relying
-// on those three labels.
+// The ids and names are blablalink's own, read from its region list
+// (GET /api/lip/direct/commodity/Game/GetRegionList?game_id=29080, 2026-08-21):
+//   81 Japan · 82 NA · 83 Korea · 84 Global · 85 SEA
+// Pinned by a test in the backend (blablalinkUser.test.ts); re-derive with its
+// fetchNikkeRegionList() if blablalink ever adds a region.
+//
+// Ordered most-populated first rather than by id, so the two regions nearly
+// every user is in are the first two they see.
 export interface NikkeRegion {
   areaId: number;
   label: string;
 }
 export const NIKKE_REGIONS: NikkeRegion[] = [
-  { areaId: 81, label: 'JP' },
   { areaId: 82, label: 'NA' },
-  { areaId: 83, label: 'KR' },
-  { areaId: 84, label: 'SEA' },
-  { areaId: 85, label: 'Global' },
+  { areaId: 84, label: 'Global' },
+  { areaId: 81, label: 'Japan' },
+  { areaId: 83, label: 'Korea' },
+  { areaId: 85, label: 'SEA' },
 ];
 export const DEFAULT_REGION_AREA_ID = 82; // NA
 
