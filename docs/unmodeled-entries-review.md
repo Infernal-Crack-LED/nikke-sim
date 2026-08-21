@@ -11,16 +11,16 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 212 | 45.1% |
-| Missing engine primitive / trigger | 96 | 20.4% |
-| Other / see caveats | 95 | 20.2% |
+| Defensive / HP / shield / aggro | 212 | 45.2% |
+| Missing engine primitive / trigger | 96 | 20.5% |
+| Other / see caveats | 94 | 20.0% |
 | Out-of-domain / parser unsupported | 30 | 6.4% |
 | Partless boss | 10 | 2.1% |
 | Weapon-state / shot-count approximation | 9 | 1.9% |
 | Self-status / stack gate | 8 | 1.7% |
 | RNG / probabilistic | 6 | 1.3% |
 | Measurement-gated / unverified cadence | 4 | 0.9% |
-| **Total** | **470** | 100.0% |
+| **Total** | **469** | 100.0% |
 
 ## Entries by reason
 
@@ -1173,7 +1173,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Other / see caveats (95)
+### Other / see caveats (94)
 
 **A2** (a2)
 
@@ -1294,8 +1294,6 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **skill2:** Ensnaring Chains stacks ▲ 20.
   - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
 - **skill2:** Restraint Chain ▲ 1, up to 10.
-  - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
-- **burst:** Dragging Chain: Deals 50.05% of final ATK as sustained damage every 1 sec. Mirrors the stack count of Ensnaring Chains on each target for 10 sec. This effect cannot be removed.
   - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
 
 **Milk: Blooming Bunny** (milk-blooming-bunny)

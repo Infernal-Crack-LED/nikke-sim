@@ -2842,6 +2842,23 @@ export function runSim(
           }
           break;
         }
+        case 'copyResource': {
+          // snapshot the source pool into the target pool, clamped to the target's [min,max]
+          const srcCfg = owner.resourceCfg.find((r) => r.name === e.from);
+          const src = owner.resources.get(e.from) ?? srcCfg?.initial ?? 0;
+          const tgtCfg = owner.resourceCfg.find((r) => r.name === e.name);
+          const next = Math.min(
+            tgtCfg?.max ?? Infinity,
+            Math.max(tgtCfg?.min ?? 0, src)
+          );
+          owner.resources.set(e.name, next);
+          if (ENV.DBG_UNIT === owner.char.slug) {
+            console.log(
+              `[copyRes ${owner.char.slug}] t=${(frame / FPS).toFixed(2)} ${e.from}(${src}) → ${e.name}(${next})`
+            );
+          }
+          break;
+        }
         case 'flatDamage': {
           // pull-count gate (MEASURED 2026-07-14): rapi-red-hood's burst nuke fires only
           // with >=1 sticky charge banked (>=120 shots at cast — her fire-weak banner 1 at

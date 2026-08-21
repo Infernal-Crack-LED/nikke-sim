@@ -16,11 +16,12 @@
 //     the CURRENT stack count × 25.08 — it climbs while stacks build, holds at 501.6%/s at the
 //     cap, and reads zero after her burst cancels. Generation: +10 on each Restraint dump, +1 per
 //     40 normals during Full Burst (`countScope:'gated'`, so out-of-FB normals do not advance it).
-//   - Burst Dragging Chain: mirrors the 20 Ensnaring stacks (20 × 50.05% = 1001%/s) for 10s and
-//     CANCELS Ensnaring (a −20 resource block, clamped to 0). The no-double-count property is
-//     STRUCTURAL: the baseline reads the now-zero pool and stops contributing by itself, so the
-//     burst ships its true 1001%/s. The superseded model shipped a 700 DELTA (1001 − 301) purely
-//     to subtract a static baseline it could not switch off.
+//   - Burst Dragging Chain: SNAPSHOTS the current Ensnaring stack count into a `mirror` resource
+//     at cast, then CANCELS Ensnaring, and ticks mirror × 50.05%/s for 10s (1001%/s when mirror
+//     is 20). The no-double-count property is STRUCTURAL: the baseline reads the now-zero pool
+//     and stops contributing by itself, so the burst mirrors whatever stacks had accumulated.
+//     The superseded model shipped a 700 DELTA (1001 − 301) purely to subtract a static baseline
+//     it could not switch off.
 //
 // Kit (blablalink prose, data/characters.json → characters['mihara-bonding-chain'].skills):
 //   S1 ■ battle start → self: charge Restraint Chains by 10 (cap 10)                          [M1]
@@ -32,7 +33,7 @@
 //      ■ enemy neutralized while Ensnared → self: Restraint ▲1   (UNMODELED inert — boss lives) [M5]
 //      ■ entering Burst Stage 3 → self: Sustained Damage ▲59.98% for 10s                       [M4]
 //   BU ■ Ensnared targets: Dragging Chain 50.05% final ATK sustained /1s, mirrors Ensnaring
-//         stacks (→1001%/s at 20) for 10s, unremovable; CANCELS Ensnaring after               [M3]
+//         stacks (→1001%/s at 20) for 10s, unremovable; snapshots then CANCELS Ensnaring      [M3]
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates
 // nothing):
@@ -46,9 +47,11 @@
 //       kit's 20 cap, that it reaches 501.6%/s, and that it does not survive the burst cancel at
 //       full strength. Discriminated against the flat 301%/s average it replaced AND the old
 //       permanent-20 reading 501.6%/s (which read 1.19–1.51 hot vs the real T3 sample).
-//   M3  the burst DoT is the FULL 1001%/s, with no double-count because the cancel zeroes the pool
-//       underneath it. The counterfactual is the burst WITHOUT its cancel block: the live baseline
-//       keeps ticking through the mirror window and the shipped total must sit below it.
+//   M3  the burst DoT is a LIVE SNAPSHOT of Ensnaring stacks into a `mirror` pool. The tick
+//       magnitude is a whole number of 50.05 per mirror stack, capped at 1001 (mirror = 20), and
+//       the first burst can be below cap if no stacks have accumulated. The counterfactual is the
+//       burst WITHOUT its Ensnaring cancel: the live baseline keeps ticking through the window and
+//       the shipped total must sit below it.
 //   M4  the stage-3 buff is the L10 value 59.98% for exactly 10s, fires once per stage-3 ENTRY (the
 //       stage-2 cast frame — entries outnumber her own bursts, since a chain that reaches stage 3
 //       and then expires still entered it), and is
@@ -130,14 +133,24 @@ const mbcFlatAverage = withPatchedOverride(SLUG, (ov) => {
   delete dot.perResource;
   dot.atkPct = 301;
 });
-/** M3: the NAIVE double-count — the burst mirror at 1001%/s WITHOUT cancelling Ensnaring, so the
- *  live baseline keeps ticking underneath it. This is what the old 700 DELTA existed to avoid. */
+/** M3: the NAIVE double-count — the burst mirrors Ensnaring WITHOUT cancelling it, so the live
+ *  baseline keeps ticking underneath the mirror window. The copyResource snapshot is preserved so
+ *  the mirror DoT still fires; only the -20 Ensnaring cancel is removed. */
 const mbcNaiveBurst = withPatchedOverride(SLUG, (ov) => {
-  const before = ov.burst.length;
-  ov.burst = ov.burst.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'resource')
-  );
-  if (ov.burst.length !== before - 1) {
+  let removed = 0;
+  for (const b of ov.burst) {
+    const before = b.effects.length;
+    b.effects = b.effects.filter(
+      (e: any) =>
+        !(
+          e.kind === 'resource' &&
+          e.name === 'ensnaring' &&
+          e.delta < 0
+        )
+    );
+    removed += before - b.effects.length;
+  }
+  if (removed !== 1) {
     throw new Error('mbc burst Ensnaring cancel missing — fixture is stale');
   }
 });
@@ -329,21 +342,28 @@ describe('mihara-bonding-chain — kit spec', () => {
     });
   });
 
-  describe('M3 — Burst Dragging Chain: the FULL 1001%/s for 10s, with Ensnaring cancelled', () => {
-    const ticks = mbcDmg(base.events, 'burst', 1001);
+  describe('M3 — Burst Dragging Chain: LIVE snapshot of Ensnaring stacks, then cancelled', () => {
+    const ticks = mbcDmg(base.events, 'burst');
     const bursts = mbcBursts(base.events);
 
-    // Dragging Chain mirrors the 20 Ensnaring stacks (20 × 50.05 = 1001%/s) and CANCELS Ensnaring.
-    // With a live pool the cancel is structural — the baseline reads the now-zero pool and stops
-    // contributing on its own — so the burst ships its true kit magnitude. The superseded model
-    // shipped 700 (= 1001 − 301) purely to subtract a static baseline it could not switch off.
-    it('is the full kit magnitude 1001%/s, not the superseded 700 delta', () => {
-      expect([...new Set(ticks.map((d) => d.atkPct))]).toEqual([1001]);
+    // Dragging Chain copies the current Ensnaring stack count into `mirror`, cancels Ensnaring, and
+    // ticks mirror × 50.05%/s for 10s. With a live pool the cancel is structural — the baseline
+    // reads the now-zero pool and stops contributing on its own — so the burst mirrors whatever
+    // stacks had accumulated (up to the 1001%/s cap at mirror = 20).
+    it('every tick magnitude is a whole number of 50.05 per mirror stack, capped at 1001', () => {
       expect(ticks.length, 'no Dragging Chain tick landed').toBeGreaterThan(0);
+      const values = [...new Set(ticks.map((d) => d.atkPct))];
+      for (const v of values) {
+        const stacks = v / 50.05;
+        expect(
+          Math.abs(stacks - Math.round(stacks)),
+          `tick ${v} is not a whole number of 50.05 stacks`
+        ).toBeLessThan(1e-6);
+        expect(Math.round(stacks)).toBeLessThanOrEqual(20); // the kit's cap
+      }
     });
 
-    it('runs ~10s per burst (one tick per second across the mirror window)', () => {
-      // Only bursts whose full 10s window fits inside the fight are measurable.
+    it('the first burst mirrors a low/zero stack count, later full bursts reach the 1001%/s cap', () => {
       const fullWindow = bursts.filter(
         (c) => c.frame + 10 * FPS <= FIGHT_SEC * FPS
       );
@@ -351,6 +371,36 @@ describe('mihara-bonding-chain — kit spec', () => {
         fullWindow.length,
         'no burst has a full 10s window to measure'
       ).toBeGreaterThan(0);
+
+      // First full burst should be below cap: stacks have not had time to accumulate.
+      const first = fullWindow[0];
+      const firstWindowMax = Math.max(
+        ...ticks
+          .filter(
+            (t) => t.frame > first.frame && t.frame <= first.frame + 10 * FPS
+          )
+          .map((t) => t.atkPct)
+      );
+      expect(firstWindowMax).toBeLessThan(1001);
+
+      // At least one later full burst reaches the 20-stack cap.
+      const laterMax = Math.max(
+        ...fullWindow
+          .slice(1)
+          .flatMap((c) =>
+            ticks.filter(
+              (t) => t.frame > c.frame && t.frame <= c.frame + 10 * FPS
+            )
+          )
+          .map((t) => t.atkPct)
+      );
+      expect(laterMax).toBeCloseTo(1001, 6);
+    });
+
+    it('runs ~10s per burst (one tick per second across the mirror window)', () => {
+      const fullWindow = bursts.filter(
+        (c) => c.frame + 10 * FPS <= FIGHT_SEC * FPS
+      );
       for (const c of fullWindow) {
         const inWindow = ticks.filter(
           (t) => t.frame > c.frame && t.frame <= c.frame + 10 * FPS
@@ -362,19 +412,17 @@ describe('mihara-bonding-chain — kit spec', () => {
       }
     });
 
-    it('DISCRIMINATING: without the cancel, Ensnaring keeps ticking under the mirror and double-counts', () => {
-      // Same 1001%/s burst, but the resource block that zeroes Ensnaring is removed. The pool stays
-      // at its cap through the window, so the baseline pays out on top of the mirror — exactly the
-      // over-count the kit's "burst cancels Ensnaring" clause prevents.
+    it('DISCRIMINATING: without the Ensnaring cancel, the live baseline keeps ticking under the mirror', () => {
+      // The snapshot (copyResource) is preserved; only the -20 Ensnaring cancel is stripped. The
+      // mirror DoT still fires, but Ensnaring is never zeroed, so the S1 baseline keeps paying out
+      // through the window — the exact double-count the kit's cancel prevents.
+      const naiveBursts = mbcBursts(naiveBurst.events);
       const stillTicking = mbcDmg(naiveBurst.events, 'skill1')
-        .filter((d) => d.atkPct !== 500.6)
+        .filter((d) => d.atkPct !== 50.06)
         .filter((d) => {
-          const c = mbcBursts(naiveBurst.events)[0];
+          const c = naiveBursts[0];
           return d.frame > c.frame && d.frame <= c.frame + 10 * FPS;
         });
-      // Not pinned at the 20-stack cap: whether she has capped by her FIRST burst is a property of
-      // this fixture's rotation, not of the kit. The claim under test is that the baseline keeps
-      // paying out AT ALL underneath the mirror, which is what the cancel exists to stop.
       expect(
         stillTicking.some((d) => d.atkPct > 0),
         'without the cancel the live baseline should keep ticking through the mirror window'

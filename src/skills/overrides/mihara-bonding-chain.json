@@ -1,5 +1,5 @@
 {
-  "note": "Mihara: Bonding Chain \u2014 MG/Fire. Restraint dump gated to her own Full Burst end; S2 Ensnaring generation does NOT consume Restraint (2026-08-21). Ensnaring Chains is modeled as a LIVE stack pool.\nRESTRAINT CHAINS: a live resource `restraint` [0..10], initial 10, recharged to 10 at the end of her own Full Burst, and consumed at 0.4s per stack over 4s. Each consumption deals 50.06% damage and adds +1 Ensnaring stack.\nS2 STACK GENERATION: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks \u25b2 1. This does NOT consume Restraint and does NOT deal the 50.06% dump damage.\nBURST: Dragging Chain mirrors 20 Ensnaring stacks (1001%/s) for 10s and cancels Ensnaring.",
+  "note": "Mihara: Bonding Chain \u2014 MG/Fire. Restraint dump gated to her own Full Burst end; S2 Ensnaring generation does NOT consume Restraint (2026-08-21). Ensnaring Chains is modeled as a LIVE stack pool.\nRESTRAINT CHAINS: a live resource `restraint` [0..10], initial 10, recharged to 10 at the end of her own Full Burst, and consumed at 0.4s per stack over 4s. Each consumption deals 50.06% damage and adds +1 Ensnaring stack.\nS2 STACK GENERATION: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks \u25b2 1. This does NOT consume Restraint and does NOT deal the 50.06% dump damage.\nBURST: Dragging Chain is modeled as a live SNAPSHOT of Ensnaring stacks into a `mirror` resource at cast, then Ensnaring is cancelled; the DoT ticks read mirror \u00d7 50.05 for 10s (1001%/s when mirror is 20).",
   "unmodeled": {
     "skill1": [],
     "skill2": [
@@ -8,15 +8,14 @@
       "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.",
       "Restraint Chain \u25b2 1, up to 10."
     ],
-    "burst": [
-      "Dragging Chain: Deals 50.05% of final ATK as sustained damage every 1 sec. Mirrors the stack count of Ensnaring Chains on each target for 10 sec. This effect cannot be removed."
-    ]
+    "burst": []
   },
   "caveats": [
     "skill1: Restraint Chains are a live resource (restraint [0..10]). They recharge to 10 at the end of HER OWN Full Burst only (ownBurstGate:'cast') and are consumed over 4s (0.4s per stack), each consumption dealing 50.06% damage and adding +1 Ensnaring.",
     "skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.",
     "skill1: the permanent Ensnaring DoT is LIVE \u2014 perResource {ensnaring, 25.08} recomputes each tick from the current stack count.",
     "skill2: the 40-normals-in-Full-Burst Ensnaring generation carries fbGate:\"inFb\" AND countScope:\"gated\".",
+    "burst: Dragging Chain snapshots Ensnaring into a `mirror` resource at cast (copyResource), then cancels Ensnaring; the 10s DoT ticks read mirror \u00d7 50.05, so a first burst with no accumulated stacks mirrors 0 and later bursts mirror up to the 20 cap.",
     "skill1: the 0.4s/stack dump cadence is the measured 'specific timing'; it is currently omitted at battle start (initial 10 restraint sits until her first own-FB end), which is a minor first-cycle undercount in long fights.",
     "skill2: incapacitated +20 and enemy-neutralized +1 lines are inert at scope lock."
   ],
@@ -417,15 +416,18 @@
         "kind": "burstCast"
       },
       "target": {
-        "kind": "enemy"
+        "kind": "self"
       },
       "effects": [
         {
-          "kind": "dot",
-          "atkPct": 1001,
-          "durationSec": 10,
-          "intervalSec": 1,
-          "flavor": "sustained"
+          "kind": "copyResource",
+          "name": "mirror",
+          "from": "ensnaring"
+        },
+        {
+          "kind": "resource",
+          "name": "ensnaring",
+          "delta": -20
         }
       ]
     },
@@ -435,13 +437,19 @@
         "kind": "burstCast"
       },
       "target": {
-        "kind": "self"
+        "kind": "enemy"
       },
       "effects": [
         {
-          "kind": "resource",
-          "name": "ensnaring",
-          "delta": -20
+          "kind": "dot",
+          "atkPct": 0,
+          "durationSec": 10,
+          "intervalSec": 1,
+          "flavor": "sustained",
+          "perResource": {
+            "name": "mirror",
+            "mult": 50.05
+          }
         }
       ]
     }
@@ -458,6 +466,12 @@
       "initial": 10,
       "min": 0,
       "max": 10
+    },
+    {
+      "name": "mirror",
+      "initial": 0,
+      "min": 0,
+      "max": 20
     }
   ]
 }
