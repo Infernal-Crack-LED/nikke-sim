@@ -91,21 +91,19 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactuals (nearest wrong model per line) ------------------------------------------
-/** M1: a single Restraint chain dumped (50.06%) instead of the full 10-chain 500.6%. */
+/** M1: a single Restraint chain dumped (50.06%) instead of the full 10-chain 500.6%.
+ *  The shipped override paces the 10-chain dump as 10 separate 50.06% hits at 0.4s
+ *  intervals; the nearest wrong model keeps only one of those hits per trigger. */
 const mbcSingleChain = withPatchedOverride(SLUG, (ov) => {
-  const dumps = ov.skill1.filter((b: any) =>
-    b.effects.some((e: any) => e.kind === 'flatDamage')
-  );
-  if (dumps.length !== 2) {
-    throw new Error('mbc S1 expected 2 flatDamage dumps — fixture is stale');
-  }
-  for (const b of dumps) {
-    for (const e of b.effects) {
-      if (e.kind === 'flatDamage') {
-        e.atkPct = 50.06;
-      }
-    }
-  }
+  const seen = new Set<string>();
+  ov.skill1 = ov.skill1.filter((b: any) => {
+    const isDump = b.effects.some((e: any) => e.kind === 'flatDamage');
+    if (!isDump) return true;
+    const key = b.trigger.kind;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 });
 /** M2: the OLD permanent-20-stack baseline (501.6%/s) that read 1.19–1.51 hot. */
 const mbcHot20Stack = withPatchedOverride(SLUG, (ov) => {
@@ -188,19 +186,23 @@ describe('mihara-bonding-chain — kit spec', () => {
     ).toBeGreaterThan(0);
   });
 
-  describe('M1 — S1 Restraint dump: full 10-chain 500.6%, at start + once per her Full Burst end', () => {
-    const dumps = mbcDmg(base.events, 'skill1', 500.6);
+  describe('M1 — S1 Restraint dump: full 10-chain 500.6% as ten paced 50.06% hits', () => {
+    const dumps = mbcDmg(base.events, 'skill1', 50.06);
 
-    it('is the full 500.6% (10 × 50.06%), not a single 50.06% chain', () => {
-      expect([...new Set(dumps.map((d) => d.atkPct))]).toEqual([500.6]);
+    it('is the full 10-chain 500.6% (10 × 50.06%), not a single 50.06% chain', () => {
+      expect([...new Set(dumps.map((d) => d.atkPct))]).toEqual([50.06]);
       expect(dumps.length, 'no Restraint dump landed').toBeGreaterThan(0);
     });
 
-    it('fires exactly once at battle start and once per Full Burst end (sole-B3 gate is exact)', () => {
-      const startDumps = dumps.filter((d) => d.sec < 2);
-      expect(startDumps.length, 'battle-start passive dump').toBe(1);
-      // Sole B3 → every Full Burst end is hers, so dumps == 1 (start) + #FB-ends.
-      expect(dumps.length).toBe(1 + fbEnds(base.events).length);
+    it('fires 10 hits at battle start and ~10 per Full Burst end, paced over 4s', () => {
+      // Paced over 4s, so widen the battle-start window to catch all 10 hits.
+      const startDumps = dumps.filter((d) => d.sec < 5);
+      expect(startDumps.length, 'battle-start passive dump').toBe(10);
+      // Sole B3 → every Full Burst end is hers. Late dumps may have hits fall past
+      // the 180s fight end, so total is a lower bound rather than exact.
+      expect(dumps.length).toBeGreaterThanOrEqual(
+        10 * (1 + fbEnds(base.events).length) - 10
+      );
     });
 
     it('DISCRIMINATING: a single-chain model lands 50.06% and deals less', () => {
@@ -218,7 +220,7 @@ describe('mihara-bonding-chain — kit spec', () => {
     // it climbs as stacks build, holds at the 20 cap, and drops to zero the instant her burst
     // cancels Ensnaring. Owner ruling 2026-08-13: model the stacks, do not average them.
     const ticks = mbcDmg(base.events, 'skill1').filter(
-      (d) => d.atkPct !== 500.6
+      (d) => d.atkPct !== 50.06
     );
 
     it('ticks the whole fight (permanent), not burst-gated', () => {

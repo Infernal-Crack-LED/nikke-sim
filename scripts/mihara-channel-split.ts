@@ -129,13 +129,15 @@ for (const [bucket, v] of [...byBucket.entries()].sort(
   );
 }
 
-// Further split skill1 into Restraint dumps (flatDamage atkPct=500.6 exactly) vs Ensnaring DoT
+// Further split skill1 into Restraint dumps (flatDamage: 500.6 legacy or ten 50.06 paced
+// hits) vs Ensnaring DoT (multiples of 25.08). 50.06 is not a valid Ensnaring coefficient.
 const skill1Events = dmgEvents.filter((e) => e.srcSlot === 'skill1');
 const restraintDumps = skill1Events.filter(
-  (e) => Math.abs(e.atkPct - 500.6) < 0.01
+  (e) => Math.abs(e.atkPct - 500.6) < 0.01 || Math.abs(e.atkPct - 50.06) < 0.01
 );
 const ensnaringTicks = skill1Events.filter(
-  (e) => Math.abs(e.atkPct - 500.6) >= 0.01
+  (e) =>
+    Math.abs(e.atkPct - 500.6) >= 0.01 && Math.abs(e.atkPct - 50.06) >= 0.01
 );
 
 console.log();
