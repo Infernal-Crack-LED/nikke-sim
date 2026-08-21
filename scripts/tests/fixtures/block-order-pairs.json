@@ -1041,14 +1041,6 @@
         "producer": 11,
         "consumer": 11,
         "order": "same-block"
-      },
-      {
-        "slot": "skill2",
-        "family": "resource",
-        "name": "restraint",
-        "producer": 1,
-        "consumer": 1,
-        "order": "same-block"
       }
     ],
     "pepper": [

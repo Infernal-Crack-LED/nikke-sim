@@ -47,7 +47,7 @@
 | `burstSkillSingleDamagePct` | 1 | jackal |
 | `burstSnapshotsPreFb` | 1 | cinderella |
 | `byFinalAtk` | 15 | alice, anis, claire, folkwang, himeno, jackal, liberalio, mast, … |
-| `cast` | 6 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
+| `cast` | 7 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study, mihara-bonding-chain |
 | `casterMaxHpPct` | 11 | ade, anis-star, avistar, cinderella, mary-bay-goddess, mast, maxwell-ordinary-mechanic, rouge, … |
 | `charge` | 1 | snow-white |
 | `chargeCounter` | 10 | bay, claire, frima, milk, noise, power, quiry, rumani, … |
@@ -93,7 +93,7 @@
 | `normalAttackPct` | 6 | arcana-fortune-mate, asuka-wille, chime, jill, mast-romantic-maid, rumani |
 | `notCast` | 1 | diesel-winter-sweets |
 | `outFb` | 1 | velvet |
-| `ownBurstGate` | 6 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
+| `ownBurstGate` | 7 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study, mihara-bonding-chain |
 | `pelletCountFlat` | 3 | arcana-fortune-mate, dorothy-serendipity, leona |
 | `perResource` | 8 | e-h, exia, guillotine, mana, marciana-marine-study, mihara-bonding-chain, phantom, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |

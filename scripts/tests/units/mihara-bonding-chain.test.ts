@@ -56,9 +56,11 @@
 //   M5  the two inert S2 triggers stay documented VERBATIM in `unmodeled` (guarded, not silently
 //       dropped). No behavioural assertion — boss deals no damage and never dies in v1.
 //
-// Fixture: control core (liter B1 / crown B2) + mihara-bonding-chain as the SOLE B3 carry, boss
-// Fire, focus mbc — helm omitted so Full Burst end coincides with her own burst (faithful to the
-// S1 gate). Deterministic (no seed); event-log over totals.
+// Fixture: control core (liter B1 / crown B2) + mihara-bonding-chain + helm as a second B3, boss
+// Fire, focus mbc. The second B3 exercises the "own Full Burst end" gate: the restraint dump must
+// NOT fire on helm's Full Burst ends, and S2 generation during helm's Full Burst windows is what
+// lets the Ensnaring pool reach the 20 cap before mihara's next burst. Deterministic (no seed);
+// event-log over totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
 import {
@@ -83,7 +85,7 @@ type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 function run(overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
   const res = runComp({
-    ...controlComp(SLUG, false),
+    ...controlComp(SLUG, true),
     overrides,
     cfg: { onEvent: (e) => events.push(e) },
   });
@@ -178,7 +180,7 @@ const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 
 describe('mihara-bonding-chain — kit spec', () => {
-  it('fixture sanity: mbc is the sole B3 and actually casts bursts', () => {
+  it('fixture sanity: mbc shares a team with a second B3 and actually casts bursts', () => {
     expect(MBC).toBe(2);
     expect(
       mbcBursts(base.events).length,
@@ -194,13 +196,49 @@ describe('mihara-bonding-chain — kit spec', () => {
       expect(dumps.length, 'no Restraint dump landed').toBeGreaterThan(0);
     });
 
-    it('fires ~10 hits per Full Burst end after mihara\'s own burst, paced over 4s', () => {
-      // Dumps are now tied to fullBurstEnd (restraint recharge) rather than battle start.
-      // Sole B3 → every Full Burst end is hers. Late dumps may have hits fall past
-      // the 180s fight end, so total is a lower bound rather than exact.
+    it('fires ~10 hits only at the end of mihara\'s own Full Burst, paced over 4s', () => {
+      // Two B3s → not every Full Burst end is hers. The dump blocks are fullBurstEnd + ownBurstGate,
+      // so each dump cluster is anchored to the FB end of the rotation mihara initiated.
+      const dumpFrames = dumps.map((d) => d.frame);
+      const dumpFrameSet = new Set(dumpFrames);
+      const mbcBurstFrames = mbcBursts(base.events).map((b) => b.frame);
+      const fbEndFrames = fbEnds(base.events).map((f) => f.frame);
+      // A B3 cast initiates a Full Burst; the NEXT fbEnd is the end of that window.
+      const ownFbEndFrames = mbcBurstFrames
+        .map((bf) => fbEndFrames.find((f) => f > bf))
+        .filter((f): f is number => f !== undefined);
+
+      for (const fbFrame of ownFbEndFrames) {
+        const expected = Array.from({ length: 10 }, (_, i) =>
+          Math.round(fbFrame + (i + 1) * 0.4 * FPS)
+        );
+        // Dumps scheduled past the fight end are allowed to be truncated; everything else must land.
+        for (const ef of expected) {
+          if (ef <= FIGHT_SEC * FPS - 1) {
+            expect(
+              dumpFrames.some((df) => Math.abs(df - ef) <= 1),
+              `expected dump around ${(ef / FPS).toFixed(1)}s after own FB end at ${(
+                fbFrame / FPS
+              ).toFixed(1)}s`
+            ).toBe(true);
+          }
+        }
+      }
       expect(dumps.length).toBeGreaterThanOrEqual(
-        10 * fbEnds(base.events).length - 10
+        10 * mbcBursts(base.events).length - 10
       );
+
+      // Non-mihara FB ends must not start a dump cluster.
+      const nonOwnFbEnds = fbEndFrames.filter(
+        (f) => !ownFbEndFrames.includes(f)
+      );
+      for (const fbFrame of nonOwnFbEnds) {
+        const firstExpected = Math.round(fbFrame + 0.4 * FPS);
+        expect(
+          dumpFrames.some((df) => Math.abs(df - firstExpected) <= 1),
+          `non-mihara FB end at ${(fbFrame / FPS).toFixed(1)}s must not spawn a dump`
+        ).toBe(false);
+      }
     });
 
     it('DISCRIMINATING: a single-chain model lands 50.06% and deals less', () => {

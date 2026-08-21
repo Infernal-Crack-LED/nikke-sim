@@ -1290,13 +1290,13 @@ Explosion Radius ▲ 15.01% for 10 sec.
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
 - **skill2:** Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.
-  - *Why:* skill2: the 40-normals-in-Full-Burst Ensnaring generation carries fbGate:"inFb" AND countScope:"gated".
+  - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
 - **skill2:** Ensnaring Chains stacks ▲ 20.
-  - *Why:* skill2: the 40-normals-in-Full-Burst Ensnaring generation carries fbGate:"inFb" AND countScope:"gated".
+  - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
 - **skill2:** Restraint Chain ▲ 1, up to 10.
-  - *Why:* skill2: the 40-normals-in-Full-Burst trigger ALSO consumes 1 Restraint Chain and deals 50.06% damage per proc (the stack-gain and Restraint-consumption are the same event).
+  - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
 - **burst:** Dragging Chain: Deals 50.05% of final ATK as sustained damage every 1 sec. Mirrors the stack count of Ensnaring Chains on each target for 10 sec. This effect cannot be removed.
-  - *Why:* skill2: the 40-normals-in-Full-Burst trigger ALSO consumes 1 Restraint Chain and deals 50.06% damage per proc (the stack-gain and Restraint-consumption are the same event).
+  - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
 
 **Milk: Blooming Bunny** (milk-blooming-bunny)
 

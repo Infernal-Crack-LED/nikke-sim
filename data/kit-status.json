@@ -25,10 +25,10 @@
     },
     "band": {
       "±8%": 8,
-      "±5%": 8,
+      "±3% ✓": 10,
       "±15%": 10,
-      "±3% ✓": 9,
-      ">15%": 10
+      "±5%": 6,
+      ">15%": 11
     }
   },
   "units": {
@@ -250,14 +250,14 @@
         "records": [
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.969
+            "ratio": 0.9753
           }
         ],
         "n": 1,
-        "mean": 0.969,
-        "mad": 0.031,
-        "band": "±5%",
-        "temp": "COLD ▼"
+        "mean": 0.9753,
+        "mad": 0.0247,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "admi": {
@@ -1777,7 +1777,7 @@
           },
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9757
+            "ratio": 0.9769
           },
           {
             "comp": "T4 water-weak (boss Fire)",
@@ -1841,8 +1841,8 @@
           }
         ],
         "n": 17,
-        "mean": 1.0093,
-        "mad": 0.0438,
+        "mean": 1.0094,
+        "mad": 0.0437,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -3346,7 +3346,7 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.0226
+            "ratio": 1.0192
           },
           {
             "comp": "T4 water-weak (boss Fire)",
@@ -3386,8 +3386,8 @@
           }
         ],
         "n": 10,
-        "mean": 0.9846,
-        "mad": 0.0229,
+        "mean": 0.9842,
+        "mad": 0.0226,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -4129,7 +4129,7 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9827
+            "ratio": 0.9849
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -4141,7 +4141,7 @@
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.9871
+            "ratio": 0.9882
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
@@ -4165,8 +4165,8 @@
           }
         ],
         "n": 9,
-        "mean": 0.9778,
-        "mad": 0.0254,
+        "mean": 0.9782,
+        "mad": 0.025,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -4337,12 +4337,12 @@
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.7914
+            "ratio": 0.7919
           }
         ],
         "n": 3,
-        "mean": 0.9443,
-        "mad": 0.0834,
+        "mean": 0.9445,
+        "mad": 0.0832,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -4796,12 +4796,12 @@
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.1686
+            "ratio": 1.164
           }
         ],
         "n": 2,
-        "mean": 1.1205,
-        "mad": 0.1205,
+        "mean": 1.1182,
+        "mad": 0.1182,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -4984,30 +4984,30 @@
         ]
       },
       "caveats": [
-        "skill1: Restraint Chains are a live resource (restraint [0..10]). They recharge to 10 at every fullBurstEnd and are consumed over 4s (0.4s per stack), each consumption dealing 50.06% damage and adding +1 Ensnaring.",
-        "skill2: the 40-normals-in-Full-Burst trigger ALSO consumes 1 Restraint Chain and deals 50.06% damage per proc (the stack-gain and Restraint-consumption are the same event).",
+        "skill1: Restraint Chains are a live resource (restraint [0..10]). They recharge to 10 at the end of HER OWN Full Burst only (ownBurstGate:'cast') and are consumed over 4s (0.4s per stack), each consumption dealing 50.06% damage and adding +1 Ensnaring.",
+        "skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.",
         "skill1: the permanent Ensnaring DoT is LIVE — perResource {ensnaring, 25.08} recomputes each tick from the current stack count.",
         "skill2: the 40-normals-in-Full-Burst Ensnaring generation carries fbGate:\"inFb\" AND countScope:\"gated\".",
-        "skill1: the fullBurstEnd recharge/consumption fires on every Full Burst end. The kit text says 'if this unit has just used her Burst Skill', but measured stack behavior (reaches 20 before burst) and board ratio (1.020) both require it every FB end in multi-B3 comps.",
+        "skill1: the 0.4s/stack dump cadence is the measured 'specific timing'; it is currently omitted at battle start (initial 10 restraint sits until her first own-FB end), which is a minor first-cycle undercount in long fights.",
         "skill2: incapacitated +20 and enemy-neutralized +1 lines are inert at scope lock."
       ],
-      "note": "Mihara: Bonding Chain — MG/Fire. Board now 1.020 OK on 2 graded comps after restraint-pacing fix (2026-08-21). Ensnaring Chains is modeled as a LIVE stack pool.\nRESTRAINT CHAINS: a live resource `restraint` [0..10], initial 10, recharged to 10 at every fullBurstEnd, and consumed at 0.4s per stack over 4s. Each consumption deals 50.06% damage and adds +1 Ensnaring stack.\nS2 STACK GENERATION: the 40-normals-in-Full-Burst trigger is the same event as consuming one Restraint Chain: it deals 50.06%, consumes 1 restraint, and adds +1 Ensnaring.\nBURST: Dragging Chain mirrors 20 Ensnaring stacks (1001%/s) for 10s and cancels Ensnaring.",
+      "note": "Mihara: Bonding Chain — MG/Fire. Restraint dump gated to her own Full Burst end; S2 Ensnaring generation does NOT consume Restraint (2026-08-21). Ensnaring Chains is modeled as a LIVE stack pool.\nRESTRAINT CHAINS: a live resource `restraint` [0..10], initial 10, recharged to 10 at the end of her own Full Burst, and consumed at 0.4s per stack over 4s. Each consumption deals 50.06% damage and adds +1 Ensnaring stack.\nS2 STACK GENERATION: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks ▲ 1. This does NOT consume Restraint and does NOT deal the 50.06% dump damage.\nBURST: Dragging Chain mirrors 20 Ensnaring stacks (1001%/s) for 10s and cancels Ensnaring.",
       "board": {
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.988
+            "ratio": 1.0814
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.0716
+            "ratio": 1.2211
           }
         ],
         "n": 2,
-        "mean": 1.0298,
-        "mad": 0.0418,
-        "band": "±5%",
-        "temp": "OK  ·"
+        "mean": 1.1513,
+        "mad": 0.1513,
+        "band": ">15%",
+        "temp": "HOT ▲"
       }
     },
     "milk": {
@@ -6675,7 +6675,7 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9607
+            "ratio": 0.9738
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -6695,8 +6695,8 @@
           }
         ],
         "n": 5,
-        "mean": 0.9331,
-        "mad": 0.0721,
+        "mean": 0.9357,
+        "mad": 0.0695,
         "band": "±8%",
         "temp": "COLD ▼"
       }
