@@ -576,3 +576,141 @@ describe('targetStatusCensus — cross-slug names (audit F2.2)', () => {
     expect(r.warnings).toEqual([]);
   });
 });
+
+describe('structuralCheck — selfStatus placement + fullCharge trigger (2026-08-24 primitives)', () => {
+  it('accepts a fullCharge-trigger block (the kind is a first-class TRIGGERS member)', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({ skill1: [block({ trigger: { kind: 'fullCharge' } })] }),
+      CTX
+    );
+    expect(r.errors).toEqual([]);
+  });
+
+  it('rejects a selfStatus effect on an enemy-targeted block — it would apply to nobody', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        burst: [
+          block({
+            slot: 'burst',
+            trigger: { kind: 'burstCast' },
+            target: { kind: 'enemy' },
+            effects: [
+              { kind: 'selfStatus', name: 'Test Mode', durationSec: 9 },
+            ],
+          }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors.join('\n')).toMatch(
+      /selfStatus effect must sit on a block with an ally-side target/
+    );
+  });
+
+  it('accepts the asuka-wille shape: selfStatus on self, requiresSelfStatus consumer in another slot', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        skill1: [
+          block({
+            trigger: { kind: 'hitCount', count: 10 },
+            target: { kind: 'enemy' },
+            requiresSelfStatus: 'Test Mode',
+            effects: [{ kind: 'flatDamage', atkPct: 15.62 }],
+          }),
+        ],
+        burst: [
+          block({
+            slot: 'burst',
+            trigger: { kind: 'burstCast' },
+            target: { kind: 'self' },
+            effects: [
+              { kind: 'selfStatus', name: 'Test Mode', durationSec: 9 },
+            ],
+          }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors).toEqual([]);
+  });
+
+  it('warns with the shipped order on a same-slot selfStatus producer/consumer pair', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        skill1: [
+          block({
+            requiresSelfStatus: 'Test Mode',
+            effects: [{ kind: 'buff', stat: 'atkPct', value: 10 }],
+          }),
+          block({
+            target: { kind: 'self' },
+            effects: [
+              { kind: 'selfStatus', name: 'Test Mode', durationSec: 9 },
+            ],
+          }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors).toEqual([]);
+    expect(r.warnings.join('\n')).toMatch(
+      /self-status "Test Mode": produced .* AND consumed .* ORDER .* load-bearing/
+    );
+  });
+});
+
+describe('targetStatusCensus — selfStatus same-unit rule (2026-08-24)', () => {
+  const selfProducer = (name: string) =>
+    minimal({
+      burst: [
+        block({
+          slot: 'burst',
+          trigger: { kind: 'burstCast' },
+          target: { kind: 'self' },
+          effects: [{ kind: 'selfStatus', name, durationSec: 9 }],
+        }),
+      ],
+    });
+  const selfConsumer = (name: string) =>
+    minimal({
+      skill1: [
+        block({
+          trigger: { kind: 'hitCount', count: 10 },
+          target: { kind: 'enemy' },
+          requiresSelfStatus: name,
+          effects: [{ kind: 'flatDamage', atkPct: 10 }],
+        }),
+      ],
+    });
+  const both = (name: string) => {
+    const o = selfConsumer(name);
+    (o as any).burst = (selfProducer(name) as any).burst;
+    return o;
+  };
+
+  it('errors on a requiresSelfStatus gate with no same-unit producer of the exact name', () => {
+    const r = targetStatusCensus(new Map([['a-unit', selfConsumer('Mode A')]]));
+    expect(r.errors.join('\n')).toMatch(
+      /a-unit: requiresSelfStatus "Mode A" .* no selfStatus producer in this unit's own override/
+    );
+  });
+
+  it('a producer in a DIFFERENT unit does not satisfy the same-unit rule', () => {
+    const r = targetStatusCensus(
+      new Map([
+        ['a-unit', selfConsumer('Mode A')],
+        ['b-unit', selfProducer('Mode A')],
+      ])
+    );
+    expect(r.errors.join('\n')).toMatch(/a-unit: requiresSelfStatus "Mode A"/);
+  });
+
+  it('passes when the same unit produces and consumes the exact name', () => {
+    const r = targetStatusCensus(new Map([['a-unit', both('Mode A')]]));
+    expect(r.errors).toEqual([]);
+  });
+});
