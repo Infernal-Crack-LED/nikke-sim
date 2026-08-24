@@ -77,6 +77,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `byFinalAtk`, `helm`'s held tag.
    - **`mint` — HELD** (M12 confirmed shipped `singing` model; solo magnitudes unanchored by
      disposition).
+   - **Top-board kit-faithfulness audit (2026-08-23) — findings awaiting owner triage.** 45 units
+     (top 5 Burst III per element at the 8/12 DPS-chart cell + top 20 buffer-board supports),
+     findings-only: `docs/kit-faithfulness-audit-2026-08-23.md`. No hidden fitted values found;
+     open items = the hidden-divergence list (§1: `flora` `sides:2` targeting widening, `mint`
+     duet t=0 ungating, `snow-white-heavy-arms` leftover durationShots edge, …), the
+     disclosed-material list (§3: `cinderella` G1 snapshot needs the owner ruling the override
+     already requests), and a note-prose staleness sweep (§6, 8 units).
 
 2. **Burst-generation thread** — core steps landed 2026-08-15 (PRs #120/#121/#122 merged).
    Classification: MIXED/INCONCLUSIVE (closure 0.2579 stands after noise-corrected ceiling test,
