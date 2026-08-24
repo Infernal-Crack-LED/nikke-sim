@@ -6414,3 +6414,34 @@ title against the renderer's own tile geometry and font, so a longer label can't
 the hero card agree — it reads the same element-scoped lookup (`compareIn(art, cell, slug,
 element)`) and now says "#1 of 12 among Electric units, against a boss weak to her element". The
 neutral standing is unchanged on both surfaces: neutral has no element to scope to.
+
+## Overload line names corrected to the game's real labels (2026-08-23)
+
+**Owner ruling (2026-08-23):** the game's OL line strings never changed — the sim's canonical
+names were wrong from day one. Both sides (nikke-sim + bakery-bot) now use the real labels.
+
+**Trigger:** a community report (2026-08-21 screenshot) — the Synced Roster banner listed all
+nine OL line types as "Unmapped synced content (ignored)", so every synced user's overload
+lines were silently dropped: `web/src/rosterApply.ts` maps backend labels onto
+`data/ol-lines.json` `name` fields by exact string match, and those names ("Increase ATK",
+"Increase Elemental Damage", "Increase Max Ammo Capacity", …) were invented, not the game's.
+
+**Evidence (the real strings):** the live CDN table `equip/equip_option_table_v2-en.json`
+(`description_localkey`, fetched 2026-08-23 via bakery-bot's committed
+`packages/nikke/src/blablalink.ts` `fetchOverloadLineIds()`; reproducible dump:
+bakery-bot `scripts/dump-overload-labels.ts`) — the exact strings the synced-roster backend
+forwards verbatim. They match the user's screenshot letter-for-letter: "Increased ATK",
+"Increased Elemental Advantage Dmg", "Increased Max Ammunition Capacity", "Increased Charge
+Damage", "Increased Charge Speed", "Increased Critical Rate", "Increased Critical Damage",
+"Increased Hit Rate", "Increased DEF". The table also carries a 10th rollable line the sim has
+never modeled — **"Increased Recovery"** (group 2000, damage-inert) — deliberately left out of
+`data/ol-lines.json`; it surfaces in the unmapped diagnostic by design.
+
+**What changed:** `data/ol-lines.json` `name` fields (labels only — every `stat`/`min`/`max`
+value untouched); `web/src/rosterApply.ts` keeps the nine old names as `OL_LABEL_ALIASES` (local
+pre-rename roster captures still carry them, e.g. the gitignored `docs/probes/my-roster.json`);
+bakery-bot's fixtures/comments updated to the real strings. Line VALUES were never affected —
+manual line entry and the generator key on line keys (`elem`/`atk`/…), not names, so this bug
+was confined to the synced-roster label mapping (and UI label text, which now matches the game).
+Pinned by `scripts/tests/data/ol-line-labels.test.ts` (real labels, legacy aliases, and the
+Recovery diagnostic) and bakery-bot's `syncedLoadout.test.ts` fixtures.

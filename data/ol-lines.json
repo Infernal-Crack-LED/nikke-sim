@@ -1,56 +1,56 @@
 {
-  "_comment": "Overload gear lines. Roll ranges from nikke.gg/overload-equipment (15 roll levels; max = level 15). Up to 3 lines per piece, 4 OL pieces. stat maps to a sim buff bucket; inert stats (hitRatePct, defPct) are allowed but do nothing in v1.",
+  "_comment": "Overload gear lines. Roll ranges from nikke.gg/overload-equipment (15 roll levels; max = level 15). Up to 3 lines per piece, 4 OL pieces. stat maps to a sim buff bucket; inert stats (hitRatePct, defPct) are allowed but do nothing in v1. `name` is the game's own line label, verbatim from the CDN equip_option_table_v2-en `description_localkey` (fetched live 2026-08-23) — the synced-roster backend forwards these strings and web/src/rosterApply.ts matches on them exactly. The table also carries a 10th line, 'Increased Recovery' (group 2000), deliberately absent here: damage-inert and unmodeled, it surfaces in the synced-roster unmapped diagnostic by design.",
   "lines": {
     "elem": {
-      "name": "Increase Elemental Damage",
+      "name": "Increased Elemental Advantage Dmg",
       "stat": "elementDamagePct",
       "min": 9.54,
       "max": 29.16
     },
     "atk": {
-      "name": "Increase ATK",
+      "name": "Increased ATK",
       "stat": "atkPct",
       "min": 4.77,
       "max": 14.63
     },
     "ammo": {
-      "name": "Increase Max Ammo Capacity",
+      "name": "Increased Max Ammunition Capacity",
       "stat": "maxAmmoPct",
       "min": 27.84,
       "max": 85.37
     },
     "chargedmg": {
-      "name": "Increase Charge Damage",
+      "name": "Increased Charge Damage",
       "stat": "chargeDamagePct",
       "min": 4.77,
       "max": 14.63
     },
     "chargespd": {
-      "name": "Increase Charge Speed",
+      "name": "Increased Charge Speed",
       "stat": "chargeSpeedPct",
       "min": 1.98,
       "max": 6.09
     },
     "critrate": {
-      "name": "Increase Critical Rate",
+      "name": "Increased Critical Rate",
       "stat": "critRatePct",
       "min": 2.3,
       "max": 7.07
     },
     "critdmg": {
-      "name": "Increase Critical Damage",
+      "name": "Increased Critical Damage",
       "stat": "critDamagePct",
       "min": 6.64,
       "max": 20.36
     },
     "hitrate": {
-      "name": "Increase Hit Rate",
+      "name": "Increased Hit Rate",
       "stat": "hitRatePct",
       "min": 4.77,
       "max": 14.63
     },
     "def": {
-      "name": "Increase DEF",
+      "name": "Increased DEF",
       "stat": "defPct",
       "min": 4.77,
       "max": 14.63
