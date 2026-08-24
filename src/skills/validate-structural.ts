@@ -1083,5 +1083,41 @@ export function targetStatusCensus(
     }
   }
 
+  // selfStatus is per-unit, so its producer/consumer match is SAME-UNIT, not cross-slug: a
+  // requiresSelfStatus gate can only ever be opened by a selfStatus effect in the SAME override
+  // (targeting the owner). A gate with no same-unit producer of the exact name is dead — and
+  // unlike the boss channel there is no legitimate "another kit will produce it" reading, so a
+  // missing producer is an ERROR, not a future-gated warning.
+  for (const [slug, o] of overrides) {
+    const selfProducers = new Set<string>();
+    const selfConsumers = new Map<string, string[]>(); // name -> block paths
+    for (const slot of SLOTS) {
+      const blocks = o?.[slot];
+      if (!Array.isArray(blocks)) {
+        continue;
+      }
+      blocks.forEach((b: any, bi: number) => {
+        for (const e of collectEffects(b?.effects, 'selfStatus')) {
+          if (typeof e.name === 'string') {
+            selfProducers.add(e.name);
+          }
+        }
+        if (typeof b?.requiresSelfStatus === 'string') {
+          selfConsumers.set(b.requiresSelfStatus, [
+            ...(selfConsumers.get(b.requiresSelfStatus) ?? []),
+            `${slot}[${bi}]`,
+          ]);
+        }
+      });
+    }
+    for (const [name, paths] of selfConsumers) {
+      if (!selfProducers.has(name)) {
+        errors.push(
+          `${slug}: requiresSelfStatus "${name}" (${paths.join(', ')}) has no selfStatus producer in this unit's own override — the per-unit gate can NEVER open (matching is exact and same-unit only); fix the name or add the producer`
+        );
+      }
+    }
+  }
+
   return { errors, warnings };
 }
