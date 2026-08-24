@@ -12,13 +12,13 @@
 | Reason | Entries | Share |
 | --- | --- | --- |
 | Defensive / HP / shield / aggro | 212 | 45.2% |
-| Missing engine primitive / trigger | 96 | 20.5% |
-| Other / see caveats | 94 | 20.0% |
+| Missing engine primitive / trigger | 95 | 20.3% |
+| Other / see caveats | 95 | 20.3% |
 | Out-of-domain / parser unsupported | 30 | 6.4% |
+| Weapon-state / shot-count approximation | 12 | 2.6% |
 | Partless boss | 10 | 2.1% |
-| Weapon-state / shot-count approximation | 9 | 1.9% |
-| Self-status / stack gate | 8 | 1.7% |
 | RNG / probabilistic | 6 | 1.3% |
+| Self-status / stack gate | 5 | 1.1% |
 | Measurement-gated / unverified cadence | 4 | 0.9% |
 | **Total** | **469** | 100.0% |
 
@@ -677,11 +677,11 @@ Incoming healing ▲ 15.18% for 10 sec.
 **Snow Crane** (snow-crane)
 
 - **skill1:** ■ Activates when recovery takes effect if the recovery is not coming from this unit. Affects self. Proof of Violation: Outgoing healing ▼ 10% continuously, up to 3 time(s).
-  - *Why:* ⚑ The Proof-of-Violation → Terminated-Contract cascade (S1b + S2c) is UNMODELED whole: (1) the engine's 'recovery' trigger has no SOURCE filter — the kit's 'recovery not coming from this unit' clause is inexpressible, and since her own S2a/burst heals target all allies INCLUDING herself, counting all recoveries would self-stack Proof of Violation and flip Terminated Contract in EVERY comp (the nearest-wrong model, which is worse than none); (2) there is no self-status channel for ERA / Terminated Contract membership; (3) S2c's regen is unbounded ('continuously') and heal ticks are finite. The payload is sustain-only and damage-inert. Recipe: needs a recoveryFromOther trigger (or HP-pool modeling), then a PoV resource pool (0..3) + resourceGate-gated ERA/S2a + a bounded regen.
+  - *Why:* ⚑ The Proof-of-Violation → Terminated-Contract cascade (S1b + S2c) is UNMODELED whole: (1) the engine's 'recovery' trigger has no SOURCE filter — the kit's 'recovery not coming from this unit' clause is inexpressible, and since her own S2a/burst heals target all allies INCLUDING herself, counting all recoveries would self-stack Proof of Violation and flip Terminated Contract in EVERY comp (the nearest-wrong model, which is worse than none); (2) ERA / Terminated Contract membership would ride the selfStatus channel (2026-08-24) but is unreachable without (1); (3) S2c's regen is unbounded ('continuously') and heal ticks are finite. The payload is sustain-only and damage-inert. Recipe: needs a recoveryFromOther trigger (or HP-pool modeling), then a PoV resource pool (0..3) + resourceGate-gated ERA/S2a + a bounded regen.
 - **skill2:** ■ Activates when Proof of Violation reaches max stacks. Affects self. Terminated Contract: Gains immunity to Proof of Violation continuously. Recovers 0.24% of the skill user's final Max HP as HP every 1 sec continuously.
-  - *Why:* ⚑ The Proof-of-Violation → Terminated-Contract cascade (S1b + S2c) is UNMODELED whole: (1) the engine's 'recovery' trigger has no SOURCE filter — the kit's 'recovery not coming from this unit' clause is inexpressible, and since her own S2a/burst heals target all allies INCLUDING herself, counting all recoveries would self-stack Proof of Violation and flip Terminated Contract in EVERY comp (the nearest-wrong model, which is worse than none); (2) there is no self-status channel for ERA / Terminated Contract membership; (3) S2c's regen is unbounded ('continuously') and heal ticks are finite. The payload is sustain-only and damage-inert. Recipe: needs a recoveryFromOther trigger (or HP-pool modeling), then a PoV resource pool (0..3) + resourceGate-gated ERA/S2a + a bounded regen.
+  - *Why:* ⚑ The Proof-of-Violation → Terminated-Contract cascade (S1b + S2c) is UNMODELED whole: (1) the engine's 'recovery' trigger has no SOURCE filter — the kit's 'recovery not coming from this unit' clause is inexpressible, and since her own S2a/burst heals target all allies INCLUDING herself, counting all recoveries would self-stack Proof of Violation and flip Terminated Contract in EVERY comp (the nearest-wrong model, which is worse than none); (2) ERA / Terminated Contract membership would ride the selfStatus channel (2026-08-24) but is unreachable without (1); (3) S2c's regen is unbounded ('continuously') and heal ticks are finite. The payload is sustain-only and damage-inert. Recipe: needs a recoveryFromOther trigger (or HP-pool modeling), then a PoV resource pool (0..3) + resourceGate-gated ERA/S2a + a bounded regen.
 - **skill2:** Recovers 1.32% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
-  - *Why:* ⚑ The Proof-of-Violation → Terminated-Contract cascade (S1b + S2c) is UNMODELED whole: (1) the engine's 'recovery' trigger has no SOURCE filter — the kit's 'recovery not coming from this unit' clause is inexpressible, and since her own S2a/burst heals target all allies INCLUDING herself, counting all recoveries would self-stack Proof of Violation and flip Terminated Contract in EVERY comp (the nearest-wrong model, which is worse than none); (2) there is no self-status channel for ERA / Terminated Contract membership; (3) S2c's regen is unbounded ('continuously') and heal ticks are finite. The payload is sustain-only and damage-inert. Recipe: needs a recoveryFromOther trigger (or HP-pool modeling), then a PoV resource pool (0..3) + resourceGate-gated ERA/S2a + a bounded regen.
+  - *Why:* ⚑ The Proof-of-Violation → Terminated-Contract cascade (S1b + S2c) is UNMODELED whole: (1) the engine's 'recovery' trigger has no SOURCE filter — the kit's 'recovery not coming from this unit' clause is inexpressible, and since her own S2a/burst heals target all allies INCLUDING herself, counting all recoveries would self-stack Proof of Violation and flip Terminated Contract in EVERY comp (the nearest-wrong model, which is worse than none); (2) ERA / Terminated Contract membership would ride the selfStatus channel (2026-08-24) but is unreachable without (1); (3) S2c's regen is unbounded ('continuously') and heal ticks are finite. The payload is sustain-only and damage-inert. Recipe: needs a recoveryFromOther trigger (or HP-pool modeling), then a PoV resource pool (0..3) + resourceGate-gated ERA/S2a + a bounded regen.
 - **burst:** Recovers 44.68% of the skill user's final Max HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, skill2/burst slots), which is the board-relevant half — on-recovery consumers read the event, never the amount.
   - *Why:* Heal MAGNITUDES (S2a 1.32% / burst 44.68% of the skill user's final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount (v1 has no HP pool). Both lines are implemented for their TANDEM value only — they fire allies' 'recovery' triggers.
 
@@ -767,7 +767,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Missing engine primitive / trigger (96)
+### Missing engine primitive / trigger (95)
 
 **A2** (a2)
 
@@ -1149,8 +1149,6 @@ Explosion Radius ▲ 15.01% for 10 sec.
 
 **Vesti: Tactical Upgrade** (vesti-tactical-upgrade)
 
-- **skill2:** ■ Activates when landing Full Charge attacks if self is in Battle Formation status. Affects self. ATK ▲ 20% for 3 sec.
-  - *Why:* skill2: 'Battle Formation' (S2b ATK ▲20% gate) is UNMODELED — the driver ADOPTED the blind consensus (S2b claude-fable-5 + S5/S6 claude-opus-5 all independently re-derived INERT). 'Battle Formation' is a self-status granted nowhere in this kit and the schema has no self-status gate, so the line never fires in-scope; encoding it ungated (or even fbGate-gated) would credit an unprovable +20% ATK. The driver's fbGate:'inFb' reading (Battle Formation == Full Burst) is retained as the measurement-gated ALTERNATIVE (⚑6): restore a shotFired + fbGate:'inFb' atkPct 20 / 3s block if footage shows the proc tracking Full Burst windows
 - **burst:** ■ Affects self. Explosion Radius ▲ 100% for 10 sec.
   - *Why:* burst: 'Explosion Radius ▲100% for 10s' is UNMODELED — inert vs the single partless boss and no explosion-radius stat exists
 
@@ -1173,7 +1171,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Other / see caveats (94)
+### Other / see caveats (95)
 
 **A2** (a2)
 
@@ -1343,6 +1341,8 @@ Critical Rate ▲ 3.56% for 5 sec.
 
 - **skill2:** Firepower Gauge bookkeeping: gains 100 Firepower Gauge at battle start; +2 per normal attack during Firepower Charge; +45 when Firepower Charge ends (NOT a block — the steady-state consequence is ABSORBED into the skill1 Super block's everyN 3 / everyNOffset 1: start at 100 → Super on her burst casts 1, 4, 7…; video-confirmed cast-by-cast, Run B)
   - *Why:* Gauge starts at 100 (S2) and takes 2 charge-bursts to refill -> Super fires on her burst casts 1, 4, 7 (everyN 3, everyNOffset 1 — the engine feature added for this)
+- **skill2:** When Full Burst ends: 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5 sec' is MODELED (enacted 2026-08-09, owner faithfulness ruling) as two everyN:3 self burstGenPct blocks on HER OWN burstCast + delaySec 10 (≈ the FB end of the window her cast opened — cast-keyed, so a co-B3's Full Bursts never fire it), aligned to the Super cycle: after a Super cast the gauge is 0 (offset skipped, no buff); after the 1st charge window burstGenPct 330 for 5s (⚑ 5 × [1 cast + 45 end + 2×~10 in-window normals] — the normal count is a cadence estimate); after the 2nd, burstGenPct 500 (5 × the 100 cap, kit-structural). Empirically does not consume the Firepower cycle — every-3rd-Super held on video
+  - *Why:* KNOWN LOW-SEVERITY FIDELITY NOTE (S7 judge, faithfulness 0.93, GO): the +35.05% Super ATK rider is keyed to her burstCast (inside the everyN 3 / offset 1 Super block) rather than fullBurstEnter as the kit wording ('when entering Full Burst') literally reads, a construction that predates the selfStatus channel (2026-08-24), which can now express 'FB-enter gated on Super Firepower live' directly
 - **burst:** Firepower Gauge below 100: activates Firepower Charge, charging the gauge for 10 sec (bookkeeping — ABSORBED into the everyN 3 alternation)
   - *Why:* The FB-end burst-gen line is MODELED (2026-08-09): 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5s' = everyN:3 self burstGenPct 330/500 on her OWN burstCast + delaySec 10 (≈ her FB end; co-B3 windows never fire it), zero after a Super (gauge drained); ⚑ in-window normal count estimated
 - **burst:** Firepower Gauge at 100: consumes 100 Firepower Gauge on activating Super Firepower (bookkeeping — ABSORBED into the everyN 3 alternation)
@@ -1634,6 +1634,59 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 Outgoing healing ▲ 35.2% continuously.
   - *Why:* skill1/skill2 are EMPTY BY CONSTRUCTION, not by omission — every line there is out-of-domain for cause: (K1) S1 'Outgoing healing ▲ 35.2%' modifies heal AMOUNTS, which do not exist in the sim — no stat, no channel, and no recovery-consumer reads an amount
 
+### Weapon-state / shot-count approximation (12)
+
+**Ade: Agent Bunny** (ade-agent-bunny)
+
+- **burst:** Minimum Effective Range ▲ 55.56% for 10 sec.
+  - *Why:* The self Minimum Effective Range ▲55.56% is an inert range stat → unmodeled; range buffs change the effective-range BAND, not shots fired, so there is no shot-count channel for it to move
+
+**Arcana: Fortune Mate** (arcana-fortune-mate)
+
+- **skill1:** Full Burst ends: self removes Making Memories + Snapshots of Youth.
+  - *Why:* skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories +3 pellets via pelletCountFlat 3 — 2026-07-21 A4, was +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.
+
+**Diesel: Winter Sweets** (diesel-winter-sweets)
+
+- **skill2:** Sustained Damage ▲ 68.04% for 15 sec.
+  - *Why:* skill2: the Full-Charge Sustained +318.14% x2 (3s) LAPSES across the reload+charge gap (~3.35s > 3s) so stacks reset to 1 each magazine; the RL cadence tuple (chargeFrames 60 / reloadFrames 141) is the unverified datamine driving this (flag3)
+
+**Dorothy: Serendipity** (dorothy-serendipity)
+
+- **skill1:** Hit 160 pellets: Expands Pierce range 200% 3 rounds
+  - *Why:* S1 second block (160 pellets -> Expand Pierce range 200%) omitted: pierce is inert on a single boss
+- **skill1:** Hit Rate ▲ 98.18% 3 rounds
+  - *Why:* S1: hitting the target with 80 pellets (hitCount:80, re-triggers every ~8 shots -> effectively permanent in sustained fire) grants Attack Damage 72%; Hit Rate 98.18% kept for fidelity (unmodeled as a stat; its in-mode effect is already carried by the measured consolidation config)
+
+**Eunhwa: Tactical Upgrade** (eunhwa-tactical-upgrade)
+
+- **skill1:** Camouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. (Activates when using Burst Skill. Affects self.)
+  - *Why:* ⚑ MEASUREMENT-GATED (tier 2): S1-L3 'Normal attacks deal true damage continuously' — the FLAVOR CHANGE of her sustained SR normals to true damage is UNMODELED. The engine's only true-normal mechanism is weaponSwap.trueNormals, which is (a) windowed (needs a durationSec) and (b) cannot coexist with her burst cannon swap (the engine holds a single swap slot — a fight-length trueNormals swap would be clobbered by the cannon swap on every burst and never restore). The Camouflage gate could now be a named status (the selfStatus/requiresSelfStatus channel exists as of 2026-08-24), but the binding constraint is the single swap slot. Estimate: as shipped, her sustained SR normals stay NON-true, so the self trueDamagePct 42.24 buff is near-inert outside the burst cannon shot (it pays off fully on the cannon, which IS true-flavored); the kit intends ~camouflage-uptime fraction of her main SR DPS to be true-flavored and amplified. Camouflage uptime is partial (5s per 20s burst + Full-Charge-during-Full-Burst refreshes, roughly half the fight). Recipe: a permanent trueNormals flag that survives weapon-swap coexistence + a camouflage-uptime model (or a targetStatus-proxied camouflage window driving a windowed trueNormals swap), then popup-read the true-damage popup count / camouflage uptime in an eunhwa-tu recording. The trueDamagePct 42.24 buff itself is encoded and exact for the cannon payoff.
+- **skill1:** Camouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. (Activates when attacking with Full Charge during Full Burst. Affects self.)
+  - *Why:* ⚑ MEASUREMENT-GATED (tier 2): S1-L3 'Normal attacks deal true damage continuously' — the FLAVOR CHANGE of her sustained SR normals to true damage is UNMODELED. The engine's only true-normal mechanism is weaponSwap.trueNormals, which is (a) windowed (needs a durationSec) and (b) cannot coexist with her burst cannon swap (the engine holds a single swap slot — a fight-length trueNormals swap would be clobbered by the cannon swap on every burst and never restore). The Camouflage gate could now be a named status (the selfStatus/requiresSelfStatus channel exists as of 2026-08-24), but the binding constraint is the single swap slot. Estimate: as shipped, her sustained SR normals stay NON-true, so the self trueDamagePct 42.24 buff is near-inert outside the burst cannon shot (it pays off fully on the cannon, which IS true-flavored); the kit intends ~camouflage-uptime fraction of her main SR DPS to be true-flavored and amplified. Camouflage uptime is partial (5s per 20s burst + Full-Charge-during-Full-Burst refreshes, roughly half the fight). Recipe: a permanent trueNormals flag that survives weapon-swap coexistence + a camouflage-uptime model (or a targetStatus-proxied camouflage window driving a windowed trueNormals swap), then popup-read the true-damage popup count / camouflage uptime in an eunhwa-tu recording. The trueDamagePct 42.24 buff itself is encoded and exact for the cannon payoff.
+- **skill1:** Activates only when in Camouflage status. Affects self. Normal attacks deal true damage continuously. (the FLAVOR-CHANGE half of S1-L3; the 'True Damage ▲ 42.24% continuously' half IS modeled as self trueDamagePct 42.24 — see caveats)
+  - *Why:* ⚑ MEASUREMENT-GATED (tier 2): S1-L3 'Normal attacks deal true damage continuously' — the FLAVOR CHANGE of her sustained SR normals to true damage is UNMODELED. The engine's only true-normal mechanism is weaponSwap.trueNormals, which is (a) windowed (needs a durationSec) and (b) cannot coexist with her burst cannon swap (the engine holds a single swap slot — a fight-length trueNormals swap would be clobbered by the cannon swap on every burst and never restore). The Camouflage gate could now be a named status (the selfStatus/requiresSelfStatus channel exists as of 2026-08-24), but the binding constraint is the single swap slot. Estimate: as shipped, her sustained SR normals stay NON-true, so the self trueDamagePct 42.24 buff is near-inert outside the burst cannon shot (it pays off fully on the cannon, which IS true-flavored); the kit intends ~camouflage-uptime fraction of her main SR DPS to be true-flavored and amplified. Camouflage uptime is partial (5s per 20s burst + Full-Charge-during-Full-Burst refreshes, roughly half the fight). Recipe: a permanent trueNormals flag that survives weapon-swap coexistence + a camouflage-uptime model (or a targetStatus-proxied camouflage window driving a windowed trueNormals swap), then popup-read the true-damage popup count / camouflage uptime in an eunhwa-tu recording. The trueDamagePct 42.24 buff itself is encoded and exact for the cannon payoff.
+
+**Laplace: Ultimate Hero** (laplace-ultimate-hero)
+
+- **skill1:** Activates when Electric Power, Fully Full Charge ends. Affects self. Removes 100% of ammo.
+  - *Why:* skill1: the Electric Power swap weapon's fire cadence is KIT-SILENT — chargeTimeSec 0.25 (4 rounds/s) is an estimate by analogy to base laplace (Treasure)'s beam tick rate, the dominant unmeasured lever on her board number. It drives the swap-mode DPS (9.45% × 120 rounds per cycle) AND how fast oeStage builds (when the burst additional damage unlocks). The swap end is USES-BASED (maxShots:120); durationSec 300 never truncates it. Measure the Electric Power fire rate in a focus video.
+
+**Leona** (leona)
+
+- **skill1:** Maximum Effective Range ▲ 20% for 10 sec.
+  - *Why:* skill1: 'Maximum Effective Range ▲ 20%' to shotgun allies is not modeled — the engine has no range stat and shotgun pellet landing is a fixed measured table; real effect (better far-band landing) is a known under-model
+
+**Nihilister** (nihilister)
+
+- **skill1:** Piercing Radius ▲ 50% for 1 round(s).
+  - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
+
+**Takina** (takina)
+
+- **skill2:** Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)
+  - *Why:* swap-shot economy is OWNER-RULED (2026-08-12), not estimated: the burst swaps to a CUSTOM weapon that deals the damage her kit lists (200.64%), does not charge, has no ammo and no reload, and fires at 1.2 shots/sec — 12 shots across the 10s window. When the swap ends she returns to the sniper with its magazine restored to full, and the stated consequence is that she then never needs to reload, because she cannot land 6 full-charge sniper shots between bursts in most comps. Encoded as chargeTimeSec 0 (the engine reads that field with a null check, so 0 means 'does not charge' rather than collapsing to her base SR's 60 frames) + pullsPerSec 1.2 + maxAmmo 999, with NO sameWeapon marker — hers is a real weapon change, so it takes the magazine refill at both ends. Pinned in scripts/tests/units/takina.test.ts (shot count, no mid-window reload gap, and the restored 6-round magazine read off the ammo counter). NOTE THE DIRECTION: the faithful model is COLDER than the estimate it replaces, not warmer — the estimate's 7 shots inherited her SR charge cycle and therefore the x2.5 chargeMultiplier, worth ~3511% ATK per window against the ruling's 12 x 200.64 = ~2408%. Her total drops ~30% and her single graded reading moves 0.786 -> 0.579 COLD, so the swap economy was never the explanation for her coldness; the remaining gap is elsewhere in her model (her graded reading is 0.552 COLD under the faithful S2 pulse model, which removed the always-on True Damage the retired uptime-average granted her swap shots).
+
 ### Partless boss (10)
 
 **Moran (Treasure)** (moran)
@@ -1678,80 +1731,6 @@ Deals 50.33% of final ATK as additional damage.
 - **skill2:** ■ Activates when an ally or self destroys an enemy's part. Affects all allies.
   - *Why:* (K2) S2 is gated on PART DESTRUCTION ('when an ally or self destroys an enemy's part'): the engine emits no part-destroyed event and the scope-lock boss is partless (sim.ts: 'partless test boss ..
 
-### Weapon-state / shot-count approximation (9)
-
-**Ade: Agent Bunny** (ade-agent-bunny)
-
-- **burst:** Minimum Effective Range ▲ 55.56% for 10 sec.
-  - *Why:* The self Minimum Effective Range ▲55.56% is an inert range stat → unmodeled; range buffs change the effective-range BAND, not shots fired, so there is no shot-count channel for it to move
-
-**Arcana: Fortune Mate** (arcana-fortune-mate)
-
-- **skill1:** Full Burst ends: self removes Making Memories + Snapshots of Youth.
-  - *Why:* skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories +3 pellets via pelletCountFlat 3 — 2026-07-21 A4, was +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.
-
-**Diesel: Winter Sweets** (diesel-winter-sweets)
-
-- **skill2:** Sustained Damage ▲ 68.04% for 15 sec.
-  - *Why:* skill2: the Full-Charge Sustained +318.14% x2 (3s) LAPSES across the reload+charge gap (~3.35s > 3s) so stacks reset to 1 each magazine; the RL cadence tuple (chargeFrames 60 / reloadFrames 141) is the unverified datamine driving this (flag3)
-
-**Dorothy: Serendipity** (dorothy-serendipity)
-
-- **skill1:** Hit 160 pellets: Expands Pierce range 200% 3 rounds
-  - *Why:* S1 second block (160 pellets -> Expand Pierce range 200%) omitted: pierce is inert on a single boss
-- **skill1:** Hit Rate ▲ 98.18% 3 rounds
-  - *Why:* S1: hitting the target with 80 pellets (hitCount:80, re-triggers every ~8 shots -> effectively permanent in sustained fire) grants Attack Damage 72%; Hit Rate 98.18% kept for fidelity (unmodeled as a stat; its in-mode effect is already carried by the measured consolidation config)
-
-**Laplace: Ultimate Hero** (laplace-ultimate-hero)
-
-- **skill1:** Activates when Electric Power, Fully Full Charge ends. Affects self. Removes 100% of ammo.
-  - *Why:* skill1: the Electric Power swap weapon's fire cadence is KIT-SILENT — chargeTimeSec 0.25 (4 rounds/s) is an estimate by analogy to base laplace (Treasure)'s beam tick rate, the dominant unmeasured lever on her board number. It drives the swap-mode DPS (9.45% × 120 rounds per cycle) AND how fast oeStage builds (when the burst additional damage unlocks). The swap end is USES-BASED (maxShots:120); durationSec 300 never truncates it. Measure the Electric Power fire rate in a focus video.
-
-**Leona** (leona)
-
-- **skill1:** Maximum Effective Range ▲ 20% for 10 sec.
-  - *Why:* skill1: 'Maximum Effective Range ▲ 20%' to shotgun allies is not modeled — the engine has no range stat and shotgun pellet landing is a fixed measured table; real effect (better far-band landing) is a known under-model
-
-**Nihilister** (nihilister)
-
-- **skill1:** Piercing Radius ▲ 50% for 1 round(s).
-  - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
-
-**Takina** (takina)
-
-- **skill2:** Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)
-  - *Why:* swap-shot economy is OWNER-RULED (2026-08-12), not estimated: the burst swaps to a CUSTOM weapon that deals the damage her kit lists (200.64%), does not charge, has no ammo and no reload, and fires at 1.2 shots/sec — 12 shots across the 10s window. When the swap ends she returns to the sniper with its magazine restored to full, and the stated consequence is that she then never needs to reload, because she cannot land 6 full-charge sniper shots between bursts in most comps. Encoded as chargeTimeSec 0 (the engine reads that field with a null check, so 0 means 'does not charge' rather than collapsing to her base SR's 60 frames) + pullsPerSec 1.2 + maxAmmo 999, with NO sameWeapon marker — hers is a real weapon change, so it takes the magazine refill at both ends. Pinned in scripts/tests/units/takina.test.ts (shot count, no mid-window reload gap, and the restored 6-round magazine read off the ammo counter). NOTE THE DIRECTION: the faithful model is COLDER than the estimate it replaces, not warmer — the estimate's 7 shots inherited her SR charge cycle and therefore the x2.5 chargeMultiplier, worth ~3511% ATK per window against the ruling's 12 x 200.64 = ~2408%. Her total drops ~30% and her single graded reading moves 0.786 -> 0.579 COLD, so the swap economy was never the explanation for her coldness; the remaining gap is elsewhere in her model (her graded reading is 0.552 COLD under the faithful S2 pulse model, which removed the always-on True Damage the retired uptime-average granted her swap shots).
-
-### Self-status / stack gate (8)
-
-**Eunhwa: Tactical Upgrade** (eunhwa-tactical-upgrade)
-
-- **skill1:** Camouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. (Activates when using Burst Skill. Affects self.)
-  - *Why:* ⚑ MEASUREMENT-GATED (tier 2): S1-L3 'Normal attacks deal true damage continuously' — the FLAVOR CHANGE of her sustained SR normals to true damage is UNMODELED. The engine's only true-normal mechanism is weaponSwap.trueNormals, which is (a) windowed (needs a durationSec) and (b) cannot coexist with her burst cannon swap (the engine holds a single swap slot — a fight-length trueNormals swap would be clobbered by the cannon swap on every burst and never restore). There is also no camouflage SELF-status to gate it (the engine has no self-status channel). Estimate: as shipped, her sustained SR normals stay NON-true, so the self trueDamagePct 42.24 buff is near-inert outside the burst cannon shot (it pays off fully on the cannon, which IS true-flavored); the kit intends ~camouflage-uptime fraction of her main SR DPS to be true-flavored and amplified. Camouflage uptime is partial (5s per 20s burst + Full-Charge-during-Full-Burst refreshes, roughly half the fight). Recipe: a permanent trueNormals flag that survives weapon-swap coexistence + a camouflage-uptime model (or a targetStatus-proxied camouflage window driving a windowed trueNormals swap), then popup-read the true-damage popup count / camouflage uptime in an eunhwa-tu recording. The trueDamagePct 42.24 buff itself is encoded and exact for the cannon payoff.
-- **skill1:** Camouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. (Activates when attacking with Full Charge during Full Burst. Affects self.)
-  - *Why:* ⚑ MEASUREMENT-GATED (tier 2): S1-L3 'Normal attacks deal true damage continuously' — the FLAVOR CHANGE of her sustained SR normals to true damage is UNMODELED. The engine's only true-normal mechanism is weaponSwap.trueNormals, which is (a) windowed (needs a durationSec) and (b) cannot coexist with her burst cannon swap (the engine holds a single swap slot — a fight-length trueNormals swap would be clobbered by the cannon swap on every burst and never restore). There is also no camouflage SELF-status to gate it (the engine has no self-status channel). Estimate: as shipped, her sustained SR normals stay NON-true, so the self trueDamagePct 42.24 buff is near-inert outside the burst cannon shot (it pays off fully on the cannon, which IS true-flavored); the kit intends ~camouflage-uptime fraction of her main SR DPS to be true-flavored and amplified. Camouflage uptime is partial (5s per 20s burst + Full-Charge-during-Full-Burst refreshes, roughly half the fight). Recipe: a permanent trueNormals flag that survives weapon-swap coexistence + a camouflage-uptime model (or a targetStatus-proxied camouflage window driving a windowed trueNormals swap), then popup-read the true-damage popup count / camouflage uptime in an eunhwa-tu recording. The trueDamagePct 42.24 buff itself is encoded and exact for the cannon payoff.
-- **skill1:** Activates only when in Camouflage status. Affects self. Normal attacks deal true damage continuously. (the FLAVOR-CHANGE half of S1-L3; the 'True Damage ▲ 42.24% continuously' half IS modeled as self trueDamagePct 42.24 — see caveats)
-  - *Why:* ⚑ MEASUREMENT-GATED (tier 2): S1-L3 'Normal attacks deal true damage continuously' — the FLAVOR CHANGE of her sustained SR normals to true damage is UNMODELED. The engine's only true-normal mechanism is weaponSwap.trueNormals, which is (a) windowed (needs a durationSec) and (b) cannot coexist with her burst cannon swap (the engine holds a single swap slot — a fight-length trueNormals swap would be clobbered by the cannon swap on every burst and never restore). There is also no camouflage SELF-status to gate it (the engine has no self-status channel). Estimate: as shipped, her sustained SR normals stay NON-true, so the self trueDamagePct 42.24 buff is near-inert outside the burst cannon shot (it pays off fully on the cannon, which IS true-flavored); the kit intends ~camouflage-uptime fraction of her main SR DPS to be true-flavored and amplified. Camouflage uptime is partial (5s per 20s burst + Full-Charge-during-Full-Burst refreshes, roughly half the fight). Recipe: a permanent trueNormals flag that survives weapon-swap coexistence + a camouflage-uptime model (or a targetStatus-proxied camouflage window driving a windowed trueNormals swap), then popup-read the true-damage popup count / camouflage uptime in an eunhwa-tu recording. The trueDamagePct 42.24 buff itself is encoded and exact for the cannon payoff.
-
-**Maiden** (maiden)
-
-- **burst:** Affects the same target(s) when in Revenge status.
-  - *Why:* burst: the 'when in Revenge status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Revenge self-status, so the burst fires at half its theoretical (Revenge-active) magnitude
-- **burst:** Deals 457.87% of final ATK as additional damage.
-  - *Why:* burst: the 'when in Revenge status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Revenge self-status, so the burst fires at half its theoretical (Revenge-active) magnitude
-
-**Neon: Vision Eye** (neon-vision-eye)
-
-- **skill2:** When Full Burst ends: 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5 sec' is MODELED (enacted 2026-08-09, owner faithfulness ruling) as two everyN:3 self burstGenPct blocks on HER OWN burstCast + delaySec 10 (≈ the FB end of the window her cast opened — cast-keyed, so a co-B3's Full Bursts never fire it), aligned to the Super cycle: after a Super cast the gauge is 0 (offset skipped, no buff); after the 1st charge window burstGenPct 330 for 5s (⚑ 5 × [1 cast + 45 end + 2×~10 in-window normals] — the normal count is a cadence estimate); after the 2nd, burstGenPct 500 (5 × the 100 cap, kit-structural). Empirically does not consume the Firepower cycle — every-3rd-Super held on video
-  - *Why:* KNOWN LOW-SEVERITY FIDELITY NOTE (S7 judge, faithfulness 0.93, GO): the +35.05% Super ATK rider is keyed to her burstCast (inside the everyN 3 / offset 1 Super block) rather than fullBurstEnter as the kit wording ('when entering Full Burst') literally reads, because the engine has no time-windowed self-status gate to express 'FB-enter gated on Super Firepower live'
-
-**Yulha** (yulha)
-
-- **burst:** Affects the same target(s) when in Calm status.
-  - *Why:* See unit note / caveats
-- **burst:** Deals 457.87% of final ATK as additional damage.
-  - *Why:* burst: the 'when in Calm status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Calm self-status, so the burst fires at half its theoretical (Calm-active) magnitude
-
 ### RNG / probabilistic (6)
 
 **Elegg: Boom and Shock** (elegg-boom-and-shock)
@@ -1777,6 +1756,27 @@ Deals 50.33% of final ATK as additional damage.
   - *Why:* burst: Spread Roots is the kit's solo-raid branch — its gate is 'enemy count aside from Nikkes is 1', always true here, so the Wilted Roots (>2 enemies) branch never fires and stays unmodeled. ⚑ VALIDATION-GATED, measured 2026-08-10 (phase-4 batch 5): the amp is LIVE and it already bites in exactly ONE place — `liberalio` in N3, whose tagged burst hit is a small share of her total, so the amp moves her mean 0.917 -> 0.929 (one reading 0.88 -> 0.92), i.e. TOWARD her real fight. Every other tagged unit is unpaired with her, so the rest of the board is byte-identical either way. The danger is the first BIG pairing: cinderella (run-B, 'Affects random enemies' 1365.92% x10, roughly half her damage) is the obvious next tag, and tagging her takes her from 0.893 COLD to 1.523 HOT — her three trina readings go 0.94/0.96/1.01 -> 1.91/2.55/2.60. The real fights therefore REFUTE the combination of (435.6 magnitude, additive Damage-Up placement, non-literal scope) at that scale; one of the three is wrong. Validate before tagging any further comp-mate of hers.
 - **burst:** Wilted Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 64.46% for 5 sec.
   - *Why:* burst: Spread Roots is MODELED (2026-08-10, faithfulness pass): burstSkillAoeDamagePct 435.6 to all allies for 5s on her burstCast — the kit gates it on 'enemy count aside from Nikkes is 1', which is ALWAYS true in the solo-raid sim, so no gate is encoded. Read only by burst-slot hits tagged burstDesc:'allEnemies'. SCOPE IS LITERAL-ONLY (owner ruling 2026-08-10): the kit amplifies 'skills with "Affects all enemies"', so a damage block qualifies only when its own clause contains that exact string — a paraphrase of the same meaning ('random enemies', 'enemies within attack range', a 10-target cap) does NOT. The qualifying carriers today are isabel, liberalio, mica, noir, phantom, privaty (the AR/Water Treasure base), quency-escape-queen, scarlet and soda-twinkling-bunny; the census that decides it is `npx tsx scripts/census-burst-amp-scope.ts`, pinned by scripts/tests/census-burst-amp-scope.test.ts. As a B2 her cast precedes the chain's B3 by under a second, so the window covers the nuke. The Wilted Roots branch (enemy count ≥2) is unreachable at scope and stays unmodeled verbatim. ⚑ additive Damage-Up placement per the '○○ Damage ▲' family rule (SSOT damage-formula §2); a popup read of an amped all-enemies nuke pins it.
+
+### Self-status / stack gate (5)
+
+**Maiden** (maiden)
+
+- **burst:** Affects the same target(s) when in Revenge status.
+  - *Why:* burst: the 'when in Revenge status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Revenge self-status, so the burst fires at half its theoretical (Revenge-active) magnitude
+- **burst:** Deals 457.87% of final ATK as additional damage.
+  - *Why:* burst: the 'when in Revenge status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Revenge self-status, so the burst fires at half its theoretical (Revenge-active) magnitude
+
+**Vesti: Tactical Upgrade** (vesti-tactical-upgrade)
+
+- **skill2:** ■ Activates when landing Full Charge attacks if self is in Battle Formation status. Affects self. ATK ▲ 20% for 3 sec.
+  - *Why:* skill2: 'Battle Formation' (S2b ATK ▲20% gate) is UNMODELED — the driver ADOPTED the blind consensus (S2b claude-fable-5 + S5/S6 claude-opus-5 all independently re-derived INERT). 'Battle Formation' is a self-status granted nowhere in this kit, so the line never fires in-scope regardless of the 2026-08-24 selfStatus gate; encoding it ungated (or even fbGate-gated) would credit an unprovable +20% ATK. The driver's fbGate:'inFb' reading (Battle Formation == Full Burst) is retained as the measurement-gated ALTERNATIVE (⚑6): restore a shotFired + fbGate:'inFb' atkPct 20 / 3s block if footage shows the proc tracking Full Burst windows
+
+**Yulha** (yulha)
+
+- **burst:** Affects the same target(s) when in Calm status.
+  - *Why:* See unit note / caveats
+- **burst:** Deals 457.87% of final ATK as additional damage.
+  - *Why:* burst: the 'when in Calm status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Calm self-status, so the burst fires at half its theoretical (Calm-active) magnitude
 
 ### Measurement-gated / unverified cadence (4)
 

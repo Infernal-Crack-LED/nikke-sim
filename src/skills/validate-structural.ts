@@ -862,6 +862,18 @@ export function structuralCheck(
           `${p}: a targetStatus effect must sit on a block with target "enemy" (the status is inflicted on the boss)`
         );
       }
+      // The mirror-image hazard for the ally-side sibling: selfStatus routes through
+      // resolveTargets(block.target), and resolveTargets({kind:'enemy'}) returns [] — an
+      // enemy-targeted selfStatus applies to ZERO units while the same-unit census's syntactic
+      // producer scan would still certify it, shipping a gate no layer ever flags as dead.
+      if (
+        collectEffectKinds(b.effects).has('selfStatus') &&
+        b.target?.kind === 'enemy'
+      ) {
+        errors.push(
+          `${p}: a selfStatus effect must sit on a block with an ally-side target (target "enemy" resolves to zero units — the status would be applied to nobody while the census still sees a producer)`
+        );
+      }
       // An `enemy`-targeted buff reaches the damage model ONLY as: a positive damageTakenPct /
       // distributedDamagePct, or a nonzero defPct (the DEF ▼ channel — scales cfg.bossDef; inert
       // on the bossDef = 0 graded basis, live at the web raid defaults). Anything else — an
@@ -1085,9 +1097,12 @@ export function targetStatusCensus(
 
   // selfStatus is per-unit, so its producer/consumer match is SAME-UNIT, not cross-slug: a
   // requiresSelfStatus gate can only ever be opened by a selfStatus effect in the SAME override
-  // (targeting the owner). A gate with no same-unit producer of the exact name is dead — and
-  // unlike the boss channel there is no legitimate "another kit will produce it" reading, so a
-  // missing producer is an ERROR, not a future-gated warning.
+  // (targeting the owner). A gate with no same-unit producer of the exact name is dead — and no
+  // shipped kit grants a self status to ANOTHER unit today, so a missing producer is an ERROR,
+  // not a future-gated warning. If a cross-unit grant ever ships ("allies enter <Mode>" — legal
+  // at runtime, since selfStatus routes through resolveTargets and an allies-targeted grant
+  // writes into each target's own map), downgrade this to the boss-channel census's two-tier
+  // ERROR/WARN split keyed on a cross-slug producer scan.
   for (const [slug, o] of overrides) {
     const selfProducers = new Set<string>();
     const selfConsumers = new Map<string, string[]>(); // name -> block paths

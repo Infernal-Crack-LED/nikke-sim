@@ -326,7 +326,7 @@ export type EffectDef =
       // this does not, so the fold silently over-credits every core hit. That is the fudge this
       // primitive exists to make unnecessary.
       //
-      // AUTHORING: carried on a per-pull trigger (`shotFired` / `hitCount` / `chargeCounter`),
+      // AUTHORING: carried on a per-pull trigger (`shotFired` / `fullCharge` / `hitCount` / `chargeCounter`),
       // which the engine dispatches immediately after the pull's own damage instance, and
       // target `enemy` (validate-overrides enforces both). The engine additionally frame-locks
       // it to a damage instance the owner landed on THAT frame, so it can never ride a stale

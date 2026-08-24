@@ -33,6 +33,21 @@ would settle each. AI-facing.
   is a behavior CHANGE, not an identity; her full-charge lines need an actual read of how her kit
   charges before touching (she is also outside the owned roster). The migration recipe is the
   slice-1 commit; the per-line verification step is the whole job.
+- **`rei-ayanami-tentative-name` + `rem` selfStatus migrations.** Both still carry the retired
+  boss-`targetStatus` self-mode proxy (rei's 'Attack State', rem's 'Demon's Breath') — the same
+  cross-unit-readable side channel the `asuka-wille` migration removed, flagged by the
+  cross-family review. Mechanically identical to the asuka-wille migration and
+  behavior-identical for both (only their own gates read the names, per their notes); their
+  notes now name the migration path.
+- **Parser-baseline drift** (cross-family review, unexercised-scope): `scripts/lib/kit-parser.ts`
+  now emits `fullCharge` for full-charge-worded lines, so committed parser baselines under
+  `overrides-baselines/` that carry `shotFired` will differ from a fresh
+  `materialize-overrides.ts` run. No verify.sh gate compares regenerated baselines to committed
+  ones; reconcile on the next baseline regeneration rather than ad hoc.
+- **selfStatus census two-tier split**: the same-unit missing-producer check is a hard ERROR
+  today (correct — no cross-unit self-status grant ships). If an "allies enter <Mode>" kit ever
+  lands, downgrade to the boss-channel census's ERROR/WARN split (comment in
+  `validate-structural.ts` records the recipe).
 - **Note palimpsests** (audit §6 tail): `neon-vision-eye` and `maiden-ice-rose` notes carry long
   superseded-narrative chains. Deferred here because they need wholesale current-state rewrites
   with capture-first checks against DECISIONS (higher-risk prose surgery than the targeted

@@ -637,7 +637,7 @@ interface UnitState {
   lastBurstCastStage: number; // the stage that cast filled (hitCount countInFbStage scoping)
   // The PRIMARY weapon-fire damage instance of this unit's most recent trigger pull, and the
   // frame it landed on. Written by firePull immediately after that instance resolves, i.e.
-  // BEFORE the pull's shotFired/hitCount/chargeCounter blocks dispatch — which is what lets a
+  // BEFORE the pull's shotFired/fullCharge/hitCount/chargeCounter blocks dispatch — which is what lets a
   // `hitRepeat` rider ("Deals Fixed Damage equal to X% of the damage dealt by self") read the
   // parent hit's FINAL number. `lastHitFrame` frame-locks the rider: it fires only when the
   // owner actually landed a hit on the same frame, never off a stale value.
@@ -4710,7 +4710,7 @@ export function runSim(
     // granting shot's own charge/fire predates the buff (it fired before the buff existed, so it
     // could not have benefited from it) and does not spend one of the buff's own N rounds —
     // "for N round(s)" reads as N rounds AFTER the grant. This covers per-pull triggers
-    // (shotFired/hitCount/chargeCounter) that grant a round-scoped buff, including the general
+    // (shotFired/fullCharge/hitCount/chargeCounter) that grant a round-scoped buff, including the general
     // case that the old noRetriggerWhileActive-only carve-out missed.
     // Every other buff (the general case, including a helm-style grant from a DIFFERENT trigger
     // than the one being counted) is unaffected: its startFrame is from an earlier frame than any
