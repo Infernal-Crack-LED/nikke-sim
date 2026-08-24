@@ -36,6 +36,17 @@ set -euo pipefail
 # no-tools profile to switch to, so this bridge is for SIGHTED packets only. Do not
 # use it for a blind role (kit-autonomy S2b/S5/S6, logic-gate) — blindness there is
 # load-bearing and cannot be enforced here. It refuses non-code-review packets below.
+#
+# ⚠ RUN THIS BRIDGE FOREGROUND (owner instruction 2026-08-23). Detached/backgrounded,
+# the qwen CLI can HANG AFTER FINISHING: observed twice in one session — the final
+# stream-json envelope (result + usage) lands in the .raw.jsonl, then the CLI never
+# exits, so this wrapper blocks forever on the subshell and result.json is never
+# written. The review itself is fine; rescue it from the raw file (parse the last
+# envelope with a `result` + `usage` field and unwrap its `result` text — the
+# generic scripts/extract-review-json.py grabs the session-init object instead).
+# A run that outlives the Bash tool's 10-min foreground cap is the same situation:
+# poll the .raw.jsonl (it streams progressively) rather than trusting the wrapper
+# to come back.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
