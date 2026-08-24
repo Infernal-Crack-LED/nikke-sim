@@ -2514,7 +2514,11 @@ export function creditScheduleFor(
   // flagged LOUD instead of silently dropped. A slot carrying MORE THAN ONE qualifying block is
   // likewise flagged: the event key cannot tell their applications apart.
   const APP_NONGEN = new Set(['noah', 'snow-white-heavy-arms']);
-  const APP_NONGEN_TRIGGERS = new Set(['shotFired', 'chargeCounter']);
+  const APP_NONGEN_TRIGGERS = new Set([
+    'shotFired',
+    'fullCharge',
+    'chargeCounter',
+  ]);
   // appCredit[slug][slot] = per-application gauge amount (pre-burstGenPct), or absent.
   const appCredit: Record<string, Map<string, number>> = {};
   for (const s of slugs) {

@@ -160,7 +160,7 @@ const permanentCycle = withPatchedOverride(SLUG, (ov) => {
     },
     {
       slot: 'skill1',
-      trigger: { kind: 'shotFired' },
+      trigger: { kind: 'fullCharge' },
       target: { kind: 'enemy' },
       effects: [{ kind: 'flatDamage', atkPct: 290, flavor: 'distributed' }],
     }

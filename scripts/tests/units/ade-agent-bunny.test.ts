@@ -120,11 +120,13 @@ const genericAtk = withPatchedOverride(SLUG, (ov: any) => {
   }
   e.stat = 'atkPct';
 });
-/** A1/A3: shotFired → burstCast on the S1 caster block (cadence collapse). */
+/** A1/A3: fullCharge → burstCast on the S1 caster block (cadence collapse). */
 const s1BurstTrig = withPatchedOverride(SLUG, (ov: any) => {
-  const blk = ov.skill1.find((b: any) => b.trigger?.kind === 'shotFired');
+  const blk = ov.skill1.find((b: any) => b.trigger?.kind === 'fullCharge');
   if (!blk) {
-    throw new Error('ade S1 shotFired block missing — fixture is stale');
+    throw new Error(
+      'ade-agent-bunny S1 fullCharge block missing — fixture is stale'
+    );
   }
   blk.trigger = { kind: 'burstCast' };
 });
@@ -134,7 +136,7 @@ const noS2Pierce = withPatchedOverride(SLUG, (ov: any) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) =>
       !(
-        b.trigger?.kind === 'shotFired' &&
+        b.trigger?.kind === 'fullCharge' &&
         b.effects.some((e: any) => e.stat === 'pierceDamagePct')
       )
   );

@@ -122,6 +122,14 @@ export type TriggerDef =
   // by landing timing.
   | { kind: 'teamAmmo'; count: number } // fires each time TOTAL ally ammo consumed crosses count (infinite-ammo shots don't consume)     // every N normal-attack hits by the owner
   | { kind: 'shotFired' } // every trigger pull by the owner
+  // "Activates when performing/attacking with a Full Charge attack" — fires only on a CHARGED pull
+  // (the charge fire-path's release; charge weapons in-sim release exclusively at full charge, so
+  // for an unswapped SR/RL this is every pull and is byte-identical to shotFired — the primitive
+  // exists so the block's shape matches the kit line instead of riding that equivalence as a
+  // per-unit ⚑ proxy). Never fires on non-charge pulls (MG belt rounds, non-charge swap states),
+  // which is the kit-faithful behavior the shotFired proxy could not express. "LANDING a Full
+  // Charge attack" wordings still carry their landing/range residue as per-unit caveats.
+  | { kind: 'fullCharge' }
   | { kind: 'lastBullet' } // on the owner's last bullet / reload start
   | { kind: 'recovery' } // when the owner RECEIVES a heal (a 'heal' effect targets them) — Crown's "when recovery takes effect"
   | { kind: 'shielded' } // when the owner RECEIVES a shield (a 'shield' effect targets them) — shield-synergy kits (e.g. naga's shield-gate)

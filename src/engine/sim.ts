@@ -1669,10 +1669,15 @@ export function runSim(
   // Owner scope ruling 2026-08-16: GENERATE BY DEFAULT — every trigger shape credits except the
   // one explicitly-known non-generating delivery, the on-bullet rider (anti-double-count rule,
   // note.com/_trick_, Noise's charged-shot taunt: an effect the shot itself carries adds nothing
-  // beyond the bullet's own gauge). That is the per-shot shapes: shotFired and chargeCounter.
+  // beyond the bullet's own gauge). That is the per-shot shapes: shotFired, fullCharge and
+  // chargeCounter.
   // hitCount/lastBullet debuffs are bullet-COINCIDENT but are separate skill activations, not
   // per-shot riders — under the default-generate ruling they credit.
-  const APPLICATION_NONGEN_TRIGGERS = new Set(['shotFired', 'chargeCounter']);
+  const APPLICATION_NONGEN_TRIGGERS = new Set([
+    'shotFired',
+    'fullCharge',
+    'chargeCounter',
+  ]);
   // A qualifying application: enemy-targeted, PURE non-damage (buff/targetStatus only — a block
   // carrying flatDamage/dot already generates through its damage impacts via skillGauge), not a
   // per-shot rider, opening a DISCRETE window (some finite durationSec < 900 — no durationSec =
@@ -4562,6 +4567,14 @@ export function runSim(
     u.blocks.forEach((b, bi) => {
       if (b.trigger.kind === 'shotFired') {
         applyBlock(u.idx, b, bi, frame);
+      } else if (b.trigger.kind === 'fullCharge') {
+        // "Activates when performing/attacking with Full Charge" — only a CHARGED pull qualifies.
+        // Charge weapons release exclusively at full charge, so for them this dispatches on every
+        // pull exactly like shotFired; it stays silent on non-charge pulls (MG belt rounds,
+        // non-charge swap states), which the shotFired proxy could not express.
+        if (charged) {
+          applyBlock(u.idx, b, bi, frame);
+        }
       } else if (b.trigger.kind === 'hitCount') {
         const key = `hc:${bi}`;
         // Threshold-lowering scope: DEFAULT = any team Full Burst state (SWID convention,

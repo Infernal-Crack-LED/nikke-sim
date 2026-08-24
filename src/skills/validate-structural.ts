@@ -87,6 +87,7 @@ export const TRIGGERS = new Set([
   'hitCount',
   'teamAmmo',
   'shotFired',
+  'fullCharge',
   'lastBullet',
   'recovery',
   'shielded',
@@ -881,7 +882,12 @@ export function structuralCheck(
       // instead of shipping a dead line. Target is the boss, like every other damage effect.
       // Collected recursively for the same reason as targetStatus above.
       if (collectEffectKinds(b.effects).has('hitRepeat')) {
-        const PER_PULL = ['shotFired', 'hitCount', 'chargeCounter'];
+        const PER_PULL = [
+          'shotFired',
+          'fullCharge',
+          'hitCount',
+          'chargeCounter',
+        ];
         if (!PER_PULL.includes(b.trigger?.kind)) {
           errors.push(
             `${p}: a hitRepeat effect needs a per-pull trigger (${PER_PULL.join(' / ')}) — it rides the parent hit dispatched on the same frame, and would never fire on "${b.trigger?.kind}"`

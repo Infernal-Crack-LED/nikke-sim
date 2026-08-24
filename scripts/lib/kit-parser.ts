@@ -112,7 +112,7 @@ function parseTrigger(header: string, slot: SkillSlot): TriggerDef {
     return { kind: 'hitCount', count: Number(fcCount[1] ?? fcCount[2]) };
   }
   if (/full[- ]charge/.test(clause)) {
-    return { kind: 'shotFired' };
+    return { kind: 'fullCharge' };
   }
   if (/last (bullet|round|ammo)/.test(clause)) {
     return { kind: 'lastBullet' };
