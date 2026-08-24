@@ -4,13 +4,13 @@
 // (see docs/handoffs/2026-07-18-synced-roster-stats-backend-contract.md); this
 // module owns the trivial label → sim-key half, keyed on the very `name` fields
 // the sim already stores in data/ol-lines.json and data/cubes.json.
-import charactersJson from '../../data/characters.json';
-import olLinesJson from '../../data/ol-lines.json';
-import olTiersJson from '../../data/ol-tiers.json';
-import cubesJson from '../../data/cubes.json';
-import type { GearLevel } from '../../src/types';
-import type { LineSelection, UnitOptions } from '../../src/prepare';
-import type { DollRarity, SyncedUnitLoadout } from './auth';
+import charactersJson from '../../data/characters.json' with { type: 'json' };
+import olLinesJson from '../../data/ol-lines.json' with { type: 'json' };
+import olTiersJson from '../../data/ol-tiers.json' with { type: 'json' };
+import cubesJson from '../../data/cubes.json' with { type: 'json' };
+import type { GearLevel } from '../../src/types.js';
+import type { LineSelection, UnitOptions } from '../../src/prepare.js';
+import type { DollRarity, SyncedUnitLoadout } from './auth.js';
 
 // name_code → sim slug (name_code lives at role.meta.name_code in characters.json).
 const SLUG_BY_NAME_CODE: Record<number, string> = (() => {
@@ -25,7 +25,9 @@ const SLUG_BY_NAME_CODE: Record<number, string> = (() => {
   return map;
 })();
 
-// OL line label (data/ol-lines.json `name`) → sim line key ("Increase ATK" → "atk").
+// OL line label (data/ol-lines.json `name`) → sim line key ("Increased ATK" → "atk").
+// The names are the game's own labels, verbatim from the CDN equip_option_table_v2-en
+// `description_localkey` — exactly the strings the backend forwards.
 const OL_KEY_BY_LABEL: Record<string, string> = (() => {
   const map: Record<string, string> = {};
   const lines = (olLinesJson as any).lines as Record<string, { name: string }>;
@@ -35,13 +37,21 @@ const OL_KEY_BY_LABEL: Record<string, string> = (() => {
   return map;
 })();
 
-// Backend label variants that mean a known line but don't match data/ol-lines.json
-// `name` exactly. bakery-bot forwards the blablalink locale string for these (the
-// contract asks it to normalize to the canonical label; this is the sim-side safety
-// net so the line isn't silently dropped). Exact backend label → sim line key.
+// Label variants that mean a known line but don't match data/ol-lines.json `name`
+// exactly, so the line isn't silently dropped. These are the sim's own pre-2026-08-23
+// names (wrong vs the game's real labels from day one — every real synced line went
+// unmapped until the rename); local roster captures made before the fix still carry
+// them. Exact label → sim line key.
 const OL_LABEL_ALIASES: Record<string, string> = {
-  'Increase Element Damage Dealt': 'elem',
-  'Increase Max Ammunition Capacity': 'ammo',
+  'Increase Elemental Damage': 'elem',
+  'Increase ATK': 'atk',
+  'Increase Max Ammo Capacity': 'ammo',
+  'Increase Charge Damage': 'chargedmg',
+  'Increase Charge Speed': 'chargespd',
+  'Increase Critical Rate': 'critrate',
+  'Increase Critical Damage': 'critdmg',
+  'Increase Hit Rate': 'hitrate',
+  'Increase DEF': 'def',
 };
 
 // Cube name (data/cubes.json `name`) → sim cube id ("Bastion" → "bastion").
@@ -83,8 +93,8 @@ export interface SlotLoadout {
   cubeId: string | null; // sim cube id, 'other' for an unmapped cube, null = none
   cubeLevel: number;
   doll: { rarity: DollRarity; level: number } | null; // Favorite Item
-  olElem: number; // summed % of "Increase Elemental Damage" lines
-  olAtk: number; // summed % of "Increase ATK" lines
+  olElem: number; // summed % of "Increased Elemental Advantage Dmg" lines
+  olAtk: number; // summed % of "Increased ATK" lines
   olExtra: { type: string; value: number }[]; // other lines, summed per stat
   // diagnostics (surfaced so unmapped game content is visible, never silent)
   unmappedCube?: string;

@@ -55,7 +55,7 @@ export interface RosterCharacter {
 // + the 1-based roll tier 1-15 (a base T10 roll is tier 11). The sim maps
 // (label, tier) → % via data/ol-tiers.json.
 export interface SyncedOlLine {
-  label: string; // e.g. "Increase ATK"
+  label: string; // e.g. "Increased ATK" (the game's own label, forwarded verbatim)
   tier: number; // roll tier 1-15
 }
 export type DollRarity = 'R' | 'SR' | 'SSR';
