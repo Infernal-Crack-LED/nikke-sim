@@ -555,6 +555,11 @@ interface UnitState {
   shieldedUntilFrame: number; // shield-state window end (0 = none): set when a 'shield' effect targets this
   // unit (durationSec; none = permanent at scope — boss damage unmodeled, nothing
   // breaks shields). Read by the requiresShielded block gate (naga's burst 31.02%)
+  selfStatuses: Map<string, number>; // kit-NAMED self-status windows ON THIS UNIT (name → expiry
+  // frame): opened/max-extended by a 'selfStatus' effect targeting them, read by the OWNER's
+  // requiresSelfStatus block gate. Per-unit by construction — the ally-side sibling of the shared
+  // targetStatuses map, so a self mode never leaks through the boss-status side channel
+  // (asuka-wille 'Annihilation State', 2026-08-24)
   consolidation?: ConsolidationConfig; // pellet-consolidation mode config (dorothy-S)
   landedAcc: number; // landed pellets accrued toward the consolidation trigger (near-gated)
   consolShotsLeft: number; // remaining single-bullet consolidation shots in the current episode
@@ -882,6 +887,7 @@ export function runSim(
       pierceShotsLeft: 0,
       pierceGrantFrame: -1,
       shieldedUntilFrame: 0,
+      selfStatuses: new Map(),
       consolidation: skills.consolidation,
       landedAcc: 0,
       consolShotsLeft: 0,
@@ -2536,6 +2542,16 @@ export function runSim(
     ) {
       return false;
     }
+    // named self-status gate: "Activates only while in <Name> status" — the block only activates
+    // while the OWNER's own status window of that name is open (a 'selfStatus' effect targeted
+    // them). Per-unit map: another unit's identically-named status never opens this gate, and a
+    // self mode kept here can never satisfy an unrelated kit's requiresTargetStatus.
+    if (
+      block.requiresSelfStatus &&
+      (owner.selfStatuses.get(block.requiresSelfStatus) ?? -1) <= frame
+    ) {
+      return false;
+    }
     // boss-element gate: an element-coded line ("when attacking an Electric Code
     // target", "all Wind Code enemies") fires only when the boss element matches.
     // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
@@ -3092,6 +3108,22 @@ export function runSim(
               frame + Math.round(e.durationSec * FPS)
             )
           );
+          break;
+        case 'selfStatus':
+          // open/extend a kit-NAMED status window on each TARGET UNIT (normally self): the
+          // ally-side sibling of 'targetStatus'. Routed through resolveTargets like every other
+          // ally-side effect — per-(unit, name) windows, max-extended on re-application, read by
+          // the requiresSelfStatus gate. Carries no stats; the mode's payload is its sibling
+          // buff effects.
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
+            t.selfStatuses.set(
+              e.name,
+              Math.max(
+                t.selfStatuses.get(e.name) ?? -1,
+                frame + Math.round(e.durationSec * FPS)
+              )
+            );
+          }
           break;
         case 'storedHit': {
           const entry = owner.storedHits.get(key) ?? {

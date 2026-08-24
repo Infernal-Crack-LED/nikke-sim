@@ -408,6 +408,15 @@ export type EffectDef =
       maxShots?: number; // uses-based end: swap terminates right after the Nth swapped
       // shot fires, at variable time (MEASURED 2026-07-14, SWHA)
     }
+  // opens/extends a kit-NAMED status window ON THE TARGET UNIT(S) for durationSec — the ally-side
+  // sibling of `targetStatus` for SELF modes ("Annihilation State", camouflage-class states): a
+  // unit "enters <Name>" and her own blocks gate on being in it via `requiresSelfStatus`. Windows
+  // are keyed per (unit, name): another unit's identically-named status never satisfies this
+  // owner's gate, and — unlike the boss-status channel, which is one shared map — a selfStatus can
+  // never be read by an unrelated kit's `requiresTargetStatus` (the asuka-wille side-channel
+  // hazard this primitive retires, 2026-08-24). Max-extends per name on re-application. The
+  // status itself carries no stats — pair it with buff effects for the mode's payload.
+  | { kind: 'selfStatus'; name: string; durationSec: number }
   | { kind: 'fillGauge'; pct: number } // instantly fills the burst gauge
   | { kind: 'heal'; ticks?: number; intervalSec?: number } // emits recovery event(s) to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown). A per-second heal-over-time ("Recovers X% every 1 sec for N sec") sets ticks:N (intervalSec default 1) so it emits N recovery events over time, keeping on-recovery consumers refreshed; default ticks:1 = a single instant event (back-compatible)
   | { kind: 'shield'; maxHpPct?: number; durationSec?: number } // emits a shield event to the target(s) — no HP pool modeled (v1 boss deals no damage); fires their 'shielded' triggers; maxHpPct = % of CASTER final Max HP (recorded for kit completeness)
@@ -614,6 +623,13 @@ export interface Block {
   // parts-hit branch awaits destructible-part modeling). Replaced the boolean `requiresWipeOut`
   // 2026-07-23.
   requiresTargetStatus?: string;
+  // named self-status gate, checked when the trigger fires: the block only activates while the
+  // OWNER currently carries the status of this name on THEMSELF (opened by a `selfStatus` effect
+  // that targeted them). Keyed per (unit, name) — no cross-unit reads in either direction, which
+  // is what distinguishes it from proxying a self mode through the shared boss-status map.
+  // e.g. asuka-wille's every-10-shots Anti A.T. Field proc, requiresSelfStatus: 'Annihilation
+  // State' — "Activates while in Annihilation State". Omit = no self-status requirement.
+  requiresSelfStatus?: string;
   // boss-element gate, checked when the trigger fires: the block only activates
   // when the fight's boss element matches (e.g. helm-aquamarine's burst "when
   // attacking an Electric Code target → +164.83%"; brid-silent-track's FB-enter

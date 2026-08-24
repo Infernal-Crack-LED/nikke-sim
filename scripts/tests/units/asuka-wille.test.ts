@@ -24,7 +24,7 @@
 //                          → self: Reloads 21% magazine (instantReload 0.21)                    [W7]
 //                          → self: ATK ▲46.8% of caster ATK / 9s                                [W8]
 //                          → self: Attack Damage ▲36% / 9s                                      [W9]
-//        + inflicts targetStatus 'Annihilation State' 9s on the boss (the mode-window gate proxy)
+//        + opens selfStatus 'Annihilation State' 9s on herself (the per-unit mode window)
 //      ■ Annihilation finisher → target w/ Anti A.T. Field: 6.62% × stack count (cap 30 = 198.6%),[W10]
 //        delaySec:9 → LANDS at state-end inside the FB window (FB-boosted, finding F2)
 //
@@ -34,9 +34,9 @@
 //       the burst finisher prose says the status "is removed after the effect is triggered", so the
 //       debuff is CONSUMED at state-end (~cast+9s) — its real life is the 9s build window, NOT the
 //       near-permanent 30-stack the parser-baseline shipped (which over-credited the whole team
-//       ~3-4x avg). Now GATED: the burst inflicts targetStatus 'Annihilation State' 9s (no SELF-status
-//       gate exists, so the mode is proxied as a boss status, marciana/privaty pattern) and the S1
-//       proc carries requiresTargetStatus 'Annihilation State' at hitCount 10 (every 10 in-window
+//       ~3-4x avg). Now GATED: the burst opens selfStatus 'Annihilation State' 9s on herself (the
+//       per-unit self-status channel — no boss-status side channel) and the S1
+//       proc carries requiresSelfStatus 'Annihilation State' at hitCount 10 (every 10 in-window
 //       shots). The 15.62% rider + debuff fire ONLY inside [cast, +9s]; the debuff durationSec is 9
 //       (effective=consumed). Residual ⚑6: instant stack-removal is unmodelable (no remove-target-buff
 //       primitive) → gradual 9s expiry leaves a short post-window tail.
@@ -120,7 +120,7 @@ const awNoAtfDebuff = withPatchedOverride(SLUG, (ov) => {
     ov.skill1,
     (x) =>
       x.trigger?.kind === 'hitCount' &&
-      x.requiresTargetStatus === 'Annihilation State',
+      x.requiresSelfStatus === 'Annihilation State',
     'S1 ATF'
   );
   const before = b.effects.length;
@@ -138,10 +138,10 @@ const awUngated = withPatchedOverride(SLUG, (ov) => {
     ov.skill1,
     (x) =>
       x.trigger?.kind === 'hitCount' &&
-      x.requiresTargetStatus === 'Annihilation State',
+      x.requiresSelfStatus === 'Annihilation State',
     'S1 ATF'
   );
-  delete b.requiresTargetStatus;
+  delete b.requiresSelfStatus;
 });
 /** W1 reference: remove the S1 50-hit 471.86% block entirely. */
 const awNoS1Nuke = withPatchedOverride(SLUG, (ov) => {
@@ -348,7 +348,7 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     const debuff = buffs(base.events).filter(
       (b) => b.stat === 'damageTakenPct'
     );
-    // Annihilation State windows: [her burstCast, +9s]. The burst inflicts targetStatus
+    // Annihilation State windows: [her burstCast, +9s]. The burst opens selfStatus
     // 'Annihilation State' (9s) which gates the S1 proc; the finisher consumes the status at
     // state-end, so the proc + debuff live ONLY inside these windows.
     const windows = awBursts(base.events).map(

@@ -139,6 +139,7 @@ export const EFFECTS = new Set([
   'addStack',
   'resource',
   'targetStatus',
+  'selfStatus',
 ]);
 export const FLAVORS = new Set([
   'distributed',
@@ -221,7 +222,7 @@ export interface StructuralContext {
  */
 export interface BlockOrderPair {
   slot: (typeof SLOTS)[number];
-  family: 'status' | 'resource';
+  family: 'status' | 'selfStatus' | 'resource';
   name: string;
   /** index in the slot array of the block that WRITES */
   producer: number;
@@ -252,7 +253,7 @@ export function blockOrderPairs(override: any): BlockOrderPair[] {
       continue;
     }
     const producers: {
-      family: 'status' | 'resource';
+      family: 'status' | 'selfStatus' | 'resource';
       name: string;
       i: number;
     }[] = [];
@@ -263,6 +264,11 @@ export function blockOrderPairs(override: any): BlockOrderPair[] {
           producers.push({ family: 'status', name: e.name, i });
         }
       }
+      for (const e of collectEffects(b?.effects, 'selfStatus')) {
+        if (typeof e?.name === 'string') {
+          producers.push({ family: 'selfStatus', name: e.name, i });
+        }
+      }
       for (const e of collectEffects(b?.effects, 'resource')) {
         if (typeof e?.name === 'string') {
           producers.push({ family: 'resource', name: e.name, i });
@@ -270,6 +276,9 @@ export function blockOrderPairs(override: any): BlockOrderPair[] {
       }
       if (typeof b?.requiresTargetStatus === 'string') {
         consumers.push({ family: 'status', name: b.requiresTargetStatus, i });
+      }
+      if (typeof b?.requiresSelfStatus === 'string') {
+        consumers.push({ family: 'selfStatus', name: b.requiresSelfStatus, i });
       }
       if (typeof b?.resourceGate?.name === 'string') {
         consumers.push({ family: 'resource', name: b.resourceGate.name, i });
@@ -331,20 +340,22 @@ export function blockOrderCensus(
 // for cross-slot pairs too: those cannot be reordered inside a slot array, but MOVING a block
 // between slots reorders them, and the reader deserves to know the pair exists.
 function blockOrderWarnings(override: any, warnings: string[]) {
-  const label = (f: 'status' | 'resource') =>
-    f === 'status'
-      ? { noun: 'status', wrote: 'produced', read: 'consumed' }
-      : { noun: 'resource', wrote: 'adjusted', read: 'gated' };
+  const label = (f: 'status' | 'selfStatus' | 'resource') =>
+    f === 'resource'
+      ? { noun: 'resource', wrote: 'adjusted', read: 'gated' }
+      : f === 'selfStatus'
+        ? { noun: 'self-status', wrote: 'produced', read: 'consumed' }
+        : { noun: 'status', wrote: 'produced', read: 'consumed' };
   const sites = new Map<
     string,
     {
-      family: 'status' | 'resource';
+      family: 'status' | 'selfStatus' | 'resource';
       name: string;
       prod: string[];
       cons: string[];
     }
   >();
-  const site = (family: 'status' | 'resource', name: string) => {
+  const site = (family: 'status' | 'selfStatus' | 'resource', name: string) => {
     const key = `${family}\x00${name}`;
     let s = sites.get(key);
     if (!s) {
@@ -364,6 +375,11 @@ function blockOrderWarnings(override: any, warnings: string[]) {
           site('status', e.name).prod.push(`${slot}[${bi}]`);
         }
       }
+      for (const e of collectEffects(b?.effects, 'selfStatus')) {
+        if (typeof e?.name === 'string') {
+          site('selfStatus', e.name).prod.push(`${slot}[${bi}]`);
+        }
+      }
       for (const e of collectEffects(b?.effects, 'resource')) {
         if (typeof e?.name === 'string') {
           site('resource', e.name).prod.push(`${slot}[${bi}]`);
@@ -371,6 +387,9 @@ function blockOrderWarnings(override: any, warnings: string[]) {
       }
       if (typeof b?.requiresTargetStatus === 'string') {
         site('status', b.requiresTargetStatus).cons.push(`${slot}[${bi}]`);
+      }
+      if (typeof b?.requiresSelfStatus === 'string') {
+        site('selfStatus', b.requiresSelfStatus).cons.push(`${slot}[${bi}]`);
       }
       if (typeof b?.resourceGate?.name === 'string') {
         site('resource', b.resourceGate.name).cons.push(`${slot}[${bi}]`);
@@ -605,6 +624,16 @@ function checkEffect(e: any, path: string, errors: string[], trigger?: string) {
     }
     if (typeof e.durationSec !== 'number' || !(e.durationSec > 0)) {
       errors.push(`${path}: targetStatus needs durationSec > 0`);
+    }
+  }
+  if (e.kind === 'selfStatus') {
+    if (typeof e.name !== 'string' || !e.name.trim()) {
+      errors.push(
+        `${path}: selfStatus needs a non-empty "name" (the kit's status name)`
+      );
+    }
+    if (typeof e.durationSec !== 'number' || !(e.durationSec > 0)) {
+      errors.push(`${path}: selfStatus needs durationSec > 0`);
     }
   }
   if (e.kind === 'escalating') {

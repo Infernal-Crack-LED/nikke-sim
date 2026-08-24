@@ -872,6 +872,12 @@ export const GAUGE_KIND_CENSUS: Record<EffectDef['kind'], KindCensusRow> = {
     ruling: 'n/a',
     basis: 'boss status window only',
   },
+  selfStatus: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'own-unit status window only',
+  },
   burstEligibility: {
     impact: false,
     emission: 'no-emission',
