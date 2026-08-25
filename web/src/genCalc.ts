@@ -126,6 +126,12 @@ export const SYNERGY_WEIGHT = 0.08;
 //   - naga requires a shield-granting teammate (owner ruling: her kit depends
 //     on a shielder being present) — anyOf = every `shield`-tagged unit except
 //     naga herself (she cannot satisfy her own dependency).
+// Healer candidates for the "Include Healer" generator toggle — shared by the
+// requiredAny constraint below and the roster shortfall explainer's diagnosis.
+export const HEALER_SLUGS: string[] = Object.entries(archetypeTags)
+  .filter(([, tags]) => tags.includes('healer'))
+  .map(([slug]) => slug);
+
 export const TEAM_CONSTRAINTS = {
   together: [['mint', 'prika']],
   companions: [
@@ -186,14 +192,7 @@ export function buildGenCalc(
     constraints: params.healerNeeded
       ? {
           ...TEAM_CONSTRAINTS,
-          requiredAny: [
-            {
-              label: 'healer',
-              anyOf: Object.entries(archetypeTags)
-                .filter(([, tags]) => tags.includes('healer'))
-                .map(([slug]) => slug),
-            },
-          ],
+          requiredAny: [{ label: 'healer', anyOf: HEALER_SLUGS }],
         }
       : TEAM_CONSTRAINTS,
     evaluator,

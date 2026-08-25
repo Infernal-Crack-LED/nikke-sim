@@ -183,7 +183,7 @@ const LAMBDA_STAGE: Record<'I' | 'II' | 'III', 1 | 2 | 3> = {
   III: 3,
 };
 /** Effective burst class for selection — a forced slot for pinned Λ units, else the char's own. */
-const effBurst = (slug: string, chars: Record<string, Char>): string =>
+export const effBurst = (slug: string, chars: Record<string, Char>): string =>
   FORCED_BURST[slug] ?? chars[slug].burst;
 
 // --- canonical team order (perf plan item 2) --------------------------------
@@ -244,6 +244,8 @@ function deficits(counts: Record<string, number>): number {
 // every B1/B2. Λ units never count here — the only Λ (Red Hood) is forced to B3.
 const CD_SHORT = 20; // a single caster at/below this covers the stage solo
 const CD_PAIR = 40; // two casters at/below this alternate to cover the stage
+/** The stage-coverage cooldown thresholds, exported for the shortfall explainer. */
+export const STAGE_CD = { short: CD_SHORT, pair: CD_PAIR } as const;
 function stageCovered(
   slugs: string[],
   chars: Record<string, Char>,
@@ -331,6 +333,84 @@ function canFormLegalTeam(
     }
   }
   return false;
+}
+
+/**
+ * Why can't `pool` field (another) legal team? Sim-free companion to
+ * canFormLegalTeam for the generators' shortfall explainer: when a roster build
+ * stops short of the requested team count, this names the resource(s) the
+ * leftover pool ran out of, so the UI can say WHY instead of returning fewer
+ * teams silently. Each dimension is checked independently — a pool can be short
+ * on several at once (e.g. no Burst I left AND no advantaged-element unit left)
+ * and every one is reported. An EMPTY result does not promise a team exists:
+ * the checks are per-dimension, so a pool whose only advantaged unit is also
+ * its only usable Burst I can pass each check yet still fail the search — the
+ * caller should fall back to a generic "can't combine" message.
+ */
+export type ShortfallReason =
+  | { kind: 'pool-size'; have: number } // fewer than 5 units left
+  | { kind: 'burst3'; have: number } // fewer than NEED.III Burst III left
+  // stage I/II uncoverable: `short` = casters at ≤CD_SHORT, `pair` = casters in
+  // (CD_SHORT, CD_PAIR] — coverage needs short ≥ 1 or short + pair ≥ 2
+  | { kind: 'stage'; stage: 'I' | 'II'; short: number; pair: number }
+  // both stages coverable but only by 40s pairs, and 2+2 casters + 2 B3 > 5
+  | { kind: 'fit' }
+  | { kind: 'element'; element: Element; have: number } // no advantaged unit left
+  | { kind: 'required-any'; label: string }; // e.g. the healer requirement
+
+export function diagnoseTeamShortfall(
+  pool: string[],
+  chars: Record<string, Char>,
+  opts?: {
+    requireElement?: Element | null;
+    requiredAny?: { label: string; anyOf: string[] }[];
+  }
+): ShortfallReason[] {
+  const structural: ShortfallReason[] = [];
+  if (pool.length < 5) {
+    structural.push({ kind: 'pool-size', have: pool.length });
+  }
+  const thirds = pool.filter((s) => effBurst(s, chars) === 'III').length;
+  if (thirds < NEED.III) {
+    structural.push({ kind: 'burst3', have: thirds });
+  }
+  for (const stage of ['I', 'II'] as const) {
+    let short = 0;
+    let pair = 0;
+    for (const s of pool) {
+      if (effBurst(s, chars) !== stage) {
+        continue;
+      }
+      const cd = chars[s].burstCooldownSec;
+      if (cd <= CD_SHORT) {
+        short++;
+      } else if (cd <= CD_PAIR) {
+        pair++;
+      }
+    }
+    if (short < 1 && short + pair < 2) {
+      structural.push({ kind: 'stage', stage, short, pair });
+    }
+  }
+  // Only when every per-dimension check passes can the residual infeasibility be
+  // the slot-fit case (both stages need a 40s pair and 2+2+2 > 5).
+  if (!structural.length && !canFormLegalTeam(pool, chars)) {
+    structural.push({ kind: 'fit' });
+  }
+  const reasons = structural;
+  const reqEl = opts?.requireElement ?? null;
+  if (reqEl) {
+    const have = pool.filter((s) => chars[s]?.element === reqEl).length;
+    if (have < 1) {
+      reasons.push({ kind: 'element', element: reqEl, have });
+    }
+  }
+  for (const r of opts?.requiredAny ?? []) {
+    if (!r.anyOf.some((s) => pool.includes(s))) {
+      reasons.push({ kind: 'required-any', label: r.label });
+    }
+  }
+  return reasons;
 }
 
 /**
