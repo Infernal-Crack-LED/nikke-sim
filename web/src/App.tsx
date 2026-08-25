@@ -3362,7 +3362,9 @@ export function App({ user }: { user: AuthUser | null }) {
   // Explain a short generator run: diagnose what the leftover pool is missing,
   // and whether the "Include Non-OL Units" pill would supply it. Mirrors the
   // search's own rules — the healer requirement relaxes when no healer is
-  // eligible at all (buildGenCalc drops an empty requiredAny the same way).
+  // eligible at all (makeCalc's requiredAny availability filter drops the
+  // constraint once no satisfier is in the pool; buildGenCalc passes the full
+  // HEALER_SLUGS list through unconditionally).
   // `used` is every unit unavailable to the team that failed to build (consumed
   // by earlier teams + reserved for later rows); the element rule comes from
   // `params.weakness`, so a per-boss Union Raid row diagnoses against its own
@@ -3428,8 +3430,17 @@ export function App({ user }: { user: AuthUser | null }) {
                 return c.element === r.element;
               case 'required-any':
                 return HEALER_SLUGS.includes(s);
+              case 'fit':
+                // Only a ≤20s Burst I/II caster breaks the 2+2+2>5 bind (it
+                // turns a two-slot stage into a one-slot stage); another 40s
+                // caster or a third Burst III contributes nothing here.
+                return (
+                  ['I', 'II'].includes(
+                    effBurst(s, generatorCharacters as any)
+                  ) && c.burstCooldownSec <= STAGE_CD.short
+                );
               default:
-                return true; // pool-size / fit: any extra unit helps
+                return true; // pool-size: any extra unit helps
             }
           });
         const names = additions
