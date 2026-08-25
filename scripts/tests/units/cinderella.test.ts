@@ -129,7 +129,7 @@ const cindyNoRider = withPatchedOverride('cinderella', (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) =>
       !(
-        b.trigger?.kind === 'shotFired' &&
+        b.trigger?.kind === 'fullCharge' &&
         b.effects.some((e: any) => e.kind === 'flatDamage')
       )
   );

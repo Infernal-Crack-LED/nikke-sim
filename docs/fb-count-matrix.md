@@ -58,20 +58,25 @@ converts that into the generation rate the fight requires.
 A full-burst count is also an integer readout of a continuous quantity, so "which comps are off"
 understates the error — a comp only _shows_ a miscount when the shortfall crosses a burst boundary.
 
-## Scope — nine comps, not four
+## Scope — nine comps, one still disabled
 
-Only four comps carry `disabled: true`. Five more are off by the same class of error and were
-absorbed differently — pinned to the sim's count, or had the assertion dropped. **Five of the nine
-seat no `liberalio`.** The `liberalio` correlation is in which comps got _flagged_, not in which are
-wrong.
+Only **iron sweep (run G)** still carries `disabled: true` — and that one is CLOSED by owner
+ruling (2026-08-21, DECISIONS: accepted fight jitter; generation rate verified at parity with the
+footage; permanently off the FB-count sheet). **T5 wind-weak, T1 wind-weak and N3
+scarlet/liberalio iron were RE-ENABLED 2026-08-21**: the 2026-08-16→08-19 gauge landings
+(application-gauge channel, `baseGaugeProb`, liberalio `gaugeHits:5`) moved their seeded
+distributions onto the measured counts (T5 12–13 vs 13; T1 12–13 vs 13, EV exact; N3 9–10 vs 10).
+Four more are off by the same class of error and were absorbed differently — pinned to the sim's
+count, or had the assertion dropped. **Five of the nine seat no `liberalio`.** The `liberalio`
+correlation is in which comps got _flagged_, not in which are wrong.
 
-| status           | meaning                                                 | comps                                                                     |
-| ---------------- | ------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `disabled`       | skipped by `verify.sh`                                  | iron sweep (run G), T5 wind-weak, T1 wind-weak, N3 scarlet/liberalio iron |
-| `pinned-to-sim`  | `simFullBursts` pin; gate green, prints KNOWN SHORTFALL | misc B3s (run I order)                                                    |
-| `unpinned`       | assertion removed/commented                             | N1 rapi/quency wind, soda-tb control                                      |
-| `omitted`        | never entered `scripts/regression.ts`                   | N2 modernia wind                                                          |
-| `seeded-overlap` | live `realFullBursts`; passes only on seeded overlap    | N5 snowwhite-HA fire                                                      |
+| status           | meaning                                                 | comps                                                                            |
+| ---------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `disabled`       | skipped by `verify.sh`                                  | iron sweep (run G) — closed by owner ruling 2026-08-21                           |
+| `pinned-to-sim`  | `simFullBursts` pin; gate green, prints KNOWN SHORTFALL | misc B3s (run I order)                                                           |
+| `unpinned`       | assertion removed/commented                             | N1 rapi/quency wind, soda-tb control                                             |
+| `omitted`        | never entered `scripts/regression.ts`                   | N2 modernia wind                                                                 |
+| `seeded-overlap` | live `realFullBursts`; passes only on seeded overlap    | N5 snowwhite-HA fire; T5 + T1 wind-weak, N3 scarlet/liberalio (since 2026-08-21) |
 
 ## The matrix
 
@@ -80,10 +85,10 @@ during Full Burst and the burst chain, so a wall-clock rate would understate eve
 
 | comp                          | boss     | sim vs measured | roster in slot order (weapon · burst · gauge/60f)                                                                                                                | focus                  | team rate | fill from 0 (proj / obs) | FB length |
 | ----------------------------- | -------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | --------- | ------------------------ | --------- |
-| **iron sweep (run G)**        | Electric | **11 vs 13–14** | `d-killer-wife` SR·I·3.18 · `milk-blooming-bunny` SR·III·3.52 · **`maxwell` SR·III·7.95** · `takina` SR·II·4.55 · `liberalio` SR·III·5.91                        | `maxwell`              | 25.11     | 3.98s / 4.20s            | 10.0s     |
-| **T5 wind-weak**              | Iron     | **12 vs 13**    | `nayuta` SMG·II·4.15 · `cinderella-crystal-wave` MG·III·5.66 · **`anis-star` RL·I·10.92** · `liberalio` SR·III·6.96 · `velvet` SR·II·3.48                        | `anis-star`            | 31.18     | 3.21s / 3.36s            | 10.0s     |
-| **T1 wind-weak**              | Iron     | **11 vs 13**    | `mast-romantic-maid` MG·II·2.67 · `scarlet-black-shadow` RL·III·4.71 · **`anis-star` RL·I·7.72** · `liberalio` SR·III·7.11 · `crown` MG·II·2.37                  | `anis-star`            | 24.58     | 4.07s / 4.11s            | 10.0s     |
-| **N3 scarlet/liberalio iron** | Iron     | **9 vs 10**     | `rouge` SR·I·3.20 · `trina` RL·II·3.40 · **`scarlet-black-shadow` RL·III·5.58** · `liberalio` SR·III·5.59 · `soda-twinkling-bunny` SG·III·7.05                   | `scarlet-black-shadow` | 24.82     | 4.03s / 4.32s            | **15.0s** |
+| **iron sweep (run G)**        | Electric | **12 vs 13–14** | `d-killer-wife` SR·I·3.49 · `milk-blooming-bunny` SR·III·3.49 · **`maxwell` SR·III·9.13** · `takina` SR·II·5.72 · `liberalio` SR·III·20.01                       | `maxwell`              | 41.84     | 2.39s / 2.62s            | 10.0s     |
+| **T5 wind-weak**              | Iron     | **12 vs 13**    | `nayuta` SMG·II·4.15 · `cinderella-crystal-wave` MG·III·5.77 · **`anis-star` RL·I·10.61** · `liberalio` SR·III·18.66 · `velvet` SR·II·3.27                       | `anis-star`            | 42.46     | 2.36s / 2.81s            | 10.0s     |
+| **T1 wind-weak**              | Iron     | **13 vs 13**    | `mast-romantic-maid` MG·II·3.49 · `scarlet-black-shadow` RL·III·4.37 · **`anis-star` RL·I·10.55** · `liberalio` SR·III·22.14 · `crown` MG·II·4.14                | `anis-star`            | 44.69     | 2.24s / 2.58s            | 10.0s     |
+| **N3 scarlet/liberalio iron** | Iron     | **9 vs 10**     | `rouge` SR·I·2.79 · `trina` RL·II·3.46 · **`scarlet-black-shadow` RL·III·6.62** · `liberalio` SR·III·18.66 · `soda-twinkling-bunny` SG·III·8.52                  | `scarlet-black-shadow` | 40.05     | 2.50s / 2.39s            | **15.0s** |
 | **misc B3s (run I order)**    | Water    | **12 vs 13**    | `grave` AR·II·3.12 · `anis-star` RL·I·6.18 · **`jill` AR·III·9.36** · `chisato` SMG·III·4.54 · `noir` SG·III·12.01                                               | `jill`                 | **35.21** | 2.84s / 3.04s            | 10.0s     |
 | **N1 rapi/quency wind**       | Wind     | **12 vs 13**    | `d-killer-wife` SR·I·6.32 · `grave` AR·II·4.93 · **`rapi-red-hood` MG·III·4.14** · `quency-escape-queen` SMG·III·5.56 · `jill` AR·III·9.03                       | `rapi-red-hood`        | 29.98     | 3.34s / 3.52s            | 10.0s     |
 | **soda-tb control**           | neutral  | **9 vs 10**     | `little-mermaid` SMG·I·7.99 · `crown` MG·II·3.20 · **`soda-twinkling-bunny` SG·III·7.97** · `helm` SR·III·12.41                                                  | `soda-twinkling-bunny` | 31.57     | 3.17s / 3.41s            | **15.0s** |
@@ -91,7 +96,7 @@ during Full Burst and the burst chain, so a wall-clock rate would understate eve
 | **N5 snowwhite-HA fire**      | Fire     | **13 vs 12**    | `anis-star` RL·I·2.65 · `arcana-fortune-mate` SG·II·2.90 · **`privaty` AR·III·3.55** · `snow-white-heavy-arms` SR·III·32.11 · `diesel-winter-sweets` RL·III·0.97 | `privaty`              | **42.17** | 2.37s / 2.57s            | 10.0s     |
 
 `proj` = 100 ÷ team rate. `obs` = mean measured refill from the run's own rotation log
-(`B1 cast − 0.5s pre-B1 gap − previous FB end`). The 0.06–0.39s gap between them is over-cap waste
+(`B1 cast − 0.5s pre-B1 gap − previous FB end`). The −0.11–0.45s gap between them is over-cap waste
 plus rate variation across the fight (MG wind-up, reload downtime, buff uptime).
 
 ## Where the 180s fight ends
@@ -105,17 +110,17 @@ feed).
 | comp                      | state at 180s     | detail                                                                         |
 | ------------------------- | ----------------- | ------------------------------------------------------------------------------ |
 | iron sweep (run G)        | **gauge filling** | refilling the final 3.60s (last Full Burst ended 176.4s); the bar never filled |
-| T1 wind-weak              | **gauge filling** | refilling the final 3.50s (last Full Burst ended 176.5s); the bar never filled |
+| T1 wind-weak              | mid-Full-Burst    | opened 178.4s — only 1.60s of it inside the fight                              |
 | misc B3s (run I order)    | **gauge filling** | refilling the final 1.40s (last Full Burst ended 178.6s); the bar never filled |
-| T5 wind-weak              | mid-Full-Burst    | opened 173.5s — 6.50s of it inside the fight                                   |
+| T5 wind-weak              | **gauge filling** | refilling the final 2.50s (last Full Burst ended 177.5s); the bar never filled |
 | N5 snowwhite-HA fire      | mid-Full-Burst    | opened 178.9s — only 1.10s inside the fight                                    |
-| N3 scarlet/liberalio iron | mid-Full-Burst    | opened 175.0s — 5.00s inside the fight                                         |
+| N3 scarlet/liberalio iron | **mid-chain**     | BII cast at 180.0s was the last chain step of the fight                        |
 | N1 rapi/quency wind       | mid-Full-Burst    | opened 173.7s — 6.30s inside the fight                                         |
 | soda-tb control           | mid-Full-Burst    | opened 168.4s — 11.60s inside the fight                                        |
 | N2 modernia wind          | mid-Full-Burst    | opened 165.5s — 14.50s inside the fight                                        |
 
-**No comp ends mid-chain**, and **chain stall is 0.00s on all nine** — no team is ever waiting on a
-burst cooldown.
+**Chain stall is 0.00s on all nine** — no team is ever waiting on a burst cooldown. N3 ends
+**mid-chain** (its BII cast lands on the buzzer); no other comp does.
 
 ## The actionable quantity: GENERATION, not seconds
 
@@ -131,49 +136,50 @@ mechanical floor (Full Burst + 0.5s pre-B1 + chain span), required rate = one ba
 
 | comp               | filmed cycle | floor  | real refill | fight needs  | sim feeds    | **sim generates**   |
 | ------------------ | ------------ | ------ | ----------- | ------------ | ------------ | ------------------- |
-| iron sweep (run G) | 14.39s       | 11.90s | 2.49s       | 40.2 gauge/s | 23.8 gauge/s | **59%** of required |
-| T5 wind-weak       | 13.81s       | 11.90s | 1.91s       | 52.4 gauge/s | 29.7 gauge/s | **57%** of required |
+| iron sweep (run G) | 14.39s       | 11.90s | 2.49s       | 40.2 gauge/s | 38.2 gauge/s | **95%** of required |
+| T5 wind-weak       | 13.81s       | 11.90s | 1.91s       | 52.4 gauge/s | 35.6 gauge/s | **68%** of required |
 
 **Only these two comps can be converted** — the other seven have no filmed cycle, so no generation
 requirement can be derived for them. Nothing here extrapolates onto them.
 
 **The percentages are no longer hedged.** The 10s Full Burst both figures assume is an owner ruling
 (2026-08-14, DECISIONS): **Full Burst is exactly 10s unless an ability extends or shortens it**, so
-the old ≥8.87s footage bound no longer softens the conversion — the sim generates **59% / 50%** of
-what the two filmed fights require, and the whole gap is burst generation.
+the old ≥8.87s footage bound no longer softens the conversion.
 
-> **Iron-sweep row re-derived 2026-08-14** (`liberalio` Charge Speed immunity, DECISIONS
-> 2026-08-14): it costs her two charges per fight and re-phases that comp, so its whole block above
-> moved — per-unit gauge/60f, team rate 25.57 → 25.11, the buzzer state, and the shortfall row
-> (floor 11.80s → 11.90s, needs 38.6 → 40.2 gauge/s, **61% → 59%** of required). Every other comp,
-> `T5 wind-weak` included, is byte-identical: no other comp seats a Charge Speed source. All values
-> transcribed from a fresh `npx tsx scripts/battery/fb-count-matrix.ts`, and the pre-fix run of the
-> same command reproduced this doc's previous numbers exactly, so the immunity is the whole cause.
+> **Both rows re-derived 2026-08-21** — after the 08-16→08-19 gauge landings (application-gauge,
+> `baseGaugeProb`, liberalio `gaugeHits:5`): iron sweep 59% → **95%**, T5 57% → **68%**. The
+> iron-sweep residual is since CLOSED by owner ruling (accepted fight jitter — the fill-trace
+> re-run the same day measured the sim's refill-window rate at parity with the video, rho 0.974,
+> so this estimator's remaining 5% is inside its own noise; T5's 68% is the same comp-level
+> estimator that read SPREAD/INCONCLUSIVE on the N2 conversion rule 2026-08-18 — read it as
+> unstable, not as a live 32% hole).
 
-⇒ **The open investigation is whether burst generation is computed correctly** — per-shot values,
-shots actually landed, and any source not being counted — not cycle timing.
+⇒ The 2026-08-13 open investigation ("is burst generation computed correctly") has since RUN:
+application-gauge, `baseGaugeProb` and `gaugeHits:5` landed 2026-08-16→19, and the 2026-08-21
+fill-trace re-run measured iron sweep's refill-window rate at parity with its footage. What
+remains open lives in QUEUE.md thread 2 (clean-bin denominator validation, probe tooling) and
+open-questions U28.
 
 ## Observations
 
-**The three "gauge filling" teams stop mid-refill, two of them barely.** Iron sweep is **0.30s** and
-T1 **0.80s** from a full bar at the buzzer — both would have opened another chain almost immediately.
-`misc B3s` is further out at 2.70s. None of these needs an error larger than the one measured.
+**Three teams end mid-refill.** Iron sweep (final 3.60s), misc B3s (1.40s) and T5 (2.50s) are
+still filling at the buzzer. None of these needs an error larger than the one measured.
 
-**Two teams start their final Full Burst in the last second and bank almost none of it.** T5
-wind-weak opens one at 179.2s and N5 at 178.9s — each counts a whole burst for ~1s of actual window.
-Shaving the measured gap moves that burst several seconds earlier, which is where their missing count
-comes from.
+**Two teams start their final Full Burst in the last two seconds and bank almost none of it.** T1
+wind-weak opens one at 178.4s and N5 at 178.9s — each counts a whole burst for ~1–2s of actual
+window. Shaving the measured gap moves that burst several seconds earlier, which is where their
+missing count comes from.
 
-**Generation rate does not discriminate.** `misc B3s` has the fastest team here (34.53, a 2.90s bar)
-and is still short by one; N2 and N5 are the slowest (~19.3, ~5.2s bar) and are short by the same
-one. A per-team gauge-rate error would not produce that — a per-cycle _time_ error would, which is
-consistent with the footage measurement.
+**Generation rate does not discriminate — SUPERSEDED as evidence 2026-08-21.** This observation
+argued from team-rate rankings that no longer hold (liberalio's `gaugeHits:5` roughly tripled her
+share; T1 is now the fastest team at 44.69). The rate-parity fill-trace measurement on iron sweep
+(2026-08-21) is the sharper instrument and replaces this argument.
 
-**Focus is worth ~30% of a team's generation, but only for charge weapons.** The focused unit is the
-top generator on 5 of 9 teams, driven by the ×2.5 charge-gauge bonus — `maxwell` at 8.37 is 32.7% of
-his team, `anis-star` 8.19 is 30.5%. It is not automatic: `rapi-red-hood` (MG) is focused on N1 and
-generates less than three teammates, as do `modernia` (MG) on N2 and `privaty` (AR) on N5, because
-non-charge weapons take no focus bonus.
+**Focus is a large share of a charge-carrying team's generation, but only for charge weapons.**
+Driven by the ×2.5 focus charge-gauge bonus — `liberalio` (SR, off-focus) now out-generates every
+focus column on the liberalio comps via her `gaugeHits:5` rider. It is not automatic:
+`rapi-red-hood` (MG) is focused on N1 and generates less than three teammates, as do `modernia`
+(MG) on N2 and `privaty` (AR) on N5, because non-charge weapons take no focus bonus.
 
 **Three comps run a 15s Full Burst, not 10s** — N3 and soda-tb control via `soda-twinkling-bunny`,
 N2 via `modernia`. Their cycles are structurally longer (~21s, ~20s), so a fixed per-cycle error

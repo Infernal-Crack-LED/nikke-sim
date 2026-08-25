@@ -68,15 +68,12 @@ describe('per-frame gauge-credit schedule', () => {
   });
 
   it('CHECK (a): every unit’s schedule sums to the engine’s gaugeGenerated', () => {
-    // Tolerance widened 2026-08-19: the gaugeHits:5 enactment shifts burst timing, exposing
-    // a known limitation in the schedule builder's expected-value baseGaugeProb model (it
-    // credits baseProb × basePer per focused shot, while the engine credits a deterministic
-    // subset; the totals matched bit-identically before the timing shift, but now diverge by
-    // ~11% on anis-star which carries baseGaugeProb 0.25). Liberalio's own residual is 0.000 —
-    // gaugeHits:5 is correctly handled. The other units' residuals are a timing-cascade
-    // artifact, not a gaugeHits bug.
-    // The max residual guards the overall reconstruction; per-unit precision is no longer
-    // bit-identical after the gaugeHits:5 timing cascade (see comment above).
+    // Tolerance widened 2026-08-19 for a then-live baseGaugeProb timing-cascade artifact
+    // (~11% on anis-star). 2026-08-21: that artifact turned out to be the schedule builder's
+    // own blind spots — the gauge-full TAIL lock (credits after the bar fills in a window whose
+    // chain never completes in-fight) and the missing applicationGauge channel — and fixing both
+    // collapsed the max residual to 0.106 (cinderella-crystal-wave's fill channel). The <15
+    // tolerance stays as headroom; do not let it drift back up.
     expect(r.checks.endpointMaxAbsResidual).toBeLessThan(15);
   });
 

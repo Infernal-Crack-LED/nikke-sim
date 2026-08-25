@@ -87,6 +87,7 @@ export const TRIGGERS = new Set([
   'hitCount',
   'teamAmmo',
   'shotFired',
+  'fullCharge',
   'lastBullet',
   'recovery',
   'shielded',
@@ -139,6 +140,7 @@ export const EFFECTS = new Set([
   'resource',
   'copyResource',
   'targetStatus',
+  'selfStatus',
 ]);
 export const FLAVORS = new Set([
   'distributed',
@@ -221,7 +223,7 @@ export interface StructuralContext {
  */
 export interface BlockOrderPair {
   slot: (typeof SLOTS)[number];
-  family: 'status' | 'resource';
+  family: 'status' | 'selfStatus' | 'resource';
   name: string;
   /** index in the slot array of the block that WRITES */
   producer: number;
@@ -252,7 +254,7 @@ export function blockOrderPairs(override: any): BlockOrderPair[] {
       continue;
     }
     const producers: {
-      family: 'status' | 'resource';
+      family: 'status' | 'selfStatus' | 'resource';
       name: string;
       i: number;
     }[] = [];
@@ -263,6 +265,11 @@ export function blockOrderPairs(override: any): BlockOrderPair[] {
           producers.push({ family: 'status', name: e.name, i });
         }
       }
+      for (const e of collectEffects(b?.effects, 'selfStatus')) {
+        if (typeof e?.name === 'string') {
+          producers.push({ family: 'selfStatus', name: e.name, i });
+        }
+      }
       for (const e of collectEffects(b?.effects, 'resource')) {
         if (typeof e?.name === 'string') {
           producers.push({ family: 'resource', name: e.name, i });
@@ -270,6 +277,9 @@ export function blockOrderPairs(override: any): BlockOrderPair[] {
       }
       if (typeof b?.requiresTargetStatus === 'string') {
         consumers.push({ family: 'status', name: b.requiresTargetStatus, i });
+      }
+      if (typeof b?.requiresSelfStatus === 'string') {
+        consumers.push({ family: 'selfStatus', name: b.requiresSelfStatus, i });
       }
       if (typeof b?.resourceGate?.name === 'string') {
         consumers.push({ family: 'resource', name: b.resourceGate.name, i });
@@ -331,20 +341,22 @@ export function blockOrderCensus(
 // for cross-slot pairs too: those cannot be reordered inside a slot array, but MOVING a block
 // between slots reorders them, and the reader deserves to know the pair exists.
 function blockOrderWarnings(override: any, warnings: string[]) {
-  const label = (f: 'status' | 'resource') =>
-    f === 'status'
-      ? { noun: 'status', wrote: 'produced', read: 'consumed' }
-      : { noun: 'resource', wrote: 'adjusted', read: 'gated' };
+  const label = (f: 'status' | 'selfStatus' | 'resource') =>
+    f === 'resource'
+      ? { noun: 'resource', wrote: 'adjusted', read: 'gated' }
+      : f === 'selfStatus'
+        ? { noun: 'self-status', wrote: 'produced', read: 'consumed' }
+        : { noun: 'status', wrote: 'produced', read: 'consumed' };
   const sites = new Map<
     string,
     {
-      family: 'status' | 'resource';
+      family: 'status' | 'selfStatus' | 'resource';
       name: string;
       prod: string[];
       cons: string[];
     }
   >();
-  const site = (family: 'status' | 'resource', name: string) => {
+  const site = (family: 'status' | 'selfStatus' | 'resource', name: string) => {
     const key = `${family}\x00${name}`;
     let s = sites.get(key);
     if (!s) {
@@ -364,6 +376,11 @@ function blockOrderWarnings(override: any, warnings: string[]) {
           site('status', e.name).prod.push(`${slot}[${bi}]`);
         }
       }
+      for (const e of collectEffects(b?.effects, 'selfStatus')) {
+        if (typeof e?.name === 'string') {
+          site('selfStatus', e.name).prod.push(`${slot}[${bi}]`);
+        }
+      }
       for (const e of collectEffects(b?.effects, 'resource')) {
         if (typeof e?.name === 'string') {
           site('resource', e.name).prod.push(`${slot}[${bi}]`);
@@ -371,6 +388,9 @@ function blockOrderWarnings(override: any, warnings: string[]) {
       }
       if (typeof b?.requiresTargetStatus === 'string') {
         site('status', b.requiresTargetStatus).cons.push(`${slot}[${bi}]`);
+      }
+      if (typeof b?.requiresSelfStatus === 'string') {
+        site('selfStatus', b.requiresSelfStatus).cons.push(`${slot}[${bi}]`);
       }
       if (typeof b?.resourceGate?.name === 'string') {
         site('resource', b.resourceGate.name).cons.push(`${slot}[${bi}]`);
@@ -620,6 +640,16 @@ function checkEffect(e: any, path: string, errors: string[], trigger?: string) {
       );
     }
   }
+  if (e.kind === 'selfStatus') {
+    if (typeof e.name !== 'string' || !e.name.trim()) {
+      errors.push(
+        `${path}: selfStatus needs a non-empty "name" (the kit's status name)`
+      );
+    }
+    if (typeof e.durationSec !== 'number' || !(e.durationSec > 0)) {
+      errors.push(`${path}: selfStatus needs durationSec > 0`);
+    }
+  }
   if (e.kind === 'escalating') {
     if (!Array.isArray(e.steps)) {
       errors.push(`${path}: escalating needs steps[]`);
@@ -846,6 +876,18 @@ export function structuralCheck(
           `${p}: a targetStatus effect must sit on a block with target "enemy" (the status is inflicted on the boss)`
         );
       }
+      // The mirror-image hazard for the ally-side sibling: selfStatus routes through
+      // resolveTargets(block.target), and resolveTargets({kind:'enemy'}) returns [] — an
+      // enemy-targeted selfStatus applies to ZERO units while the same-unit census's syntactic
+      // producer scan would still certify it, shipping a gate no layer ever flags as dead.
+      if (
+        collectEffectKinds(b.effects).has('selfStatus') &&
+        b.target?.kind === 'enemy'
+      ) {
+        errors.push(
+          `${p}: a selfStatus effect must sit on a block with an ally-side target (target "enemy" resolves to zero units — the status would be applied to nobody while the census still sees a producer)`
+        );
+      }
       // An `enemy`-targeted buff reaches the damage model ONLY as: a positive damageTakenPct /
       // distributedDamagePct, or a nonzero defPct (the DEF ▼ channel — scales cfg.bossDef; inert
       // on the bossDef = 0 graded basis, live at the web raid defaults). Anything else — an
@@ -895,7 +937,12 @@ export function structuralCheck(
       // instead of shipping a dead line. Target is the boss, like every other damage effect.
       // Collected recursively for the same reason as targetStatus above.
       if (collectEffectKinds(b.effects).has('hitRepeat')) {
-        const PER_PULL = ['shotFired', 'hitCount', 'chargeCounter'];
+        const PER_PULL = [
+          'shotFired',
+          'fullCharge',
+          'hitCount',
+          'chargeCounter',
+        ];
         if (!PER_PULL.includes(b.trigger?.kind)) {
           errors.push(
             `${p}: a hitRepeat effect needs a per-pull trigger (${PER_PULL.join(' / ')}) — it rides the parent hit dispatched on the same frame, and would never fire on "${b.trigger?.kind}"`
@@ -954,7 +1001,9 @@ export function structuralCheck(
   );
   for (const slot of SLOTS) {
     const blocks = override[slot];
-    if (!Array.isArray(blocks)) continue;
+    if (!Array.isArray(blocks)) {
+      continue;
+    }
     blocks.forEach((b: any, bi: number) => {
       for (const e of collectEffects(b?.effects, 'copyResource')) {
         if (e.name && !declaredResources.has(e.name)) {
@@ -1086,6 +1135,45 @@ export function targetStatusCensus(
       warnings.push(
         `requiresTargetStatus "${name}" (${[...new Set(slugs)].join(', ')}) has no producer in any override — the gate never opens; fine ONLY if deliberately future-gated (record that in the unit's note)`
       );
+    }
+  }
+
+  // selfStatus is per-unit, so its producer/consumer match is SAME-UNIT, not cross-slug: a
+  // requiresSelfStatus gate can only ever be opened by a selfStatus effect in the SAME override
+  // (targeting the owner). A gate with no same-unit producer of the exact name is dead — and no
+  // shipped kit grants a self status to ANOTHER unit today, so a missing producer is an ERROR,
+  // not a future-gated warning. If a cross-unit grant ever ships ("allies enter <Mode>" — legal
+  // at runtime, since selfStatus routes through resolveTargets and an allies-targeted grant
+  // writes into each target's own map), downgrade this to the boss-channel census's two-tier
+  // ERROR/WARN split keyed on a cross-slug producer scan.
+  for (const [slug, o] of overrides) {
+    const selfProducers = new Set<string>();
+    const selfConsumers = new Map<string, string[]>(); // name -> block paths
+    for (const slot of SLOTS) {
+      const blocks = o?.[slot];
+      if (!Array.isArray(blocks)) {
+        continue;
+      }
+      blocks.forEach((b: any, bi: number) => {
+        for (const e of collectEffects(b?.effects, 'selfStatus')) {
+          if (typeof e.name === 'string') {
+            selfProducers.add(e.name);
+          }
+        }
+        if (typeof b?.requiresSelfStatus === 'string') {
+          selfConsumers.set(b.requiresSelfStatus, [
+            ...(selfConsumers.get(b.requiresSelfStatus) ?? []),
+            `${slot}[${bi}]`,
+          ]);
+        }
+      });
+    }
+    for (const [name, paths] of selfConsumers) {
+      if (!selfProducers.has(name)) {
+        errors.push(
+          `${slug}: requiresSelfStatus "${name}" (${paths.join(', ')}) has no selfStatus producer in this unit's own override — the per-unit gate can NEVER open (matching is exact and same-unit only); fix the name or add the producer`
+        );
+      }
     }
   }
 

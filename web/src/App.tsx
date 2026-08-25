@@ -1258,6 +1258,8 @@ function triggerLabel(tr: any): string {
       return `every ${tr.count} hits`;
     case 'shotFired':
       return 'per shot';
+    case 'fullCharge':
+      return 'per full charge';
     case 'lastBullet':
       return 'last bullet';
     case 'stageEnter':

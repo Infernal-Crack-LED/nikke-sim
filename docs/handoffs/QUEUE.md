@@ -17,7 +17,7 @@
 > `docs/open-questions.md` (single U-numbering — move it to `docs/answered-questions.md` with the
 > answer inline, no new A-number).
 >
-> **Last audited 2026-08-18** — every claim below was re-verified against the tree (branch merge
+> **Last audited 2026-08-21** — every claim below was re-verified against the tree (branch merge
 > state, file/symbol existence, test skips, doc paths). Landed narration deleted; dangling pointers
 > repaired.
 
@@ -54,16 +54,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
 
-> **Autonomous queue — empty as of 2026-08-18.** The lower-value notes below are not ordered work;
+> **Autonomous queue — empty as of 2026-08-21.** The lower-value notes below are not ordered work;
 > take them only if the owner adds one to the queue. The numbered threads below stay as reference
 > detail and are mostly footage-gated — do NOT start there.
 >
-> _Empty as of 2026-08-18 — all unblocked items landed or archived to `docs/handoffs/closed/`._
+> _Empty as of 2026-08-21 — all unblocked items landed or archived to `docs/handoffs/closed/`._
 >
-> Also unblocked but lower value: the clean-bin-time vs full-window denominator
-> settlement against a known-ground-truth fixture (turns the standing MAR caveat into a measured bias
-> bound); and the batched `cinderella`/`eve`/`julia` `gaugeHits` census rows — findings-only, and the
-> 2026-08-17 run gives NO support for crediting them at full value.
+> Also unblocked but lower value: the clean-bin-time vs full-window denominator settlement against
+> a known-ground-truth fixture (thread 2 — turns the standing MAR caveat into a measured bias
+> bound).
 
 1. **Faithfulness sweep residue** (batch docs archived 2026-08-13 in
    `docs/handoffs/closed/2026-08-10-faithfulness-batch{1..8}-findings.md`). Most items closed by
@@ -73,17 +72,24 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `byFinalAtk`, `helm`'s held tag.
    - **`mint` — HELD** (M12 confirmed shipped `singing` model; solo magnitudes unanchored by
      disposition).
+   - **Top-board kit-faithfulness audit (2026-08-23) — follow-ups in flight.** 45 units audited
+     findings-only: `docs/kit-faithfulness-audit-2026-08-23.md`. The owner-directed follow-up
+     branch landed the `fullCharge` + `selfStatus` primitives (14 units migrated,
+     `asuka-wille` de-proxied) and the §6 prose-drift deletions; everything still open — the
+     fullCharge roster tail, the gated primitives (status-end, consumeStatus, stack-mirror
+     snapshot), `flora` `sides:2`, `mint` duet gating (HELD), `cinderella` G1, the HR→core
+     measurement, the two note palimpsests — is itemized with its gate in
+     `docs/handoffs/2026-08-24-kit-audit-primitive-followups.md`.
 
 2. **Burst-generation thread** — core steps landed 2026-08-15 (PRs #120/#121/#122 merged).
    Classification: MIXED/INCONCLUSIVE (closure 0.2579 stands after noise-corrected ceiling test,
    source-hunt fix, and symmetric-E_min analysis — all three 2026-08-16). Application-gauge engine
    landed 2026-08-16 (owner rulings ×3). `anis-star` carve-out removal enacted 2026-08-16 (PR #125
-   merged). Opening-window timing promoted to owner ruling 2026-08-16 (DECISIONS). Open:
-   - **Iron-sweep FB shortfall — narrowed 88% by `liberalio` gaugeHits:5 (2026-08-19, DECISIONS).**
-     Shortfall collapsed 16.4 → 2.0 gauge/sec (40.8 → 5.0 per cycle). Residual ~2 gauge/sec is
-     within the focus-column ceiling's reach. The `anis-star` U28 divisor read remains as the
-     encoding audit path. `iron sweep (run G)` regression comp stays disabled pending footage
-     verification of the residual.
+   merged). Opening-window timing promoted to owner ruling 2026-08-16 (DECISIONS). The
+   iron-sweep (run G) residual is CLOSED by owner ruling 2026-08-21 (accepted fight jitter —
+   verified at generation-rate parity on footage; the fight stays off the FB-count sheet;
+   DECISIONS). The `anis-star` magnitude anomaly was enacted 2026-08-18 as `baseGaugeProb: 0.25`
+   (DECISIONS); U28's surviving divisor half is in open-questions U28. Open:
    - **Clean-bin-time vs full-window denominator validation — PARTIALLY LANDED.**
      `fbDuration` now requires/defaults to a pinned `estimator` (`paint` for calibrated controls),
      and `validateCleanBinDenominator` in `scripts/probe/fill-trace-compare.ts` compares both

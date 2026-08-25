@@ -9,6 +9,22 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-21) `iron sweep (run G)` FB-count residual CLOSED as accepted fight jitter — the
+  fight stays off the FB-count regression sheet permanently.** The 2026-08-21 fill-trace re-run
+  (probe-runs.md) had shown the sim's refill-window generation at parity with the video
+  (rho 0.974) with an endpoint-exact credit schedule, localizing the 12-vs-13/14 miss to cycle
+  structure (reload/magazine phasing vs the burst cycle). The ammo-counter reads on the u8 g
+  footage confirmed the phasing drift (real reloads cluster at/after bar-fill; the sim schedules
+  them inside refills) — and the owner ruled this expected and not actionable: one bullet firing
+  at a different time early in the fight shifts phasing enough to move the last,
+  boundary-straddling full burst (the sim's 13th chain opens 8 frames past the fight end).
+  `scripts/regression.ts` keeps `disabled: true` with this ruling cited. Same ruling RETRACTS the
+  session's takina `N/99` ammo reads (she shows no ammo counter during her weapon swap — the
+  decrementing label was a misread of a different HUD element); the liberalio/MBB/DKW phasing
+  reads stand. Full record: `docs/handoffs/closed/2026-08-21-irong-cycle-structure.md`. The OTHER
+  three disabled comps (T5 wind-weak, T1 wind-weak, N3 scarlet/liberalio iron) are NOT covered by
+  this ruling — no footage check was run on them.
+
 - **(2026-08-19) `liberalio` gaugeHits:5 on the 202.5% full-charge rider RESOLVED (owner
   scope-lock footage).** Two solo scope-lock recordings both show 3 shots to fill the burst
   gauge, re-deriving the 2026-08-17 INCONCLUSIVE/LOG premise-gate outcome to a clear RESOLVED.
@@ -6398,3 +6414,34 @@ title against the renderer's own tile geometry and font, so a longer label can't
 the hero card agree — it reads the same element-scoped lookup (`compareIn(art, cell, slug,
 element)`) and now says "#1 of 12 among Electric units, against a boss weak to her element". The
 neutral standing is unchanged on both surfaces: neutral has no element to scope to.
+
+## Overload line names corrected to the game's real labels (2026-08-23)
+
+**Owner ruling (2026-08-23):** the game's OL line strings never changed — the sim's canonical
+names were wrong from day one. Both sides (nikke-sim + bakery-bot) now use the real labels.
+
+**Trigger:** a community report (2026-08-21 screenshot) — the Synced Roster banner listed all
+nine OL line types as "Unmapped synced content (ignored)", so every synced user's overload
+lines were silently dropped: `web/src/rosterApply.ts` maps backend labels onto
+`data/ol-lines.json` `name` fields by exact string match, and those names ("Increase ATK",
+"Increase Elemental Damage", "Increase Max Ammo Capacity", …) were invented, not the game's.
+
+**Evidence (the real strings):** the live CDN table `equip/equip_option_table_v2-en.json`
+(`description_localkey`, fetched 2026-08-23 via bakery-bot's committed
+`packages/nikke/src/blablalink.ts` `fetchOverloadLineIds()`; reproducible dump:
+bakery-bot `scripts/dump-overload-labels.ts`) — the exact strings the synced-roster backend
+forwards verbatim. They match the user's screenshot letter-for-letter: "Increased ATK",
+"Increased Elemental Advantage Dmg", "Increased Max Ammunition Capacity", "Increased Charge
+Damage", "Increased Charge Speed", "Increased Critical Rate", "Increased Critical Damage",
+"Increased Hit Rate", "Increased DEF". The table also carries a 10th rollable line the sim has
+never modeled — **"Increased Recovery"** (group 2000, damage-inert) — deliberately left out of
+`data/ol-lines.json`; it surfaces in the unmapped diagnostic by design.
+
+**What changed:** `data/ol-lines.json` `name` fields (labels only — every `stat`/`min`/`max`
+value untouched); `web/src/rosterApply.ts` keeps the nine old names as `OL_LABEL_ALIASES` (local
+pre-rename roster captures still carry them, e.g. the gitignored `docs/probes/my-roster.json`);
+bakery-bot's fixtures/comments updated to the real strings. Line VALUES were never affected —
+manual line entry and the generator key on line keys (`elem`/`atk`/…), not names, so this bug
+was confined to the synced-roster label mapping (and UI label text, which now matches the game).
+Pinned by `scripts/tests/data/ol-line-labels.test.ts` (real labels, legacy aliases, and the
+Recovery diagnostic) and bakery-bot's `syncedLoadout.test.ts` fixtures.

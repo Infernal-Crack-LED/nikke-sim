@@ -127,6 +127,42 @@ describe('trigger-kind matrix', () => {
     });
   });
 
+  describe('fullCharge', () => {
+    it('on a charge weapon it fires exactly like shotFired — every pull is a charged release', () => {
+      // The migration equivalence, pinned by MECHANISM: `ada` is RL and the charge fire-path
+      // releases exclusively at full charge, so every one of her shot events carries
+      // charged:true and the fullCharge probe must land on every pull frame — byte-identical
+      // to the shotFired matrix case above. If the engine ever grows a partial-charge release,
+      // this pin is the tripwire that the 2026-08-24 shotFired→fullCharge override migration
+      // stopped being an identity.
+      const { procs, shots } = probe({ kind: 'fullCharge' });
+      const own = shots('ada');
+      expect(own.length, 'the carry never fired').toBeGreaterThan(10);
+      expect(
+        own.every((s) => s.charged),
+        'fixture assumes an RL only releases at full charge'
+      ).toBe(true);
+      expect(procs.length).toBe(own.length);
+      expect(procs.map((p) => p.frame)).toEqual(own.map((s) => s.frame));
+    });
+
+    it('DISCRIMINATING: on a non-charge weapon it never fires, where shotFired fires per pull', () => {
+      // The expressiveness the proxy could not state: an MG belt round is not a Full Charge
+      // attack. `crown` (MG) fires hundreds of uncharged pulls; a fullCharge block on her must
+      // stay silent for the whole fight while a shotFired block dispatches on every pull.
+      const fc = probe({ kind: 'fullCharge' }, { probeOn: 'crown' });
+      const crownShots = fc.shots('crown');
+      expect(
+        crownShots.length,
+        'the probe carrier never fired'
+      ).toBeGreaterThan(50);
+      expect(crownShots.every((s) => !s.charged)).toBe(true);
+      expect(fc.procs.length).toBe(0);
+      const sf = probe({ kind: 'shotFired' }, { probeOn: 'crown' });
+      expect(sf.procs.length).toBe(sf.shots('crown').length);
+    });
+  });
+
   describe('lastBullet', () => {
     it('fires on the pull that EMPTIES the magazine, not when the reload completes', () => {
       // sim.ts fires this the instant `ammo <= 0`, before `reloading` is set — so the firing frames
