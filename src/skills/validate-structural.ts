@@ -208,6 +208,69 @@ export interface StructuralContext {
   characterSlugs: Set<string>;
   /** curated squad lookup (src/data/squads.ts squadOf) — for teamHas.sameSquad checks */
   squadOf: (slug: string) => string | null | undefined;
+  /**
+   * This unit's blablalink per-level arrays (data/skill-levels.json entry) — validates that every
+   * `levelScale` anchor really exists in the slot's table. An anchor that does not resolve makes
+   * the scaler fall back to the max-level value, which is exactly the silent bug `levelScale`
+   * exists to fix, so it is an ERROR here rather than a runtime warning nobody reads. Omitted for
+   * a unit with no level data (the scaler already warns wholesale in that case).
+   */
+  levelArrays?: { skill1: number[][]; skill2: number[][]; burst: number[][] };
+}
+
+/** Every `levelScale` anchor must be findable at index 9 of some array in that slot's table. */
+function checkLevelScale(
+  e: any,
+  p: string,
+  slot: (typeof SLOTS)[number],
+  errors: string[],
+  ctx: StructuralContext
+): void {
+  if (e?.kind === 'escalating' && Array.isArray(e.steps)) {
+    e.steps.forEach((s: any, i: number) =>
+      checkLevelScale(s, `${p}.steps[${i}]`, slot, errors, ctx)
+    );
+  }
+  const ls = e?.levelScale;
+  if (ls === undefined) {
+    return;
+  }
+  if (typeof ls !== 'object' || Array.isArray(ls)) {
+    errors.push(
+      `${p}.levelScale: must be an object mapping field -> anchor numbers`
+    );
+    return;
+  }
+  const arrays = ctx.levelArrays?.[slot];
+  for (const [field, anchors] of Object.entries(ls)) {
+    if (
+      !Array.isArray(anchors) ||
+      !anchors.length ||
+      anchors.some((a) => typeof a !== 'number')
+    ) {
+      errors.push(
+        `${p}.levelScale.${field}: must be a non-empty array of numbers`
+      );
+      continue;
+    }
+    if (typeof e[field] !== 'number') {
+      errors.push(
+        `${p}.levelScale.${field}: no numeric "${field}" on this ${e.kind} effect to scale`
+      );
+      continue;
+    }
+    if (!arrays) {
+      continue;
+    } // no level data for this unit — nothing to resolve against
+    for (const anchor of anchors as number[]) {
+      if (!arrays.some((a) => Math.abs(a[9] - Math.abs(anchor)) < 0.005)) {
+        errors.push(
+          `${p}.levelScale.${field}: anchor ${anchor} is not a max-level value in the ${slot} ` +
+            `level table — it would silently fall back to the max-level value`
+        );
+      }
+    }
+  }
 }
 
 /**
@@ -971,9 +1034,10 @@ export function structuralCheck(
       if (!Array.isArray(b.effects) || !b.effects.length) {
         errors.push(`${p}: needs effects[]`);
       } else {
-        b.effects.forEach((e: any, ei: number) =>
-          checkEffect(e, `${p}.effects[${ei}]`, errors, b.trigger?.kind)
-        );
+        b.effects.forEach((e: any, ei: number) => {
+          checkEffect(e, `${p}.effects[${ei}]`, errors, b.trigger?.kind);
+          checkLevelScale(e, `${p}.effects[${ei}]`, slot, errors, ctx);
+        });
       }
     });
   }

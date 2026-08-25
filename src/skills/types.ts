@@ -190,9 +190,29 @@ export type TargetDef =
   // atkOfMaxHpPct conversion — e3 video rule), so the stand-in choice moves no damage.
   | { kind: 'alliesLowestHp'; count: number; excludeSelf?: boolean };
 
+// DERIVED-VALUE LEVEL SCALING (src/skills/scale.ts). The scaler normally scales a value by
+// matching it against index 9 of the unit's blablalink level arrays and substituting index L-1.
+// That match FAILS whenever an override authored a DERIVED number — two kit lines folded into one
+// rider (nayuta's 150 + 380.46 = 530.46), a time-averaged stack ramp (15.2 → 14.4), or a
+// stack-cap product (1.4 × 30 = 42) — and the value then silently stays at its max-level
+// magnitude while the player lowers the skill level.
+//
+// `levelScale` names the TABLE ANCHOR(S) the authored number was derived FROM, per field:
+//
+//   "value": 530.46, "levelScale": { "value": [150, 380.46] }   // fold: parts scale separately
+//   "value": 14.4,   "levelScale": { "value": [15.2] }          // ratio: 14.4 × (15.2@L / 15.2@10)
+//   "value": 42,     "levelScale": { "value": [1.4] }           // ratio: 42 × (1.4@L / 1.4@10)
+//
+// The scaled result is `authored × (Σ anchors@L) / (Σ anchors@10)`, which is exact for a fold
+// (where Σ anchors@10 == the authored value) and proportional for any other derivation. Every
+// anchor must itself be findable in that slot's level table — `validate-overrides.ts` enforces it,
+// so a typo'd anchor is a build error rather than a silent max-level value.
+export type LevelScale = Record<string, number[]>;
+
 export type EffectDef =
   | {
       kind: 'buff';
+      levelScale?: LevelScale;
       stat: StatKey;
       value: number;
       durationSec?: number;
@@ -258,6 +278,7 @@ export type EffectDef =
     }
   | {
       kind: 'flatDamage'; // instant hit, % of caster final ATK
+      levelScale?: LevelScale;
       atkPct: number;
       flavor?:
         | 'distributed'
@@ -339,10 +360,12 @@ export type EffectDef =
       // of a carrier — compare her gauge-bar slope against the same weapon cadence without the
       // proc, or count full bursts over a fixed window.
       kind: 'hitRepeat';
+      levelScale?: LevelScale;
       pct: number;
     }
   | {
       kind: 'dot'; // ticks every intervalSec (default 1); never core-boosted
+      levelScale?: LevelScale;
       atkPct: number;
       durationSec: number;
       intervalSec?: number;
@@ -370,6 +393,7 @@ export type EffectDef =
     }
   | {
       kind: 'weaponSwap'; // "Changes the weapon in use:" — temporary weapon override
+      levelScale?: LevelScale;
       damagePct: number; // per-shot multiplier while swapped
       chargeTimeSec?: number; // full-charge time (charge weapons)
       chargeTimeClamp?: number; // "Charge time is fixed at X sec" on the swapped weapon (seconds)
@@ -520,6 +544,7 @@ export type EffectDef =
   | { kind: 'stun'; durationSec: number } // target can't fire/charge/reload (bursting unaffected)
   | {
       kind: 'stackedNuke'; // Maiden:IR MP — hits once per full burst the unit SAT OUT since its last burst
+      levelScale?: LevelScale;
       atkPct: number; // per stack, % of final ATK
       hpPct?: number; // per stack, % of final Max HP added on top
       maxStacks?: number; // default 12
