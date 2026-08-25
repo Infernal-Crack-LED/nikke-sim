@@ -103,7 +103,7 @@ Backlog: **124 → 84 values, 47 → 30 units, and 0 SILENT.** Measured level se
 | `guillotine-winter-slayer` | —      | -34.3%     |
 | `sakura-bloom-in-summer`   | —      | -30.6%     |
 | `ein`                      | —      | -29.9%     |
-| `mihara-bonding-chain`     | —      | -35.2%     |
+| `mihara-bonding-chain`     | —      | -33.9%     |
 | `little-mermaid`           | -5.4%  | **-22.8%** |
 
 **Read the note, not the hint.** `audit-skill-scaling.ts` prints a `← 60 × 12` style decomposition,
@@ -180,6 +180,22 @@ structural validator caught this — the anchor did not resolve — which is the
   that `levelConst` names a real field (both now error); the `chargeMultPct` comment's counts were
   wrong (~14 instances / ~10 units, including one `flatDamage` carrier — the substance held, and
   the reviewer independently re-verified that none resolves to a table entry).
+
+### Merge with `origin/main` (PR #147, mihara restraint-pacing) — annotations superseded
+
+That PR reworked `mihara-bonding-chain` while this branch was open, and the two conflicts both
+resolved to UPSTREAM because its rework replaced the exact structures this branch had annotated:
+
+- the `500.6` (10 × 50.06) restraint dump became TEN paced blocks of a literal `atkPct: 50.06` —
+  a direct max-level entry of her skill1 table, so it scales natively with no annotation;
+- the burst DoT's static `atkPct: 1001` (20 × 50.05) became `perResource {mirror, 50.05}`, and the
+  permanent Ensnaring DoT is `perResource {ensnaring, 25.08}` — **both covered by the
+  `perResource.mult` case added for the round-1 review BLOCKER.**
+
+So the two changes converge rather than collide: her values scale after the merge without either
+annotation, and both apply-table rows were removed (they would otherwise hard-error on "no matching
+effect" — the applier's staleness guard working as intended). Her post-merge sensitivity is
+**-33.9%** at 1/1/1 (the -35.2% figure was measured against the pre-merge model).
 
 ## 5. OPEN — what is left
 
