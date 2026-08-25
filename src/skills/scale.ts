@@ -28,6 +28,30 @@ export interface SkillLevels {
   burst: number;
 }
 
+/**
+ * The fields `scaleEffect` below actually substitutes, per effect kind — exported so
+ * `validate-structural.ts` can reject an annotation naming anything else WITHOUT keeping its own
+ * copy. A hand-maintained mirror is the staleness class that already bit this feature once (the
+ * census's private copy went stale within a single session and reported fixed values as broken),
+ * so there is exactly one table and `scripts/tests/skill-level-scale.test.ts` probes the real
+ * scaler against it in BOTH directions.
+ *
+ * `escalating` is deliberately absent: it carries no magnitude of its own and `scaleEffect`
+ * recurses into `steps`, so a wrapper annotation would never be read.
+ */
+export const SCALABLE_FIELDS: Readonly<Record<string, readonly string[]>> = {
+  buff: ['value', 'perResource.mult'],
+  flatDamage: ['atkPct'],
+  dot: ['atkPct', 'perResource.mult'],
+  hitRepeat: ['pct'],
+  burstCdr: ['seconds'],
+  weaponSwap: ['damagePct'],
+  fillGauge: ['pct'],
+  shield: ['maxHpPct'],
+  stackedNuke: ['atkPct', 'hpPct'],
+  storedHit: ['atkPct'],
+};
+
 export function scaleBlocks(
   blocks: Block[],
   arrays: SlotLevelArrays,

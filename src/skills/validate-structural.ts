@@ -218,23 +218,10 @@ export interface StructuralContext {
   levelArrays?: { skill1: number[][]; skill2: number[][]; burst: number[][] };
 }
 
-/**
- * Fields `scaleEffect` (src/skills/scale.ts) actually substitutes, per effect kind. An annotation
- * naming anything else is a SILENT NO-OP — the scaler never reads it — so it is an error here.
- * Keep in lockstep with that switch; `scripts/tests/skill-level-scale.test.ts` pins the pairing.
- */
-const SCALABLE_FIELDS: Record<string, string[]> = {
-  buff: ['value', 'perResource.mult'],
-  flatDamage: ['atkPct'],
-  dot: ['atkPct', 'perResource.mult'],
-  hitRepeat: ['pct'],
-  burstCdr: ['seconds'],
-  weaponSwap: ['damagePct'],
-  fillGauge: ['pct'],
-  shield: ['maxHpPct'],
-  stackedNuke: ['atkPct', 'hpPct'],
-  storedHit: ['atkPct'],
-};
+// The kind -> scalable-fields table is OWNED BY scale.ts and imported, never mirrored here: a
+// hand-kept copy is the staleness class that already bit this feature once (the census's private
+// copy went stale within one session and reported fixed values as still broken).
+import { SCALABLE_FIELDS } from './scale.js';
 
 /** Read `e.perResource.mult` style dotted field paths as well as plain keys. */
 function fieldValue(e: any, field: string): unknown {

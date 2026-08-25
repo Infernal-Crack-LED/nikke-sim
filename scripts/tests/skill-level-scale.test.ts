@@ -12,7 +12,7 @@
 //
 // Fixtures are synthetic: `arrays` mimics a blablalink slot table (10 entries, index = level-1).
 import { describe, expect, it } from 'vitest';
-import { scaleBlocks } from '../../src/skills/scale.js';
+import { SCALABLE_FIELDS, scaleBlocks } from '../../src/skills/scale.js';
 import type { Block, EffectDef } from '../../src/skills/types.js';
 
 /** A level array whose max is `max` and which scales linearly down to `ratio × max` at level 1. */
@@ -286,5 +286,70 @@ describe('scaleBlocks — perResource.mult is the LIVE magnitude', () => {
       1234.5
     );
     expect(warnings).toEqual([]);
+  });
+});
+
+describe('SCALABLE_FIELDS is the real manifest, not a stale mirror', () => {
+  // validate-structural.ts IMPORTS this map to decide whether a levelScale/levelConst annotation
+  // names a field the scaler will ever read. A hand-kept copy is the staleness class that already
+  // bit this feature once (the census's private copy went stale within one session and reported
+  // fixed values as still broken), so the map is probed against the REAL scaler in both directions.
+  const PROBE = 275.18; // a varying max in the burst fixture table
+  const sample: Record<string, Record<string, unknown>> = {
+    buff: { kind: 'buff', stat: 'atkPct' },
+    flatDamage: { kind: 'flatDamage' },
+    dot: { kind: 'dot', durationSec: 10 },
+    hitRepeat: { kind: 'hitRepeat' },
+    burstCdr: { kind: 'burstCdr' },
+    weaponSwap: { kind: 'weaponSwap', durationSec: 10 },
+    fillGauge: { kind: 'fillGauge' },
+    shield: { kind: 'shield' },
+    stackedNuke: { kind: 'stackedNuke' },
+    storedHit: { kind: 'storedHit' },
+  };
+  const build = (kind: string, field: string) => {
+    const e: Record<string, unknown> = { ...sample[kind] };
+    // every listed kind needs its own required magnitude present, even when probing another field
+    for (const f of SCALABLE_FIELDS[kind]) {
+      if (f === 'perResource.mult') {
+        e.perResource = { name: 'r', mult: f === field ? PROBE : 1 };
+      } else {
+        e[f] = f === field ? PROBE : 1;
+      }
+    }
+    if (field === 'perResource.mult') {
+      e.perResource = { name: 'r', mult: PROBE };
+    }
+    return e as EffectDef;
+  };
+  const read = (e: EffectDef, field: string): unknown =>
+    field
+      .split('.')
+      .reduce<any>((o, k) => (o == null ? o : o[k]), e as unknown);
+
+  it('every kind in the manifest exists in the effect schema', () => {
+    expect(Object.keys(SCALABLE_FIELDS).sort()).toEqual(
+      Object.keys(sample).sort()
+    );
+  });
+
+  it.each(
+    Object.entries(SCALABLE_FIELDS).flatMap(([kind, fields]) =>
+      fields.map((f) => [kind, f] as const)
+    )
+  )('scaleEffect actually substitutes %s.%s', (kind, field) => {
+    const { effect } = run('burst', build(kind, field), 1);
+    expect(read(effect, field)).toBeCloseTo(PROBE * 0.6, 2);
+  });
+
+  it('a field NOT in the manifest is left untouched (no phantom entries)', () => {
+    // durationSec is the canonical never-scaled field; if it ever started scaling, the manifest
+    // would be under-declaring and the validator would reject a legitimate annotation.
+    const { effect } = run(
+      'burst',
+      { kind: 'dot', atkPct: 1, durationSec: 275.18 } as EffectDef,
+      1
+    );
+    expect((effect as { durationSec: number }).durationSec).toBe(275.18);
   });
 });

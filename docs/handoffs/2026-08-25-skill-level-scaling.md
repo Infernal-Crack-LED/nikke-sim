@@ -158,6 +158,23 @@ structural validator caught this — the anchor did not resolve — which is the
   header and commit message claimed. The byte-span insertion is now actually implemented in it.
 - **FIX — `levelScale: null` crashed the validator** (`typeof null === 'object'` reached
   `Object.entries(null)`), taking the whole gate down with a stack trace. Guarded + pinned.
+  **Round 2 verdict: CLEAN** (1 FOLLOW-UP + 2 NOTE, all also fixed rather than filed):
+
+- The `SCALABLE_FIELDS` map I added in round 1 was a hand-maintained MIRROR of `scaleEffect`'s
+  switch — the same staleness class that bit the census in round 1 — and its comment overclaimed
+  ("pins the pairing") when no test compared the two. `scale.ts` now OWNS and exports the map,
+  `validate-structural.ts` imports it, and a test probes the real scaler against it in both
+  directions (every listed field must actually scale; a non-listed field must not).
+- `objectSpans` mis-keyed an object that followed a scalar in a mixed array. Fixed properly by
+  counting element separators instead of container opens, and pinned by a test that round-trips
+  EVERY span in all 189 override files (slice → parse → deep-equal) plus mixed-array and
+  string-escape cases. A second guard rejects two rows inserting a duplicate annotation key into
+  one effect (JSON.parse silently keeps the last, so the post-write parse could not catch it).
+- Exporting the scanner meant importing the module ran its apply loop — under vitest's argv that is
+  WITHOUT `--check`, i.e. it would have written to every annotated override. The CLI is now behind
+  an `import.meta.url === argv[1]` guard, verified by checking the override diff is unchanged
+  across a test run.
+
 - **NOTE ×3 — fixed:** the type union under-declared the annotations (they are now on every kind
   `scaleEffect` reads); the validator did not check that an annotated field is on a scaling path or
   that `levelConst` names a real field (both now error); the `chargeMultPct` comment's counts were
@@ -166,7 +183,7 @@ structural validator caught this — the anchor did not resolve — which is the
 
 ## 5. OPEN — what is left
 
-Backlog **124 → 83 values**, 47 → 30 units. Two QUEUE items carry the remainder:
+Backlog **124 → 84 values**, 47 → 30 units. Two QUEUE items carry the remainder:
 
 - **70 values / 19 units — treasure, blocked on data.** See §4(a). Needs a source for treasure
   per-level values, or an owner ruling on how favorite items scale.

@@ -31,7 +31,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 **19 units cannot scale their skill levels at all**, and it is a DATA gap, not an authoring one.
 `data/skill-levels.json` holds the **base (untreasured)** kit's per-level arrays, but those
 overrides model the **treasure (favorite-item)** kit, so their authored values appear nowhere in
-the table and stay pinned at max level however the player sets skill levels. 70 of the 83 remaining
+the table and stay pinned at max level however the player sets skill levels. 70 of the 84 remaining
 scaling warnings are this one cause.
 
 Evidence (`drake`, the clean case): her table carries `11.85` / `1254` / `98.55`; her override

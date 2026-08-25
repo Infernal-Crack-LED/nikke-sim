@@ -24,7 +24,7 @@
 // form across all 23 annotated overrides: 59 insertions, 2 deletions (two objects that genuinely
 // crossed the 80-col wrap once annotated).
 import { readFileSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -429,6 +429,10 @@ const ROWS: Row[] = [
   },
 ];
 
+// CLI entry. Guarded so that IMPORTING this module (the span scanner is exported and unit-tested
+// against the whole override corpus) does not run the apply loop — an unguarded import would
+// execute it with vitest's argv, i.e. WITHOUT --check, and write to every annotated override.
+
 const args = process.argv.slice(2);
 const checkOnly = args.includes('--check');
 
@@ -444,7 +448,7 @@ interface Eff {
  * (e.g. `skill1 > 0 > effects > 1`). This is what lets the tool insert an annotation INTO the
  * existing text instead of re-serializing the file — see the FORMATTING note in the header.
  */
-function objectSpans(text: string): Map<string, [number, number]> {
+export function objectSpans(text: string): Map<string, [number, number]> {
   const out = new Map<string, [number, number]>();
   const stack: Array<{
     open: string;
@@ -480,8 +484,10 @@ function objectSpans(text: string): Map<string, [number, number]> {
       const parent = stack[stack.length - 1];
       let key = pendingKey;
       if (parent?.open === '[') {
+        // `idx` is the count of element separators seen so far in this array, so it is the true
+        // element index whether or not earlier elements were scalars. (Incrementing on container
+        // OPEN instead would mis-key an object that follows a scalar in a mixed array.)
         key = String(parent.idx);
-        parent.idx++;
       }
       path.push(key);
       stack.push({ open: c, start: i, idx: 0, key });
@@ -500,7 +506,7 @@ function objectSpans(text: string): Map<string, [number, number]> {
       const top = stack[stack.length - 1];
       expectKey = top?.open === '{';
       if (top?.open === '[') {
-        // index advances when the next VALUE starts; scalars are counted here
+        top.idx++; // one element boundary — see the note where `key` is assigned
       }
     } else if (c === ':') {
       expectKey = false;
@@ -509,94 +515,120 @@ function objectSpans(text: string): Map<string, [number, number]> {
   return out;
 }
 
-let applied = 0;
-let already = 0;
-const errors: string[] = [];
+// CLI entry. Guarded so that IMPORTING this module (the span scanner is exported and unit-tested
+// against the whole override corpus) does not run the apply loop — an unguarded import would
+// execute it with vitest's argv, i.e. WITHOUT --check, and write to every annotated override.
+function main(): void {
+  let applied = 0;
+  let already = 0;
+  const errors: string[] = [];
 
-const bySlug = new Map<string, Row[]>();
-for (const r of ROWS) {
-  if (!bySlug.has(r.slug)) {
-    bySlug.set(r.slug, []);
+  const bySlug = new Map<string, Row[]>();
+  for (const r of ROWS) {
+    if (!bySlug.has(r.slug)) {
+      bySlug.set(r.slug, []);
+    }
+    bySlug.get(r.slug)!.push(r);
   }
-  bySlug.get(r.slug)!.push(r);
-}
 
-for (const [slug, rows] of bySlug) {
-  const path = join(ROOT, 'src/skills/overrides', `${slug}.json`);
-  let text = readFileSync(path, 'utf8');
-  const ov = JSON.parse(text);
-  const spans = objectSpans(text);
-  // (insertPosition, textToInsert) — applied right-to-left so earlier offsets stay valid.
-  const edits: Array<[number, string]> = [];
+  for (const [slug, rows] of bySlug) {
+    const path = join(ROOT, 'src/skills/overrides', `${slug}.json`);
+    let text = readFileSync(path, 'utf8');
+    const ov = JSON.parse(text);
+    const spans = objectSpans(text);
+    // (insertPosition, textToInsert) — applied right-to-left so earlier offsets stay valid.
+    const edits: Array<[number, string]> = [];
 
-  for (const row of rows) {
-    // Collect the PATH of every effect in the slot matching (kind, field, value); `escalating`
-    // steps count. Paths (not object references) are what the span map is keyed by.
-    const hits: string[][] = [];
-    const visit = (e: Eff, at: string[]) => {
-      if (e.kind === 'escalating' && Array.isArray(e.steps)) {
-        (e.steps as Eff[]).forEach((st, i) =>
-          visit(st, [...at, 'steps', String(i)])
-        );
-      }
-      if (e.kind === row.kind && e[row.field] === row.value) {
-        hits.push(at);
-      }
-    };
-    (ov[row.slot] ?? []).forEach((b: { effects?: Eff[] }, bi: number) =>
-      (b.effects ?? []).forEach((e, ei) =>
-        visit(e, [row.slot, String(bi), 'effects', String(ei)])
-      )
-    );
-    if (!hits.length) {
-      errors.push(
-        `${slug} ${row.slot} ${row.kind}.${row.field}=${row.value}: no matching effect`
+    for (const row of rows) {
+      // Collect the PATH of every effect in the slot matching (kind, field, value); `escalating`
+      // steps count. Paths (not object references) are what the span map is keyed by.
+      const hits: string[][] = [];
+      const visit = (e: Eff, at: string[]) => {
+        if (e.kind === 'escalating' && Array.isArray(e.steps)) {
+          (e.steps as Eff[]).forEach((st, i) =>
+            visit(st, [...at, 'steps', String(i)])
+          );
+        }
+        if (e.kind === row.kind && e[row.field] === row.value) {
+          hits.push(at);
+        }
+      };
+      (ov[row.slot] ?? []).forEach((b: { effects?: Eff[] }, bi: number) =>
+        (b.effects ?? []).forEach((e, ei) =>
+          visit(e, [row.slot, String(bi), 'effects', String(ei)])
+        )
       );
-      continue;
+      if (!hits.length) {
+        errors.push(
+          `${slug} ${row.slot} ${row.kind}.${row.field}=${row.value}: no matching effect`
+        );
+        continue;
+      }
+      // Several identical effects (e.g. a value repeated across two blocks) all get the same
+      // annotation — they are the same kit line by construction, so this is not ambiguity.
+      for (const at of hits) {
+        const span = spans.get(['', ...at].join(' > '));
+        if (!span || span[1] < 0) {
+          errors.push(`${slug}: no text span for ${at.join('.')}`);
+          continue;
+        }
+        const [start, end] = span;
+        const objText = text.slice(start, end);
+        const ann = row.const
+          ? `"levelConst": ["${row.field}"]`
+          : `"levelScale": { "${row.field}": [${row.anchors!.join(', ')}] }`;
+        if (objText.includes(ann)) {
+          already++;
+          continue;
+        }
+        const key = row.const ? '"levelConst"' : '"levelScale"';
+        const pending = edits.some(
+          ([pos, ins]) => pos === start + 1 && ins.includes(key)
+        );
+        if (objText.includes(key) || pending) {
+          // Two rows targeting DIFFERENT fields of the SAME effect (e.g. stackedNuke atkPct + hpPct)
+          // would insert a duplicate key; JSON.parse silently keeps the last and drops the first, so
+          // the post-write parse guard cannot see it. No such row pair exists today.
+          errors.push(
+            `${slug} ${row.slot} ${row.kind}.${row.field}=${row.value}: effect already carries a ` +
+              `${key} key — merge the fields into one annotation instead of adding a second`
+          );
+          continue;
+        }
+        if (objText.includes('\n')) {
+          const lineStart = text.lastIndexOf('\n', start) + 1;
+          const indent = /^[ ]*/.exec(text.slice(lineStart, start))![0];
+          edits.push([start + 1, `\n${indent}  ${ann},`]);
+        } else {
+          edits.push([start + 1, ` ${ann},`]);
+        }
+        applied++;
+      }
     }
-    // Several identical effects (e.g. a value repeated across two blocks) all get the same
-    // annotation — they are the same kit line by construction, so this is not ambiguity.
-    for (const at of hits) {
-      const span = spans.get(['', ...at].join(' > '));
-      if (!span || span[1] < 0) {
-        errors.push(`${slug}: no text span for ${at.join('.')}`);
-        continue;
+
+    if (edits.length && !checkOnly) {
+      for (const [pos, ins] of edits.sort((a, b) => b[0] - a[0])) {
+        text = text.slice(0, pos) + ins + text.slice(pos);
       }
-      const [start, end] = span;
-      const objText = text.slice(start, end);
-      const ann = row.const
-        ? `"levelConst": ["${row.field}"]`
-        : `"levelScale": { "${row.field}": [${row.anchors!.join(', ')}] }`;
-      if (objText.includes(ann)) {
-        already++;
-        continue;
-      }
-      if (objText.includes('\n')) {
-        const lineStart = text.lastIndexOf('\n', start) + 1;
-        const indent = /^[ ]*/.exec(text.slice(lineStart, start))![0];
-        edits.push([start + 1, `\n${indent}  ${ann},`]);
-      } else {
-        edits.push([start + 1, ` ${ann},`]);
-      }
-      applied++;
+      JSON.parse(text); // must still be valid JSON
+      writeFileSync(path, text);
     }
   }
 
-  if (edits.length && !checkOnly) {
-    for (const [pos, ins] of edits.sort((a, b) => b[0] - a[0])) {
-      text = text.slice(0, pos) + ins + text.slice(pos);
-    }
-    JSON.parse(text); // must still be valid JSON
-    writeFileSync(path, text);
+  console.log(
+    `${checkOnly ? '[check] ' : ''}${applied} annotation(s) applied, ${already} already present, ${errors.length} error(s)`
+  );
+  for (const e of errors) {
+    console.log(`  ✗ ${e}`);
+  }
+  if (errors.length) {
+    process.exit(1);
   }
 }
 
-console.log(
-  `${checkOnly ? '[check] ' : ''}${applied} annotation(s) applied, ${already} already present, ${errors.length} error(s)`
-);
-for (const e of errors) {
-  console.log(`  ✗ ${e}`);
-}
-if (errors.length) {
-  process.exit(1);
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  main();
 }
