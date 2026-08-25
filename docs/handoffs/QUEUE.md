@@ -68,11 +68,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    `docs/handoffs/closed/2026-08-10-faithfulness-batch{1..8}-findings.md`). Most items closed by
    enactment, refutation, or owner ruling (2026-08-11 M-list triage + 2026-08-13 corrections).
    Open:
-   - **`mihara-bonding-chain` — LOCALIZED v2 (2026-08-17).** Over-model in the **stack count**
-     (sustainedDamagePct correctly implemented — owner confirmed). Burst DoT's fixed 1001%/s
-     assumes 20 stacks; if real pool averages ~16, total drops ~9.3%. Settling: popup-read
-     Ensnaring DoT ticks, or owner ruling on whether pool always reaches 20.
-     **→ [mihara-overmodel-localization-2026-08-17.json](../probe-data/mihara-overmodel-localization-2026-08-17.json)**
    - **Held primitives** (F11 discipline — leave held): `moran` S1 DEF ▲/stack, `maxwell`
      `byFinalAtk`, `helm`'s held tag.
    - **`mint` — HELD** (M12 confirmed shipped `singing` model; solo magnitudes unanchored by

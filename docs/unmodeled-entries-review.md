@@ -1288,11 +1288,11 @@ Explosion Radius ▲ 15.01% for 10 sec.
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
 - **skill2:** Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.
-  - *Why:* skill2: 'when the skill user is incapacitated → Ensnaring Chains stacks ▲20' is inert — the boss deals no damage at scope lock, so she is never incapacitated.
+  - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
 - **skill2:** Ensnaring Chains stacks ▲ 20.
-  - *Why:* skill2: 'when the skill user is incapacitated → Ensnaring Chains stacks ▲20' is inert — the boss deals no damage at scope lock, so she is never incapacitated.
+  - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
 - **skill2:** Restraint Chain ▲ 1, up to 10.
-  - *Why:* skill2: 'when an enemy is neutralized → Restraint Chain ▲1, up to 10' is inert — the boss never dies at scope lock.
+  - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
 
 **Milk: Blooming Bunny** (milk-blooming-bunny)
 
@@ -1591,7 +1591,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
 - **skill2:** Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.
-  - *Why:* skill2: 'when the skill user is incapacitated → Ensnaring Chains stacks ▲20' is inert — the boss deals no damage at scope lock, so she is never incapacitated.
+  - *Why:* skill2: incapacitated +20 and enemy-neutralized +1 lines are inert at scope lock.
 
 **Milk: Blooming Bunny** (milk-blooming-bunny)
 
