@@ -53,7 +53,7 @@
     {
       "slot": "skill1",
       "trigger": {
-        "kind": "shotFired"
+        "kind": "fullCharge"
       },
       "target": {
         "kind": "enemy"

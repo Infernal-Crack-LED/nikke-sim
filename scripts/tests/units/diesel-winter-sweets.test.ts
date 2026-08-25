@@ -492,11 +492,11 @@ describe('diesel-winter-sweets — kit spec', () => {
       ).toBe('fullBurstEnter');
     });
 
-    it('the Full-Charge 318.14% sustained buff keys on shotFired (every RL pull is a full charge)', () => {
+    it('the Full-Charge 318.14% sustained buff keys on fullCharge (every RL pull is a full charge)', () => {
       expect(
         blockWith('skill2', (e) => e.stat === 'sustainedDamagePct')?.trigger
           .kind
-      ).toBe('shotFired');
+      ).toBe('fullCharge');
     });
 
     it('the two S1 sustained tiers are split by ownBurstGate: Intro 60.19 = cast, Highlight 235.03 = notCast', () => {

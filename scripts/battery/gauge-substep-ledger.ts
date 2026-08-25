@@ -214,7 +214,8 @@ export function riderCarriers(): { slug: string; slot: string }[] {
     for (const slot of ['skill1', 'skill2', 'burst']) {
       for (const b of ov[slot] ?? []) {
         if (
-          b.trigger?.kind === 'shotFired' &&
+          (b.trigger?.kind === 'shotFired' ||
+            b.trigger?.kind === 'fullCharge') &&
           (b.effects ?? []).some((e) => e.kind === 'flatDamage')
         ) {
           out.push({ slug: f.replace(/\.json$/, ''), slot });
