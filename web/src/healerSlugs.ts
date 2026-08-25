@@ -10,7 +10,9 @@
 // healer delivers zero healing:
 //   - anis-star: heal is formation-gated on a SECOND Burst I ally
 //     (`formation: hasB1`, src/skills/overrides/anis-star.json), and the search
-//     never fields double Burst I (the shape is excluded from enumeration).
+//     never fields double Burst I from enumeration (reachable only via explicit
+//     user locks — in that corner she could heal but still won't satisfy the
+//     toggle, which costs at most a redundant second healer).
 //   - delta-ninja-thief: heal requires a Defender ally; requiredAny is a static
 //     list and can't express the conditional, so she is excluded outright (a
 //     team that happens to carry a Defender simply fields a second healer).
