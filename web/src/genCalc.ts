@@ -126,11 +126,12 @@ export const SYNERGY_WEIGHT = 0.08;
 //   - naga requires a shield-granting teammate (owner ruling: her kit depends
 //     on a shielder being present) — anyOf = every `shield`-tagged unit except
 //     naga herself (she cannot satisfy her own dependency).
-// Healer candidates for the "Include Healer" generator toggle — shared by the
-// requiredAny constraint below and the roster shortfall explainer's diagnosis.
-export const HEALER_SLUGS: string[] = Object.entries(archetypeTags)
-  .filter(([, tags]) => tags.includes('healer'))
-  .map(([slug]) => slug);
+// Healer candidates for the "Include Healer" generator toggle — the list (and
+// the condition-dormant exclusions with their WHY) lives in ./healerSlugs.ts,
+// a vite-free module the generator test suites can also import; re-exported
+// here for the app (App.tsx pulls it from genCalc).
+import { HEALER_SLUGS } from './healerSlugs';
+export { HEALER_SLUGS };
 
 export const TEAM_CONSTRAINTS = {
   together: [['mint', 'prika']],
