@@ -721,6 +721,8 @@ const generatorChars = Object.values(data.characters)
 // (diagnoseTeamShortfall); `nonOlFix` is set when turning on "Include Non-OL
 // Units" would supply the missing role(s), with a few example units it adds.
 interface RosterShortfallInfo {
+  /** which generator produced it — the note renders only on its own tab */
+  source: 'team' | 'roster' | 'union';
   requested: number;
   built: number;
   leftoverCount: number;
@@ -740,9 +742,9 @@ const shortfallReasonText = (r: ShortfallReason): string => {
     case 'fit':
       return `The Burst I and Burst II units left all have 40s cooldowns: covering both stages takes two units each, which leaves no room for two Burst III in a 5-unit team.`;
     case 'element':
-      return `Every team needs at least one ${r.element} unit for the selected boss weakness — none left.`;
+      return `A team needs at least one ${r.element} unit to match the boss weakness — none left.`;
     case 'required-any':
-      return `Every team needs a healer (Include Healer is on) — none left.`;
+      return `A team needs a healer (Include Healer is on) — none left.`;
   }
 };
 
@@ -3357,12 +3359,16 @@ export function App({ user }: { user: AuthUser | null }) {
     healerNeeded,
   });
 
-  // Explain a short roster run: diagnose what the leftover pool is missing, and
-  // whether the "Include Non-OL Units" pill would supply it. Mirrors the search's
-  // own rules — the healer requirement relaxes when no healer is eligible at all
-  // (buildGenCalc drops an empty requiredAny the same way).
-  const shortfallOpts = (eligible: Set<string>) => ({
-    requireElement: weakness,
+  // Explain a short generator run: diagnose what the leftover pool is missing,
+  // and whether the "Include Non-OL Units" pill would supply it. Mirrors the
+  // search's own rules — the healer requirement relaxes when no healer is
+  // eligible at all (buildGenCalc drops an empty requiredAny the same way).
+  // `used` is every unit unavailable to the team that failed to build (consumed
+  // by earlier teams + reserved for later rows); the element rule comes from
+  // `params.weakness`, so a per-boss Union Raid row diagnoses against its own
+  // boss.
+  const shortfallOpts = (weak: Element | null, eligible: Set<string>) => ({
+    requireElement: weak,
     requiredAny: healerNeeded
       ? [
           {
@@ -3373,12 +3379,13 @@ export function App({ user }: { user: AuthUser | null }) {
       : [],
   });
   const computeRosterShortfall = (
+    source: RosterShortfallInfo['source'],
     params: GenCalcParams,
-    teams: TeamResult[],
+    used: Set<string>,
+    built: number,
     requested: number
   ): RosterShortfallInfo => {
     const blockedSet = new Set(params.blocked);
-    const used = new Set(teams.flatMap((t) => t.slugs));
     const eligible = Object.keys(generatorCharacters).filter(
       (s) => !blockedSet.has(s)
     );
@@ -3386,7 +3393,7 @@ export function App({ user }: { user: AuthUser | null }) {
     const reasons = diagnoseTeamShortfall(
       leftover,
       generatorCharacters as any,
-      shortfallOpts(new Set(eligible))
+      shortfallOpts(params.weakness, new Set(eligible))
     );
     // Counterfactual: the units the non-OL filter is holding out (owned, synced,
     // not user-excluded). If adding them clears every diagnosed gap, surface the
@@ -3403,7 +3410,7 @@ export function App({ user }: { user: AuthUser | null }) {
       const stillShort = diagnoseTeamShortfall(
         [...leftover, ...additions],
         generatorCharacters as any,
-        shortfallOpts(widened)
+        shortfallOpts(params.weakness, widened)
       );
       if (additions.length && !stillShort.length) {
         const covers = (s: string): boolean =>
@@ -3433,12 +3440,57 @@ export function App({ user }: { user: AuthUser | null }) {
       }
     }
     return {
+      source,
       requested,
-      built: teams.length,
+      built,
       leftoverCount: leftover.length,
       reasons,
       nonOlFix,
     };
+  };
+  // The rendered panel, shared by the Team Generator (1 team), the solo Roster
+  // Generator (5), and the Union Raid generator (3). `source` keeps a note from
+  // one generator off another generator's tab (the state is shared).
+  const shortfallNote = (
+    info: RosterShortfallInfo | null,
+    source: RosterShortfallInfo['source']
+  ) => {
+    if (!info || info.source !== source || info.built >= info.requested) {
+      return null;
+    }
+    const title =
+      info.built > 0
+        ? `Built ${info.built} of ${info.requested} teams — the ${info.leftoverCount} eligible units left can't form another:`
+        : info.requested === 1
+          ? `No team could be built — the ${info.leftoverCount} eligible units can't form one:`
+          : `No teams could be built — the ${info.leftoverCount} eligible units can't form one:`;
+    return (
+      <div className="roster-shortfall">
+        <div className="roster-shortfall-title">{title}</div>
+        <ul className="roster-shortfall-reasons">
+          {info.reasons.length ? (
+            info.reasons.map((r, i) => (
+              <li key={i}>{shortfallReasonText(r)}</li>
+            ))
+          ) : (
+            <li>
+              Their burst roles, cooldowns, and team rules don't combine into a
+              valid 5-unit team.
+            </li>
+          )}
+        </ul>
+        {info.nonOlFix && (
+          <div className="roster-shortfall-hint">
+            “Include Non-OL Units” adds {info.nonOlFix.count} more of your
+            synced units
+            {info.nonOlFix.names.length
+              ? ` — ${info.nonOlFix.names.join(', ')} cover what's missing`
+              : ''}{' '}
+            (they sim without gear).
+          </div>
+        )}
+      </div>
+    );
   };
 
   // Whether a unit can be fielded by the generator right now (in the pool, not
@@ -3495,11 +3547,14 @@ export function App({ user }: { user: AuthUser | null }) {
       const locks = teamGenLock.filter((s): s is string => !!s);
       setRosterResults(null);
       setRosterShortfall(null);
-      setTeamResult(
-        await genBestTeam(genParams(calcCfg(), weakness, new Set(locks)), {
-          mustInclude: locks,
-        })
-      );
+      const params = genParams(calcCfg(), weakness, new Set(locks));
+      const result = await genBestTeam(params, { mustInclude: locks });
+      setTeamResult(result);
+      if (!result) {
+        setRosterShortfall(
+          computeRosterShortfall('team', params, new Set(), 0, 1)
+        );
+      }
     });
   const runTopTeams = () =>
     runGen(async () => {
@@ -3522,7 +3577,15 @@ export function App({ user }: { user: AuthUser | null }) {
       });
       setRosterResults(results);
       if (results.length < 5) {
-        setRosterShortfall(computeRosterShortfall(params, results, 5));
+        setRosterShortfall(
+          computeRosterShortfall(
+            'roster',
+            params,
+            new Set(results.flatMap((t) => t.slugs)),
+            results.length,
+            5
+          )
+        );
       }
     });
   // Union Raid generator: 3 teams, each built against its own boss; no unit is
@@ -3569,6 +3632,11 @@ export function App({ user }: { user: AuthUser | null }) {
           mustInclude: reserved[i],
         });
         if (!t) {
+          // Explain the row that failed against its OWN boss (element rule) and
+          // its own pool (units consumed above + reserved for the rows below).
+          setRosterShortfall(
+            computeRosterShortfall('union', params, exclude, i, 3)
+          );
           break;
         }
         for (const s of t.slugs) {
@@ -4989,6 +5057,7 @@ export function App({ user }: { user: AuthUser | null }) {
               clearExclude
             )}
           </div>
+          {shortfallNote(rosterShortfall, 'team')}
           {teamResult && teamResultView(teamResult)}
         </section>
       );
@@ -5054,40 +5123,7 @@ export function App({ user }: { user: AuthUser | null }) {
               </div>
               {rosterResults && (
                 <>
-                  {rosterShortfall &&
-                    rosterShortfall.built < rosterShortfall.requested && (
-                      <div className="roster-shortfall">
-                        <div className="roster-shortfall-title">
-                          Built {rosterShortfall.built} of{' '}
-                          {rosterShortfall.requested} teams — the{' '}
-                          {rosterShortfall.leftoverCount} eligible units left
-                          can't form another:
-                        </div>
-                        <ul className="roster-shortfall-reasons">
-                          {rosterShortfall.reasons.length ? (
-                            rosterShortfall.reasons.map((r, i) => (
-                              <li key={i}>{shortfallReasonText(r)}</li>
-                            ))
-                          ) : (
-                            <li>
-                              Their burst roles, cooldowns, and team rules don't
-                              combine into a valid 5-unit team.
-                            </li>
-                          )}
-                        </ul>
-                        {rosterShortfall.nonOlFix && (
-                          <div className="roster-shortfall-hint">
-                            “Include Non-OL Units” adds{' '}
-                            {rosterShortfall.nonOlFix.count} more of your synced
-                            units
-                            {rosterShortfall.nonOlFix.names.length
-                              ? ` — ${rosterShortfall.nonOlFix.names.join(', ')} cover what's missing`
-                              : ''}{' '}
-                            (they sim without gear).
-                          </div>
-                        )}
-                      </div>
-                    )}
+                  {shortfallNote(rosterShortfall, 'roster')}
                   <button
                     className="share-btn roster-copy-btn"
                     onClick={() => copyToRosterSim(rosterResults)}
@@ -5143,6 +5179,7 @@ export function App({ user }: { user: AuthUser | null }) {
               </div>
               {unionGenResults && (
                 <>
+                  {shortfallNote(rosterShortfall, 'union')}
                   <button
                     className="share-btn roster-copy-btn"
                     onClick={() => copyUnionGenToRosterSim(unionGenResults)}
