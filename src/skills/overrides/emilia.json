@@ -13,6 +13,7 @@
           "durationShots": 1
         },
         {
+          "levelScale": { "value": [2.01] },
           "kind": "buff",
           "stat": "chargeDamagePct",
           "value": 12.06,

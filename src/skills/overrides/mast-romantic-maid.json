@@ -37,6 +37,7 @@
       },
       "effects": [
         {
+          "levelScale": { "value": [20] },
           "kind": "buff",
           "stat": "normalAttackPct",
           "value": -40
@@ -56,12 +57,14 @@
       },
       "effects": [
         {
+          "levelScale": { "value": [15.03] },
           "kind": "buff",
           "stat": "distributedDamagePct",
           "value": 30.06,
           "durationSec": 10
         },
         {
+          "levelScale": { "value": [15.04] },
           "kind": "buff",
           "stat": "reloadSpeedPct",
           "value": 30.08,
@@ -109,6 +112,7 @@
           "durationSec": 10
         },
         {
+          "levelScale": { "value": [20.06] },
           "kind": "buff",
           "stat": "casterAtkPct",
           "value": 40.12,

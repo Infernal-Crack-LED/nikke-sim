@@ -6511,3 +6511,65 @@ merged 2026-08-25):
   search, pool preconditions fail loudly) and `scripts/tests/generators/healer-constraint.test.ts`
   (pins the exclusions with a completeness check, and re-runs the reporting account's 27-unit pool:
   every team fields a healer that can heal). Landed via pull request #149.
+## Skill-level scaling: unscaled effect kinds + `levelScale`/`levelConst` for derived values (2026-08-25)
+
+A community report compared the Roster Generator against a live Shooting Range fight:
+`nayuta` at skill levels 1/1/1 simulated ~158M against ~77M measured (sim/real ≈ 2.05), and
+lowering ONLY her Skill 2 level changed her simulated damage by **exactly 0.0%**. Root cause was
+`src/skills/scale.ts`, which scales an authored value by matching it against index 9 (max level) of
+that unit's blablalink per-level arrays and substituting index L−1. Three independent ways a value
+stayed pinned at max level:
+
+- **No case in `scaleEffect`'s switch** — the magnitude was returned untouched AND emitted no
+  warning. `weaponSwap.damagePct` was the worst: a burst weapon mode's per-shot multiplier is
+  often the carrier's largest damage term (11 units carry one), and it is exactly why the reporter
+  saw her burst level move damage with no Modeling Note. Also `shield.maxHpPct` (21 values / 16
+  units), `fillGauge.pct` (can shift full-burst counts, not just damage), `stackedNuke`,
+  `storedHit`, and — found by the cross-family review, not by us — **`perResource.mult`**, which is
+  the LIVE magnitude of a perResource buff/DoT (its static field is ignored at runtime), covering 8
+  more carriers.
+- **`findArr` took the first index-9 match, constant or varying.** Slot tables hold constant arrays
+  (a "for 10 sec" duration is `[10,10,…]`) beside real magnitudes sharing the same max; when the
+  constant came first the magnitude silently stayed at max. It now prefers a VARYING array
+  (`crust` burst Sustained Damage 10%, `prika` burst Charge Damage 25%).
+- **The authored value is DERIVED**, so it matches no table entry — a fold of two kit lines
+  (`nayuta` 530.46 = 150 + 380.46), a time-averaged stack ramp (14.4 from 15.2), a stack-cap
+  product (42 = 1.4 × 30). This case DID warn; it is now fixed per-value by **`levelScale`**, which
+  names the table anchor(s) the number was derived from and scales as
+  `authored × (Σ anchors@L) / (Σ anchors@10)` — exact for a fold, proportional otherwise. Its
+  companion **`levelConst`** marks a field VERIFIED level-invariant so it stops warning (a
+  structural constant, a sentinel like `prika`'s `burstCdr −9999`, or a weapon stat like `ada`'s
+  swap `damagePct` = her own `normalAttackMultiplier`).
+
+**Not refits.** No magnitude changed; only how each behaves below level 10. **Board blast radius is
+ZERO** — every graded comp runs 10/10/10, where `scaleBlocks` early-returns, so the regression
+snapshot is unchanged and was never regenerated.
+
+**Guards.** An anchor that is not a real max-level entry is a structural ERROR
+(`validate-structural.ts`), not a silent fallback; the kind→scalable-fields map is OWNED and
+exported by `scale.ts` and imported by the validator (never mirrored — a private copy in the census
+went stale within one session and reported fixed values as still broken), with a test probing the
+real scaler against it in both directions.
+
+**Evidence / instruments** (both committed): `scripts/audit-skill-scaling.ts` is the census — it
+RUNS the real scaler and observes what changed rather than mirroring its switch, and `--sim <slug>`
+sizes a unit's per-slot damage sensitivity. `scripts/apply-level-scale.ts` is the declarative,
+idempotent annotation applier; every row carries the note/kit quote it rests on, because the
+census's `← 60 × 12` hint is a brute-force table search that finds coincidences (`eve`'s 720% is
+really 240 × 3 per her note; `snow-white-heavy-arms`'s 1055.9 is 105.59 × 10 exactly, not the
+hinted 42.24 × 25 = 1056.0). Measured at 1/1/1 vs 10/10/10: `nayuta` −15.3% → **−44.3%**,
+`little-mermaid` −5.4% → −22.8%, `mast-romantic-maid` −59.0%, `snow-white-heavy-arms` −53.0%.
+
+**Two gaps recorded, deliberately NOT enacted** (`docs/handoffs/QUEUE.md`):
+
+1. **19 TREASURE units cannot scale at all — a DATA gap.** `data/skill-levels.json` holds the
+   BASE (untreasured) kit arrays while those overrides model the treasure kit. `drake`: table
+   `11.85`/`1254`/`98.55` vs override `20.09`/`3009.6`/`201.6` — boosts are non-uniform (×1.70,
+   ×2.40, and `maxAmmoPct 72.18` not boosted), so no proportional anchor recovers them, and ×2.40 is
+   far too large to be extrapolated skill levels. Blablalink roledata carries no favorite-item
+   fields at all. Annotating these off a base-kit anchor would be a GUESS about favorite-item
+   scaling; it needs a source or an owner ruling on the rule.
+2. **An anchor can live in a different slot's table** (`ein` skill1 363.24 = 4 × 90.81 with 90.81 in
+   her skill2 table; also `eve`, `neon-vision-eye`, `emma-tactical-upgrade`, `red-hood`).
+   `levelScale` resolves within one slot, and scaling off the wrong slot's level would be wrong
+   anyway — may indicate those blocks are filed under the wrong slot.

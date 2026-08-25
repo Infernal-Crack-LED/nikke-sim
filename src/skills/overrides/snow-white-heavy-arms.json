@@ -45,6 +45,7 @@
           "atkPct": 41.9
         },
         {
+          "levelScale": { "atkPct": [105.59] },
           "kind": "flatDamage",
           "atkPct": 527.95,
           "flavor": "sequential",
@@ -63,6 +64,7 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [105.59] },
           "kind": "flatDamage",
           "atkPct": 1055.9,
           "flavor": "sequential",
@@ -185,6 +187,7 @@
       },
       "effects": [
         {
+          "levelConst": ["damagePct"],
           "kind": "weaponSwap",
           "damagePct": 69.04,
           "chargeTimeClamp": 3.2,

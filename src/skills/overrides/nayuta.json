@@ -45,6 +45,7 @@
         {
           "kind": "buff",
           "stat": "extraHitDamagePct",
+          "levelScale": { "value": [150, 380.46] },
           "value": 530.46,
           "durationSec": 10
         }
@@ -64,21 +65,25 @@
         {
           "kind": "buff",
           "stat": "atkPct",
+          "levelScale": { "value": [15.2] },
           "value": 14.4
         },
         {
           "kind": "buff",
           "stat": "attackDamagePct",
+          "levelScale": { "value": [20.27] },
           "value": 16.8
         },
         {
           "kind": "buff",
           "stat": "coreDamagePct",
+          "levelScale": { "value": [21.05] },
           "value": 10.5
         },
         {
           "kind": "buff",
           "stat": "hitRatePct",
+          "levelScale": { "value": [1.4] },
           "value": 42,
           "rampSec": 90
         }

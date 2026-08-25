@@ -117,6 +117,7 @@
       },
       "effects": [
         {
+          "levelScale": { "hpPct": [1372.8] },
           "kind": "stackedNuke",
           "atkPct": 1372.8,
           "hpPct": 137.28,

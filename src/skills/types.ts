@@ -190,9 +190,39 @@ export type TargetDef =
   // atkOfMaxHpPct conversion — e3 video rule), so the stand-in choice moves no damage.
   | { kind: 'alliesLowestHp'; count: number; excludeSelf?: boolean };
 
+// DERIVED-VALUE LEVEL SCALING (src/skills/scale.ts). The scaler normally scales a value by
+// matching it against index 9 of the unit's blablalink level arrays and substituting index L-1.
+// That match FAILS whenever an override authored a DERIVED number — two kit lines folded into one
+// rider (nayuta's 150 + 380.46 = 530.46), a time-averaged stack ramp (15.2 → 14.4), or a
+// stack-cap product (1.4 × 30 = 42) — and the value then silently stays at its max-level
+// magnitude while the player lowers the skill level.
+//
+// `levelScale` names the TABLE ANCHOR(S) the authored number was derived FROM, per field:
+//
+//   "value": 530.46, "levelScale": { "value": [150, 380.46] }   // fold: parts scale separately
+//   "value": 14.4,   "levelScale": { "value": [15.2] }          // ratio: 14.4 × (15.2@L / 15.2@10)
+//   "value": 42,     "levelScale": { "value": [1.4] }           // ratio: 42 × (1.4@L / 1.4@10)
+//
+// The scaled result is `authored × (Σ anchors@L) / (Σ anchors@10)`, which is exact for a fold
+// (where Σ anchors@10 == the authored value) and proportional for any other derivation. Every
+// anchor must itself be findable in that slot's level table — `validate-overrides.ts` enforces it,
+// so a typo'd anchor is a build error rather than a silent max-level value.
+export type LevelScale = Record<string, number[]>;
+
+// The companion to `levelScale`: fields VERIFIED to be level-invariant, so the scaler stops
+// warning about them. Three shapes recur — a structural constant the kit implies rather than
+// states (eve's Mk2 "doubles S1" encoded as sequentialDamagePct +100), a sentinel the engine
+// reads specially (prika's burstCdr -9999 = "cancel the cooldown"), and a value that is a
+// COOLDOWN or other non-skill quantity (a burstCdr of 40 that mirrors a burst cooldown).
+// Distinct from simply having no annotation: an unannotated field still warns, which is correct
+// for a value nobody has checked yet. `levelConst` is a claim that someone DID check.
+export type LevelConst = string[];
+
 export type EffectDef =
   | {
       kind: 'buff';
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
       stat: StatKey;
       value: number;
       durationSec?: number;
@@ -267,6 +297,8 @@ export type EffectDef =
     }
   | {
       kind: 'flatDamage'; // instant hit, % of caster final ATK
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
       atkPct: number;
       flavor?:
         | 'distributed'
@@ -348,10 +380,14 @@ export type EffectDef =
       // of a carrier — compare her gauge-bar slope against the same weapon cadence without the
       // proc, or count full bursts over a fixed window.
       kind: 'hitRepeat';
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
       pct: number;
     }
   | {
       kind: 'dot'; // ticks every intervalSec (default 1); never core-boosted
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
       atkPct: number;
       durationSec: number;
       intervalSec?: number;
@@ -379,6 +415,8 @@ export type EffectDef =
     }
   | {
       kind: 'weaponSwap'; // "Changes the weapon in use:" — temporary weapon override
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
       damagePct: number; // per-shot multiplier while swapped
       chargeTimeSec?: number; // full-charge time (charge weapons)
       chargeTimeClamp?: number; // "Charge time is fixed at X sec" on the swapped weapon (seconds)
@@ -426,9 +464,22 @@ export type EffectDef =
   // hazard this primitive retires, 2026-08-24). Max-extends per name on re-application. The
   // status itself carries no stats — pair it with buff effects for the mode's payload.
   | { kind: 'selfStatus'; name: string; durationSec: number }
-  | { kind: 'fillGauge'; pct: number } // instantly fills the burst gauge
+  | {
+      kind: 'fillGauge'; // instantly fills the burst gauge
+      pct: number;
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
+    }
   | { kind: 'heal'; ticks?: number; intervalSec?: number } // emits recovery event(s) to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown). A per-second heal-over-time ("Recovers X% every 1 sec for N sec") sets ticks:N (intervalSec default 1) so it emits N recovery events over time, keeping on-recovery consumers refreshed; default ticks:1 = a single instant event (back-compatible)
-  | { kind: 'shield'; maxHpPct?: number; durationSec?: number } // emits a shield event to the target(s) — no HP pool modeled (v1 boss deals no damage); fires their 'shielded' triggers; maxHpPct = % of CASTER final Max HP (recorded for kit completeness)
+  | {
+      // emits a shield event to the target(s) — no HP pool modeled (v1 boss deals no damage); fires
+      // their 'shielded' triggers; maxHpPct = % of CASTER final Max HP (recorded for kit completeness)
+      kind: 'shield';
+      maxHpPct?: number;
+      durationSec?: number;
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
+    }
   // inflicts a kit-NAMED status on the boss for durationSec. Windows are keyed per NAME, so two
   // characters' unrelated statuses never satisfy each other's gate. Opens/extends the window read
   // by the `requiresTargetStatus` block gate.
@@ -446,6 +497,8 @@ export type EffectDef =
   | { kind: 'targetStatus'; name: string; durationSec: number }
   | {
       kind: 'storedHit'; // accumulates charges that ALL release as hits when full burst begins
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
       atkPct: number; // per charge, % of caster's final ATK at release time
       charges?: number; // charges added per activation (default 1)
       flavor?:
@@ -463,7 +516,13 @@ export type EffectDef =
   | { kind: 'burstFirst' } // takes the FIRST eligible burst of its stage regardless of slot order (Prika duet opener)
   | { kind: 'reenterStage'; stage: 1 | 2 | 3 } // "Re-enters Burst Stage N": the rotation stays at stage N so ANOTHER eligible unit can also cast (Tia, Anis:Star Everyone's Star)
   | { kind: 'advantageVs'; element: string } // counts as elementally advantaged vs this boss element
-  | { kind: 'burstCdr'; seconds: number; oncePerBattle?: boolean } // reduce targets' burst cooldowns
+  | {
+      kind: 'burstCdr'; // reduce targets' burst cooldowns
+      seconds: number;
+      oncePerBattle?: boolean;
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
+    }
   | { kind: 'escalating'; steps: EffectDef[] } // Liter-style "Once:/Twice:/…": Nth activation applies steps 1..N
   | { kind: 'fullBurstExtend'; seconds: number }
   | { kind: 'unlimitedAmmo'; durationSec: number }
@@ -529,6 +588,8 @@ export type EffectDef =
   | { kind: 'stun'; durationSec: number } // target can't fire/charge/reload (bursting unaffected)
   | {
       kind: 'stackedNuke'; // Maiden:IR MP — hits once per full burst the unit SAT OUT since its last burst
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
       atkPct: number; // per stack, % of final ATK
       hpPct?: number; // per stack, % of final Max HP added on top
       maxStacks?: number; // default 12

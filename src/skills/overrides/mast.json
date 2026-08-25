@@ -143,7 +143,13 @@
       "target": { "kind": "enemy" },
       "requiresTargetStatus": "Sea Breeze",
       "effects": [
-        { "kind": "dot", "atkPct": 226, "durationSec": 7, "intervalSec": 1 }
+        {
+          "levelScale": { "atkPct": [4.52] },
+          "kind": "dot",
+          "atkPct": 226,
+          "durationSec": 7,
+          "intervalSec": 1
+        }
       ]
     }
   ]

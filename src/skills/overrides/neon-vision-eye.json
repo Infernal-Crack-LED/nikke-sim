@@ -93,6 +93,7 @@
       "delaySec": 10,
       "effects": [
         {
+          "levelScale": { "value": [5] },
           "kind": "buff",
           "stat": "burstGenPct",
           "value": 330,
@@ -113,6 +114,7 @@
       "delaySec": 10,
       "effects": [
         {
+          "levelScale": { "value": [5] },
           "kind": "buff",
           "stat": "burstGenPct",
           "value": 500,
