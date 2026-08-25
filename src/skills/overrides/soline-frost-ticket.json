@@ -31,6 +31,7 @@
       },
       "effects": [
         {
+          "levelScale": { "value": [10] },
           "kind": "buff",
           "stat": "casterMaxHpPct",
           "value": 20

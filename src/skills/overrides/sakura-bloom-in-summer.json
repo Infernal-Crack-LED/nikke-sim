@@ -24,7 +24,14 @@
       "slot": "skill2",
       "trigger": { "kind": "passive" },
       "target": { "kind": "self" },
-      "effects": [{ "kind": "buff", "stat": "attackDamagePct", "value": 7.82 }]
+      "effects": [
+        {
+          "levelScale": { "value": [15.64] },
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 7.82
+        }
+      ]
     },
     {
       "slot": "skill2",
@@ -79,6 +86,7 @@
       "target": { "kind": "enemy" },
       "effects": [
         {
+          "levelScale": { "atkPct": [35.16] },
           "kind": "dot",
           "atkPct": 351.6,
           "durationSec": 10,

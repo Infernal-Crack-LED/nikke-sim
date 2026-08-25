@@ -33,6 +33,7 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [240] },
           "kind": "flatDamage",
           "atkPct": 720,
           "flavor": "sequential",
@@ -109,6 +110,7 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [457.14] },
           "kind": "flatDamage",
           "atkPct": 2742.84
         }
@@ -124,6 +126,7 @@
       },
       "effects": [
         {
+          "levelConst": ["value"],
           "kind": "buff",
           "stat": "sequentialMultPct",
           "value": 100,

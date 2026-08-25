@@ -102,6 +102,7 @@
           "durationSec": 10
         },
         {
+          "levelConst": ["damagePct"],
           "kind": "weaponSwap",
           "damagePct": 61.3,
           "chargeTimeSec": 4,

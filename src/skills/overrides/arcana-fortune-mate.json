@@ -19,6 +19,7 @@
       },
       "effects": [
         {
+          "levelScale": { "value": [13] },
           "kind": "buff",
           "stat": "casterAtkPct",
           "value": 39,
@@ -36,6 +37,7 @@
       },
       "effects": [
         {
+          "levelConst": ["value"],
           "kind": "buff",
           "stat": "normalAttackPct",
           "value": 30,
@@ -75,6 +77,7 @@
       },
       "effects": [
         {
+          "levelScale": { "value": [2.49] },
           "kind": "buff",
           "stat": "atkPct",
           "value": 7.47,

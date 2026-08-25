@@ -69,6 +69,7 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [90.81] },
           "kind": "flatDamage",
           "atkPct": 3087.54,
           "flavor": "true",
@@ -86,6 +87,7 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [90.81] },
           "kind": "flatDamage",
           "atkPct": 544.86,
           "flavor": "true",

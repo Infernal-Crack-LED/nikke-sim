@@ -84,6 +84,8 @@
 | `instantReload` | 13 | alice-wonderland-bunny, arcana-fortune-mate, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, … |
 | `interval` | 39 | ade, anis, brid, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, … |
 | `lastBullet` | 19 | anchor, anis-sparkling-summer, aria, cinderella-crystal-wave, crow, dorothy, epinel, eunhwa, … |
+| `levelConst` | 7 | ada, arcana-fortune-mate, eve, prika, rapi-red-hood, red-hood, snow-white-heavy-arms |
+| `levelScale` | 18 | arcana-fortune-mate, asuka-wille, cinderella, ein, emilia, eve, guillotine-winter-slayer, liberalio, … |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 12 | emilia, grave, himeno, mica, n102, neon, nihilister, noir, … |
 | `maxShots` | 5 | ada, e-h, laplace-ultimate-hero, maxwell, snow-white-heavy-arms |

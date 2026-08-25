@@ -69,6 +69,7 @@
       "target": { "kind": "allies" },
       "effects": [
         {
+          "levelScale": { "value": [0.18] },
           "kind": "buff",
           "stat": "chargeSpeedPct",
           "value": 18,

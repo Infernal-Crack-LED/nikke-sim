@@ -170,6 +170,7 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [6.62] },
           "kind": "flatDamage",
           "atkPct": 198.6,
           "delaySec": 9

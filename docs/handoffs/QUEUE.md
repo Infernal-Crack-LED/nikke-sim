@@ -26,6 +26,49 @@ fewest videos. Master plan: `docs/handoffs/2026-07-16-full-sweep-plan.md`. Dashb
 `npx tsx scripts/board-read.ts`. **Submission intake: 0 pending** (Nikke Sim Data Submission Google
 Form → `/submission-intake` → `/probe-processing` → hand-tune; this line is the tracked count).
 
+### TREASURE SKILL-LEVEL SCALING — no per-level data source (OPEN, needs investigation)
+
+**19 units cannot scale their skill levels at all**, and it is a DATA gap, not an authoring one.
+`data/skill-levels.json` holds the **base (untreasured)** kit's per-level arrays, but those
+overrides model the **treasure (favorite-item)** kit, so their authored values appear nowhere in
+the table and stay pinned at max level however the player sets skill levels. 70 of the 84 remaining
+scaling warnings are this one cause.
+
+Evidence (`drake`, the clean case): her table carries `11.85` / `1254` / `98.55`; her override
+authors `20.09` / `3009.6` / `201.6`. The boosts are **non-uniform** — ×1.70, ×2.40, and
+`maxAmmoPct 72.18` not boosted at all — so no single proportional `levelScale` anchor recovers
+them, and ×2.40 is far too large to be extrapolated skill levels (her base curve steps ~57/level).
+Blablalink roledata carries **no favorite-item fields whatsoever** (checked `drake`'s live
+`roledata`: no `favor`/`treasure`/`item`/`equip` key), so the arrays are simply not in the source
+`src/data/sync-skill-levels.ts` pulls from.
+
+**Investigate:** (a) does another source expose treasure per-level values (the DB the favorite-item
+PROSE came from — the `drake` note cites a "DB sync" that gained it; `data/sources.json`)? (b) or is
+there a RULE — does a favorite item add levels, a flat bonus, or a per-line multiplier? An owner
+ruling on the rule would unblock all 19 without new data. Until one lands, annotating these off a
+base-kit anchor is a guess and is deliberately NOT done.
+
+Affected: `diesel`, `drake`, `exia`, `flora`, `frima`, `helm`, `julia`, `laplace`, `milk`,
+`miranda`, `moran`, `phantom`, `poli`, `privaty`, `rosanna`, `sugar`, `tove`, `viper`, `zwei`.
+Full write-up: `docs/handoffs/2026-08-25-skill-level-scaling.md` §4(a). Census:
+`npx tsx scripts/audit-skill-scaling.ts`; size a unit with `--sim <slug>`.
+
+### SKILL-LEVEL SCALING — 13 residual non-treasure values (OPEN, low priority)
+
+All CROSS-SLOT or unavailable, not simple derivations — `levelScale` anchors resolve within one
+slot's table only:
+
+- **Cross-slot** (the anchor lives in a different slot's table than the block it sits in, so it is
+  inexpressible AND would scale off the wrong slot's level): `ein` skill1 `363.24` (= 4 × 90.81,
+  but 90.81 is in her **skill2** table), `eve` burst `50` (her S2 Eagle Eye value copied into the
+  burst by Mk2), `neon-vision-eye` skill1 `35.05`/`45.03` (S2 + burst riders), `emma-tactical-upgrade`
+  burst `3.9` (an S1 value), `red-hood` burst `71.42` (an S2 rider). May indicate some of these
+  blocks are filed under the wrong slot — worth a look before building cross-slot anchor support.
+- **Not in any table** (datamined / kit-literal values blablalink does not parameterize):
+  `ark-ranger-black` burst `156.19` + `45.87` (Transformation state), `cinderella` skill1 `19.2`,
+  `cinderella-crystal-wave` skill1 `3`, `sin` burst `43.2`, `soda` burst `13`,
+  `soda-twinkling-bunny` skill2 `130`.
+
 ### 🤖 AUTONOMOUS WORK QUEUE — read this INSTEAD of the pointer list below if unattended
 
 > **Why this exists (2026-07-25).** The pointer list below is an excellent _attended_ handoff and a poor
