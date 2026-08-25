@@ -138,6 +138,7 @@ export const EFFECTS = new Set([
   'convertExcess',
   'addStack',
   'resource',
+  'copyResource',
   'targetStatus',
   'selfStatus',
 ]);
@@ -626,6 +627,19 @@ function checkEffect(e: any, path: string, errors: string[], trigger?: string) {
       errors.push(`${path}: targetStatus needs durationSec > 0`);
     }
   }
+  if (e.kind === 'copyResource') {
+    if (typeof e.name !== 'string' || !e.name.trim()) {
+      errors.push(`${path}: copyResource needs a non-empty target "name"`);
+    }
+    if (typeof e.from !== 'string' || !e.from.trim()) {
+      errors.push(`${path}: copyResource needs a non-empty source "from"`);
+    }
+    if (e.name === e.from) {
+      errors.push(
+        `${path}: copyResource source and target are both "${e.name}" — a resource cannot copy to itself`
+      );
+    }
+  }
   if (e.kind === 'selfStatus') {
     if (typeof e.name !== 'string' || !e.name.trim()) {
       errors.push(
@@ -977,6 +991,35 @@ export function structuralCheck(
       }
     });
   }
+
+  // `copyResource` copies between declared resource pools; an undeclared name would silently write
+  // to a missing pool (the engine falls back to unbounded defaults) or read from one.
+  const declaredResources = new Set(
+    (override.resources ?? [])
+      .filter((r: any) => typeof r?.name === 'string')
+      .map((r: any) => r.name)
+  );
+  for (const slot of SLOTS) {
+    const blocks = override[slot];
+    if (!Array.isArray(blocks)) {
+      continue;
+    }
+    blocks.forEach((b: any, bi: number) => {
+      for (const e of collectEffects(b?.effects, 'copyResource')) {
+        if (e.name && !declaredResources.has(e.name)) {
+          errors.push(
+            `${slot}[${bi}]: copyResource target "${e.name}" is not declared in resources[]`
+          );
+        }
+        if (e.from && !declaredResources.has(e.from)) {
+          errors.push(
+            `${slot}[${bi}]: copyResource source "${e.from}" is not declared in resources[]`
+          );
+        }
+      }
+    });
+  }
+
   if (!override.note) {
     errors.push('missing top-level "note" documenting modeling decisions');
   }

@@ -854,6 +854,12 @@ export const GAUGE_KIND_CENSUS: Record<EffectDef['kind'], KindCensusRow> = {
     ruling: 'n/a',
     basis: 'owner resource-pool bookkeeping',
   },
+  copyResource: {
+    impact: false,
+    emission: 'no-emission',
+    ruling: 'n/a',
+    basis: 'owner resource-pool snapshot; no boss impact',
+  },
   heal: {
     impact: false,
     emission: 'no-emission',
