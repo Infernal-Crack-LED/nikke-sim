@@ -6445,3 +6445,31 @@ manual line entry and the generator key on line keys (`elem`/`atk`/…), not nam
 was confined to the synced-roster label mapping (and UI label text, which now matches the game).
 Pinned by `scripts/tests/data/ol-line-labels.test.ts` (real labels, legacy aliases, and the
 Recovery diagnostic) and bakery-bot's `syncedLoadout.test.ts` fixtures.
+
+## `mihara-bonding-chain` — live Restraint pacing + burst stack-mirror snapshot; the 2026-08-17 over-model closes (2026-08-25)
+
+The QUEUE faithfulness-residue item "LOCALIZED v2 (2026-08-17)" — the burst DoT's fixed 1001%/s
+assumed a 20-stack Ensnaring pool
+(`docs/probe-data/mihara-overmodel-localization-2026-08-17.json`) — is resolved by modeling the
+kit live end-to-end, landed on branch `mihara-restraint-pacing` (owner-driven session 2026-08-21;
+merged 2026-08-25):
+
+- **Restraint Chains are a live resource** `restraint` [0..10]: charged at battle start, refilled
+  at the end of her OWN Full Burst only, and consumed at 0.4s per stack over 4s during Full
+  Burst — each consumption deals the 50.06% hit and feeds +1 Ensnaring. Owner rulings recorded in
+  the session (2026-08-21): the dump gates on HER own Full Burst, and S2's per-40-normals
+  Ensnaring generation consumes NO Restraint and deals no dump damage.
+- **Burst Dragging Chain snapshots the LIVE Ensnaring count** into a `mirror` pool at cast via
+  the new `copyResource` effect primitive (clamp-copy of one named pool into another at apply
+  time), then cancels Ensnaring; the DoT ticks mirror × 50.05%/s for 10s — 1001%/s only when the
+  pool actually reached 20. This enacts the previously-gated "stack-mirror cast-snapshot"
+  primitive with `mihara-bonding-chain` as its first consumer; `asuka-wille`'s finisher 30-cap
+  stays gated on its own measurement (2026-08-24 kit-audit followups handoff).
+- **Measured effect** (regression-snapshot diff vs the pre-change tree + `scripts/board-read.ts`):
+  `mihara-bonding-chain` −9.31% on the "N6 mihara/maiden wind" graded comp — the magnitude the
+  2026-08-17 localization predicted (~9.3% for a ~16-stack average pool) — moving her board
+  1.179 → 1.076 HOT (comps 1.03 / 1.12). `little-mermaid` knock-on +0.07%; no other snapshot
+  entry moved. Full-burst counts unchanged (regression N6 asserts green).
+- **Evidence**: kit-tdd spec `scripts/tests/units/mihara-bonding-chain.test.ts` (16 tests, groups
+  M1–M5, each with its nearest-wrong-model counterfactual); the 2026-08-17 localization artifact.
+  The residual 1.076 HOT is a remaining open gap, not closed by this entry.

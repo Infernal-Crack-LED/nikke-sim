@@ -66,14 +66,13 @@ would settle each. AI-facing.
   instantly at state end in-game; the model's gradual 9s-per-stack expiry over-credits the team
   amp tail (~34% vs ~22.5% uptime). Tier 2, recipe in her note. Unmeasured unit — measurement
   first.
-- **Stack-mirror cast-snapshot** ("mirrors the live stack count"): `mihara-bonding-chain`'s burst
-  DoT at the static 20-cap is ALREADY the tracked QUEUE.md faithfulness-residue item (localized
-  2026-08-17, `docs/probe-data/mihara-overmodel-localization-2026-08-17.json`; settling =
-  popup-read of Ensnaring DoT ticks or an owner ruling on pool-reaches-20). `asuka-wille`'s
-  finisher 30-cap (⚑4/⚑5, 3× spread vs the blind rebuild's 10) is the second consumer. The
-  engine gap: `perResource` reads the pool at tick time, but these kits ZERO the pool at cast, so
-  the primitive needed is a pre-spend snapshot read at cast — ordering-sensitive, build alongside
-  the first measured consumer.
+- **Stack-mirror cast-snapshot** ("mirrors the live stack count"): LANDED as the `copyResource`
+  effect primitive (branch `mihara-restraint-pacing`, merged 2026-08-25 — a pre-spend clamp-copy
+  of one named pool into another at apply time), with `mihara-bonding-chain`'s burst as the first
+  consumer (snapshots live Ensnaring into `mirror` before its own cancel; closed the 2026-08-17
+  QUEUE residue item — DECISIONS 2026-08-25). Remaining consumer: `asuka-wille`'s finisher 30-cap
+  (⚑4/⚑5, 3× spread vs the blind rebuild's 10) — still gated on its own measurement (unmeasured
+  unit).
 - **Status-linked durations (retire the `9999` sentinels)**: `prika` ×3 (Effect 3 team Attack
   Damage / Pierce / Charge Damage — but the load-bearing question is the duet Encore WINDOW
   itself, the ⚑ OPEN in her note with the measured 0.890→1.064 ladder; a duration primitive alone

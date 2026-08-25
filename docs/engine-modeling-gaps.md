@@ -55,6 +55,7 @@
 | `consolidation` | 1 | dorothy-serendipity |
 | `consumeAmmo` | 3 | asuka-wille, grave, jill |
 | `convertExcess` | 1 | red-hood |
+| `copyResource` | 1 | mihara-bonding-chain |
 | `countInFb` | 7 | claire, frima, quiry, rapi-red-hood, scarlet-black-shadow, snow-crane, snow-white-innocent-days |
 | `critRateNormalPct` | 3 | biscuit, helm, julia |
 | `delaySec` | 10 | arcana-fortune-mate, asuka-wille, dorothy, flora, grave, mihara-bonding-chain, neon-vision-eye, rapi-red-hood, … |
