@@ -36,9 +36,25 @@ export function scaleBlocks(
 ): Block[] {
   const missing = new Set<string>();
 
-  /** index-9 lookup: the max-level entry of the array this value was parsed from. */
-  const findArr = (v: number, slot: SkillSlot): number[] | undefined =>
-    (arrays[slot] ?? []).find((a) => Math.abs(a[9] - Math.abs(v)) < 0.005);
+  /**
+   * index-9 lookup: the max-level entry of the array this value was parsed from.
+   *
+   * Prefers a VARYING array over a constant one when both match. A slot's table routinely holds
+   * constant arrays (a "for 10 sec" duration is stored as [10,10,…]) alongside a real magnitude
+   * that happens to share the same max-level number, and a plain `.find()` takes whichever comes
+   * first. When that was the constant, the magnitude silently stayed at max level with NO warning
+   * — the exact bug class this module exists to fix. Live cases: `crust`'s burst
+   * "Sustained Damage ▲10%" (constant [10×10] at index 1 vs the real varying [5.91…10] at index 4)
+   * and `prika`'s burst "Charge Damage ▲25%" (constant at index 1 vs varying [13.88…25] at index 2).
+   * A genuinely level-invariant magnitude that collides with a varying array is the mirror hazard;
+   * mark those `levelConst`, which short-circuits this lookup entirely.
+   */
+  const findArr = (v: number, slot: SkillSlot): number[] | undefined => {
+    const hits = (arrays[slot] ?? []).filter(
+      (a) => Math.abs(a[9] - Math.abs(v)) < 0.005
+    );
+    return hits.find((a) => Math.abs(a[0] - a[9]) > 0.005) ?? hits[0];
+  };
 
   /**
    * Scale one authored number to `levels[slot]`.
@@ -96,13 +112,31 @@ export function scaleBlocks(
             field,
             'levelScale' in e ? e.levelScale : undefined
           );
+    // `perResource` makes a buff/DoT LIVE: the static value/atkPct is IGNORED at runtime and the
+    // magnitude is recomputed each frame as `resources[name] × mult`. So `mult` — not the static
+    // field beside it — is the real level-scaled magnitude, and leaving it unscaled pinned eight
+    // carriers' primary numbers at max level with no warning (mihara-bonding-chain's Ensnaring DoT
+    // driver 25.08, mana 70.4, phantom 25.75/12.86, marciana-marine-study 32.73, e-h 7.5,
+    // guillotine 0.96, soda-twinkling-bunny 1.32 — each a max-level entry of a VARYING array).
+    const perRes = <T extends { perResource?: { name: string; mult: number } }>(
+      eff: T
+    ): T =>
+      eff.perResource === undefined
+        ? eff
+        : {
+            ...eff,
+            perResource: {
+              ...eff.perResource,
+              mult: s(eff.perResource.mult, 'perResource.mult'),
+            },
+          };
     switch (e.kind) {
       case 'buff':
-        return { ...e, value: s(e.value, 'value') };
+        return perRes({ ...e, value: s(e.value, 'value') });
       case 'flatDamage':
         return { ...e, atkPct: s(e.atkPct, 'atkPct') };
       case 'dot':
-        return { ...e, atkPct: s(e.atkPct, 'atkPct') };
+        return perRes({ ...e, atkPct: s(e.atkPct, 'atkPct') });
       case 'hitRepeat':
         return { ...e, pct: s(e.pct, 'pct') };
       case 'burstCdr':
@@ -112,10 +146,11 @@ export function scaleBlocks(
         // on a `sameWeapon` swap, where the gun is not replaced and damagePct is by construction
         // the base weapon's own normalAttackMultiplier (a WEAPON stat, level-invariant).
         //
-        // `chargeMultPct` is deliberately NOT scaled: every one of the 8 carriers in the tree
-        // authors a round kit constant ("Full Charge Damage: 250% of damage" — 250/300/1750) and
-        // not one of them resolves to a level-table entry, so scaling it would only emit warnings
-        // nobody can act on. Revisit if a carrier ever ships a table-backed value.
+        // `chargeMultPct` is deliberately NOT scaled: all ~14 instances across ~10 units (these
+        // weaponSwaps, plus one flatDamage carrier — snow-white's 1000) author a round kit constant
+        // ("Full Charge Damage: 250% of damage" — 250/300/1750), and not one resolves to a
+        // level-table entry, so scaling it would only emit warnings nobody can act on. Revisit if a
+        // carrier ever ships a table-backed value.
         return e.sameWeapon
           ? e
           : { ...e, damagePct: s(e.damagePct, 'damagePct') };

@@ -455,9 +455,22 @@ export type EffectDef =
   // hazard this primitive retires, 2026-08-24). Max-extends per name on re-application. The
   // status itself carries no stats — pair it with buff effects for the mode's payload.
   | { kind: 'selfStatus'; name: string; durationSec: number }
-  | { kind: 'fillGauge'; pct: number } // instantly fills the burst gauge
+  | {
+      kind: 'fillGauge'; // instantly fills the burst gauge
+      pct: number;
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
+    }
   | { kind: 'heal'; ticks?: number; intervalSec?: number } // emits recovery event(s) to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown). A per-second heal-over-time ("Recovers X% every 1 sec for N sec") sets ticks:N (intervalSec default 1) so it emits N recovery events over time, keeping on-recovery consumers refreshed; default ticks:1 = a single instant event (back-compatible)
-  | { kind: 'shield'; maxHpPct?: number; durationSec?: number } // emits a shield event to the target(s) — no HP pool modeled (v1 boss deals no damage); fires their 'shielded' triggers; maxHpPct = % of CASTER final Max HP (recorded for kit completeness)
+  | {
+      // emits a shield event to the target(s) — no HP pool modeled (v1 boss deals no damage); fires
+      // their 'shielded' triggers; maxHpPct = % of CASTER final Max HP (recorded for kit completeness)
+      kind: 'shield';
+      maxHpPct?: number;
+      durationSec?: number;
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
+    }
   // inflicts a kit-NAMED status on the boss for durationSec. Windows are keyed per NAME, so two
   // characters' unrelated statuses never satisfy each other's gate. Opens/extends the window read
   // by the `requiresTargetStatus` block gate.
@@ -475,6 +488,8 @@ export type EffectDef =
   | { kind: 'targetStatus'; name: string; durationSec: number }
   | {
       kind: 'storedHit'; // accumulates charges that ALL release as hits when full burst begins
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
       atkPct: number; // per charge, % of caster's final ATK at release time
       charges?: number; // charges added per activation (default 1)
       flavor?:
@@ -492,7 +507,13 @@ export type EffectDef =
   | { kind: 'burstFirst' } // takes the FIRST eligible burst of its stage regardless of slot order (Prika duet opener)
   | { kind: 'reenterStage'; stage: 1 | 2 | 3 } // "Re-enters Burst Stage N": the rotation stays at stage N so ANOTHER eligible unit can also cast (Tia, Anis:Star Everyone's Star)
   | { kind: 'advantageVs'; element: string } // counts as elementally advantaged vs this boss element
-  | { kind: 'burstCdr'; seconds: number; oncePerBattle?: boolean } // reduce targets' burst cooldowns
+  | {
+      kind: 'burstCdr'; // reduce targets' burst cooldowns
+      seconds: number;
+      oncePerBattle?: boolean;
+      levelScale?: LevelScale;
+      levelConst?: LevelConst;
+    }
   | { kind: 'escalating'; steps: EffectDef[] } // Liter-style "Once:/Twice:/…": Nth activation applies steps 1..N
   | { kind: 'fullBurstExtend'; seconds: number }
   | { kind: 'unlimitedAmmo'; durationSec: number }

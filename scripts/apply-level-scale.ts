@@ -439,6 +439,76 @@ interface Eff {
   levelConst?: string[];
 }
 
+/**
+ * Byte spans of every object/array in a well-formed JSON document, keyed by their structural path
+ * (e.g. `skill1 > 0 > effects > 1`). This is what lets the tool insert an annotation INTO the
+ * existing text instead of re-serializing the file — see the FORMATTING note in the header.
+ */
+function objectSpans(text: string): Map<string, [number, number]> {
+  const out = new Map<string, [number, number]>();
+  const stack: Array<{
+    open: string;
+    start: number;
+    idx: number;
+    key: string;
+  }> = [];
+  const path: string[] = [];
+  let pendingKey = '';
+  let expectKey = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') {
+      let j = i + 1;
+      while (j < text.length) {
+        if (text[j] === '\\') {
+          j += 2;
+          continue;
+        }
+        if (text[j] === '"') {
+          break;
+        }
+        j++;
+      }
+      if (expectKey) {
+        pendingKey = text.slice(i + 1, j);
+        expectKey = false;
+      }
+      i = j;
+      continue;
+    }
+    if (c === '{' || c === '[') {
+      const parent = stack[stack.length - 1];
+      let key = pendingKey;
+      if (parent?.open === '[') {
+        key = String(parent.idx);
+        parent.idx++;
+      }
+      path.push(key);
+      stack.push({ open: c, start: i, idx: 0, key });
+      out.set(path.join(' > '), [i, -1]);
+      expectKey = c === '{';
+      pendingKey = '';
+    } else if (c === '}' || c === ']') {
+      const cur = out.get(path.join(' > '));
+      if (cur && cur[1] === -1) {
+        cur[1] = i + 1;
+      }
+      stack.pop();
+      path.pop();
+      expectKey = false;
+    } else if (c === ',') {
+      const top = stack[stack.length - 1];
+      expectKey = top?.open === '{';
+      if (top?.open === '[') {
+        // index advances when the next VALUE starts; scalars are counted here
+      }
+    } else if (c === ':') {
+      expectKey = false;
+    }
+  }
+  return out;
+}
+
 let applied = 0;
 let already = 0;
 const errors: string[] = [];
@@ -453,26 +523,31 @@ for (const r of ROWS) {
 
 for (const [slug, rows] of bySlug) {
   const path = join(ROOT, 'src/skills/overrides', `${slug}.json`);
-  const raw = readFileSync(path, 'utf8');
-  const ov = JSON.parse(raw);
-  let dirty = false;
+  let text = readFileSync(path, 'utf8');
+  const ov = JSON.parse(text);
+  const spans = objectSpans(text);
+  // (insertPosition, textToInsert) — applied right-to-left so earlier offsets stay valid.
+  const edits: Array<[number, string]> = [];
 
   for (const row of rows) {
-    // Collect every effect in the slot matching (kind, field, value). `escalating` steps count.
-    const hits: Eff[] = [];
-    const visit = (e: Eff) => {
+    // Collect the PATH of every effect in the slot matching (kind, field, value); `escalating`
+    // steps count. Paths (not object references) are what the span map is keyed by.
+    const hits: string[][] = [];
+    const visit = (e: Eff, at: string[]) => {
       if (e.kind === 'escalating' && Array.isArray(e.steps)) {
-        (e.steps as Eff[]).forEach(visit);
+        (e.steps as Eff[]).forEach((st, i) =>
+          visit(st, [...at, 'steps', String(i)])
+        );
       }
       if (e.kind === row.kind && e[row.field] === row.value) {
-        hits.push(e);
+        hits.push(at);
       }
     };
-    for (const b of ov[row.slot] ?? []) {
-      for (const e of b.effects ?? []) {
-        visit(e as Eff);
-      }
-    }
+    (ov[row.slot] ?? []).forEach((b: { effects?: Eff[] }, bi: number) =>
+      (b.effects ?? []).forEach((e, ei) =>
+        visit(e, [row.slot, String(bi), 'effects', String(ei)])
+      )
+    );
     if (!hits.length) {
       errors.push(
         `${slug} ${row.slot} ${row.kind}.${row.field}=${row.value}: no matching effect`
@@ -481,30 +556,38 @@ for (const [slug, rows] of bySlug) {
     }
     // Several identical effects (e.g. a value repeated across two blocks) all get the same
     // annotation — they are the same kit line by construction, so this is not ambiguity.
-    for (const e of hits) {
-      if (row.const) {
-        const list = e.levelConst ?? [];
-        if (list.includes(row.field)) {
-          already++;
-          continue;
-        }
-        e.levelConst = [...list, row.field];
+    for (const at of hits) {
+      const span = spans.get(['', ...at].join(' > '));
+      if (!span || span[1] < 0) {
+        errors.push(`${slug}: no text span for ${at.join('.')}`);
+        continue;
+      }
+      const [start, end] = span;
+      const objText = text.slice(start, end);
+      const ann = row.const
+        ? `"levelConst": ["${row.field}"]`
+        : `"levelScale": { "${row.field}": [${row.anchors!.join(', ')}] }`;
+      if (objText.includes(ann)) {
+        already++;
+        continue;
+      }
+      if (objText.includes('\n')) {
+        const lineStart = text.lastIndexOf('\n', start) + 1;
+        const indent = /^[ ]*/.exec(text.slice(lineStart, start))![0];
+        edits.push([start + 1, `\n${indent}  ${ann},`]);
       } else {
-        const cur = e.levelScale?.[row.field];
-        if (cur && JSON.stringify(cur) === JSON.stringify(row.anchors)) {
-          already++;
-          continue;
-        }
-        e.levelScale = { ...(e.levelScale ?? {}), [row.field]: row.anchors! };
+        edits.push([start + 1, ` ${ann},`]);
       }
       applied++;
-      dirty = true;
     }
   }
 
-  if (dirty && !checkOnly) {
-    // Preserve the file's 2-space formatting; prettier owns the final shape via lint-staged.
-    writeFileSync(path, `${JSON.stringify(ov, null, 2)}\n`);
+  if (edits.length && !checkOnly) {
+    for (const [pos, ins] of edits.sort((a, b) => b[0] - a[0])) {
+      text = text.slice(0, pos) + ins + text.slice(pos);
+    }
+    JSON.parse(text); // must still be valid JSON
+    writeFileSync(path, text);
   }
 }
 

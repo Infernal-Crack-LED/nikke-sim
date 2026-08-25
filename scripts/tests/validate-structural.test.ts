@@ -714,3 +714,114 @@ describe('targetStatusCensus — selfStatus same-unit rule (2026-08-24)', () => 
     expect(r.errors).toEqual([]);
   });
 });
+
+describe('structuralCheck — levelScale / levelConst annotations', () => {
+  const withEffect = (eff: Record<string, unknown>) =>
+    minimal({
+      skill1: [
+        {
+          slot: 'skill1',
+          trigger: { kind: 'passive' },
+          target: { kind: 'self' },
+          effects: [eff],
+        },
+      ],
+    });
+  const CTX_LV = {
+    ...CTX,
+    levelArrays: {
+      skill1: [
+        Array(10)
+          .fill(0)
+          .map((_, i) => 5 + i),
+      ], // varying, max 14
+      skill2: [],
+      burst: [],
+    },
+  };
+
+  it('does not CRASH on levelScale: null — typeof null is "object"', () => {
+    // Object.entries(null) throws; an unguarded null took the whole validation gate down with a
+    // stack trace instead of reporting a structural error.
+    const run = () =>
+      structuralCheck(
+        'liter',
+        withEffect({
+          kind: 'buff',
+          stat: 'atkPct',
+          value: 14,
+          levelScale: null,
+        }),
+        CTX_LV
+      );
+    expect(run).not.toThrow();
+    expect(run().errors.join()).toMatch(/must be an object mapping field/);
+  });
+
+  it('accepts a resolvable anchor', () => {
+    const r = structuralCheck(
+      'liter',
+      withEffect({
+        kind: 'buff',
+        stat: 'atkPct',
+        value: 28,
+        levelScale: { value: [14] },
+      }),
+      CTX_LV
+    );
+    expect(r.errors).toEqual([]);
+  });
+
+  it('rejects an anchor that is not a max-level entry', () => {
+    const r = structuralCheck(
+      'liter',
+      withEffect({
+        kind: 'buff',
+        stat: 'atkPct',
+        value: 28,
+        levelScale: { value: [999] },
+      }),
+      CTX_LV
+    );
+    expect(r.errors.join()).toMatch(/anchor 999 is not a max-level value/);
+  });
+
+  it('rejects levelScale on a field the scaler never reads', () => {
+    // `heal.ticks` is on no scaling path — the annotation would be a silent no-op.
+    const r = structuralCheck(
+      'liter',
+      withEffect({ kind: 'heal', ticks: 14, levelScale: { ticks: [14] } }),
+      CTX_LV
+    );
+    expect(r.errors.join()).toMatch(/not a field the scaler substitutes/);
+  });
+
+  it('rejects a levelConst naming a non-scalable field', () => {
+    const r = structuralCheck(
+      'liter',
+      withEffect({
+        kind: 'buff',
+        stat: 'atkPct',
+        value: 14,
+        levelConst: ['bogusField'],
+      }),
+      CTX_LV
+    );
+    expect(r.errors.join()).toMatch(/marking it constant does nothing/);
+  });
+
+  it('accepts levelConst on perResource.mult (a dotted field path)', () => {
+    const r = structuralCheck(
+      'liter',
+      withEffect({
+        kind: 'buff',
+        stat: 'atkPct',
+        value: 0,
+        perResource: { name: 'x', mult: 14 },
+        levelConst: ['perResource.mult'],
+      }),
+      CTX_LV
+    );
+    expect(r.errors).toEqual([]);
+  });
+});

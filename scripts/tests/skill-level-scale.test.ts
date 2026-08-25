@@ -198,3 +198,93 @@ describe('scaleBlocks — invariants', () => {
     expect((effect as { chargeTimeSec: number }).chargeTimeSec).toBe(2.13);
   });
 });
+
+describe('scaleBlocks — findArr picks the RIGHT array when several share a max', () => {
+  // A slot's table routinely holds constant arrays (a "for 10 sec" duration is [10,10,…]) next to a
+  // real magnitude with the same max. A plain .find() took whichever came first; when that was the
+  // constant, the magnitude stayed at max level with NO warning. Live cases: crust's burst
+  // "Sustained Damage ▲10%" and prika's burst "Charge Damage ▲25%".
+  const COLLIDE = {
+    skill1: [],
+    skill2: [],
+    burst: [Array(10).fill(25), ramp(25), Array(10).fill(25)],
+  };
+  it('prefers the VARYING array over a constant one with the same max', () => {
+    const warnings: string[] = [];
+    const out = scaleBlocks(
+      [
+        {
+          slot: 'burst',
+          trigger: { kind: 'passive' },
+          target: { kind: 'self' },
+          effects: [{ kind: 'buff', stat: 'chargeDamagePct', value: 25 }],
+        },
+      ],
+      COLLIDE,
+      { skill1: 10, skill2: 10, burst: 1 },
+      warnings
+    );
+    expect((out[0].effects[0] as { value: number }).value).toBeCloseTo(
+      25 * 0.6,
+      2
+    );
+    expect(warnings).toEqual([]);
+  });
+});
+
+describe('scaleBlocks — perResource.mult is the LIVE magnitude', () => {
+  // For a perResource buff/DoT the static value/atkPct is IGNORED at runtime; the magnitude is
+  // recomputed as resources[name] × mult. Leaving mult unscaled pinned eight carriers' primary
+  // numbers at max level with no warning (mihara-bonding-chain's Ensnaring DoT driver 25.08 etc).
+  it('scales mult on a perResource dot', () => {
+    const { effect, warnings } = run(
+      'burst',
+      {
+        kind: 'dot',
+        atkPct: 0,
+        durationSec: 10,
+        perResource: { name: 'chains', mult: 275.18 },
+      },
+      1
+    );
+    expect(
+      (effect as { perResource: { mult: number } }).perResource.mult
+    ).toBeCloseTo(275.18 * 0.6, 2);
+    expect(warnings).toEqual([]);
+  });
+
+  it('scales mult on a perResource buff and leaves name intact', () => {
+    const { effect } = run(
+      'burst',
+      {
+        kind: 'buff',
+        stat: 'atkPct',
+        value: 0,
+        perResource: { name: 'chips', mult: 645.33 },
+      },
+      1
+    );
+    const pr = (effect as { perResource: { name: string; mult: number } })
+      .perResource;
+    expect(pr.mult).toBeCloseTo(645.33 * 0.6, 2);
+    expect(pr.name).toBe('chips');
+  });
+
+  it('honours a levelConst on perResource.mult', () => {
+    const { effect, warnings } = run(
+      'burst',
+      {
+        kind: 'buff',
+        stat: 'atkPct',
+        value: 0,
+        perResource: { name: 'x', mult: 1234.5 },
+        levelConst: ['perResource.mult'],
+      },
+      1
+    );
+    expect((effect as { perResource: { mult: number } }).perResource.mult).toBe(
+      1234.5
+    );
+    expect(warnings).toEqual([]);
+  });
+});

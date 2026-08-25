@@ -218,7 +218,34 @@ export interface StructuralContext {
   levelArrays?: { skill1: number[][]; skill2: number[][]; burst: number[][] };
 }
 
-/** Every `levelScale` anchor must be findable at index 9 of some array in that slot's table. */
+/**
+ * Fields `scaleEffect` (src/skills/scale.ts) actually substitutes, per effect kind. An annotation
+ * naming anything else is a SILENT NO-OP — the scaler never reads it — so it is an error here.
+ * Keep in lockstep with that switch; `scripts/tests/skill-level-scale.test.ts` pins the pairing.
+ */
+const SCALABLE_FIELDS: Record<string, string[]> = {
+  buff: ['value', 'perResource.mult'],
+  flatDamage: ['atkPct'],
+  dot: ['atkPct', 'perResource.mult'],
+  hitRepeat: ['pct'],
+  burstCdr: ['seconds'],
+  weaponSwap: ['damagePct'],
+  fillGauge: ['pct'],
+  shield: ['maxHpPct'],
+  stackedNuke: ['atkPct', 'hpPct'],
+  storedHit: ['atkPct'],
+};
+
+/** Read `e.perResource.mult` style dotted field paths as well as plain keys. */
+function fieldValue(e: any, field: string): unknown {
+  return field.split('.').reduce((o, k) => (o == null ? o : o[k]), e);
+}
+
+/**
+ * Every `levelScale` anchor must be findable at index 9 of some array in that slot's table, and
+ * every annotated field must be one the scaler actually reads. `levelConst` entries are checked
+ * the same way — a typo'd field silently leaves the intended one warning forever.
+ */
 function checkLevelScale(
   e: any,
   p: string,
@@ -231,11 +258,35 @@ function checkLevelScale(
       checkLevelScale(s, `${p}.steps[${i}]`, slot, errors, ctx)
     );
   }
+  const scalable = SCALABLE_FIELDS[e?.kind] ?? [];
+
+  const lc = e?.levelConst;
+  if (lc !== undefined) {
+    if (!Array.isArray(lc) || lc.some((f: unknown) => typeof f !== 'string')) {
+      errors.push(`${p}.levelConst: must be an array of field-name strings`);
+    } else {
+      for (const field of lc as string[]) {
+        if (!scalable.includes(field)) {
+          errors.push(
+            `${p}.levelConst: "${field}" is not a field the scaler substitutes on a ${e.kind} ` +
+              `effect (${scalable.join(', ') || 'none'}) — marking it constant does nothing`
+          );
+        } else if (typeof fieldValue(e, field) !== 'number') {
+          errors.push(
+            `${p}.levelConst: no numeric "${field}" on this ${e.kind} effect`
+          );
+        }
+      }
+    }
+  }
+
   const ls = e?.levelScale;
   if (ls === undefined) {
     return;
   }
-  if (typeof ls !== 'object' || Array.isArray(ls)) {
+  // typeof null === 'object' and Array.isArray(null) === false, so null MUST be rejected here or
+  // Object.entries below throws and takes the whole validation gate down with a stack trace.
+  if (ls === null || typeof ls !== 'object' || Array.isArray(ls)) {
     errors.push(
       `${p}.levelScale: must be an object mapping field -> anchor numbers`
     );
@@ -253,7 +304,14 @@ function checkLevelScale(
       );
       continue;
     }
-    if (typeof e[field] !== 'number') {
+    if (!scalable.includes(field)) {
+      errors.push(
+        `${p}.levelScale.${field}: not a field the scaler substitutes on a ${e.kind} effect ` +
+          `(${scalable.join(', ') || 'none'}) — the annotation would never be read`
+      );
+      continue;
+    }
+    if (typeof fieldValue(e, field) !== 'number') {
       errors.push(
         `${p}.levelScale.${field}: no numeric "${field}" on this ${e.kind} effect to scale`
       );

@@ -146,12 +146,25 @@ function classifyBlock(
       );
       return;
     }
-    for (const [field, raw] of Object.entries(before)) {
+    // Flatten `perResource: { name, mult }` into a `perResource.mult` pseudo-field. It is the LIVE
+    // magnitude for a perResource buff/DoT (the static value beside it is ignored at runtime), but
+    // it is nested, so a plain Object.entries walk cannot see it and `mult` sits in TIME_FIELDS —
+    // between them the census was structurally blind to eight carriers' primary numbers.
+    const flat: Record<string, unknown> = { ...before };
+    const flatAfter: Record<string, unknown> = { ...after };
+    const pr = before.perResource as { mult?: number } | undefined;
+    if (pr?.mult !== undefined) {
+      flat['perResource.mult'] = pr.mult;
+      flatAfter['perResource.mult'] = (
+        after.perResource as { mult?: number } | undefined
+      )?.mult;
+    }
+    for (const [field, raw] of Object.entries(flat)) {
       if (typeof raw !== 'number' || raw === 0 || TIME_FIELDS.has(field)) {
         continue;
       }
       // The scaler CHANGED it — this field is covered.
-      if (after[field] !== raw) {
+      if (flatAfter[field] !== raw) {
         continue;
       }
       const kind = String(before.kind);

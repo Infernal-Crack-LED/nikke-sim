@@ -92,7 +92,7 @@ structural constant (`eve`'s Mk2 "doubles S1" as `sequentialMultPct +100`), a se
 (`prika`'s `burstCdr -9999` lockout), or a non-skill quantity (`red-hood`'s `burstCdr 40`, her own
 burst cooldown).
 
-Backlog: **124 → 97 values, 47 → 42 units.** Measured level sensitivity at 1/1/1 vs 10/10/10:
+Backlog: **124 → 84 values, 47 → 30 units, and 0 SILENT.** Measured level sensitivity at 1/1/1 vs 10/10/10:
 
 | unit                       | before | after      |
 | -------------------------- | ------ | ---------- |
@@ -103,7 +103,7 @@ Backlog: **124 → 97 values, 47 → 42 units.** Measured level sensitivity at 1
 | `guillotine-winter-slayer` | —      | -34.3%     |
 | `sakura-bloom-in-summer`   | —      | -30.6%     |
 | `ein`                      | —      | -29.9%     |
-| `mihara-bonding-chain`     | —      | -23.4%     |
+| `mihara-bonding-chain`     | —      | -35.2%     |
 | `little-mermaid`           | -5.4%  | **-22.8%** |
 
 **Read the note, not the hint.** `audit-skill-scaling.ts` prints a `← 60 × 12` style decomposition,
@@ -133,6 +133,36 @@ does not divide it. `levelScale` cannot express a cross-slot anchor, and scaling
 level would be wrong anyway if the magnitude really comes from a skill2 line. Left deliberately
 WARNING rather than annotated; it may indicate the block is filed under the wrong slot. The
 structural validator caught this — the anchor did not resolve — which is the guard working.
+
+### Cross-family code review (kimi-code/k3, 2026-08-25) — findings fixed
+
+`scratchpad/gates/2026-08-25-skill-level-scaling/` holds the packet + verdict (FIX-BEFORE-MERGE,
+1 BLOCKER / 3 FIX / 3 NOTE). All seven were confirmed and fixed:
+
+- **BLOCKER — `perResource.mult` was still SILENT, and the census could not see it.** A
+  `perResource` buff/DoT ignores its static value at runtime and recomputes the magnitude as
+  `resources[name] × mult`, so `mult` is the real level-scaled number. Eight carriers'
+  primary magnitudes were pinned at max level with no warning
+  (`mihara-bonding-chain` 25.08 — her Ensnaring DoT driver, `mana` 70.4, `phantom` 25.75/12.86,
+  `marciana-marine-study` 32.73, `e-h` 7.5, `guillotine` 0.96, `soda-twinkling-bunny` 1.32). The
+  census was structurally blind to it (nested under `perResource`, and `mult` sat in `TIME_FIELDS`),
+  so its own completeness summary was wrong — **and the level-sensitivity figure this doc published
+  for `mihara-bonding-chain` was materially understated: -23.4% → -35.2%.**
+- **FIX — `findArr` took the first max-level match, constant or not.** A slot's table holds
+  constant arrays (a "for 10 sec" duration) alongside real magnitudes sharing the same max. It now
+  prefers a VARYING array. Live cases the reviewer confirmed against kit text: `crust`'s burst
+  "Sustained Damage ▲10%" and `prika`'s burst "Charge Damage ▲25%" (×2). This closed the last
+  3 SILENT values — the census now reports **0 SILENT**.
+- **FIX — `scripts/apply-level-scale.ts` documented text insertion but still re-serialized.** The
+  landed overrides had been normalized out-of-band, so the committed tool did not do what its own
+  header and commit message claimed. The byte-span insertion is now actually implemented in it.
+- **FIX — `levelScale: null` crashed the validator** (`typeof null === 'object'` reached
+  `Object.entries(null)`), taking the whole gate down with a stack trace. Guarded + pinned.
+- **NOTE ×3 — fixed:** the type union under-declared the annotations (they are now on every kind
+  `scaleEffect` reads); the validator did not check that an annotated field is on a scaling path or
+  that `levelConst` names a real field (both now error); the `chargeMultPct` comment's counts were
+  wrong (~14 instances / ~10 units, including one `flatDamage` carrier — the substance held, and
+  the reviewer independently re-verified that none resolves to a table entry).
 
 ## 5. OPEN — what is left
 
