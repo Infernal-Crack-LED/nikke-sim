@@ -77,6 +77,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `byFinalAtk`, `helm`'s held tag.
    - **`mint` — HELD** (M12 confirmed shipped `singing` model; solo magnitudes unanchored by
      disposition).
+   - **Top-board kit-faithfulness audit (2026-08-23) — follow-ups in flight.** 45 units audited
+     findings-only: `docs/kit-faithfulness-audit-2026-08-23.md`. The owner-directed follow-up
+     branch landed the `fullCharge` + `selfStatus` primitives (14 units migrated,
+     `asuka-wille` de-proxied) and the §6 prose-drift deletions; everything still open — the
+     fullCharge roster tail, the gated primitives (status-end, consumeStatus, stack-mirror
+     snapshot), `flora` `sides:2`, `mint` duet gating (HELD), `cinderella` G1, the HR→core
+     measurement, the two note palimpsests — is itemized with its gate in
+     `docs/handoffs/2026-08-24-kit-audit-primitive-followups.md`.
 
 2. **Burst-generation thread** — core steps landed 2026-08-15 (PRs #120/#121/#122 merged).
    Classification: MIXED/INCONCLUSIVE (closure 0.2579 stands after noise-corrected ceiling test,

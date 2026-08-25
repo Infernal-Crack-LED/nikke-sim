@@ -79,7 +79,7 @@
     {
       "slot": "skill1",
       "trigger": {
-        "kind": "shotFired"
+        "kind": "fullCharge"
       },
       "target": {
         "kind": "enemy"
@@ -137,7 +137,7 @@
     {
       "slot": "skill2",
       "trigger": {
-        "kind": "shotFired"
+        "kind": "fullCharge"
       },
       "target": {
         "kind": "allies"

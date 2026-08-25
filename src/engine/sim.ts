@@ -555,6 +555,11 @@ interface UnitState {
   shieldedUntilFrame: number; // shield-state window end (0 = none): set when a 'shield' effect targets this
   // unit (durationSec; none = permanent at scope — boss damage unmodeled, nothing
   // breaks shields). Read by the requiresShielded block gate (naga's burst 31.02%)
+  selfStatuses: Map<string, number>; // kit-NAMED self-status windows ON THIS UNIT (name → expiry
+  // frame): opened/max-extended by a 'selfStatus' effect targeting them, read by the OWNER's
+  // requiresSelfStatus block gate. Per-unit by construction — the ally-side sibling of the shared
+  // targetStatuses map, so a self mode never leaks through the boss-status side channel
+  // (asuka-wille 'Annihilation State', 2026-08-24)
   consolidation?: ConsolidationConfig; // pellet-consolidation mode config (dorothy-S)
   landedAcc: number; // landed pellets accrued toward the consolidation trigger (near-gated)
   consolShotsLeft: number; // remaining single-bullet consolidation shots in the current episode
@@ -632,7 +637,7 @@ interface UnitState {
   lastBurstCastStage: number; // the stage that cast filled (hitCount countInFbStage scoping)
   // The PRIMARY weapon-fire damage instance of this unit's most recent trigger pull, and the
   // frame it landed on. Written by firePull immediately after that instance resolves, i.e.
-  // BEFORE the pull's shotFired/hitCount/chargeCounter blocks dispatch — which is what lets a
+  // BEFORE the pull's shotFired/fullCharge/hitCount/chargeCounter blocks dispatch — which is what lets a
   // `hitRepeat` rider ("Deals Fixed Damage equal to X% of the damage dealt by self") read the
   // parent hit's FINAL number. `lastHitFrame` frame-locks the rider: it fires only when the
   // owner actually landed a hit on the same frame, never off a stale value.
@@ -882,6 +887,7 @@ export function runSim(
       pierceShotsLeft: 0,
       pierceGrantFrame: -1,
       shieldedUntilFrame: 0,
+      selfStatuses: new Map(),
       consolidation: skills.consolidation,
       landedAcc: 0,
       consolShotsLeft: 0,
@@ -1669,10 +1675,15 @@ export function runSim(
   // Owner scope ruling 2026-08-16: GENERATE BY DEFAULT — every trigger shape credits except the
   // one explicitly-known non-generating delivery, the on-bullet rider (anti-double-count rule,
   // note.com/_trick_, Noise's charged-shot taunt: an effect the shot itself carries adds nothing
-  // beyond the bullet's own gauge). That is the per-shot shapes: shotFired and chargeCounter.
+  // beyond the bullet's own gauge). That is the per-shot shapes: shotFired, fullCharge and
+  // chargeCounter.
   // hitCount/lastBullet debuffs are bullet-COINCIDENT but are separate skill activations, not
   // per-shot riders — under the default-generate ruling they credit.
-  const APPLICATION_NONGEN_TRIGGERS = new Set(['shotFired', 'chargeCounter']);
+  const APPLICATION_NONGEN_TRIGGERS = new Set([
+    'shotFired',
+    'fullCharge',
+    'chargeCounter',
+  ]);
   // A qualifying application: enemy-targeted, PURE non-damage (buff/targetStatus only — a block
   // carrying flatDamage/dot already generates through its damage impacts via skillGauge), not a
   // per-shot rider, opening a DISCRETE window (some finite durationSec < 900 — no durationSec =
@@ -2531,6 +2542,16 @@ export function runSim(
     ) {
       return false;
     }
+    // named self-status gate: "Activates only while in <Name> status" — the block only activates
+    // while the OWNER's own status window of that name is open (a 'selfStatus' effect targeted
+    // them). Per-unit map: another unit's identically-named status never opens this gate, and a
+    // self mode kept here can never satisfy an unrelated kit's requiresTargetStatus.
+    if (
+      block.requiresSelfStatus &&
+      (owner.selfStatuses.get(block.requiresSelfStatus) ?? -1) <= frame
+    ) {
+      return false;
+    }
     // boss-element gate: an element-coded line ("when attacking an Electric Code
     // target", "all Wind Code enemies") fires only when the boss element matches.
     // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
@@ -3087,6 +3108,22 @@ export function runSim(
               frame + Math.round(e.durationSec * FPS)
             )
           );
+          break;
+        case 'selfStatus':
+          // open/extend a kit-NAMED status window on each TARGET UNIT (normally self): the
+          // ally-side sibling of 'targetStatus'. Routed through resolveTargets like every other
+          // ally-side effect — per-(unit, name) windows, max-extended on re-application, read by
+          // the requiresSelfStatus gate. Carries no stats; the mode's payload is its sibling
+          // buff effects.
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
+            t.selfStatuses.set(
+              e.name,
+              Math.max(
+                t.selfStatuses.get(e.name) ?? -1,
+                frame + Math.round(e.durationSec * FPS)
+              )
+            );
+          }
           break;
         case 'storedHit': {
           const entry = owner.storedHits.get(key) ?? {
@@ -4562,6 +4599,14 @@ export function runSim(
     u.blocks.forEach((b, bi) => {
       if (b.trigger.kind === 'shotFired') {
         applyBlock(u.idx, b, bi, frame);
+      } else if (b.trigger.kind === 'fullCharge') {
+        // "Activates when performing/attacking with Full Charge" — only a CHARGED pull qualifies.
+        // Charge weapons release exclusively at full charge, so for them this dispatches on every
+        // pull exactly like shotFired; it stays silent on non-charge pulls (MG belt rounds,
+        // non-charge swap states), which the shotFired proxy could not express.
+        if (charged) {
+          applyBlock(u.idx, b, bi, frame);
+        }
       } else if (b.trigger.kind === 'hitCount') {
         const key = `hc:${bi}`;
         // Threshold-lowering scope: DEFAULT = any team Full Burst state (SWID convention,
@@ -4665,7 +4710,7 @@ export function runSim(
     // granting shot's own charge/fire predates the buff (it fired before the buff existed, so it
     // could not have benefited from it) and does not spend one of the buff's own N rounds —
     // "for N round(s)" reads as N rounds AFTER the grant. This covers per-pull triggers
-    // (shotFired/hitCount/chargeCounter) that grant a round-scoped buff, including the general
+    // (shotFired/fullCharge/hitCount/chargeCounter) that grant a round-scoped buff, including the general
     // case that the old noRetriggerWhileActive-only carve-out missed.
     // Every other buff (the general case, including a helm-style grant from a DIFFERENT trigger
     // than the one being counted) is unaffected: its startFrame is from an earlier frame than any
