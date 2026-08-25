@@ -117,13 +117,11 @@
       },
       "effects": [
         {
+          "levelScale": { "hpPct": [1372.8] },
           "kind": "stackedNuke",
           "atkPct": 1372.8,
           "hpPct": 137.28,
-          "maxStacks": 12,
-          "levelScale": {
-            "hpPct": [1372.8]
-          }
+          "maxStacks": 12
         }
       ]
     }

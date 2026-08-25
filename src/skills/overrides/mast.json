@@ -17,65 +17,35 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "targetStatus",
-          "name": "Sea Breeze",
-          "durationSec": 999
-        }
+        { "kind": "targetStatus", "name": "Sea Breeze", "durationSec": 999 }
       ]
     },
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "critDamagePct",
-          "value": 50.94
-        }
-      ]
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "buff", "stat": "critDamagePct", "value": 50.94 }]
     },
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
+      "trigger": { "kind": "passive" },
       "target": {
         "kind": "alliesTopAtk",
         "count": 2,
         "excludeSelf": true,
         "byFinalAtk": true
       },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "critDamagePct",
-          "value": 50.94
-        }
-      ]
+      "effects": [{ "kind": "buff", "stat": "critDamagePct", "value": 50.94 }]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
       "effects": [
         {
           "kind": "buff",
@@ -87,9 +57,7 @@
     },
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "passive"
-      },
+      "trigger": { "kind": "passive" },
       "target": {
         "kind": "alliesTopAtk",
         "count": 2,
@@ -109,12 +77,8 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
       "effects": [
         {
           "kind": "buff",
@@ -126,9 +90,7 @@
     },
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
+      "trigger": { "kind": "burstCast" },
       "target": {
         "kind": "alliesTopAtk",
         "count": 2,
@@ -146,12 +108,8 @@
     },
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
       "effects": [
         {
           "kind": "buff",
@@ -163,9 +121,7 @@
     },
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
+      "trigger": { "kind": "burstCast" },
       "target": {
         "kind": "alliesTopAtk",
         "count": 2,
@@ -183,22 +139,16 @@
     },
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
       "requiresTargetStatus": "Sea Breeze",
       "effects": [
         {
+          "levelScale": { "atkPct": [4.52] },
           "kind": "dot",
           "atkPct": 226,
           "durationSec": 7,
-          "intervalSec": 1,
-          "levelScale": {
-            "atkPct": [4.52]
-          }
+          "intervalSec": 1
         }
       ]
     }

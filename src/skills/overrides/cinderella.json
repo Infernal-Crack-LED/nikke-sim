@@ -3,7 +3,7 @@
   "charFixes": {
     "reloadFrames": 120,
     "magDumpRof": true,
-    "focusChargeMult": 2
+    "focusChargeMult": 2.0
   },
   "burstSnapshotsPreFb": false,
   "unmodeled": {
@@ -78,20 +78,16 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [1365.92] },
           "kind": "flatDamage",
           "atkPct": 13659.2,
-          "flavor": "sequential",
-          "levelScale": {
-            "atkPct": [1365.92]
-          }
+          "flavor": "sequential"
         },
         {
+          "levelScale": { "atkPct": [28.9] },
           "kind": "flatDamage",
           "atkPct": 346.8,
-          "rampSec": 36,
-          "levelScale": {
-            "atkPct": [28.9]
-          }
+          "rampSec": 36
         }
       ]
     }

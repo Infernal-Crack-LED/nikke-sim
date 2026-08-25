@@ -45,13 +45,11 @@
           "atkPct": 41.9
         },
         {
+          "levelScale": { "atkPct": [105.59] },
           "kind": "flatDamage",
           "atkPct": 527.95,
           "flavor": "sequential",
-          "gaugeHits": 5,
-          "levelScale": {
-            "atkPct": [105.59]
-          }
+          "gaugeHits": 5
         }
       ]
     },
@@ -66,13 +64,11 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [105.59] },
           "kind": "flatDamage",
           "atkPct": 1055.9,
           "flavor": "sequential",
-          "gaugeHits": 10,
-          "levelScale": {
-            "atkPct": [105.59]
-          }
+          "gaugeHits": 10
         }
       ]
     }
@@ -191,12 +187,12 @@
       },
       "effects": [
         {
+          "levelConst": ["damagePct"],
           "kind": "weaponSwap",
           "damagePct": 69.04,
           "chargeTimeClamp": 3.2,
           "durationSec": 10,
-          "maxShots": 2,
-          "levelConst": ["damagePct"]
+          "maxShots": 2
         }
       ]
     }

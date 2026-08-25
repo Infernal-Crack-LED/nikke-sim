@@ -13,6 +13,16 @@
 // Idempotent: a row whose annotation is already present is a no-op. A row that matches no effect
 // (or matches more than one candidate ambiguously) is a hard error — the table must not rot
 // silently against the overrides it annotates.
+//
+// FORMATTING: this writes the annotation by TEXT INSERTION at the target effect's own byte span,
+// never by re-serializing the file. An earlier version did `JSON.stringify(ov, null, 2)`, which
+// expands every compact one-line object in the file; prettier's default `objectWrap: "preserve"`
+// then KEEPS them expanded, so a 1-line annotation landed as a ~100-line diff on a protected,
+// concurrently-edited override (mana/mast/sakura-bloom-in-summer were 124/96/117 lines of pure
+// churn). `prettier --object-wrap collapse` is not a fix either — it is a no-op on some overrides
+// but rewrites others that are legitimately multi-line in main. Net effect of the text-insertion
+// form across all 23 annotated overrides: 59 insertions, 2 deletions (two objects that genuinely
+// crossed the 80-col wrap once annotated).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';

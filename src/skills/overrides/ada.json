@@ -102,13 +102,13 @@
           "durationSec": 10
         },
         {
+          "levelConst": ["damagePct"],
           "kind": "weaponSwap",
           "damagePct": 61.3,
           "chargeTimeSec": 4,
           "chargeMultPct": 1750,
           "durationSec": 10,
-          "maxShots": 1,
-          "levelConst": ["damagePct"]
+          "maxShots": 1
         }
       ]
     }

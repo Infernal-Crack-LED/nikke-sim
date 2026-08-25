@@ -35,20 +35,16 @@
       },
       "effects": [
         {
+          "levelScale": { "value": [1.16] },
           "kind": "buff",
           "stat": "elemAdvantageDamagePct",
-          "value": 12.76,
-          "levelScale": {
-            "value": [1.16]
-          }
+          "value": 12.76
         },
         {
+          "levelScale": { "value": [0.91] },
           "kind": "buff",
           "stat": "casterAtkPct",
-          "value": 10.01,
-          "levelScale": {
-            "value": [0.91]
-          }
+          "value": 10.01
         }
       ]
     },
@@ -180,13 +176,11 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [20.87] },
           "kind": "dot",
           "atkPct": 229.57,
           "durationSec": 10,
-          "intervalSec": 1,
-          "levelScale": {
-            "atkPct": [20.87]
-          }
+          "intervalSec": 1
         }
       ]
     }

@@ -19,13 +19,11 @@
       },
       "effects": [
         {
+          "levelScale": { "value": [13] },
           "kind": "buff",
           "stat": "casterAtkPct",
           "value": 39,
-          "durationSec": 15,
-          "levelScale": {
-            "value": [13]
-          }
+          "durationSec": 15
         }
       ]
     },
@@ -39,12 +37,12 @@
       },
       "effects": [
         {
+          "levelConst": ["value"],
           "kind": "buff",
           "stat": "normalAttackPct",
           "value": 30,
           "durationSec": 11,
-          "rampSec": 11,
-          "levelConst": ["value"]
+          "rampSec": 11
         }
       ]
     }
@@ -79,14 +77,12 @@
       },
       "effects": [
         {
+          "levelScale": { "value": [2.49] },
           "kind": "buff",
           "stat": "atkPct",
           "value": 7.47,
           "durationSec": 11,
-          "rampSec": 11,
-          "levelScale": {
-            "value": [2.49]
-          }
+          "rampSec": 11
         },
         {
           "kind": "buff",

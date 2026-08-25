@@ -87,10 +87,10 @@
       },
       "effects": [
         {
+          "levelConst": ["seconds"],
           "kind": "burstCdr",
           "seconds": 40,
-          "oncePerBattle": true,
-          "levelConst": ["seconds"]
+          "oncePerBattle": true
         }
       ]
     },
@@ -105,10 +105,10 @@
       },
       "effects": [
         {
+          "levelConst": ["seconds"],
           "kind": "burstCdr",
           "seconds": 40,
-          "oncePerBattle": true,
-          "levelConst": ["seconds"]
+          "oncePerBattle": true
         }
       ]
     },

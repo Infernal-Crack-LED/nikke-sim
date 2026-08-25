@@ -30,11 +30,9 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [50.06] },
           "kind": "flatDamage",
-          "atkPct": 500.6,
-          "levelScale": {
-            "atkPct": [50.06]
-          }
+          "atkPct": 500.6
         }
       ]
     },
@@ -64,11 +62,9 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [50.06] },
           "kind": "flatDamage",
-          "atkPct": 500.6,
-          "levelScale": {
-            "atkPct": [50.06]
-          }
+          "atkPct": 500.6
         }
       ]
     },
@@ -161,14 +157,12 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [50.05] },
           "kind": "dot",
           "atkPct": 1001,
           "durationSec": 10,
           "intervalSec": 1,
-          "flavor": "sustained",
-          "levelScale": {
-            "atkPct": [50.05]
-          }
+          "flavor": "sustained"
         }
       ]
     },

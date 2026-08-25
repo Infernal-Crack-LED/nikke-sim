@@ -33,13 +33,11 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [240] },
           "kind": "flatDamage",
           "atkPct": 720,
           "flavor": "sequential",
-          "gaugeHits": 3,
-          "levelScale": {
-            "atkPct": [240]
-          }
+          "gaugeHits": 3
         }
       ]
     },
@@ -112,11 +110,9 @@
       },
       "effects": [
         {
+          "levelScale": { "atkPct": [457.14] },
           "kind": "flatDamage",
-          "atkPct": 2742.84,
-          "levelScale": {
-            "atkPct": [457.14]
-          }
+          "atkPct": 2742.84
         }
       ]
     },
@@ -130,11 +126,11 @@
       },
       "effects": [
         {
+          "levelConst": ["value"],
           "kind": "buff",
           "stat": "sequentialMultPct",
           "value": 100,
-          "durationSec": 10,
-          "levelConst": ["value"]
+          "durationSec": 10
         },
         {
           "kind": "buff",

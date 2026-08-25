@@ -31,12 +31,10 @@
       },
       "effects": [
         {
+          "levelScale": { "value": [10] },
           "kind": "buff",
           "stat": "casterMaxHpPct",
-          "value": 20,
-          "levelScale": {
-            "value": [10]
-          }
+          "value": 20
         }
       ]
     },

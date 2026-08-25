@@ -139,9 +139,9 @@
       "mode": "duet (w/ Mint)",
       "effects": [
         {
+          "levelConst": ["seconds"],
           "kind": "burstCdr",
-          "seconds": -9999,
-          "levelConst": ["seconds"]
+          "seconds": -9999
         }
       ]
     },

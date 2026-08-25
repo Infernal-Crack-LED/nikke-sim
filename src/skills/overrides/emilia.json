@@ -3,12 +3,8 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "shotFired"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "self" },
       "effects": [
         {
           "kind": "buff",
@@ -17,13 +13,11 @@
           "durationShots": 1
         },
         {
+          "levelScale": { "value": [2.01] },
           "kind": "buff",
           "stat": "chargeDamagePct",
           "value": 12.06,
-          "durationShots": 1,
-          "levelScale": {
-            "value": [2.01]
-          }
+          "durationShots": 1
         }
       ]
     }
@@ -31,27 +25,14 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "shotFired"
-      },
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "hitRepeat",
-          "pct": 58.99
-        }
-      ]
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "hitRepeat", "pct": 58.99 }]
     },
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "fullBurstEnter"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "self" },
       "effects": [
         {
           "kind": "buff",
@@ -65,12 +46,8 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
       "effects": [
         {
           "kind": "buff",
