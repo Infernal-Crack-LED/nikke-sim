@@ -26,6 +26,20 @@ fewest videos. Master plan: `docs/handoffs/2026-07-16-full-sweep-plan.md`. Dashb
 `npx tsx scripts/board-read.ts`. **Submission intake: 0 pending** (Nikke Sim Data Submission Google
 Form → `/submission-intake` → `/probe-processing` → hand-tune; this line is the tracked count).
 
+### SKILL-LEVEL SCALING — per-unit `levelScale` backlog (OPEN, needs one batched owner decision)
+
+Engine-side fix LANDED (branch `skill-level-scaling`): unscaled effect kinds + the `levelScale`
+anchor primitive + validator guard + census tool. Board blast radius ZERO (graded comps run
+10/10/10). Full write-up: `docs/handoffs/2026-08-25-skill-level-scaling.md`.
+
+**Open:** `npx tsx scripts/audit-skill-scaling.ts` reports 3 SILENT + 124 WARNED across 48 units —
+each a DERIVED authored value needing a per-unit `levelScale` annotation in
+`src/skills/overrides/**` (protected path; per-unit, not a mechanical sweep — the derivation is in
+each override's own note). Prioritize by measured impact (`--sim <slug>`), not warning count:
+`drake` (+0.7% at 1/1/1 — levels inert) and `little-mermaid` (-5.4%) first. Also open:
+`snow-white-heavy-arms`'s swap `damagePct 69.04` may be a missing `sameWeapon: true`; 8 overrides
+have no level data at all; 3 slots have ambiguous level tables (`mari`/`prika`/`snow-crane`).
+
 ### 🤖 AUTONOMOUS WORK QUEUE — read this INSTEAD of the pointer list below if unattended
 
 > **Why this exists (2026-07-25).** The pointer list below is an excellent _attended_ handoff and a poor

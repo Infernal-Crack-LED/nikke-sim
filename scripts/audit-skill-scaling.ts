@@ -25,17 +25,11 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { scaleBlocks } from '../src/skills/scale.js';
+import type { Block } from '../src/skills/types.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** (kind → fields) that scaleEffect() actually substitutes. Mirrors src/skills/scale.ts. */
-const SCALED: Record<string, string[]> = {
-  buff: ['value'],
-  flatDamage: ['atkPct'],
-  dot: ['atkPct'],
-  hitRepeat: ['pct'],
-  burstCdr: ['seconds'],
-};
 /** Fields that are level-INVARIANT by design — never expected to scale. */
 const TIME_FIELDS = new Set([
   'durationSec',
@@ -80,9 +74,6 @@ const levelData: Record<string, Record<Slot, number[][]>> = JSON.parse(
 
 const varying = (a: number[]) =>
   a.length === 10 && Math.abs(a[0] - a[9]) > 0.005;
-/** Exactly scaleVal()'s match rule — ANY array, varying or not. Drives the WARNED class. */
-const matchesAny = (arrays: number[][], v: number) =>
-  arrays.some((a) => Math.abs(a[9] - Math.abs(v)) < 0.005);
 /** Match restricted to arrays that actually CHANGE with level. Drives the SILENT class: not
  *  scaling a constant array is correct and invisible, so only a varying match is a real miss. */
 const matchesVarying = (arrays: number[][], v: number) =>
@@ -112,49 +103,86 @@ function decompose(arrays: number[][], v: number): string | undefined {
   return undefined;
 }
 
-function walkEffect(
-  e: Record<string, unknown>,
+/**
+ * Classify one block's numeric fields by RUNNING THE REAL SCALER at level 1 for this slot and
+ * observing what it did. Deliberately NOT a hand-mirror of scaleEffect's switch: a copy of that
+ * table would silently drift out of date the moment a case was added, and would then report the
+ * fixed cases as still-broken (or, worse, the broken ones as fixed).
+ */
+function classifyBlock(
+  block: Record<string, unknown>,
   slug: string,
   slot: Slot,
   arrays: number[][],
   out: Finding[]
 ): void {
-  const kind = String(e.kind);
-  if (kind === 'escalating' && Array.isArray(e.steps)) {
-    for (const s of e.steps) {
-      walkEffect(s as Record<string, unknown>, slug, slot, arrays, out);
+  const slotArrays = { skill1: [], skill2: [], burst: [], [slot]: arrays } as {
+    skill1: number[][];
+    skill2: number[][];
+    burst: number[][];
+  };
+  const levels = { skill1: 10, skill2: 10, burst: 10, [slot]: 1 } as {
+    skill1: number;
+    skill2: number;
+    burst: number;
+  };
+  const input = [{ ...block, slot }] as unknown as Block[];
+  const warnings: string[] = [];
+  const scaled = scaleBlocks(
+    JSON.parse(JSON.stringify(input)) as Block[],
+    slotArrays,
+    levels,
+    warnings
+  );
+
+  const walk = (
+    before: Record<string, unknown>,
+    after: Record<string, unknown>
+  ): void => {
+    if (before.kind === 'escalating' && Array.isArray(before.steps)) {
+      const afterSteps = (after.steps ?? []) as Record<string, unknown>[];
+      (before.steps as Record<string, unknown>[]).forEach((st, i) =>
+        walk(st, afterSteps[i] ?? {})
+      );
+      return;
     }
-    return;
-  }
-  const scaledFields = SCALED[kind] ?? [];
-  for (const [field, raw] of Object.entries(e)) {
-    if (typeof raw !== 'number' || raw === 0) {
-      continue;
+    for (const [field, raw] of Object.entries(before)) {
+      if (typeof raw !== 'number' || raw === 0 || TIME_FIELDS.has(field)) {
+        continue;
+      }
+      // The scaler CHANGED it — this field is covered.
+      if (after[field] !== raw) {
+        continue;
+      }
+      const kind = String(before.kind);
+      // It emitted a warning naming this value: derived, on a scaling path, kept at max level.
+      // Anchored on the full phrase — a bare `includes(String(raw))` matches any warning that
+      // merely CONTAINS the digits (a maxAmmo of 1 matched every message with a "1" in it).
+      if (warnings.some((w) => w.includes(`match for ${raw} —`))) {
+        out.push({
+          slug,
+          slot,
+          kind,
+          field,
+          value: raw,
+          klass: 'WARNED',
+          decomposition: decompose(arrays, raw),
+        });
+        continue;
+      }
+      // Unchanged, unwarned, yet it IS a max-level entry of a varying table: silently unscaled.
+      if (matchesVarying(arrays, raw)) {
+        out.push({ slug, slot, kind, field, value: raw, klass: 'SILENT' });
+      }
     }
-    if (TIME_FIELDS.has(field)) {
-      continue;
-    }
-    // An explicit `levelScale` anchor list resolves the value by ratio instead of by direct
-    // table match, so an annotated field is already handled — it is neither SILENT nor WARNED.
-    const levelScale = e.levelScale as Record<string, number[]> | undefined;
-    if (levelScale?.[field]?.length) {
-      continue;
-    }
-    const isScaled = scaledFields.includes(field);
-    if (isScaled && !matchesAny(arrays, raw)) {
-      out.push({
-        slug,
-        slot,
-        kind,
-        field,
-        value: raw,
-        klass: 'WARNED',
-        decomposition: decompose(arrays, raw),
-      });
-    } else if (!isScaled && matchesVarying(arrays, raw)) {
-      out.push({ slug, slot, kind, field, value: raw, klass: 'SILENT' });
-    }
-  }
+  };
+
+  const beforeEffects = (block.effects ?? []) as Record<string, unknown>[];
+  const afterEffects = (scaled[0]?.effects ?? []) as unknown as Record<
+    string,
+    unknown
+  >[];
+  beforeEffects.forEach((e, i) => walk(e, afterEffects[i] ?? {}));
 }
 
 const args = process.argv.slice(2);
@@ -262,9 +290,7 @@ for (const file of readdirSync(overrideDir).sort()) {
   for (const slot of SLOTS) {
     const arrays = lv[slot] ?? [];
     for (const block of ov[slot] ?? []) {
-      for (const e of block.effects ?? []) {
-        walkEffect(e, slug, slot, arrays, findings);
-      }
+      classifyBlock(block, slug, slot, arrays, findings);
     }
   }
 }

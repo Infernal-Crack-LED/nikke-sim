@@ -103,13 +103,14 @@ export function scaleBlocks(
         // `damagePct` is the swap weapon's per-shot multiplier — a skill value that scales, EXCEPT
         // on a `sameWeapon` swap, where the gun is not replaced and damagePct is by construction
         // the base weapon's own normalAttackMultiplier (a WEAPON stat, level-invariant).
-        return {
-          ...e,
-          ...(e.sameWeapon ? {} : { damagePct: s(e.damagePct, 'damagePct') }),
-          ...(e.chargeMultPct === undefined
-            ? {}
-            : { chargeMultPct: s(e.chargeMultPct, 'chargeMultPct') }),
-        };
+        //
+        // `chargeMultPct` is deliberately NOT scaled: every one of the 8 carriers in the tree
+        // authors a round kit constant ("Full Charge Damage: 250% of damage" — 250/300/1750) and
+        // not one of them resolves to a level-table entry, so scaling it would only emit warnings
+        // nobody can act on. Revisit if a carrier ever ships a table-backed value.
+        return e.sameWeapon
+          ? e
+          : { ...e, damagePct: s(e.damagePct, 'damagePct') };
       case 'fillGauge':
         return { ...e, pct: s(e.pct, 'pct') };
       case 'shield':
