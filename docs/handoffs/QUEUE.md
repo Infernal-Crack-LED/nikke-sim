@@ -138,3 +138,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
    inside a single 7s burst window and watch the ammo counter. That settles cadence, hits-per-pull
    and belt size in one go. Sizing arm: `npx tsx scripts/battery/nbo-swap-cadence-ab.ts`.
    **AWAITING FOOTAGE** (owner does not own nbo; requested from a friend, 2026-08-17).
+
+5. **Roster-shortfall explainer — extend past the solo Roster Generator.** The solo path landed
+   on this branch (commit `a264f555`: `diagnoseTeamShortfall` in `src/teamcalc.ts` +
+   `scripts/tests/generators/shortfall-diagnosis.test.ts` + the `roster-shortfall` panel in
+   `web/src/App.tsx`). Open follow-ups, both small: (a) the **Union Raid** generator (3 teams,
+   `runUnionTopTeams`) breaks on the same silent `break` and could reuse the same diagnosis
+   per-boss; (b) the **Team Generator** (`runBestTeam`) returns `null` with no explanation when
+   the synced pool can't field even one team. Same helper, different render sites.
