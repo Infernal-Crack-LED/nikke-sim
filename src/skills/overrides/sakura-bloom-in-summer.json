@@ -22,14 +22,31 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
-      "effects": [{ "kind": "buff", "stat": "attackDamagePct", "value": 7.82 }]
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 7.82,
+          "levelScale": {
+            "value": [15.64]
+          }
+        }
+      ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
         {
           "kind": "dot",
@@ -42,8 +59,13 @@
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "interval", "sec": 30 },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "interval",
+        "sec": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
         {
           "kind": "dot",
@@ -58,32 +80,83 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
-        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
-        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
-        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
-        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
-        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
-        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
-        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
-        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
-        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" }
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential"
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential"
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential"
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential"
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential"
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential"
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential"
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential"
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential"
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential"
+        }
       ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
         {
           "kind": "dot",
           "atkPct": 351.6,
           "durationSec": 10,
           "intervalSec": 1,
-          "flavor": "sustained"
+          "flavor": "sustained",
+          "levelScale": {
+            "atkPct": [35.16]
+          }
         }
       ]
     }

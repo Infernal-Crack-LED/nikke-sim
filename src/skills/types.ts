@@ -209,10 +209,20 @@ export type TargetDef =
 // so a typo'd anchor is a build error rather than a silent max-level value.
 export type LevelScale = Record<string, number[]>;
 
+// The companion to `levelScale`: fields VERIFIED to be level-invariant, so the scaler stops
+// warning about them. Three shapes recur — a structural constant the kit implies rather than
+// states (eve's Mk2 "doubles S1" encoded as sequentialDamagePct +100), a sentinel the engine
+// reads specially (prika's burstCdr -9999 = "cancel the cooldown"), and a value that is a
+// COOLDOWN or other non-skill quantity (a burstCdr of 40 that mirrors a burst cooldown).
+// Distinct from simply having no annotation: an unannotated field still warns, which is correct
+// for a value nobody has checked yet. `levelConst` is a claim that someone DID check.
+export type LevelConst = string[];
+
 export type EffectDef =
   | {
       kind: 'buff';
       levelScale?: LevelScale;
+      levelConst?: LevelConst;
       stat: StatKey;
       value: number;
       durationSec?: number;
@@ -279,6 +289,7 @@ export type EffectDef =
   | {
       kind: 'flatDamage'; // instant hit, % of caster final ATK
       levelScale?: LevelScale;
+      levelConst?: LevelConst;
       atkPct: number;
       flavor?:
         | 'distributed'
@@ -361,11 +372,13 @@ export type EffectDef =
       // proc, or count full bursts over a fixed window.
       kind: 'hitRepeat';
       levelScale?: LevelScale;
+      levelConst?: LevelConst;
       pct: number;
     }
   | {
       kind: 'dot'; // ticks every intervalSec (default 1); never core-boosted
       levelScale?: LevelScale;
+      levelConst?: LevelConst;
       atkPct: number;
       durationSec: number;
       intervalSec?: number;
@@ -394,6 +407,7 @@ export type EffectDef =
   | {
       kind: 'weaponSwap'; // "Changes the weapon in use:" — temporary weapon override
       levelScale?: LevelScale;
+      levelConst?: LevelConst;
       damagePct: number; // per-shot multiplier while swapped
       chargeTimeSec?: number; // full-charge time (charge weapons)
       chargeTimeClamp?: number; // "Charge time is fixed at X sec" on the swapped weapon (seconds)
@@ -545,6 +559,7 @@ export type EffectDef =
   | {
       kind: 'stackedNuke'; // Maiden:IR MP — hits once per full burst the unit SAT OUT since its last burst
       levelScale?: LevelScale;
+      levelConst?: LevelConst;
       atkPct: number; // per stack, % of final ATK
       hpPct?: number; // per stack, % of final Max HP added on top
       maxStacks?: number; // default 12

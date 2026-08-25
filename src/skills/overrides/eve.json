@@ -36,7 +36,10 @@
           "kind": "flatDamage",
           "atkPct": 720,
           "flavor": "sequential",
-          "gaugeHits": 3
+          "gaugeHits": 3,
+          "levelScale": {
+            "atkPct": [240]
+          }
         }
       ]
     },
@@ -110,7 +113,10 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 2742.84
+          "atkPct": 2742.84,
+          "levelScale": {
+            "atkPct": [457.14]
+          }
         }
       ]
     },
@@ -127,7 +133,8 @@
           "kind": "buff",
           "stat": "sequentialMultPct",
           "value": 100,
-          "durationSec": 10
+          "durationSec": 10,
+          "levelConst": ["value"]
         },
         {
           "kind": "buff",

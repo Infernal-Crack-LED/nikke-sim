@@ -83,7 +83,58 @@ All four of `nayuta`'s skill-2 values are derived, which is why `10/4/10` moved 
 returns, so `verify.sh` is green with the regression snapshot **unchanged** (no `--update`). Only
 the board artifacts were rebuilt, because they hash their inputs and `nayuta.json` changed.
 
-## 4. OPEN — the per-unit backlog (needs one batched owner decision)
+## 4. Derived-value annotations — progress
+
+`levelScale` anchors are being applied per unit from each override's OWN documented derivation,
+driven by the declarative table in `scripts/apply-level-scale.ts` (`--check` to dry-run). A second
+primitive, **`levelConst`**, marks fields VERIFIED level-invariant so they stop warning — a
+structural constant (`eve`'s Mk2 "doubles S1" as `sequentialMultPct +100`), a sentinel
+(`prika`'s `burstCdr -9999` lockout), or a non-skill quantity (`red-hood`'s `burstCdr 40`, her own
+burst cooldown).
+
+Backlog: **124 → 97 values, 47 → 42 units.** Measured level sensitivity at 1/1/1 vs 10/10/10:
+
+| unit                       | before | after      |
+| -------------------------- | ------ | ---------- |
+| `mast-romantic-maid`       | —      | **-59.0%** |
+| `snow-white-heavy-arms`    | -34.4% | **-53.0%** |
+| `neon-vision-eye`          | -49.3% | -48.7%     |
+| `eve`                      | —      | -37.3%     |
+| `guillotine-winter-slayer` | —      | -34.3%     |
+| `sakura-bloom-in-summer`   | —      | -30.6%     |
+| `ein`                      | —      | -29.9%     |
+| `mihara-bonding-chain`     | —      | -23.4%     |
+| `little-mermaid`           | -5.4%  | **-22.8%** |
+
+**Read the note, not the hint.** `audit-skill-scaling.ts` prints a `← 60 × 12` style decomposition,
+but it is a brute-force search over the level table and it finds coincidences. Two caught here:
+`eve`'s 720% (hint `60 × 12`; her note says "240% x3 sequential = 720%") and
+`snow-white-heavy-arms`'s 1055.9 (hint `42.24 × 25` = 1056.0, off by 0.1 — the note's own 105.59%
+volley shot divides it exactly ×10). Every row in the apply table carries the quote it rests on.
+
+### Two findings from doing the work
+
+**(a) 19 of the 47 backlog units are TREASURE units, and they are a different bug — blocked on
+data.** `data/skill-levels.json` holds the **base (untreasured)** kit arrays, while those overrides
+model the treasure kit. `drake` is the clean demonstration: her table has `11.85` / `1254` /
+`98.55`, her override authors `20.09` / `3009.6` / `201.6`. The boosts are **non-uniform**
+(×1.70, ×2.40, and `maxAmmoPct 72.18` not boosted at all), so no proportional `levelScale` recovers
+them, and ×2.40 is far too large to be extrapolated skill levels. Blablalink roledata carries **no
+favorite-item fields at all** (checked `drake`'s live `roledata` — no `favor`/`treasure`/`item` key),
+so the per-level treasure arrays are simply not in this source. **Annotating these with a base-kit
+anchor would be a guess about how favorite items scale — deliberately not done.** Affected:
+`diesel`, `drake`, `exia`, `flora`, `frima`, `helm`, `julia`, `laplace`, `milk`, `miranda`,
+`moran`, `phantom`, `poli`, `privaty`, `rosanna`, `sugar`, `tove`, `viper`, `zwei`. Needs a source
+for treasure per-level values (or an owner ruling on how they scale) before any of it is actionable.
+
+**(b) A value's anchor can live in a DIFFERENT slot's table.** `ein`'s skill1 `363.24` is
+`4 × 90.81`, but `90.81` is in her **skill2** table — skill1's only varying entry is `70.12`, which
+does not divide it. `levelScale` cannot express a cross-slot anchor, and scaling it off skill1's
+level would be wrong anyway if the magnitude really comes from a skill2 line. Left deliberately
+WARNING rather than annotated; it may indicate the block is filed under the wrong slot. The
+structural validator caught this — the anchor did not resolve — which is the guard working.
+
+## 5. OPEN — remaining backlog
 
 `npx tsx scripts/audit-skill-scaling.ts` now reports **3 SILENT + 124 WARNED across 48 units**.
 Every remaining item is a _derived authored value_ that needs a per-unit `levelScale` annotation —

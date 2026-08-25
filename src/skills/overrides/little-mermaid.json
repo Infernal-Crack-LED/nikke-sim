@@ -93,7 +93,10 @@
           "durationSec": 10,
           "intervalSec": 1,
           "flavor": "sequential",
-          "noRange": true
+          "noRange": true,
+          "levelScale": {
+            "atkPct": [63.36]
+          }
         }
       ]
     },
@@ -112,7 +115,10 @@
           "atkPct": 850,
           "flavor": "sequential",
           "noRange": true,
-          "gaugeHits": 10
+          "gaugeHits": 10,
+          "levelScale": {
+            "atkPct": [85]
+          }
         }
       ]
     }

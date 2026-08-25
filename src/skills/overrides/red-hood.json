@@ -89,7 +89,8 @@
         {
           "kind": "burstCdr",
           "seconds": 40,
-          "oncePerBattle": true
+          "oncePerBattle": true,
+          "levelConst": ["seconds"]
         }
       ]
     },
@@ -106,7 +107,8 @@
         {
           "kind": "burstCdr",
           "seconds": 40,
-          "oncePerBattle": true
+          "oncePerBattle": true,
+          "levelConst": ["seconds"]
         }
       ]
     },

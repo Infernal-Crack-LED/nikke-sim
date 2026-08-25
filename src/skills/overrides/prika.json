@@ -140,7 +140,8 @@
       "effects": [
         {
           "kind": "burstCdr",
-          "seconds": -9999
+          "seconds": -9999,
+          "levelConst": ["seconds"]
         }
       ]
     },

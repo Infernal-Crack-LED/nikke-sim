@@ -31,7 +31,10 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 500.6
+          "atkPct": 500.6,
+          "levelScale": {
+            "atkPct": [50.06]
+          }
         }
       ]
     },
@@ -62,7 +65,10 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 500.6
+          "atkPct": 500.6,
+          "levelScale": {
+            "atkPct": [50.06]
+          }
         }
       ]
     },
@@ -159,7 +165,10 @@
           "atkPct": 1001,
           "durationSec": 10,
           "intervalSec": 1,
-          "flavor": "sustained"
+          "flavor": "sustained",
+          "levelScale": {
+            "atkPct": [50.05]
+          }
         }
       ]
     },

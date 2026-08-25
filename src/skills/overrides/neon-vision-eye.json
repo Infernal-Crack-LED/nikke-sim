@@ -96,7 +96,10 @@
           "kind": "buff",
           "stat": "burstGenPct",
           "value": 330,
-          "durationSec": 5
+          "durationSec": 5,
+          "levelScale": {
+            "value": [5]
+          }
         }
       ]
     },
@@ -116,7 +119,10 @@
           "kind": "buff",
           "stat": "burstGenPct",
           "value": 500,
-          "durationSec": 5
+          "durationSec": 5,
+          "levelScale": {
+            "value": [5]
+          }
         }
       ]
     }

@@ -86,8 +86,16 @@ export function scaleBlocks(
   };
 
   const scaleEffect = (e: EffectDef, slot: SkillSlot): EffectDef => {
+    const constFields = ('levelConst' in e ? e.levelConst : undefined) ?? [];
     const s = (v: number, field: string) =>
-      scaleVal(v, slot, field, 'levelScale' in e ? e.levelScale : undefined);
+      constFields.includes(field)
+        ? v
+        : scaleVal(
+            v,
+            slot,
+            field,
+            'levelScale' in e ? e.levelScale : undefined
+          );
     switch (e.kind) {
       case 'buff':
         return { ...e, value: s(e.value, 'value') };
