@@ -98,25 +98,14 @@ const ROWS: Row[] = [
     why: 'note: Mk2 "doubles S1+S2" encoded as sequentialMultPct +100 — a x2 expressed in percent, structural, not a kit magnitude',
   },
 
-  // ---- mihara-bonding-chain: per-chain value x chain count -------------------------------
-  {
-    slug: 'mihara-bonding-chain',
-    slot: 'skill1',
-    kind: 'flatDamage',
-    field: 'atkPct',
-    value: 500.6,
-    anchors: [50.06],
-    why: 'note: "one 50.06% hit per chain ... 500.6% (10 x 50.06) flatDamage dump"',
-  },
-  {
-    slug: 'mihara-bonding-chain',
-    slot: 'burst',
-    kind: 'dot',
-    field: 'atkPct',
-    value: 1001,
-    anchors: [50.05],
-    why: 'note: "the full 1001%/s (20 x 50.05)"',
-  },
+  // ---- mihara-bonding-chain: rows REMOVED, superseded upstream (PR #147, 2026-08-21) --------
+  // Her two derived values are gone from the override, and both replacements scale NATIVELY:
+  //   - the 500.6 (10 x 50.06) restraint dump is now TEN paced blocks of a literal `atkPct: 50.06`,
+  //     which is a direct max-level entry of her skill1 table — no annotation needed;
+  //   - the burst DoT's static `atkPct: 1001` (20 x 50.05) is now `perResource {mirror, 50.05}`,
+  //     and the permanent Ensnaring DoT is `perResource {ensnaring, 25.08}` — both covered by the
+  //     perResource.mult case in scale.ts (the round-1 review BLOCKER).
+  // Nothing to annotate; leaving the rows would hard-error on "no matching effect".
 
   // ---- guillotine-winter-slayer: per-stack value x 11 stacks -----------------------------
   {

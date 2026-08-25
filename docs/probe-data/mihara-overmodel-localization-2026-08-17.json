@@ -2,7 +2,7 @@
   "_note": "mihara-bonding-chain over-model localization. QUEUE item 1 (faithfulness sweep residue, mihara bullet). Findings-only — no override or engine was changed.",
   "date": "2026-08-17",
   "question": "Where does the 17.9% over-model (1.034 → 1.179 HOT on 2 graded comps) sit in mihara-bonding-chain's kit encoding?",
-  "priorHandoff": "docs/handoffs/2026-08-13-mihara-fit-exposure.md",
+  "priorHandoff": "docs/handoffs/closed/2026-08-13-mihara-fit-exposure.md",
   "channelSplit": {
     "comp": "N6 mihara/maiden wind (boss Wind)",
     "totalDamage": 895197123,

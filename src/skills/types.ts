@@ -287,6 +287,15 @@ export type EffectDef =
       delta: number;
     }
   | {
+      // snapshot one named resource pool into another at the moment this block fires. The source
+      // value is read, clamped to the target's declared [min,max], and written to the target. Used
+      // when a burst window must freeze a live stack count rather than keep reading the source as
+      // it changes (mihara-bonding-chain Dragging Chain mirrors Ensnaring stacks on cast).
+      kind: 'copyResource';
+      name: string; // target resource
+      from: string; // source resource
+    }
+  | {
       kind: 'flatDamage'; // instant hit, % of caster final ATK
       levelScale?: LevelScale;
       levelConst?: LevelConst;
