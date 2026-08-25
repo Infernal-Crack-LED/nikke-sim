@@ -73,6 +73,18 @@ would settle each. AI-facing.
   QUEUE residue item — DECISIONS 2026-08-25). Remaining consumer: `asuka-wille`'s finisher 30-cap
   (⚑4/⚑5, 3× spread vs the blind rebuild's 10) — still gated on its own measurement (unmeasured
   unit).
+  - Cross-family review follow-up (2026-08-25): the F2.5 block-order census
+    (`validate-structural.ts` `blockOrderPairs`) does not census `copyResource` (reads `from`,
+    writes `name`) or `perResource` readers — `mihara-bonding-chain`'s burst copy-then-zero
+    ordering is pinned only behaviorally (the M3 cap test). Extend the census to treat
+    copyResource as producer(name)+consumer(from) and perResource carriers as consumers, then
+    regenerate the fixture deliberately — or record in the census header that intra-block effect
+    order is out of scope.
+  - Cross-family review follow-up (2026-08-25): `gen-unmodeled-review.ts`'s bestMatchingText
+    heuristic mis-attributes `mihara-bonding-chain`'s three inert skill2 unmodeled entries to the
+    S2-generation caveat instead of the inert-lines caveat in `docs/unmodeled-entries-review.md`.
+    Either word the inert caveat to win the token match (quote "incapacitated"/"neutralized") and
+    regenerate, or note the heuristic limit in the generator.
 - **Status-linked durations (retire the `9999` sentinels)**: `prika` ×3 (Effect 3 team Attack
   Damage / Pierce / Charge Damage — but the load-bearing question is the duet Encore WINDOW
   itself, the ⚑ OPEN in her note with the measured 0.890→1.064 ladder; a duration primitive alone

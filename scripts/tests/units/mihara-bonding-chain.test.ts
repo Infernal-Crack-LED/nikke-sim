@@ -5,12 +5,14 @@
 // loaded from disk. `withPatchedOverride` appears ONLY to build COUNTERFACTUALS (the nearest wrong
 // model each assertion must discriminate against) — never to supply the encoding under test.
 //
-// Her kit is a two-currency STACK engine. Ensnaring is modeled as a LIVE POOL (owner ruling
-// 2026-08-13: model the stacks, do not average them); Restraint stays throughput, since it is
-// charged and fully dumped in one motion and never sits at a partial level that anything reads:
-//   - Restraint Chains: charged to 10 at battle start and refilled to 10 at each Full Burst end
-//     after her own burst, then the S1 "specific timing" attack DUMPS all of them (one 50.06% hit
-//     per chain) → modeled as a 500.6% (10 × 50.06%) flatDamage dump at start + once per rotation.
+// Her kit is a two-currency STACK engine, BOTH currencies modeled as LIVE POOLS (owner ruling
+// 2026-08-13: model the stacks, do not average them; session rulings 2026-08-21: the dump gates
+// on HER OWN Full Burst, and S2 generation consumes no Restraint):
+//   - Restraint Chains: a live resource `restraint` [0..10], initial 10, recharged to 10 at the
+//     end of HER OWN Full Burst only (ownBurstGate:'cast'), then consumed one stack per 0.4s over
+//     the 4s after that FB end (the measured "specific timing" anchor) — each consumption deals
+//     one 50.06% hit and feeds +1 Ensnaring. There is NO battle-start dump: the initial 10 sit
+//     until her first own-FB end (a documented minor first-cycle undercount).
 //   - Ensnaring Chains: 25.08%/s sustained DoT stacking to 20, held in `resources.ensnaring`
 //     [0..20]. The DoT carries `perResource {ensnaring, 25.08}`, so every tick is recomputed as
 //     the CURRENT stack count × 25.08 — it climbs while stacks build, holds at 501.6%/s at the
@@ -37,10 +39,11 @@
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates
 // nothing):
-//   M1  the dump is the FULL 10-chain 500.6%, not a single 50.06% hit; it fires once at battle
-//       start AND once per Full Burst end (she is the sole B3 in the fixture, so Full Burst end ==
-//       her burst end — the "if she just bursted" gate is exact here, not the benign multi-B3
-//       over-fire the kit-status finding flags).
+//   M1  the dump is TEN paced 50.06% hits at 0.4s intervals in the 4s after her own FB end — not
+//       a single 500.6% lump (the superseded throughput model) and not a battle-start dump. The
+//       fixture seats TWO B3s (controlComp(SLUG, true)), so the ownBurstGate:'cast' refill is
+//       exercised against FB ends she did NOT burst into — the gate, not sole-B3 coincidence, is
+//       what keeps the recharge hers.
 //   M2  the baseline is LIVE, and "live" is the part a test can get wrong by passing: a single
 //       fixed magnitude is what BOTH superseded models look like, so the assertions check that the
 //       per-tick magnitude VARIES, that every value is a whole number of 25.08 stacks within the
@@ -103,9 +106,13 @@ const mbcSingleChain = withPatchedOverride(SLUG, (ov) => {
   const seen = new Set<string>();
   ov.skill1 = ov.skill1.filter((b: any) => {
     const isDump = b.effects.some((e: any) => e.kind === 'flatDamage');
-    if (!isDump) return true;
+    if (!isDump) {
+      return true;
+    }
     const key = b.trigger.kind;
-    if (seen.has(key)) return false;
+    if (seen.has(key)) {
+      return false;
+    }
     seen.add(key);
     return true;
   });
@@ -142,11 +149,7 @@ const mbcNaiveBurst = withPatchedOverride(SLUG, (ov) => {
     const before = b.effects.length;
     b.effects = b.effects.filter(
       (e: any) =>
-        !(
-          e.kind === 'resource' &&
-          e.name === 'ensnaring' &&
-          e.delta < 0
-        )
+        !(e.kind === 'resource' && e.name === 'ensnaring' && e.delta < 0)
     );
     removed += before - b.effects.length;
   }
@@ -209,11 +212,10 @@ describe('mihara-bonding-chain — kit spec', () => {
       expect(dumps.length, 'no Restraint dump landed').toBeGreaterThan(0);
     });
 
-    it('fires ~10 hits only at the end of mihara\'s own Full Burst, paced over 4s', () => {
+    it("fires ~10 hits only at the end of mihara's own Full Burst, paced over 4s", () => {
       // Two B3s → not every Full Burst end is hers. The dump blocks are fullBurstEnd + ownBurstGate,
       // so each dump cluster is anchored to the FB end of the rotation mihara initiated.
       const dumpFrames = dumps.map((d) => d.frame);
-      const dumpFrameSet = new Set(dumpFrames);
       const mbcBurstFrames = mbcBursts(base.events).map((b) => b.frame);
       const fbEndFrames = fbEnds(base.events).map((f) => f.frame);
       // A B3 cast initiates a Full Burst; the NEXT fbEnd is the end of that window.

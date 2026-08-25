@@ -145,7 +145,7 @@ console.log('--- skill1 sub-split ---');
 const restraintTotal = restraintDumps.reduce((s, e) => s + e.amount, 0);
 const ensnaringTotal = ensnaringTicks.reduce((s, e) => s + e.amount, 0);
 console.log(
-  `  Restraint dumps (atkPct=500.6): ${restraintDumps.length} hits, total ${restraintTotal.toLocaleString()}  (${((restraintTotal / totalDmg) * 100).toFixed(1)}%)`
+  `  Restraint dumps (atkPct=50.06 paced / 500.6 legacy): ${restraintDumps.length} hits, total ${restraintTotal.toLocaleString()}  (${((restraintTotal / totalDmg) * 100).toFixed(1)}%)`
 );
 console.log(
   `  Ensnaring DoT ticks:            ${ensnaringTicks.length} ticks, total ${ensnaringTotal.toLocaleString()}  (${((ensnaringTotal / totalDmg) * 100).toFixed(1)}%)`

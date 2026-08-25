@@ -4982,7 +4982,7 @@
         "burst": []
       },
       "caveats": [
-        "skill1: Restraint Chains are a live resource (restraint [0..10]). They recharge to 10 at the end of HER OWN Full Burst only (ownBurstGate:'cast') and are consumed over 4s (0.4s per stack), each consumption dealing 50.06% damage and adding +1 Ensnaring.",
+        "skill1: Restraint Chains are a live resource (restraint [0..10]). They recharge to 10 at the end of HER OWN Full Burst only (ownBurstGate:'cast') and are consumed over the 4s after that FB end (0.4s per stack), each consumption dealing 50.06% damage and adding +1 Ensnaring. The dump blocks' resourceGate {restraint, min:1} is evaluated at TRIGGER time (fullBurstEnd, right after the +10 refill), so it is always-open today — the pacing is carried by the fixed ten-block 0.4s ladder, not by a per-spend check.",
         "skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.",
         "skill1: the permanent Ensnaring DoT is LIVE — perResource {ensnaring, 25.08} recomputes each tick from the current stack count.",
         "skill2: the 40-normals-in-Full-Burst Ensnaring generation carries fbGate:\"inFb\" AND countScope:\"gated\".",

@@ -6454,11 +6454,15 @@ assumed a 20-stack Ensnaring pool
 kit live end-to-end, landed on branch `mihara-restraint-pacing` (owner-driven session 2026-08-21;
 merged 2026-08-25):
 
-- **Restraint Chains are a live resource** `restraint` [0..10]: charged at battle start, refilled
-  at the end of her OWN Full Burst only, and consumed at 0.4s per stack over 4s during Full
-  Burst — each consumption deals the 50.06% hit and feeds +1 Ensnaring. Owner rulings recorded in
-  the session (2026-08-21): the dump gates on HER own Full Burst, and S2's per-40-normals
-  Ensnaring generation consumes NO Restraint and deals no dump damage.
+- **Restraint Chains are a live resource** `restraint` [0..10]: initial 10 (no battle-start
+  dump — the pool sits until her first own-FB end, a documented minor first-cycle undercount),
+  refilled to 10 at the end of her OWN Full Burst only, and consumed one stack per 0.4s over the
+  4s AFTER that Full-Burst end (the measured "specific timing" anchor) — each consumption deals
+  the 50.06% hit and feeds +1 Ensnaring. Landing after FB end, the dump hits take no Full-Burst
+  +50% and their landing-time gauge credits fall in the legitimate FB-end → chain-start
+  generating window. Owner rulings recorded in the session (2026-08-21): the dump gates on HER
+  own Full Burst, and S2's per-40-normals Ensnaring generation consumes NO Restraint and deals
+  no dump damage.
 - **Burst Dragging Chain snapshots the LIVE Ensnaring count** into a `mirror` pool at cast via
   the new `copyResource` effect primitive (clamp-copy of one named pool into another at apply
   time), then cancels Ensnaring; the DoT ticks mirror × 50.05%/s for 10s — 1001%/s only when the
