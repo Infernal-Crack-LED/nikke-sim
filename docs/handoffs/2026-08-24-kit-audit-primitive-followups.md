@@ -80,6 +80,11 @@ would settle each. AI-facing.
     copyResource as producer(name)+consumer(from) and perResource carriers as consumers, then
     regenerate the fixture deliberately — or record in the census header that intra-block effect
     order is out of scope.
+  - Cross-family review follow-up (2026-08-25, round 2): the validator's declared-in-`resources[]`
+    check guards only `copyResource` — plain `resource` effects and `perResource` readers can still
+    name an undeclared pool and silently fall back to unbounded defaults. Extend the
+    declaredResources loop to both (roster-wide blast radius: may flag existing overrides — sweep
+    findings-only first), or record in the check's comment why only copyResource is guarded.
   - Cross-family review follow-up (2026-08-25): `gen-unmodeled-review.ts`'s bestMatchingText
     heuristic mis-attributes `mihara-bonding-chain`'s three inert skill2 unmodeled entries to the
     S2-generation caveat instead of the inert-lines caveat in `docs/unmodeled-entries-review.md`.

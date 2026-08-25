@@ -247,6 +247,10 @@ describe('mihara-bonding-chain — kit spec', () => {
       const nonOwnFbEnds = fbEndFrames.filter(
         (f) => !ownFbEndFrames.includes(f)
       );
+      expect(
+        nonOwnFbEnds.length,
+        'second B3 never ended a Full Burst — the ownBurstGate check below is vacuous'
+      ).toBeGreaterThan(0);
       for (const fbFrame of nonOwnFbEnds) {
         const firstExpected = Math.round(fbFrame + 0.4 * FPS);
         expect(
@@ -304,10 +308,10 @@ describe('mihara-bonding-chain — kit spec', () => {
 
     it('reaches near the 20-stack cap and is cancelled to zero by her burst', () => {
       const maxTick = Math.max(...ticks.map((d) => d.atkPct));
-      // Fixture reaches 19 stacks (476.52) rather than 20 — S2 procs 9× per FB window here.
-      // The kit cap is still 20; this assertion guards against flat averages and confirms
-      // the live pool climbs to the cap region.
-      expect(maxTick).toBeGreaterThanOrEqual(450);
+      // The fixture's pool reaches the full 20-stack cap (501.6%/s ticks land before the burst
+      // cast that cancels them); pin the cap exactly so an 18/19-stack under-generation model
+      // cannot pass. Deterministic fixture — no tolerance band needed beyond float noise.
+      expect(maxTick).toBeCloseTo(501.6, 6);
       // after a burst cancels Ensnaring the pool is 0, so the DoT contributes nothing — the tick
       // either carries atkPct 0 or is not emitted at all. Either way no full-strength tick may
       // survive inside the mirror window.
