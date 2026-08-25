@@ -6478,6 +6478,39 @@ merged 2026-08-25):
   M1–M5, each with its nearest-wrong-model counterfactual); the 2026-08-17 localization artifact.
   The residual 1.076 HOT is a remaining open gap, not closed by this entry.
 
+## Generator shortfall explainer; "Include Healer" excludes condition-dormant healers (2026-08-25)
+
+- **Decision 1 — a generator that builds fewer teams than requested must say why.** All three web
+  generators (Team Generator, solo Roster Generator, Union Raid) previously returned fewer teams
+  (or none) silently. A sim-free diagnosis (`diagnoseTeamShortfall`, `src/teamcalc.ts`) now names
+  what the leftover pool ran out of — Burst I / Burst II cooldown coverage, the two-Burst-III
+  minimum, the slot-fit case, the boss-weakness element rule, the healer requirement — mirroring
+  the search's own legality rules, and the panel says when the "Include Non-OL Units" toggle would
+  supply every missing role. An empty diagnosis deliberately does NOT promise a team exists
+  (cross-dimension binds fall through to a generic message; follow-up in
+  `docs/handoffs/QUEUE.md`). Driven by a real account report: 27 overloaded generator-eligible
+  units built only 2 of 5 teams — the leftover pool held one lone 40-second-cooldown Burst I
+  (Moran) and zero Fire units, both invisible in the interface.
+- **Decision 2 — the "Include Healer" toggle must field a healer that can actually heal, so the
+  generator's healer list excludes healers whose heal cannot activate in a team the search
+  builds.** The healer archetype tag is prose-derived (`scripts/build-archetype-tags.ts`) and
+  condition-blind. Two tagged healers fail the toggle's meaning: Anis: Star (`anis-star`) heals
+  only with a SECOND Burst I ally present (`formation: hasB1` in her override; the search never
+  fields double Burst I from enumeration, only via explicit user locks), and Delta: Ninja Thief
+  (`delta-ninja-thief`) heals only beside a Defender ally. Both are excluded in
+  `web/src/healerSlugs.ts` (the single source for the constraint, the shortfall diagnosis, and
+  its example picker). Mint stays listed: her heal is solo-mode-only, but the mint+prika
+  together-rule guarantees Prika — an unconditional duet healer — whenever Mint's own heal is
+  off. The prose-derived tag itself is untouched: the sustain and buffer boards keep it, correctly,
+  since Anis: Star does heal in double-Burst-I compositions in the real game.
+- **Evidence:** literal kit/override facts (the formation and mode gates, read from the committed
+  overrides; formation semantics at the engine's `teamHasB1` gate) — an already-answered modeling
+  question, so both changes skipped the empirical pipeline per the 2026-08-11 ruling and were
+  gated by cross-family code review instead: two kimi-code/k3 reviews, both CLEAN, suggested fixes
+  applied. Tests: `scripts/tests/generators/shortfall-diagnosis.test.ts` (diagnosis mirrors the
+  search, pool preconditions fail loudly) and `scripts/tests/generators/healer-constraint.test.ts`
+  (pins the exclusions with a completeness check, and re-runs the reporting account's 27-unit pool:
+  every team fields a healer that can heal). Landed via pull request #149.
 ## Skill-level scaling: unscaled effect kinds + `levelScale`/`levelConst` for derived values (2026-08-25)
 
 A community report compared the Roster Generator against a live Shooting Range fight:

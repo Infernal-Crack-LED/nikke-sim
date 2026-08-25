@@ -181,3 +181,13 @@ slot's table only:
    inside a single 7s burst window and watch the ammo counter. That settles cadence, hits-per-pull
    and belt size in one go. Sizing arm: `npx tsx scripts/battery/nbo-swap-cadence-ab.ts`.
    **AWAITING FOOTAGE** (owner does not own nbo; requested from a friend, 2026-08-17).
+
+5. **Shortfall explainer — offer the non-OL hint on undiagnosed shortfalls too** (code-review
+   FOLLOW-UP, kimi-code/k3 CLEAN verdict,
+   `scratchpad/gates/2026-08-25-roster-shortfall/result.json`). The "Include Non-OL Units"
+   counterfactual in `computeRosterShortfall` (web/src/App.tsx) is gated on
+   `reasons.length` — when `diagnoseTeamShortfall` returns `[]` (its documented per-dimension
+   blind spot: cross-dimension binds, illegal pin sets, the mint+prika / naga-shielder
+   constraints), the generic "don't combine" message renders and the most actionable hint is
+   silently skipped. Fix shape per reviewer: run the widened-pool counterfactual anyway (diagnose
+   - ideally `canFormLegalTeam` on the widened leftover) and surface the hint when it clears.

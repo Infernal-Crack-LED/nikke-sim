@@ -20,6 +20,7 @@ import type {
 } from '../../src/types';
 import type { OverrideFile } from '../../src/skills/index';
 import { META_WEIGHTS } from './metaWeights';
+import { HEALER_SLUGS } from './healerSlugs';
 import charactersJson from '../../data/characters.json';
 import bossingTiersJson from '../../data/bossing-tiers.json';
 import cubesJson from '../../data/cubes.json';
@@ -126,6 +127,12 @@ export const SYNERGY_WEIGHT = 0.08;
 //   - naga requires a shield-granting teammate (owner ruling: her kit depends
 //     on a shielder being present) — anyOf = every `shield`-tagged unit except
 //     naga herself (she cannot satisfy her own dependency).
+// Healer candidates for the "Include Healer" generator toggle — the list (and
+// the condition-dormant exclusions with their WHY) lives in ./healerSlugs.ts,
+// a vite-free module the generator test suites can also import; re-exported
+// here for the app (App.tsx pulls it from genCalc).
+export { HEALER_SLUGS };
+
 export const TEAM_CONSTRAINTS = {
   together: [['mint', 'prika']],
   companions: [
@@ -186,14 +193,7 @@ export function buildGenCalc(
     constraints: params.healerNeeded
       ? {
           ...TEAM_CONSTRAINTS,
-          requiredAny: [
-            {
-              label: 'healer',
-              anyOf: Object.entries(archetypeTags)
-                .filter(([, tags]) => tags.includes('healer'))
-                .map(([slug]) => slug),
-            },
-          ],
+          requiredAny: [{ label: 'healer', anyOf: HEALER_SLUGS }],
         }
       : TEAM_CONSTRAINTS,
     evaluator,

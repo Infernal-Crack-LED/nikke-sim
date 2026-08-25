@@ -1192,6 +1192,33 @@ input.num {
 .roster-copy-btn {
   margin: 6px 0 10px;
 }
+
+/* ---- Roster Generator shortfall explainer ---- */
+.roster-shortfall {
+  margin: 10px 0 6px;
+  padding: 10px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warn);
+  border-radius: 10px;
+  font-size: 13px;
+}
+.roster-shortfall-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.roster-shortfall-reasons {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+.roster-shortfall-reasons li {
+  margin: 2px 0;
+}
+.roster-shortfall-hint {
+  margin-top: 8px;
+  color: var(--text);
+}
 .save-tag {
   margin-left: 6px;
   font-size: 10px;
