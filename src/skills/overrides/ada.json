@@ -107,7 +107,8 @@
           "chargeTimeSec": 4,
           "chargeMultPct": 1750,
           "durationSec": 10,
-          "maxShots": 1
+          "maxShots": 1,
+          "levelConst": ["damagePct"]
         }
       ]
     }

@@ -22,7 +22,10 @@
           "kind": "buff",
           "stat": "casterAtkPct",
           "value": 39,
-          "durationSec": 15
+          "durationSec": 15,
+          "levelScale": {
+            "value": [13]
+          }
         }
       ]
     },
@@ -40,7 +43,8 @@
           "stat": "normalAttackPct",
           "value": 30,
           "durationSec": 11,
-          "rampSec": 11
+          "rampSec": 11,
+          "levelConst": ["value"]
         }
       ]
     }
@@ -79,7 +83,10 @@
           "stat": "atkPct",
           "value": 7.47,
           "durationSec": 11,
-          "rampSec": 11
+          "rampSec": 11,
+          "levelScale": {
+            "value": [2.49]
+          }
         },
         {
           "kind": "buff",

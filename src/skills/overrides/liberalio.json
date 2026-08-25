@@ -59,7 +59,10 @@
           "kind": "flatDamage",
           "atkPct": 202.5,
           "noRange": true,
-          "gaugeHits": 5
+          "gaugeHits": 5,
+          "levelScale": {
+            "atkPct": [40.5]
+          }
         }
       ]
     },

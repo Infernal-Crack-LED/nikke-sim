@@ -134,35 +134,21 @@ level would be wrong anyway if the magnitude really comes from a skill2 line. Le
 WARNING rather than annotated; it may indicate the block is filed under the wrong slot. The
 structural validator caught this — the anchor did not resolve — which is the guard working.
 
-## 5. OPEN — remaining backlog
+## 5. OPEN — what is left
 
-`npx tsx scripts/audit-skill-scaling.ts` now reports **3 SILENT + 124 WARNED across 48 units**.
-Every remaining item is a _derived authored value_ that needs a per-unit `levelScale` annotation —
-i.e. `src/skills/overrides/**` edits, a protected path, and per-unit work that should not be swept
-blind. Sized worst-first with `--sim` (damage at 1/1/1 vs 10/10/10; a number near 0% means skill
-levels are effectively inert for that unit):
+Backlog **124 → 83 values**, 47 → 30 units. Two QUEUE items carry the remainder:
 
-| unit                    | 1/1/1     | note                                                                                                                                                                                                                          |
-| ----------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `drake`                 | **+0.7%** | 6 derived values covering essentially the whole kit — levels are inert, and burst@1 reads _higher_ (+3.6%, a rotation shift)                                                                                                  |
-| `little-mermaid`        | **-5.4%** | `253.44 = 63.36 × 4`, `850 = 85 × 10`                                                                                                                                                                                         |
-| `snow-white-heavy-arms` | -34.4%    | `527.95 = 105.59 × 5`, `1055.9 = 42.24 × 25`; **plus** a `weaponSwap.damagePct` of `69.04` that equals the generic AR `normalAttackMultiplier` — possibly a missing `sameWeapon: true`, worth checking rather than annotating |
-| `neon-vision-eye`       | -49.3%    | `330 = 5 × 66`, `500 = 5 × 100`                                                                                                                                                                                               |
-| `maiden-ice-rose`       | -36.3%    | `stackedNuke.hpPct 137.28`                                                                                                                                                                                                    |
+- **70 values / 19 units — treasure, blocked on data.** See §4(a). Needs a source for treasure
+  per-level values, or an owner ruling on how favorite items scale.
+- **13 values / 11 units — cross-slot or unavailable.** `levelScale` resolves anchors within ONE
+  slot's table; six of these have their anchor in a different slot (`ein`, `eve`,
+  `neon-vision-eye` ×2, `emma-tactical-upgrade`, `red-hood`), which may mean those blocks are filed
+  under the wrong slot. The other seven are datamined or kit-literal values that appear in no level
+  array at all (`ark-ranger-black` ×2, `cinderella`, `cinderella-crystal-wave`, `sin`, `soda`,
+  `soda-twinkling-bunny`).
 
-Highest-count units overall: `julia` (7), `sugar` (7), `drake` (6), `privaty` (6), `viper` (5).
-
-Three residual SILENT values (`crust` burst `10`, `prika` burst `25` ×2) are `buff.value`s on
-`escalating` steps — worth a look but small.
-
-Also noted, not fixed: **8 overrides have no level data at all**
+Also unchanged from the first pass: 8 overrides have no level data at all
 (`anne-miracle-fairy`, `laplace-ultimate-hero`, `maxwell-ordinary-mechanic`, `queen`,
-`rei-ayanami-tentative-name`, `yukiko`, plus the two `noop-*` controls). Those units keep max-level
-values at every skill level and already warn wholesale. And **3 ambiguous level tables** exist
-where two varying arrays share a max but have different curves (`mari` skill2 `30.78`, `prika`
-skill1 `20`, `snow-crane` skill1 `10`) — `.find()` picks the first arbitrarily.
-
-**Recommended decision:** annotate the units by measured impact rather than by warning count —
-`drake` and `little-mermaid` first, since their levels are near-inert today. Each unit is small
-work (read the override's own note for the derivation, add the anchors, validator confirms) but
-needs the note read per unit, so it is not a mechanical sweep.
+`rei-ayanami-tentative-name`, `yukiko`, + the two `noop-*` controls), and 3 slots have ambiguous
+level tables where two varying arrays share a max (`mari` skill2, `prika` skill1, `snow-crane`
+skill1) so `.find()` picks arbitrarily.

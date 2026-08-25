@@ -33,7 +33,10 @@
         {
           "kind": "buff",
           "stat": "casterMaxHpPct",
-          "value": 20
+          "value": 20,
+          "levelScale": {
+            "value": [10]
+          }
         }
       ]
     },

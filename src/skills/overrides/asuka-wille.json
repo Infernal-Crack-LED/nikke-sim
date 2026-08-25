@@ -172,7 +172,10 @@
         {
           "kind": "flatDamage",
           "atkPct": 198.6,
-          "delaySec": 9
+          "delaySec": 9,
+          "levelScale": {
+            "atkPct": [6.62]
+          }
         }
       ]
     }
