@@ -67,7 +67,22 @@ fixes already landed; everything below is FLAGGED ONLY, nothing enacted.
    and blocks reuse of in-tree probe data (highest-value); plus `neon-vision-eye`, `bready`,
    `helm`, `milk-blooming-bunny`, `scarlet-black-shadow`, `liberalio`, and stale spec-test headers
    on `ada`, `phantom`, `snow-white-heavy-arms`, `asuka-wille`, `diesel-winter-sweets`.
-10. **Test-quality:** `maiden-ice-rose` M1, `ark-ranger-black` A6/A5/A7, `cinderella` G1 and
+10. **FROM THE CROSS-FAMILY REVIEW (kimi-code/k3, CLEAN on the landed commit) — filed, not fixed:**
+    - `validate-structural.ts` registers `alliesOfElementWeapon` but never checks `count`, which is
+      why ark-ranger-black truncated silently. The one instance is fixed; **the defect CLASS is
+      open** — require (or warn on) an explicit `count` for that target kind so "leftmost-1 by
+      accident" becomes a build error. It is the only ally target that slices.
+    - If the `sameWeapon` proposal lands: one uncosted edge — swap entry force-cancels an
+      in-progress reload but with `sameWeapon` does not refill, so a `sameWeapon` entry can produce
+      the otherwise-impossible `ammo == 0 && reloading == false` and fire a swap shot from an empty
+      magazine. Pre-existing marker semantics (chisato/clay/jill/frima already ship it), but the
+      proposal extends exposure to two units whose burst timing is independent of their reload
+      cycle. Either document it in the `sameWeapon` contract or gate the reload-cancel on it.
+    - If the proposal lands: `scripts/apply-level-scale.ts` whitelist entry for swha becomes dead
+      weight (scale.ts short-circuits sameWeapon `damagePct` first), and its comment has an
+      AR→SR typo — snow-white-heavy-arms is an SR.
+
+11. **Test-quality:** `maiden-ice-rose` M1, `ark-ranger-black` A6/A5/A7, `cinderella` G1 and
     `scarlet-black-shadow` B7 cannot discriminate what they claim to pin. Also: every per-unit
     spec runs at `ol: 'base5'` while the ranked cells are 8/12 — OL-line interactions are covered
     by the regression snapshot only.

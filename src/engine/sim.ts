@@ -4642,8 +4642,9 @@ export function runSim(
             : fbEndFrame > frame);
         const threshold = lowered ? b.trigger.countInFb! : b.trigger.count;
         // SG pull-vs-pellet lever: `perPull:true` counts trigger pulls (1 per shot) instead of
-        // landed pellets (`hitsPerShot`). Defaults to the historical pellet-count semantics so
-        // existing overrides stay byte-identical until they opt in.
+        // pellets FIRED (`hitsPerShot` — the shot's pellet count, NOT its landed fraction).
+        // Defaults to the historical pellet-count semantics so existing overrides stay
+        // byte-identical until they opt in.
         const increment = b.trigger.perPull ? 1 : u.char.hitsPerShot;
         // COUNT SCOPE. Default 'always': every normal attack accrues and the gates are only
         // consulted when a threshold is crossed — so a crossing the gate blocks still SPENDS its
