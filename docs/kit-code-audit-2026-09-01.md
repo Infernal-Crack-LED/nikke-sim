@@ -50,7 +50,7 @@ All three verified byte-identical on the regression before commit; `verify.sh` g
 3. **`types.ts` `perPull` doc comment** said the non-perPull branch counts "landed PELLETS"; the
    code increments by `hitsPerShot` — pellets **fired**, independent of the landed fraction.
 
-## PARKED as a PROPOSAL (branch `kitaudit-sameweapon-proposal`, commit `a5c83b24`) — NOT merged
+## PARKED as a PROPOSAL (branch `kitaudit-sameweapon-proposal`, commit `1dba3bf7`) — NOT merged
 
 **`ada` and `snow-white-heavy-arms` are missing `weaponSwap.sameWeapon`, so the engine hands each a
 free full magazine on every burst cast.** The bug itself is unambiguous — DECISIONS 2026-08-12 names
