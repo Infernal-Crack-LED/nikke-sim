@@ -240,7 +240,13 @@ Cell = `solo.eleweak.c100.8of12`, deduped across profile variants. Eight paralle
 engine implementation of each primitive before asserting a finding. Two agents independently
 converged on the `sameWeapon` defect class, one of them by re-running the DECISIONS 2026-08-12
 partition across all 26 `weaponSwap` effects — that cross-agent, independent-method agreement is
-why it is the highest-confidence item here. The orchestrator re-verified every landed fix from
+why it is the highest-confidence item here. The landed commit then went through `/code-review` (the standing 2026-08-11 owner ruling for an
+enactment that skips `/scientific-method` because the question is already answered): cross-family
+reviewer `kimi-code/k3`, verdict **CLEAN**. It independently re-ran the 26-effect `weaponSwap`
+partition, ran the full suite, and reproduced the parked proposal's exact 6-failure blast radius by
+extracting both commits into scratch copies. Its two NOTEs were fixed (`2d4b8265` — a twin stale
+`perPull` comment left inline in the engine, and a `crust` example needing its opt-in-stance
+qualifier); its two FOLLOW-UPs are QUEUE.md item 10. The orchestrator re-verified every landed fix from
 primary sources before enacting, and two of its own cross-cutting hypotheses (a Core-100 ×
 `hitRatePct` interaction, and an `acr` clamp boundary) were **refuted** with engine evidence rather
 than reported.
