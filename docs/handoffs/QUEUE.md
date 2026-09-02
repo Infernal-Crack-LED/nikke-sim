@@ -32,9 +32,11 @@ Full findings + measured board impacts: `docs/kit-code-audit-2026-09-01.md`. Thr
 fixes already landed; everything below is FLAGGED ONLY, nothing enacted.
 
 1. **`ada` + `snow-white-heavy-arms` missing `weaponSwap.sameWeapon`** — proposal committed on
-   branch `kitaudit-sameweapon-proposal` (RED by design: 6 tests, 2 of them battery properties
-   quoted in CLAUDE.md's verified-facts). Bug is unambiguous (DECISIONS 2026-08-12 partition);
-   all graded FB counts hold; swha −6.28%/+1.87%, ada −1.79%, faithful > fit. **Owner call.**
+   branch `kitaudit-sameweapon-proposal` (RED by design: 6 tests — 4 fixture/drift pins plus the
+   two N5 `multihit-crediting` pins, whose shipped deterministic base arm sits at 13 vs measured 12
+   and moves to 12 with the fix; the CLAUDE.md-cited misc-B3s fact is untouched). Bug is
+   unambiguous (DECISIONS 2026-08-12 partition); all graded FB counts hold; swha −6.28%/+1.87%,
+   ada −1.79%, faithful > fit. **Owner call** — the evidence favours landing.
 2. **`mihara-bonding-chain` (#1 Fire) — two undisclosed levers with opposite signs.** The
    40-normals block drops the kit's "on a target in the Ensnaring Chains state" precondition
    (−16.22% if gated); the battle-start Restraint line is dead (≥ +4.31% if fixed). She reads

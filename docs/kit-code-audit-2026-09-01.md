@@ -64,15 +64,26 @@ invariant holds). `snow-white-heavy-arms` −6.28% (N5) / +1.87% (T1), `ada` −
 movement. Direction is faithful > fit — both read COLD, so this worsens the ratio, exactly as the
 takina precedent in that same DECISIONS entry warned.
 
-**Why it is parked rather than landed:** it breaks 6 tests, and two of them are battery properties
-quoted in **CLAUDE.md's own verified-facts block** (the `SGGAUGE=trigger` arm "tips misc B3s
-12→13"). Rewriting a CLAUDE.md-cited property inside a roster sweep is what the batch-and-stop rule
-forbids. The other four (`gauge-source-census` ×2 impact-split pins,
-`anchor` A1, `yuni` Y5) are ordinary fixture updates. Needs an owner call plus a deliberate pass.
+**Why it is parked rather than landed:** it is board-moving on graded comps and breaks 6 tests, so
+it is an owner call, not a sweep-time enactment. **The blast radius is favourable, though** — an
+earlier draft of this section overstated the obstacle. The two `multihit-crediting` pins that fail
+are N5's (`scripts/tests/battery/multihit-crediting.test.ts`, the "THE EXCLUSION" block), which pin
+the shipped **deterministic base arm at 13 against a measured 12** — a known one-FB overshoot in
+that battery (the regression's seeded MC lands 12). With `sameWeapon` the base arm moves to **12 =
+measured**. The CLAUDE.md verified-fact about the `SGGAUGE=trigger` arm concerns **misc B3s**, and
+that comp is untouched. The remaining four (`gauge-source-census` ×2 impact-split pins, `anchor` A1,
+`yuni` Y5 — the latter two because their fixture comps field `ada`) are ordinary fixture updates.
+
+One near-miss on the partition criterion, surfaced for completeness: `moran` ships `damagePct 14.7`
+against `normalAttackMultiplier 14.71`. Her kit reads "Changes the weapon in use" with unlimited
+ammo — a real swap, so not-`sameWeapon` is correct and the 0.01 is kit rounding. The DECISIONS
+"exactly equal" test survives that case by luck of the rounding, not by design.
 
 ## FAITHFULNESS / LOGIC — flagged for review, nothing enacted
 
-Ranked by board weight.
+Ranked by board weight. **Provenance:** every number in this section was measured by the reviewing
+agent through the real engine, but — unlike the landed fixes — was NOT re-run by the orchestrator.
+Anyone acting on one should re-run its A/B first.
 
 ### Board-moving on the audited cell
 
