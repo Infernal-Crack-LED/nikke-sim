@@ -26,6 +26,52 @@ fewest videos. Master plan: `docs/handoffs/2026-07-16-full-sweep-plan.md`. Dashb
 `npx tsx scripts/board-read.ts`. **Submission intake: 0 pending** (Nikke Sim Data Submission Google
 Form → `/submission-intake` → `/probe-processing` → hand-tune; this line is the tracked count).
 
+### KIT CODE AUDIT 2026-09-01 — open items (OWNER DECISIONS NEEDED)
+
+Full findings + measured board impacts: `docs/kit-code-audit-2026-09-01.md`. Three board-inert
+fixes already landed; everything below is FLAGGED ONLY, nothing enacted.
+
+1. **`ada` + `snow-white-heavy-arms` missing `weaponSwap.sameWeapon`** — proposal committed on
+   branch `kitaudit-sameweapon-proposal` (RED by design: 6 tests, 2 of them battery properties
+   quoted in CLAUDE.md's verified-facts). Bug is unambiguous (DECISIONS 2026-08-12 partition);
+   all graded FB counts hold; swha −6.28%/+1.87%, ada −1.79%, faithful > fit. **Owner call.**
+2. **`mihara-bonding-chain` (#1 Fire) — two undisclosed levers with opposite signs.** The
+   40-normals block drops the kit's "on a target in the Ensnaring Chains state" precondition
+   (−16.22% if gated); the battle-start Restraint line is dead (≥ +4.31% if fixed). She reads
+   1.076 HOT.
+3. **`maiden-ice-rose` — GAME-TRUTH QUESTION:** does a "stacks up to N" buff expire per-stack or
+   refresh the whole pile? Engine refreshes the pile → she holds the 10-cap, worth −10.15% at
+   `maxStacks 2`. Note currently understates the shipped model 5×. Per-stack expiry needs an
+   engine primitive.
+4. **`cinderella-crystal-wave` (#1 Iron) — reload clamp applied at the wrong end of the kit's
+   window.** Inert on the 8/12 solo cell; graded T8 0.9200 → 0.9872 (+7.31%). Proposed fix
+   `"mode": "Snipe"`. Makes her hotter — needs a full board re-read.
+5. **`eve` burst block ORDER worth +3.89%, and nothing anywhere guards intra-block effect order**
+   (`block-order-pairs.json` is cross-BLOCK only). Roster split is 14 buff-first vs 10 nuke-first
+   — a cross-cutting game-behaviour question.
+6. **BATCHED: values that silently escape skill-level scaling** — `cinderella` 19.2,
+   `neon-vision-eye` 35.05/45.03, `ark-ranger-black` 156.19/45.87 (wrong slot array →
+   slot-scoped lookup misses), `dorothy-serendipity`'s whole `consolidation` block (no warning at
+   all), and `instantReload.fraction` (structurally unannotatable, 13 overrides). All ZERO at
+   10/10/10, live only in the web app's skill sliders; fixes byte-identical at max level.
+7. **`cinderella` `burstSnapshotsPreFb` is a roster-wide no-op** and the override's own RESOLVE
+   recipe names it as the lever — the documented remedy does not work (cause: `33c6c060`
+   2026-08-13 moved `stageEnter` 30f earlier). Flag is dead code unless the owner rules for the
+   pre-FB reading, which would need a new primitive.
+8. **`asuka-wille` ATF residual ≈ −3.9%** (not a "short tail"), **`mana` σ gauge-gen costs a Full
+   Burst** vs the always-on reading its caveat calls equivalent, **`diesel-winter-sweets`
+   Intro/Highlight latch** (the two candidate readings BRACKET the shipped value),
+   **`dorothy-serendipity` `pelletFraction` fed into the gauge `hitFraction`** (+41.9% weapon
+   gauge), **`rapi-red-hood` `requiresPulls: 120` is always-open** (false claim of coverage).
+9. **PROSE DRIFT, capture-first then delete** — `drake`'s "no real-fight recording yet" is FALSE
+   and blocks reuse of in-tree probe data (highest-value); plus `neon-vision-eye`, `bready`,
+   `helm`, `milk-blooming-bunny`, `scarlet-black-shadow`, `liberalio`, and stale spec-test headers
+   on `ada`, `phantom`, `snow-white-heavy-arms`, `asuka-wille`, `diesel-winter-sweets`.
+10. **Test-quality:** `maiden-ice-rose` M1, `ark-ranger-black` A6/A5/A7, `cinderella` G1 and
+    `scarlet-black-shadow` B7 cannot discriminate what they claim to pin. Also: every per-unit
+    spec runs at `ol: 'base5'` while the ranked cells are 8/12 — OL-line interactions are covered
+    by the regression snapshot only.
+
 ### TREASURE SKILL-LEVEL SCALING — no per-level data source (OPEN, needs investigation)
 
 **19 units cannot scale their skill levels at all**, and it is a DATA gap, not an authoring one.
