@@ -630,12 +630,13 @@ The site is a client-rendered SPA, so the served `index.html` carries meta but
 an empty `#root`. Routes that need indexable text get a body injected **at
 request time** by both servers (`src/server/static.ts` and `scripts/serve.mjs`).
 
-| Route         | Body source                                                        | Emits                                                        |
-| ------------- | ------------------------------------------------------------------ | ------------------------------------------------------------ |
-| `/unit/*`     | `unitStaticHtml` ← `data/characters.json` + `data/unit-pages.json` | identity row, tags, kit, ranked overload table, status badge |
-| `/characters` | `charactersStaticHtml` ← `data/characters.json`                    | an `<a>` to every character — the crawl hub                  |
-| `/mechanics`  | `web/public/content-pages.json` ← `web/src/mechanics-data.ts`      | intro, tier legend, every section heading + bullets          |
-| `/howto`      | `web/public/content-pages.json` ← `web/src/howto-data.ts`          | intro, every section heading, bullets, glossary `<dl>`       |
+| Route         | Body source                                                                      | Emits                                                                             |
+| ------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `/unit/*`     | `unitStaticHtml` ← `data/characters.json` + `data/unit-pages.json`               | identity row, tags, kit, ranked overload table, status badge, related-unit links  |
+| `/characters` | `charactersStaticHtml` ← `data/characters.json`                                  | an `<a>` to every character — the crawl hub                                       |
+| `/ranks`      | `ranksStaticHtml` ← `dist/dpschart.json` (same artifact the React chart fetches) | the default cell's ranked B3 list as `<a>`s to `/unit/<slug>` — the equity bridge |
+| `/mechanics`  | `web/public/content-pages.json` ← `web/src/mechanics-data.ts`                    | intro, tier legend, every section heading + bullets                               |
+| `/howto`      | `web/public/content-pages.json` ← `web/src/howto-data.ts`                        | intro, every section heading, bullets, glossary `<dl>`                            |
 
 Every other route serves the empty shell.
 

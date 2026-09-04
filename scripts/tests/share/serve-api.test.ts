@@ -185,6 +185,16 @@ const DPSCHART = {
       ['red-hood', 30_000_000],
       ['alice', 27_000_000],
     ],
+    // The /ranks default view (DpsChartTab DEFAULT_CELL) — what ranksStaticHtml
+    // renders. The static handler reads the REAL characters.json, so the
+    // synthetic-skip row must be a slug that does not exist there; alice
+    // appears twice (profiled dupe — must render once).
+    'solo.neutral.c100.scope': [
+      ['zz-synthetic-row', 12_340_000],
+      ['alice', 11_110_000],
+      ['alice', 10_500_000, 'alt-profile'],
+      ['modernia', 9_990_000],
+    ],
   },
 };
 
@@ -939,6 +949,32 @@ describe('static port parity with serve.mjs', () => {
     // disagrees with this ranking for most units, and indexing a different
     // recommendation than the visitor sees is worse than indexing none.
     expect(body).not.toContain('No optimal line data yet.');
+    // Related characters: same-element/same-weapon neighbours as real links,
+    // never a self-link. (The static handler reads the REAL characters.json —
+    // Liter is Iron/SMG, so both groups render.)
+    expect(body).toContain('<h2>Related characters</h2>');
+    expect(body).toContain('Iron units');
+    expect(body).toContain('SMG users');
+    expect(body).not.toContain('href="/unit/liter"');
+  });
+
+  // The /ranks no-JS body is the crawl bridge from the site's strongest page
+  // to the unit pages: the default chart cell as real links. Added after the
+  // 2026-09 indexing-lag investigation — /ranks used to serve zero links.
+  it('/ranks serves the default DPS chart as links to unit pages with JS off', async () => {
+    const res = await fetch(`${base}/ranks`);
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    const body = html.split('</head>')[1] ?? '';
+    expect(body).toContain('B3 carry DPS ranking');
+    expect(body).toContain('ranks-list');
+    // Charted units with a unit page link through; the synthetic zz row (no
+    // characters.json entry) is skipped; the profiled alice dupe renders
+    // exactly once, at her top row.
+    expect(body).not.toContain('href="/unit/zz-synthetic-row"');
+    expect(body.match(/href="\/unit\/alice"/g)?.length).toBe(1);
+    expect(body).toContain('href="/unit/modernia"');
+    expect(body).toContain('11.11M DPS');
   });
 
   // The lockstep half of the same assertion in serve-headers.test.ts. This port

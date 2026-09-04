@@ -91,6 +91,32 @@ unexamined.
 **Do nothing now.** Revisit with data. If a crawl does show a problem, prefer **option 2
 scoped by measured length** (never by `simSupported`), with **option 4** as the real fix.
 
+### Interim measurement (2026-09-04, ~4.5 weeks after launch)
+
+The owner reported the per-character pages not indexing. External `site:nikkesim.app`
+sampling (a lower bound — not the Search Console report) shows **~25–30 of 199 `/unit/*`
+URLs indexed**, and the set cuts across BOTH tiers: rich pages (`modernia`, `crown`,
+`mast-romantic-maid` — snippet showed her overload table) AND kit-only pages (`ada`,
+`nayuta`, `liberalio`). Every major non-unit page is indexed.
+
+Technical audit found **no bug**: every `/unit/:slug` returns 200 with unique
+server-rendered kit text, correct canonical, no `noindex`; the live sitemap carries all
+199 unit URLs with the robots.txt directive intact; the no-JS crawl hub at `/characters`
+links all of them.
+
+Per the decision rule above, both tiers being affected is the **rule-4 branch — thinness
+is not the cause**. The gap that was actually closable: the no-JS crawl graph was
+hub-and-spoke. `/characters` linked every unit, but `/ranks` — the site's strongest
+indexed page — served zero links in its HTML, and unit pages linked only outward to
+tools. Fixed the same day: `/ranks` now serves the default chart cell as real links to
+`/unit/:slug`, and every unit page links its same-element/same-weapon neighbours
+(`ranksStaticHtml` + `relatedUnitsHtml`, both servers, React parity).
+
+**Still open:** the owner should confirm the GSC **Pages → Why pages aren't indexed**
+classification for `/unit/*` (expected: "Crawled — currently not indexed"). Re-sample
+`site:` in a few weeks; if the indexed share has not moved, the remaining lever is
+off-site (external links into unit pages), not on-page.
+
 ### Decision rule — apply after ~4–6 weeks of Search Console data
 
 1. Search Console → **Pages**. Take the URL lists for "Crawled — currently not indexed" and

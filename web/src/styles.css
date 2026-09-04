@@ -2464,6 +2464,41 @@ a.dpschart-name:hover {
 .unit-tools a:hover {
   text-decoration: underline;
 }
+.unit-related {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  margin-bottom: 12px;
+}
+.unit-related h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0;
+  flex-basis: 100%;
+}
+.unit-related a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.unit-related a:hover {
+  text-decoration: underline;
+}
+.ranks-list {
+  margin: 0;
+  padding-left: 20px;
+}
+.ranks-list li {
+  margin-bottom: 4px;
+}
+.ranks-list a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.ranks-list a:hover {
+  text-decoration: underline;
+}
 .unit-crumbs {
   display: flex;
   align-items: center;
