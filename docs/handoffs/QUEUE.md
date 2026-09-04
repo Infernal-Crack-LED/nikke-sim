@@ -122,7 +122,9 @@ slot's table only:
      fullCharge roster tail, the gated primitives (status-end, consumeStatus, stack-mirror
      snapshot), `flora` `sides:2`, `mint` duet gating (HELD), `cinderella` G1, the HR→core
      measurement, the two note palimpsests — is itemized with its gate in
-     `docs/handoffs/2026-08-24-kit-audit-primitive-followups.md`.
+     `docs/handoffs/2026-08-24-kit-audit-primitive-followups.md`. **SSOT index for this thread
+     plus the b3-rank validation and unmodeled-entries work, categorized with per-item plans:
+     `docs/handoffs/2026-09-04-top-dps-and-kit-gaps-remaining-work.md`.**
 
 2. **Burst-generation thread** — core steps landed 2026-08-15 (PRs #120/#121/#122 merged).
    Classification: MIXED/INCONCLUSIVE (closure 0.2579 stands after noise-corrected ceiling test,
