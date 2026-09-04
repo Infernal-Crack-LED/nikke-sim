@@ -30,14 +30,16 @@ denominator, shortfall explainer) stay in `docs/handoffs/QUEUE.md` and are not r
 The audit compared 70 slugs (neutral + eleweak arms) and flagged 23 units where sim rank disagrees
 with the community lists by ≥10. **Nothing from it has been enacted.**
 
-### A0. Re-run the rank audit against the current chart — DO FIRST
+### A0. Re-run the rank audit against the current chart — DONE 2026-09-04
 
-The audit's sim basis is the 2026-08-16 `dpschart.json`; the mihara restraint-pacing rework
-(2026-08-25, board 1.179 → 1.076) and the skill-level-scaling landing both postdate it.
-
-- **Plan:** regenerate the chart, then `npx tsx scripts/audit-b3-ranks.ts --md=docs/b3-dps-rank-audit.md --full`.
-  Re-baseline every flag below from the fresh table before acting on any of them.
-- **Gate:** none. **Effort:** trivial. Unblocked.
+Re-ran against the 2026-08-25 chart (which already contains the mihara restraint-pacing and
+skill-level-scaling landings). Required one script fix: `PRIORITY_SCORE` learned the Tsareena
+sheet's new "High Union Raid Priority" label (score 4 — all six carriers are raid DPS).
+**Outcome: the flags are stable** — same 14-unit recording list (§7), small Δ wobbles only. Two
+movements worth noting: `jill`'s eleweak +10 flag dropped below the flag threshold (22 flagged
+units now, was 23), and `mihara-bonding-chain`'s measured board improved HOT 1.18 → 1.08 (±8%)
+with her Δ −10 rank flag intact — the restraint-pacing landing shows in the cross-check but
+doesn't close the community disagreement.
 
 ### A1. MAJOR/NOTABLE flags with NO recording — 14 units (recording-gated)
 
@@ -63,11 +65,11 @@ Ranked by loudest disagreement (worst Δ): `raven` +43, `sugar` −40, `vesti-ta
   corroborated). ⚠ basis caveat: community list has no treasure marker, sim runs treasure-on.
   **Plan:** settle the treasure-basis question (A3) first; the HOT board is already real and
   hers to explain independent of the rank gap.
-- `scarlet-black-shadow` — sim ranks ABOVE community (Δ −11/−12) but the board reads COLD 0.88
+- `scarlet-black-shadow` — sim ranks ABOVE community (Δ −11/−12) but the board reads COLD 0.93
   (n=2, N3) — CONTRARY. The N3 re-read found the 848% in-burst proc ABSENT from a confirmed burst
   window. **Plan:** the queued isolated-burst measurement (one burst-window recording, count
   procs) settles both the proc cadence and the rank flag.
-- `milk-blooming-bunny` — sim ranks BELOW community (Δ +11/+12) but measures HOT 1.19 (n=1) —
+- `milk-blooming-bunny` — sim ranks BELOW community (Δ +11/+12) but measures HOT 1.22 (n=1) —
   CONTRARY, and the community row is the conditioned (shyness-stack) one.
   **Plan:** re-basis against the unconditioned community row; the HOT board itself is U23 +
   the pierce-tagging item (B4), both measurement-gated.
@@ -229,7 +231,7 @@ The ACTIONABLE residue:
 
 ## Recommended execution order
 
-1. **A0** — regenerate chart + re-run `audit-b3-ranks` (refresh every flag; free).
+1. ~~**A0**~~ **DONE 2026-09-04** — re-ran `audit-b3-ranks` against the 2026-08-25 chart; flags stable.
 2. **B1** — mechanical batch: fullCharge tail, rei/rem selfStatus, validator/census follow-ups,
    palimpsests. Byte-identical or findings-only; land in per-unit slices with green gates.
 3. **A3 + B3** — one batched owner-ruling ask: treasure re-basis, flora sides, mint disposition,

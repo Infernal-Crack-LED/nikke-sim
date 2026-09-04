@@ -436,6 +436,7 @@ const PRIORITY_SCORE: Record<string, number | null> = {
   'Highest Priority': 5,
   'High Priority': 4,
   'High PvE Priority': 4,
+  'High Union Raid Priority': 4, // union raid is a PvE damage mode; all carriers are raid DPS
   'Medium Priority': 3,
   'PvE Medium Priority': 3,
   'Low Priority': 2,
