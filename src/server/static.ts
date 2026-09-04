@@ -505,6 +505,7 @@ function unitStaticHtml(slug: string): string {
       ? `<section class="unit-section"><h2>Skills</h2>${skills}</section>`
       : '') +
     statusSection +
+    relatedUnitsHtml(slug) +
     '<section class="unit-section"><h2>Tools</h2>' +
     '<div class="unit-tools">' +
     '<a href="/ranks">DPS Rankings</a>' +
@@ -523,6 +524,55 @@ const TIER_LABEL: Record<string, string> = {
   MODEL_ONLY: 'Untuned',
 };
 
+// Related-unit links for /unit/:slug — same-element and same-weapon
+// neighbours from data/characters.json, name-sorted, capped per group. The
+// /unit/* crawl graph used to be hub-and-spoke (/characters → unit → nothing):
+// every crawled unit page now surfaces a dozen more unit URLs to the crawler
+// and a useful jump-list to humans. Selection logic is mirrored in
+// scripts/serve.mjs AND web/src/UnitPage.tsx — keep the three in lockstep.
+const RELATED_CAP = 6;
+function relatedUnitLinks(slug: string): {
+  element: [string, CharacterData][];
+  weapon: [string, CharacterData][];
+} {
+  const c = CHARACTERS[slug];
+  if (!c) {
+    return { element: [], weapon: [] };
+  }
+  const pick = (key: 'element' | 'weapon'): [string, CharacterData][] =>
+    Object.entries(CHARACTERS)
+      .filter(([s, o]) => s !== slug && o[key] != null && o[key] === c[key])
+      .sort(([sa, ca], [sb, cb]) =>
+        (ca.name ?? sa).localeCompare(cb.name ?? sb)
+      )
+      .slice(0, RELATED_CAP);
+  return { element: pick('element'), weapon: pick('weapon') };
+}
+
+function relatedUnitsHtml(slug: string): string {
+  const related = relatedUnitLinks(slug);
+  const c = CHARACTERS[slug];
+  const group = (label: string, links: [string, CharacterData][]): string =>
+    links.length
+      ? `<div class="unit-related"><h3>${escapeAttr(label)}</h3>` +
+        links
+          .map(
+            ([s, o]) =>
+              `<a href="/unit/${escapeAttr(s)}">${escapeAttr(o.name ?? s)}</a>`
+          )
+          .join('') +
+        '</div>'
+      : '';
+  const html =
+    group(`${c?.element} units`, related.element) +
+    group(`${c?.weapon} users`, related.weapon);
+  return html
+    ? '<section class="unit-section"><h2>Related characters</h2>' +
+        html +
+        '</section>'
+    : '';
+}
+
 // Static /characters body: every character as a real link. This IS the crawl
 // surface the page exists for, so it must survive with JS off.
 function charactersStaticHtml(): string {
@@ -540,6 +590,79 @@ function charactersStaticHtml(): string {
     '<header><h1>NIKKE Characters</h1></header>' +
     `<section class="characters-all"><h2>All Characters</h2>${links}</section>` +
     '</div>'
+  );
+}
+
+// dist/dpschart.json — the SAME artifact the React DPS chart fetches, keyed by
+// distDir (a test harness can spin up multiple servers against different temp
+// dist trees in one process). Absent/unparseable => null => no body, exactly
+// the graceful-degradation shape CONTENT_PAGES uses.
+interface DpsChartArtifact {
+  cells?: Record<string, Array<[string, number, string | null]>>;
+}
+const dpsChartCache = new Map<string, Promise<DpsChartArtifact | null>>();
+function loadDpsChartArtifact(
+  distDir: string
+): Promise<DpsChartArtifact | null> {
+  let p = dpsChartCache.get(distDir);
+  if (!p) {
+    p = readFile(join(distDir, 'dpschart.json'), 'utf8')
+      .then((raw) => JSON.parse(raw) as DpsChartArtifact)
+      .catch(() => null);
+    dpsChartCache.set(distDir, p);
+  }
+  return p;
+}
+
+// K/M/B magnitude — same shape as src/infographics/core/rankTables.ts
+// fmtMagnitude. Inlined (as in serve.mjs) rather than imported so the two
+// servers stay dependency-identical; keep the two copies in lockstep.
+function fmtMagnitude(n: number): string {
+  return n >= 1e9
+    ? `${(n / 1e9).toFixed(2)}B`
+    : n >= 1e6
+      ? `${(n / 1e6).toFixed(2)}M`
+      : n >= 1e3
+        ? `${(n / 1e3).toFixed(1)}K`
+        : n.toFixed(0);
+}
+
+// Static /ranks body (the bare /ranks tab): the DPS chart's default cell as a
+// ranked list of real links to /unit/:slug. /ranks is the site's strongest
+// indexed page and its served HTML used to link nothing — the unit pages were
+// reachable from /characters alone. The ranking comes from dist/dpschart.json,
+// the same artifact the React chart reads (DpsChartTab DEFAULT_CELL), so the
+// crawler's view can never disagree with the page a visitor gets. Profiled
+// units appear twice in a cell (same slug, two rows) — deduped to their top
+// row; synthetic DPS-test rows have no characters.json entry and are skipped.
+const DEFAULT_CHART_CELL = 'solo.neutral.c100.scope';
+async function ranksStaticHtml(distDir: string): Promise<string> {
+  const rows =
+    (await loadDpsChartArtifact(distDir))?.cells?.[DEFAULT_CHART_CELL] ?? [];
+  const seen = new Set<string>();
+  const items: string[] = [];
+  for (const [slug, dps] of rows) {
+    if (seen.has(slug)) {
+      continue;
+    }
+    seen.add(slug);
+    const c = CHARACTERS[slug];
+    if (!c) {
+      continue;
+    }
+    items.push(
+      `<li><a href="/unit/${escapeAttr(slug)}">${escapeAttr(c.name ?? slug)}</a> — ${fmtMagnitude(dps)} DPS</li>`
+    );
+  }
+  if (!items.length) {
+    return '';
+  }
+  return (
+    '<div class="app ranks-page"><section class="unit-section">' +
+    '<h2>B3 carry DPS ranking</h2>' +
+    '<p class="muted">Solo · neutral boss · Core 100 · Scope Lock — the chart’s default view.</p>' +
+    `<ol class="ranks-list">${items.join('')}</ol>` +
+    '</section></div>'
   );
 }
 
@@ -850,6 +973,8 @@ async function sendIndex(
       html = injectStaticBody(html, unitStaticHtml(key.slice(5)));
     } else if (key === 'characters') {
       html = injectStaticBody(html, charactersStaticHtml());
+    } else if (key === 'dpschart') {
+      html = injectStaticBody(html, await ranksStaticHtml(opts.distDir));
     } else if (key === 'home') {
       html = injectStaticBody(html, homeStaticHtml());
     } else if (CONTENT_PAGES[key]) {
