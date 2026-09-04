@@ -1,0 +1,129 @@
+{
+  "note": "VARIANT of base drake (Drake (Treasure) — SG/Attacker/Fire/Burst III); this is Drake: Great Villain — SG/Defender/Wind/Burst III (cd 40s), an entirely different unit. SKILL1: 'Activates when entering Full Burst' = ANY team Full Burst entry (fullBurstEnter — including rotations another Burst III completes; NOT burstCast, which would fire only on her own casts). The swap is encoded literally: weaponSwap damagePct 243.75 (the kit's 'Damage' line, read as the FULL-SHOT total across all pellets — the same convention as a real SG unit's normalAttackMultiplier), chargeTimeSec 1.5 + chargeTimeClamp 1.5 ('Charge Time: Fixed at 1.5 sec' — a fixed charge, so charge-speed buffs do not shorten it), chargeMultPct 300 ('Full Charge Damage: 300%'), maxAmmo 6, weapon 'SG' + pelletCount 15 (the swap is a real shotgun, so its shots take the SG pellet-landing / range-band / auto-core routing with a 15-pellet spread), durationSec 10 (the swap lives exactly as long as the Full Burst that summoned it). 'Activates when Super Duper Overdrive ends → Removes 100% of ammo' is keyed to fullBurstEnd (the swap's own end frame: it expires the frame Full Burst ends) as instantReload THEN consumeAmmo fraction 1: the instantReload stands in for the weapon change itself — the swap gun vanishes and the base shotgun comes back with a full magazine (owner ruling 2026-08-12 on real weapon swaps; the engine applies that same refill one step later in the frame) — and it matters because her 6 swap rounds are spent by ~9s into the window, so at Full Burst end she is mid-way through the swap gun's own reload, which the weapon change abandons; without the reset the ammo dump would find her already reloading and skip the fresh base-weapon reload the kit charges. The net effect is one full base-weapon reload starting at every Full Burst end, which is the kit's stated cost. SKILL2: 'when Full Burst ends → all allies: Max HP ▲ 10.5% of the skill user's max HP, stacks up to 4' = fullBurstEnd, allies (self included), casterMaxHpPct 10.5, maxStacks 4, no expiry ('continuously'). Her OWN stacks feed her Fashionably Late conversion (own-kit Max HP counts, ally-granted does not — the e3 rule), so her ATK steps up after each of the first four Full Bursts; allies' copies are offense-inert. 'Fashionably Late: ATK ▲ 6.23% of the skill user's final max HP continuously' = battleStart, self, atkOfMaxHpPct 6.23 (re-reads her LIVE Max HP every frame, so it tracks the stacks up — an apply-time snapshot would miss them). BURST: self Attack Damage ▲ 27.5% for 25 sec (attackDamagePct, own casts only) + 1350% of final ATK as Burst Skill damage to all enemies — cast-instant (no +50% Full Burst major), crit-eligible, unflavored, TAGGED burstDesc 'allEnemies' (literal-only amp rule, owner 2026-08-10). Kit-autonomy gauntlet 2026-09-03.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 243.75,
+          "chargeTimeSec": 1.5,
+          "chargeTimeClamp": 1.5,
+          "chargeMultPct": 300,
+          "maxAmmo": 6,
+          "weapon": "SG",
+          "pelletCount": 15,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "instantReload"
+        },
+        {
+          "kind": "consumeAmmo",
+          "fraction": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 10.5,
+          "maxStacks": 4
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "battleStart"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkOfMaxHpPct",
+          "value": 6.23
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 27.5,
+          "durationSec": 25
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1350,
+          "burstDesc": "allEnemies"
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "skill1: the Super Duper Overdrive swap's SHOT ECONOMY is kit-silent beyond the stated 1.5s fixed charge and 6-round magazine — the engine fires one full-charge shot per 90 frames with no extra recovery animation, so a 10s window yields exactly 6 charged shots with no in-window reload. ⚑ estimate = 6 shots/window; recipe = count her charged-shot popups inside one Full Burst window in a focus video (any fewer means a per-shot recovery gap the datamine does not carry); tier = MEASUREMENT-GATED.",
+    "skill1: 'Damage: 243.75% of final ATK' with 'Pellet Count: 15' is read as the FULL-SHOT total (15 pellets × 16.25% each), the convention every implemented SG unit's normalAttackMultiplier follows; the swap has no shot_detail record in data/characters.json to confirm the split. ⚑ estimate = 243.75% per full shot; recipe = read one charged-shot popup spread in a focus video (expect ~16.25% of final ATK × 3.0 per pellet, not one 243.75% hit); tier = MEASUREMENT-GATED.",
+    "skill1: 'Charge Time: Fixed at 1.5 sec' is encoded as chargeTimeSec 1.5 (the engine enters its charge branch only when the swap declares its own charge frames — a clamp alone would inherit the base shotgun's chargeFrames 0 and never charge) PLUS chargeTimeClamp 1.5 (the kit's 'Fixed at' wording). The clamp is engine-redundant today — a swap with its own charge frames already ignores chargeSpeedPct — so the two fields cannot be told apart by any fixture; the spec test pins the immunity itself (an ally Charge Speed ▲ 100% leaves her swap cadence byte-identical).",
+    "skill1: the FB-end ammo dump is keyed to fullBurstEnd rather than a swap-end trigger (none exists) — exact here because the swap's durationSec 10 ends on the same frame Full Burst does. A Full Burst extension from an ally would stretch the FB window past the swap's 10s (the dump would then fire at the extended end, after she has already resumed the base shotgun — up to one extra base reload).",
+    "skill2: '(without restoring HP)' is honored by construction — the stack grant is a bare Max HP buff and emits NO recovery event, so on-recovery consumers (crown) never see it.",
+    "skill2: the Max HP stacks are ally-wide but only HER copies move damage (own-kit Max HP feeds atkOfMaxHpPct; ally-granted does not — e3 rule), through Fashionably Late; the +10.5%-per-stack basis is her STATIC Max HP at apply time (casterMaxHpPct reads owner.maxHp), not her stacked live Max HP, so four stacks = +42% of base Max HP exactly rather than compounding.",
+    "burst: the 1350% nuke is TAGGED burstDesc 'allEnemies' — her clause is the literal string trina's amp quotes ('Burst Skill damage of skills with \"Affects all enemies\"', owner ruling 2026-08-10: literal-only), so the nuke is amp-eligible whenever such an amp is live. Enforced roster-wide by scripts/tests/census-burst-amp-scope.test.ts."
+  ]
+}

@@ -36,7 +36,7 @@
 | `alliesOfWeapon` | 11 | arcana-fortune-mate, d-killer-wife, drake, himeno, leona, miranda, neon, noir, … |
 | `alliesTopAtk` | 19 | alice, anis, avistar, chime, claire, folkwang, himeno, jackal, … |
 | `atkOfCasterMaxHpPct` | 1 | maxwell-ordinary-mechanic |
-| `atkOfMaxHpPct` | 4 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose |
+| `atkOfMaxHpPct` | 5 | 2b, cinderella, drake-great-villain, laplace-ultimate-hero, maiden-ice-rose |
 | `bossElement` | 1 | eve |
 | `bossElementGate` | 9 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, neon-blue-ocean, phantom, queen, rosanna, … |
 | `burstCasters` | 3 | ada, arcana, crown |
@@ -48,12 +48,12 @@
 | `burstSnapshotsPreFb` | 1 | cinderella |
 | `byFinalAtk` | 15 | alice, anis, claire, folkwang, himeno, jackal, liberalio, mast, … |
 | `cast` | 7 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study, mihara-bonding-chain |
-| `casterMaxHpPct` | 11 | ade, anis-star, avistar, cinderella, mary-bay-goddess, mast, maxwell-ordinary-mechanic, rouge, … |
+| `casterMaxHpPct` | 12 | ade, anis-star, avistar, cinderella, drake-great-villain, mary-bay-goddess, mast, maxwell-ordinary-mechanic, … |
 | `charge` | 1 | snow-white |
 | `chargeCounter` | 10 | bay, claire, frima, milk, noise, power, quiry, rumani, … |
-| `chargeMultPct` | 10 | ada, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, maxwell, maxwell-ordinary-mechanic, nayuta, red-hood, … |
+| `chargeMultPct` | 11 | ada, cinderella-crystal-wave, drake-great-villain, e-h, eunhwa-tactical-upgrade, maxwell, maxwell-ordinary-mechanic, nayuta, … |
 | `consolidation` | 1 | dorothy-serendipity |
-| `consumeAmmo` | 3 | asuka-wille, grave, jill |
+| `consumeAmmo` | 4 | asuka-wille, drake-great-villain, grave, jill |
 | `convertExcess` | 1 | red-hood |
 | `copyResource` | 1 | mihara-bonding-chain |
 | `countInFb` | 7 | claire, frima, quiry, rapi-red-hood, scarlet-black-shadow, snow-crane, snow-white-innocent-days |
@@ -65,7 +65,7 @@
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 20 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 11 | clay, ether, eunhwa-tactical-upgrade, kurumi, mihara-bonding-chain, modernia, privaty-unkind-maid, soda-twinkling-bunny, … |
-| `flatDamage` | 100 | 2b, a2, anchor, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
+| `flatDamage` | 102 | 2b, a2, aigis, anchor, anis, anis-sparkling-summer, anis-star, arcana, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
 | `fullCharge` | 14 | ade-agent-bunny, anis-star, bready, cinderella, diesel-winter-sweets, eunhwa-tactical-upgrade, helm, liberalio, … |
@@ -78,10 +78,10 @@
 | `highestAllyMaxHpPct` | 2 | quency, sin |
 | `hitCount` | 67 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, anne-miracle-fairy, ark-ranger-black, asuka-wille, blanc, … |
 | `hitRatePct` | 20 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
-| `hitsPerShot` | 35 _(char-data)_ | aigis, anis-sparkling-summer, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
+| `hitsPerShot` | 36 _(char-data)_ | aigis, anis-sparkling-summer, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, drake-great-villain, … |
 | `inFb` | 11 | clay, ether, eunhwa-tactical-upgrade, kurumi, mihara-bonding-chain, modernia, privaty-unkind-maid, soda-twinkling-bunny, … |
 | `instantInFb` | 1 | rapi-red-hood |
-| `instantReload` | 13 | alice-wonderland-bunny, arcana-fortune-mate, asuka-wille, diesel, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, … |
+| `instantReload` | 14 | alice-wonderland-bunny, arcana-fortune-mate, asuka-wille, diesel, drake-great-villain, eve, guillotine-winter-slayer, little-mermaid, … |
 | `interval` | 39 | ade, anis, brid, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, … |
 | `lastBullet` | 19 | anchor, anis-sparkling-summer, aria, cinderella-crystal-wave, crow, dorothy, epinel, eunhwa, … |
 | `levelConst` | 7 | ada, arcana-fortune-mate, eve, prika, rapi-red-hood, red-hood, snow-white-heavy-arms |
@@ -132,8 +132,8 @@
 | `trueNormals` | 7 | chisato, clay, eunhwa-tactical-upgrade, frima, jill, laplace, takina |
 | `unlimitedAmmo` | 6 | grave, modernia, moran, nayuta, red-hood, snow-white-innocent-days |
 | `unswapped` | 3 | laplace, laplace-ultimate-hero, velvet |
-| `weapon` | 16 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, himeno, k, leona, miranda, … |
-| `weaponSwap` | 21 | ada, chisato, cinderella-crystal-wave, clay, e-h, eunhwa-tactical-upgrade, frima, jill, … |
+| `weapon` | 17 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, drake-great-villain, himeno, k, leona, … |
+| `weaponSwap` | 22 | ada, chisato, cinderella-crystal-wave, clay, drake-great-villain, e-h, eunhwa-tactical-upgrade, frima, … |
 | `whileSwapped` | 0 | _none_ |
 
 <!-- END GENERATED: primitive-census -->
@@ -829,3 +829,32 @@ round count: `emilia` (S1 Charge Speed / Charge Damage), `zwei` (S1 Pierce Damag
 (S1 Attack Damage); `vesti-tactical-upgrade` was already fixed via `noRetriggerWhileActive`.
 Evidence and regression coverage lives in `scripts/tests/units/emilia.test.ts` and
 `scripts/tests/engine/duration-shots.test.ts`.
+
+### 22. Swap-end ammo dump: a bare `fullBurstEnd` + `consumeAmmo` is INERT against the swap gun's in-flight reload — ⚑ OPEN (observed 2026-09-03)
+
+Found while landing `drake-great-villain` (Drake: Great Villain — SG/Defender/Wind, NOT base `drake`):
+her "Activates when Super Duper Overdrive ends → Removes 100% of ammo" line. All four blind gauntlet
+roles (two S2b reviewers, S5, S6) wrote the obvious encoding — `fullBurstEnd` + `consumeAmmo
+{fraction: 1}` — and in this engine that encoding does nothing. Two ordering facts combine: (1) her
+6 swap rounds are spent by ~9 s into the 10 s window, so at the Full-Burst-end frame she is already
+mid-way through the swap gun's own reload; (2) the Full-Burst-end triggers resolve BEFORE the
+same-frame swap expiry hands the base weapon back full (`sim.ts`: the `fbEndFrame === frame` section
+runs ahead of the per-unit FSM's `frame >= swap.untilFrame` check), and `consumeAmmo` only forces a
+reload when the target is NOT already reloading (its `!t.reloading` guard). Net: the swap-gun reload
+completes ~12 f after FB end with a full base magazine — the kit's stated cost is never paid.
+
+**Shipped per-unit workaround:** her dump block is `instantReload` THEN `consumeAmmo` on the same
+`fullBurstEnd` trigger — the instantReload stands in for the weapon change (base gun returns full,
+owner ruling 2026-08-12) and clears `reloading`, so the dump starts a fresh full base reload on the
+Full-Burst-end frame (reload event at FB end + 72 f under crown's reload-speed buff; pinned in
+`scripts/tests/units/drake-great-villain.test.ts` D2, whose `dumpNoReset` counterfactual is
+byte-identical to "no dump at all").
+
+**Engine-side fix candidates (roster-wide, not per-unit):** a `swapEnd` trigger primitive — the
+missing primitive both S2b reviewers named — or resolving the timed swap expiry (the hand-back) ahead of
+that frame's trigger dispatch so a bare `consumeAmmo` behaves faithfully. Land either together with
+dropping the `instantReload` from her override, plus a roster grep for other units pairing a swap end
+with an ammo/reload line (jill, asuka-wille, grave, laplace-ultimate-hero, milk-blooming-bunny carry
+"Removes 100% of ammo"; none of them pairs it with a timed real-weapon swap today, so none inherits
+the trap yet). Surfaced by the `claude-opus-5` second judge as an ENGINE gotcha (GO, not blocking).
+
