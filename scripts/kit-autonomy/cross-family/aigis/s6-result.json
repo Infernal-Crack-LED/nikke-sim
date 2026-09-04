@@ -1,0 +1,209 @@
+{
+  "slug": "aigis",
+  "leakDetected": null,
+  "override": {
+    "slug": "aigis",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 21.12
+          },
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 21.12
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 21.12,
+            "durationSec": 11
+          },
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 21.12,
+            "durationSec": 11
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 396,
+            "flavor": "distributed",
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill2 durationSec 11 is an UNMEASURED stand-in for the kit's event condition 'Deactivation condition: When Full Burst ends'. The engine has no until-event buff removal, so the window is derived from rotation arithmetic: her Burst-II cast → 30f chain gap to the B3 cast → 22f to Full Burst start → 10s Full Burst ≈ 10.87s. Wrong on any rotation where the chain stalls or a Full Burst is extended (fullBurstExtend carriers), and it does NOT self-truncate if the chain breaks after her cast.",
+      "⚑ skill2 Effect 2 basis mismatch: the kit grants DEF as a percentage of the SKILL USER'S DEF, but the schema has no caster-scaled DEF StatKey (only defPct = % of the target's own DEF). Encoded as defPct 21.12 to preserve the line rather than drop it; defPct is damage-inert in v1, so the mismatch moves no damage today, but it is NOT a faithful basis and would become wrong the moment a DEF consumer/scaler lands.",
+      "⚑ Base cadence (SMG, 120 ammo, reloadFrames 81, hitsPerShot 2, rate_of_fire) is datamined and in the known-unreliable field family — unverified against footage for this unit.",
+      "⚑ Burst damage crit eligibility (crit:true) is a convention, not kit text: the kit line states no crit behaviour and the schema default is crit-off for flatDamage.",
+      "Burst damage is left FB-eligible-by-timing (no noFb): the cast resolves before the Full Burst window opens, so the engine's own timing should exempt it. noFb is measured-only and is deliberately NOT set.",
+      "'Deals 396% of final ATK as distributed damage': distributed damage splits across enemy units in-game; the scope-lock fight is a single partless boss, so the full 396% is modeled as landing. Untested against a multi-target fight.",
+      "skill2's 'as long as this unit is still alive' clause is scope-trivial (nothing dies at scope lock) and is therefore not encoded as a gate.",
+      "skill1 uses `passive` rather than `battleStart`: the kit says 'continuous and cannot be removed' with no duration, and passive is always-on with no expiry semantics to get wrong."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. aigis is an SMG/Iron/Supporter/Burst II with a mechanically simple kit: S1 is a permanent unremovable self ATK/DEF pair (21.12% each, own-stat basis); S2 fires on HER OWN burst cast (kit wording 'Activates when using Burst Skill' — burstCast, NOT fullBurstEnter, so it does not fire on rotations another Burst II casts) and grants all allies a caster-scaled ATK add (casterAtkPct 21.12, i.e. 21.12% of aigis's own ATK as a flat add to every ally) plus the DEF counterpart, both ending when Full Burst ends. Burst is a single 396%-of-final-ATK distributed-damage instance on cast. There are no stacks, no weapon swap, no Hit-Rate line, no DoT, no gauge line, no core-strike wording, and no conditional/recurring riders — so the only real modeling choices are the S2 window length and the caster-DEF basis, both flagged above. The whole kit's damage contribution to a team is the S2 team ATK flat-add plus one burst nuke; her own SMG output rides only S1's 21.12% self ATK."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'passive'} — 'continuous and cannot be removed' with no duration; passive is always-on. battleStart would be equivalent here but carries duration semantics the kit does not use."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'}"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Tarukaja: ATK ▲ 21.12% continuously",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 21.12, no durationSec (permanent). Own-ATK basis — the line says plain 'ATK ▲ x%', not '% of the skill user's ATK', so atkPct not casterAtkPct."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Rakukaja: DEF ▲ 21.12% continuously",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 21.12, no durationSec. Inert in v1 (self DEF does not affect own damage) but retained per the no-skip rule on DEF lines / future consumer."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "cannot be removed (both effects)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Expressed as absence of durationSec + a passive trigger; the engine has no removal channel that would strip these, so no extra encoding is needed."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} — literal 'when using Burst Skill' = the OWNER casts. Keying this to fullBurstEnter would over-credit on any rotation where a different Burst II unit completes stage 2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "as long as this unit is still alive",
+      "status": "SKIPPED-AS-TRIVIAL",
+      "effectOrReason": "No death model at scope lock (boss deals no damage), so the condition is always true; encoding a gate would be inert-by-construction. Recorded as a caveat, not as a dropped mechanic — no `unmodeled` row because the effect it guards IS modeled."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies. (both effects)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — 'all allies' includes self, so excludeSelf is NOT set."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Matarukaja: ATK ▲ 21.12% of user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 21.12 — 'of the skill user's ATK' is the caster-scaled flat-add basis, resolved at apply time to (21.12/100)×aigis.staticAtk for every ally."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Marakukaja: DEF ▲ 21.12% of user's DEF",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 21.12 (BASIS APPROXIMATION — no caster-scaled DEF StatKey exists; defPct reads the target's own DEF). Damage-inert in v1; kept rather than dropped per the DEF-not-skippable rule."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deactivation cond.: When Full Burst ends",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "durationSec 11 (⚑ derived stand-in) on both buffs — see flags. No engine primitive removes a buff on a fullBurstEnd event, so the event condition is converted to a wall-clock window."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "continuous and cannot be removed",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Read as 'not strippable by cleanse', subordinate to the explicit deactivation condition; expressed as a plain non-stacking buff with the derived window."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} on the damage block (authoring convention for damage effects; single partless boss at scope lock)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "396% of final ATK as distributed dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 396, flavor 'distributed', crit true (⚑ convention), trigger burstCast. No core (the text says no 'core strike'), no noFb (cast resolves pre-FB by timing), no noRange (engine-automatic on riders)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill2[0].effects[*].durationSec",
+      "estimate": "11 sec (range 10.9–11.0 on a clean chain; longer with any fullBurstExtend carrier in the team)",
+      "reasoning": "The kit states an EVENT deactivation ('When Full Burst ends'), not a duration, and the engine has no until-event buff removal. Derived from her Burst-II cast frame forward using the measured chain timing: 30f stage-2→stage-3 gap + 22f stage-3→Full-Burst start ≈ 0.87s, then a 10s Full Burst = 10.87s, rounded to 11. This is the ALWAYS-⚑ 'kit-silent value' class: it is arithmetic from other constants, not a kit number. It over-runs if the chain breaks after her cast and under-runs behind any Full-Burst extender.",
+      "recipe": "Focus-record a comp where aigis bursts, and read a teammate's damage popups (or the buff banner) across the Full-Burst boundary: the last frame carrying the elevated ATK relative to the Full-Burst-end frame gives the true window. Cheaper cross-check: run the comp in-sim with cfg.onEvent, capture the buffApply expiresFrame for stat 'casterAtkPct' casterIdx=aigis and the following fullBurstEnd event, and confirm they coincide within a frame; if they don't, retune durationSec to the measured chain rather than the nominal one. If the engine later grows a removeOnFullBurstEnd primitive, this whole flag retires."
+    },
+    {
+      "field": "override.skill2[0].effects[1].stat (defPct as caster-DEF proxy)",
+      "estimate": "defPct 21.12 (target's own DEF basis) standing in for '21.12% of the skill user's DEF'",
+      "reasoning": "The StatKey list has casterAtkPct / atkOfCasterMaxHpPct but no caster-scaled DEF analogue. Dropping the line would violate the DEF-not-skippable rule; encoding it as defPct preserves the audit trail at the cost of a wrong basis. Zero damage consequence today (defPct is explicitly inert in v1), so this is a fidelity flag, not a magnitude flag.",
+      "recipe": "No measurement needed — this is a schema gap, not an unknown. Resolve by either (a) adding a casterDefPct StatKey when a DEF consumer first exists, or (b) leaving it and re-checking this override the moment DEF stops being inert. Grep the roster for other 'X% of the skill user's DEF' lines first: if aigis is not the only carrier, the schema addition is the right call rather than a per-unit proxy."
+    },
+    {
+      "field": "base cadence (rate_of_fire, reloadFrames 81, hitsPerShot 2, ammo 120)",
+      "estimate": "as datamined: SMG, 120 rounds, 81-frame reload, 2 hits/shot, normalAttackMultiplier 10.12",
+      "reasoning": "ALWAYS-⚑ #1: the datamined cadence fields are in the known-unreliable family, and a nominal rate_of_fire is not the effective rate (the game fires on 60fps boundaries, so effective = 60/ceil(60/nominal)). Nothing in aigis's kit modifies fire rate, reload, or ammo, so her shot economy is entirely inherited from these unverified numbers — every point of her own normal-attack damage rides on them.",
+      "recipe": "Count her trigger pulls between two reloads in a focus recording and compare against 120/hitsPerShot; time a reload from the last shot to the first shot of the next magazine and compare against 81 frames (1.35s). Reuse before deriving: check whether an existing SMG unit's pinned cadence fixture in scripts/tests/** already validates the shared SMG shot spec — if it does, that IS the independent method and no new footage is needed."
+    },
+    {
+      "field": "override.burst[0].effects[0].crit",
+      "estimate": "true (crits at aigis's sheet rate)",
+      "reasoning": "The kit line carries no crit wording either way. The methodology's rider convention is that function-damage riders crit at the caster's rate but take no core, which argues for true; the schema default for flatDamage is crit-off, which argues for omitting it. I set it explicitly rather than riding a default, so the choice is visible to the judge instead of silent. If the engine's shipped convention for burst-slot flatDamage is crit-off, this over-credits her burst by roughly the crit-expectation factor.",
+      "recipe": "Read her burst popup colour in a focus recording across several rotations — orange + crit icon vs plain white settles it directly (a burst nuke that never shows orange across ~5 casts is crit-ineligible). Cheaper: check what the other distributed-damage burst carriers in src/skills/overrides/ set, since a roster-wide convention outranks a per-unit guess here."
+    },
+    {
+      "field": "override.burst[0].effects[0].flavor 'distributed' (split-vs-merge)",
+      "estimate": "full 396% lands on the single boss (no split)",
+      "reasoning": "ALWAYS-⚑ #5, the split-vs-merge class: 'distributed damage' is kit-silent about how the 396% divides when there are multiple targets. The scope-lock fight is one partless boss, so the question is unobservable at scope and the full value lands. The flavor tag is retained because distributedDamagePct buffs from teammates key off it.",
+      "recipe": "Not resolvable at scope lock and not worth resolving there — flag only. It becomes live if multi-target or multi-part bosses ever enter scope (both are currently out of scope); at that point read the per-target popups on a burst cast against a known ATK."
+    }
+  ],
+  "model": "claude-opus-5"
+}

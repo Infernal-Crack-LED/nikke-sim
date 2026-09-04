@@ -1,0 +1,92 @@
+{
+  "slug": "aigis",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle / self",
+      "disposition": "FAITHFUL",
+      "assertion": "Every 21.12-valued atkPct/defPct application targets aigis and only aigis; zeroing the ATK line drops her total and leaves teammates byte-identical. Fails under an allies-scoped S1 (teammates would move)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Tarukaja: ATK ▲ 21.12%",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply stat atkPct value 21.12 on aigis, and the counterfactual zeroing it strictly lowers her damage. Fails under a caster-scaled or dead encoding (no 21.12 percentage emitted, or no damage delta)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Rakukaja: DEF ▲ 21.12%",
+      "disposition": "FAITHFUL (inert)",
+      "assertion": "defPct 21.12 recorded on self for kit completeness AND zeroing every defPct leaves all five totals identical. Fails under a dropped DEF line (no event) or a DEF line wired to a damage path (totals move)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill",
+      "disposition": "FAITHFUL",
+      "assertion": "The grant appears in the event stream before the first fullBurstStart (a cast precedes FB entry by the chain gap); the patched fullBurstEnter build lands it AFTER, proving the probe discriminates. Fails under full-burst-enter keying, which over-credits rotations another unit completes."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies. Matarukaja",
+      "disposition": "FAITHFUL",
+      "assertion": "One uniform-valued application per ally per cast, target set == the whole comp and includes aigis. Fails under self-only, allies-except-self, or a top-ATK-ally target set (set size / membership wrong)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲21.12% of the skill user's ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "Emitted under stat casterAtkPct with a FLAT-resolved value (>1000, never 21.12), identical across targets. Fails under target-scaled atkPct 21.12 (wrong stat, and each ally would scale off its own ATK)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deactivation: when Full Burst ends",
+      "disposition": "MEASUREMENT-GATED (⚑ duration)",
+      "assertion": "Two-sided bound: a permanent (999s) variant strictly beats the shipped model and a 0.5s variant strictly loses to it, so the window is finite and non-trivial. Fails under the 'continuously / cannot be removed' misreading as whole-fight permanence. ⚑ The exact seconds are not in the kit — the faithful window is her stage-2 cast → FB end (chain gap + 22f + the 10s FB), so the authored durationSec is an estimate, not a kit value."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Marakukaja: DEF of skill user",
+      "disposition": "GAP",
+      "assertion": "it.skip — no casterDefPct StatKey exists (defPct is target-scaled and offensively inert), so an ally DEF grant scaled off the caster's DEF is inexpressible and damage-neutral at scope."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "as long as this unit is still alive",
+      "disposition": "UNMODELED (scope-trivial)",
+      "assertion": "No assertion — the v1 boss deals no damage, so nobody dies and the clause is unconditionally satisfied."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 396% of final ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "zero / shipped / doubled atkPct are linear ((2x - 1x)/(1x - 0x) == 1), so the hit is a plain percent-of-final-ATK instance with no extra term, and doubling it moves no teammate. Fails under a folded/bucketed encoding carrying additional multipliers."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "as distributed damage",
+      "disposition": "FAITHFUL",
+      "assertion": "Injecting a self-only distributedDamagePct buff lifts aigis's total and nobody else's — only possible if the burst hit carries the distributed flavor. Fails under an untagged flatDamage (no delta)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies",
+      "disposition": "UNMODELED (scope-trivial)",
+      "assertion": "Single partless boss in v1 — AoE vs single-target is unobservable; recorded only as the burstDesc-style scope tag, no damage consequence."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "burst-cast timing (pre-FB)",
+      "disposition": "FAITHFUL",
+      "assertion": "Every burst-bucket damage event carries inFullBurst false, matching the verified fact that burst-cast damage lands before the FB window opens (no +50% major, no entry auras). Fails if the burst hit were scheduled at/after FB start."
+    }
+  ],
+  "fixtures": "controlComp('aigis', true) only — liter B1 / crown B2 / aigis / helm B3. aigis is a Burst II, so the fixed B3 slot is REQUIRED for the chain to reach Full Burst at all, and crown (also B2) means aigis takes stage 2 only on rotations crown is on cooldown — hence the explicit non-vacuity gate asserting her S2 actually fired and a Full Burst actually happened before any S2 claim is judged. 9 hoisted 180s runs: base, S1-ATK-zeroed, all-defPct-zeroed, S2 permanent (999s), S2 short (0.5s), S2 re-triggered to fullBurstEnter, burst atkPct zeroed, burst atkPct doubled, and a self-only distributedDamagePct probe.",
+  "gaps": [
+    "it.skip — skill2 Marakukaja 'DEF ▲21.12% of the skill user's DEF': no caster-scaled DEF primitive exists (no casterDefPct StatKey; defPct is target-scaled and offensively inert in v1), so the line cannot be encoded faithfully and moves no damage either way.",
+    "No assertion for skill2's 'as long as this unit is still alive' — no HP pool / no boss damage at scope lock, so the clause is unconditionally true and unobservable.",
+    "No assertion for the burst's 'Affects all enemies' AoE scope — single partless boss, unobservable in v1.",
+    "The S2 window length is a ⚑: the kit gives a deactivation EVENT ('when Full Burst ends'), not a duration, and the engine has no full-burst-end removal primitive — the test bounds the window on both sides rather than pinning seconds."
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,205 @@
+{
+  "slug": "drake-great-villain",
+  "kitDescription": "Drake: Great Villain is a Wind shotgun Defender (Burst III, 40s cooldown) who transforms for the duration of Full Burst. Whenever the team enters Full Burst — her own chain or another Burst III's — her shotgun is replaced by 'Super Duper Overdrive', a 15-pellet charge shotgun with a fixed 1.5-second charge, 243.75% damage per shot and a x3 full-charge bonus, but a magazine of only six rounds; when the Overdrive ends she is left with an empty gun and must reload before she can shoot again. Every time a Full Burst ends she gives the whole team a permanent Max HP boost worth 10.5% of her own Max HP, stacking up to four times. Her second passive converts 6.23% of her own final Max HP into ATK, so her share of those stacks makes her hit progressively harder as the fight goes on — she is deliberately back-loaded. Her burst gives herself +27.5% Attack Damage for 25 seconds and deals 1350% of her final ATK to all enemies.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1-b > 'dropping the ammo dump OVER-credits drake (it costs her a reload every cycle)' — D(rNoAmmoDump) > D(base) fails on the blind author's solo-B3 fixture (driver-reported 334.4M vs 348.3M shipped). Every structural assertion about the shipped override passed (22 pass / 1 fail / 3 author-declared skips); the blind's own structural read of the dump block (slot skill1, target self, trigger fullBurstEnd, fraction 1) is green against the driver's file, and the blind test does not assert the absence of the driver's extra instantReload."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger fullBurstEnter, target self — ANY team Full Burst entry, explicitly not burstCast",
+        "blindSaid": "Both S2b reviewers and S5/S6 independently required fullBurstEnter and named burstCast/ownBurstGate as the nearest-wrong; S6 encoded it identically",
+        "formulaCheck": "Prose activation clause names Full Burst ENTRY, not her own cast. game-mechanics.md §8: the burst chain's stage-3 cast precedes the FB countdown by 22f, so burstCast and fullBurstEnter are genuinely different frames AND different rotations in a two-B3 comp.",
+        "fireRateOk": true,
+        "explanation": "Driver test pins swapWindows(ctrl).length === windows.length in the two-B3 control comp (Full Bursts strictly outnumber her casts, asserted non-vacuously), and the burstCast counterfactual is pinned to lose windows. Convergent across all four blind roles."
+      },
+      {
+        "kitLine": "Changes the weapon in use: Super Duper",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap (real weapon change, not sameWeapon), weapon 'SG', so swap shots take the SG pellet-landing / band routing",
+        "blindSaid": "S6 identical; opus S2b flagged that omitting weapon:'SG' silently falls back to hitsPerShot 10 with no error",
+        "formulaCheck": "game-mechanics.md §7 / damage-calculation.md §1b: SG shots route through unigeoSgLanding + per-landed-pellet core; a swap without weapon:'SG' bypasses that model entirely.",
+        "fireRateOk": true,
+        "explanation": "The swapNotSg counterfactual is pinned to produce a flat 243.75 atkPct with no landing fraction, proving the field is READ and not merely present — this is exactly the silent-fallback the opus reviewer predicted, and the driver closed it."
+      },
+      {
+        "kitLine": "Charge Time: Fixed at 1.5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeTimeSec 1.5 AND chargeTimeClamp 1.5 — the engine enters the charge branch only on chargeTimeSec (base chargeFrames is 0), the clamp pins it against charge-speed buffs",
+        "blindSaid": "S6 authored both fields for the same stated reason; opus S2b named the clamp load-bearing and specified a charge-speed-granting-ally arm as its distinguishing assertion",
+        "formulaCheck": "game-mechanics.md §4: Charge Speed is SUBTRACTIVE on charge time; 'Fixed at' is the clamp wording, so an unclamped 1.5s would shorten under any ally chargeSpeedPct.",
+        "fireRateOk": true,
+        "explanation": "Encoding is correct and the swapClampOnly counterfactual proves chargeTimeSec is load-bearing (no charged shot at all without it). The clamp ITSELF is unfalsified — see gotcha 3: no fixture member grants charge speed, so deleting chargeTimeClamp would leave every assertion in both test files green."
+      },
+      {
+        "kitLine": "Damage: 243.75% of final ATK",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "damagePct 243.75 read as the FULL-SHOT total across all 15 pellets, carried as a MEASUREMENT-GATED caveat with a popup-spread recipe",
+        "blindSaid": "S6 flagged the identical split-vs-merge ambiguity with the same full-shot reading and the same popup recipe; opus S2b refuted the per-pellet reading on whole-picture grounds (base 201.5 spans 10 pellets)",
+        "formulaCheck": "damage-calculation.md §1: rate% is the instance multiplier; every implemented SG unit's normalAttackMultiplier is the whole-shot total (hers is 201.5/10 pellets), so 243.75/15 pellets is the same order of magnitude. A per-pellet reading would make one swapped shot ~18x her base shot.",
+        "fireRateOk": true,
+        "explanation": "Split-vs-merge is genuinely kit-silent; all four roles converged on full-shot, the whole-picture check supports it, and the residual is flagged with a recipe. Correctly handled — magnitude is out of my scope (rule VI) and does not contradict the prose."
+      },
+      {
+        "kitLine": "Pellet Count: 15",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap.pelletCount 15 alongside weapon 'SG'",
+        "blindSaid": "S6 identical; S5 flagged the swap's burst-gauge economy at 15 vs 10 pellets as an unresolvable ⚑",
+        "formulaCheck": "game-mechanics.md §6 + the settled owner ruling: gauge generates ONLY between FB end and the next chain start. Every swap shot lands INSIDE Full Burst, where nothing generates gauge.",
+        "fireRateOk": true,
+        "explanation": "FAITHFUL. Note for the record: S5's gauge-economy ⚑ is MOOT — the 15-pellet swap cannot feed the gauge at all, because it exists only during Full Burst and gauge generation is locked there. That flag needs no measurement and should not be inherited by a later session."
+      },
+      {
+        "kitLine": "Full Charge Damage: 300%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap.chargeMultPct 300",
+        "blindSaid": "S6 identical; both S2b reviewers named dropping it (because the base weapon has chargeMultiplier 0) as a 3x under-credit",
+        "formulaCheck": "damage-calculation.md §1d: Charge = chargeMult/100 (+ additive charge-damage terms). chargeMultPct is the weapon's multiplier, distinct from an additive chargeDamagePct buff.",
+        "fireRateOk": true,
+        "explanation": "Driver test asserts mult.charge === 3 on every in-window shot and 1 on every out-of-window shot; the swapNoChargeMult counterfactual collapses it to 1. Correct bucket, correct primitive."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity: 6",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap.maxAmmo 6 (swap-scoped magazine, not a maxAmmoFlat buff on the unit)",
+        "blindSaid": "S6 identical; opus S2b named the maxAmmoFlat/maxAmmoPct misencoding (which would leak onto the base 9-round gun) as the nearest-wrong",
+        "formulaCheck": "Weapon-state field, not a buff — a maxAmmo* buff would persist outside the swap and change base-weapon reload cadence.",
+        "fireRateOk": true,
+        "explanation": "Driver test pins ammoAfter [5,4,3,2,1,0] inside every window and a fresh 9-round base magazine (ammoAfter 8) on the first post-FB shot — the base magazine is demonstrably untouched."
+      },
+      {
+        "kitLine": "swap window length (kit-silent)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "durationSec 10 = 'the swap lives exactly as long as the Full Burst that summoned it'; caveat 3 states a fullBurstExtend ally would stretch FB past the swap",
+        "blindSaid": "S5 and S6 both raised it as a ⚑ with the same estimate and the same extender-team recipe; opus S2b explicitly warned to derive the window from the OBSERVED fullBurstEnd rather than a hardcoded 600 frames",
+        "formulaCheck": "game-mechanics.md §8: Full Burst is nominally 10s but a fullBurstExtend kit (modernia 15s) lengthens it for its granter's team.",
+        "fireRateOk": true,
+        "explanation": "The estimate is the only defensible reading of the prose and it is flagged with a recipe on both the swap and the coupled ammo dump. It is a latent fidelity issue rather than a present one (no extender in either fixture) — carried as gotcha 2 for the roster-level fix."
+      },
+      {
+        "kitLine": "when Overdrive ends: Removes 100% ammo",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd + instantReload THEN consumeAmmo{fraction:1}; the instantReload stands in for the weapon-change hand-back so the dump has a full base magazine to empty and is not swallowed by the swap gun's in-flight reload",
+        "blindSaid": "All four blind roles encoded the bare fullBurstEnd + consumeAmmo; S6's override is otherwise block-identical to the driver's. Both S2b reviewers independently stressed that the dump must resolve AFTER the hand-back, and opus S2b named dropping the line as the classic weapon-state misread",
+        "formulaCheck": "Owner ruling 2026-08-12: a real weapon change returns the base weapon FULL. The kit line exists to cancel that refill, costing one full base reload (111f, ~72f under crown's reload buff) at every FB exit — a shot-count effect, not a defensive one.",
+        "fireRateOk": true,
+        "explanation": "The OUTCOME matches the prose exactly and is pinned on its own terms rather than on a fragile total: a reload starting on the FB-end frame, a uniform gap across every window, no shot inside it, and a fresh 9-round magazine on the first post-FB shot. The driver's independent finding — that the bare encoding every blind role wrote is INERT in this engine (fullBurstEnd triggers resolve before the same-frame swap expiry, and consumeAmmo's !reloading guard then no-ops against the swap gun's own reload; probe: FB end 944 -> reload at 956 unforced vs 1016 forced) — is the single most valuable output of this gauntlet and is the reason four convergent blind encodings would all have silently dropped a real DPS cost. The primitive-level defect is filed as gotcha 1."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Max HP ▲ 10.5% of skill user's max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd, target allies (self included), buff casterMaxHpPct 10.5",
+        "blindSaid": "S6 byte-identical; both S2b reviewers named targetMaxHpPct and excludeSelf as the nearest-wrong models and stressed that the SELF share is the load-bearing one",
+        "formulaCheck": "damage-calculation.md §1a e3 scope: only own-kit maxHpFlat feeds a unit's own HP->ATK conversion; ally-granted Max HP does not. 'of the skill user's max HP' is caster-scaled, so all five values are identical.",
+        "fireRateOk": true,
+        "explanation": "Driver test pins the apply frames to exactly the fullBurstEnd frame set, all four target indices including her own, value = 10.5% of her Max HP, expiresFrame null, and ally totals byte-identical with and without the grant (inert by mechanism, not by assumption — the fixture seats no ally with an HP->ATK conversion)."
+      },
+      {
+        "kitLine": "continuously. Stacks up to 4 times.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "maxStacks 4, no durationSec",
+        "blindSaid": "S6 identical; S5 required stacks to ramp 1..4 and never exceed 4",
+        "formulaCheck": "game-mechanics.md §11: same-name/same-scope re-application refreshes rather than co-stacking unless a stack count is declared — so maxStacks is what makes the ladder real.",
+        "fireRateOk": true,
+        "explanation": "Pinned as an exact ladder (min(i+1,4) across all 11 FB ends), with both a timed counterfactual (expiresFrame non-null) and a non-stacking counterfactual (max stacks 1, lower total). Non-vacuous: the cap is demonstrably REACHED in the fixture."
+      },
+      {
+        "kitLine": "(without restoring HP)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "honored by construction — a bare Max HP buff emits no recovery event, so on-recovery consumers (crown) never see it; recorded as a caveat, unmodeled stays empty",
+        "blindSaid": "kimi S2b listed it as unmodeled-verbatim; opus S2b and S6 said it belongs inside the modeled block as a no-op at scope lock",
+        "formulaCheck": "No HP pool is modeled at scope lock; the parenthetical only forbids a heal, and no heal primitive is present.",
+        "fireRateOk": true,
+        "explanation": "The driver's resolution is correct and is the stronger reading: a clause that is satisfied by construction is not an omission, and putting it in `unmodeled` would manufacture a phantom gap for every future grep."
+      },
+      {
+        "kitLine": "Fashionably Late: ATK ▲ 6.23% max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "battleStart, self, buff atkOfMaxHpPct 6.23 — re-reads LIVE Max HP so it tracks her own stacks up",
+        "blindSaid": "S6 identical; BOTH S2b reviewers independently named atkOfCasterMaxHpPct (apply-time snapshot) as the subtle shared-prior trap that is invisible at t=0 and silently deletes the whole ramp",
+        "formulaCheck": "damage-calculation.md §1a: 'ATK ▲ X% of Max HP' reads the unit's OWN live Max HP (liveMaxHp = base + own-kit maxHpFlat, honoring stacks); atkOfCasterMaxHpPct is the different, flat-at-apply primitive.",
+        "fireRateOk": true,
+        "explanation": "The highest-blast-radius trap in this kit, and the driver closed it in the sharpest available way: the flSnapshot counterfactual is asserted to MATCH at t=0 and to diverge by exactly 6.23% x 4 x stackValue after the fourth FB end. That is a mechanism isolation, not a totals comparison."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Attack Damage ▲ 27.5% for 25 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, self, attackDamagePct 27.5, durationSec 25",
+        "blindSaid": "S6 identical; both S2b reviewers named ally-targeting and a dropped/permanent duration as the co-equal nearest-wrongs, and stressed burstCast (not fullBurstEnter) in the two-B3 fixture",
+        "formulaCheck": "damage-calculation.md §1e: 'Attack Damage ▲' is an additive DamageUp-bucket member, not an ATK-bucket term. 25s against a 40s cooldown is a genuine ~62% duty cycle, so a dropped duration is a live over-credit.",
+        "fireRateOk": true,
+        "explanation": "Pinned to exactly one application per HER cast, targetIdx self only, expiresFrame - frame === 1500. Both counterfactuals are exercised (allies -> 4 targets and a measurable lift on helm; 10s -> expiry 600)."
+      },
+      {
+        "kitLine": "Deals 1350% of final ATK as Burst Skill",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, target enemy, flatDamage atkPct 1350, burstDesc 'allEnemies', crit-eligible, unflavored, no FB major",
+        "blindSaid": "S6 identical. kimi S2b asserted 'burst skill damage does not crit in-game' — see RECON note below; opus S2b required fbMajorApplied false, rangeApplied false, no core, and the same-cast +27.5% ordering",
+        "formulaCheck": "damage-calculation.md §1b + §2b: burst-cast damage lands 22f BEFORE the FB countdown (no +0.5, no entry auras); function-type skill damage crits at the caster's rate, never cores, never takes range. burstDesc 'allEnemies' is the literal amp-scope tag (owner ruling 2026-08-10).",
+        "fireRateOk": true,
+        "explanation": "Every one of those properties is pinned (fbMajorApplied false, inFullBurst false, rangeApplied false, bucket 'burst', critEligible true, distributed 1), plus the block-ordering assertion that the nuke carries her own same-cast +27.5% (mult.dmgUp delta exactly 0.275 vs the noAd arm) — the ordering concern kimi raised, converted into an assertion. RECON_ERROR: kimi's 'burst skill damage does not crit' contradicts the SSOT (§2b, crit default ON for function-type skill damage) and the roster convention (yukiko's nuke pinned crit-eligible 2026-08-19); the driver correctly reported it rather than acting on it."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "skill1",
+      "summary": "The faithful bare encoding of 'Removes 100% of ammo' (fullBurstEnd + consumeAmmo) is INERT in this engine, because fullBurstEnd triggers resolve before the same-frame swap expiry and consumeAmmo's !reloading guard no-ops against the swap gun's in-flight reload. The driver compensated inside one unit's override (instantReload) instead of the engine.",
+      "evidence": "Kit: '■ Activates when Super Duper Overdrive ends. Affects self. Removes 100% of ammo.' Owner ruling 2026-08-12: a real weapon change returns the base weapon FULL, so this line's only purpose is to cancel that refill and buy a reload. Driver probe (control fixture, first window): bare encoding -> reload event at frame 956, i.e. the swap gun's own reload merely completing 12f after FB end 944, no cost paid; driver encoding -> reload starts at 944, completes 1016, first shot 1040 at ammoAfter 8. All four blind roles (S2b x2, S5, S6) wrote the bare encoding, and S6's override is otherwise block-identical to the driver's — i.e. the blind convergence would have shipped a silently dropped kit line.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Engine-side, not per-unit: either add a `swapEnd` trigger primitive (the missing primitive both S2b reviewers named), or move the swap-expiry weapon hand-back ahead of trigger resolution on the expiry frame so a bare consumeAmmo behaves faithfully. Land that with the same change that drops `instantReload` from this override, and add a roster grep for other units pairing a swap end with an ammo/reload line. Until then the shipped encoding is behaviourally correct and its note documents exactly why.",
+      "outcome": null
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "The swap window is a hardcoded durationSec 10 rather than the live Full Burst window, so under a fullBurstExtend ally the Overdrive ends before Full Burst does — and the ammo dump, keyed to fullBurstEnd, then fires after she has already resumed and fired the base shotgun.",
+      "evidence": "Kit states no duration; the only boundaries it names are 'entering Full Burst' and 'when Super Duper Overdrive ends'. game-mechanics.md §8: Full Burst is nominally 10s but a fullBurstExtend kit (modernia 15s) lengthens it. Both coupled fields (weaponSwap.durationSec and the fullBurstEnd-proxied dump) inherit the desync together; opus S2b named this explicitly ('derive the window from the OBSERVED fullBurstEnd, not a hardcoded 600').",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs measurement to settle whether the swap is FB-bound or a fixed timer (recipe already in the override's caveats and in S6's flags: run the unit once with a fullBurstExtend granter and mark the frames the weapon model changes and reverts). If FB-bound, express the swap's end as the live fbEndFrame rather than a fixed 10s — which also makes the ammo-dump proxy exact by construction. Do not adjust the number to fit a board reading.",
+      "outcome": null
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "skill1",
+      "summary": "`chargeTimeClamp: 1.5` is load-bearing but unfalsified — no test in either file distinguishes it from a plain chargeTimeSec, because no member of either fixture grants Charge Speed. Deleting the clamp would leave all 29 driver assertions and all 22 blind assertions green.",
+      "evidence": "Kit line 'Charge Time: Fixed at 1.5 sec' — 'Fixed at' is the clamp wording. game-mechanics.md §4: Charge Speed is subtractive on charge time, so without the clamp an ally chargeSpeedPct would shorten the 1.5s and inflate in-window shot count. Opus S2b named the exact distinguishing assertion ('run the control comp twice, baseline vs a support patched with chargeSpeedPct ▲100; assert byte-identical swapped-shot frames') and it was not written; the driver's swapClampOnly counterfactual tests the OPPOSITE field (that chargeTimeSec is required), not the clamp.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Add the S2b-specified arm to scripts/tests/units/drake-great-villain.test.ts: a second run of the control comp with a support patched to grant allies chargeSpeedPct, asserting her in-window charged-shot frames and count are byte-identical to baseline. No value changes — this pins an encoding that is already correct.",
+      "outcome": null
+    }
+  ],
+  "discriminationOk": false,
+  "faithfulnessScore": "1.00",
+  "verdict": "GO",
+  "verdictRationale": "Every one of the 15 kit lines is FAITHFUL or a DOCUMENTED_GAP, and no SILENT_DROP, ENCODING or FIDELITY divergence from the prose survived checking against the formula SSOT — the override's blocks are byte-identical to the independently-written S6 blind override except for the one deliberate addition the driver justified. The mechanical convergence run is RED on exactly one assertion, and that RED is spurious as a faithfulness signal: the blind author asserted a DIRECTION on a total (removing the ammo dump must raise her damage) using the solo-B3 fixture, where the extra post-FB shots land in the ONLY burst-gauge-generating window and shift the whole rotation; the mechanism the blind claimed is right, the fixture it chose to prove it on is rotation-coupled. Ranked, the real output of this run is: (1) gotcha 1 — the driver discovered that the bare fullBurstEnd + consumeAmmo encoding that all four blind roles converged on is INERT in this engine (trigger resolution precedes swap expiry; the !reloading guard swallows the dump), so four independent agents would have shipped a silently dropped DPS cost, and the fix belongs in the engine (a swapEnd primitive or expiry ordering) rather than in one override's instantReload; (2) gotcha 2 — the swap's kit-silent window is pinned at a fixed 10s instead of the live FB end, which desyncs both the swap and its coupled dump under a fullBurstExtend ally, documented with a recipe; (3) gotcha 3 — the only unmet discrimination requirement, chargeTimeClamp, which both S2b reviewers named load-bearing and neither test file falsifies for want of a charge-speed-granting arm. That single coverage gap is why discriminationOk is false; it does not block GO, because the shipped encoding is the correct one and no fixture member grants Charge Speed, so the field is inert-but-right rather than wrong. Two blind flags should NOT be inherited by a later session: S5's swap-gauge-economy ⚑ is moot (every swap shot lands inside Full Burst, where gauge generation is locked by settled owner ruling, so the 15-pellet swap feeds nothing), and kimi S2b's 'burst skill damage does not crit' contradicts the SSOT and the roster convention. Same-model residual for the owner to spot-check, in priority order: the swapped shot economy — the test pins EXACTLY 6 charged shots per window as a hard equality while the opus reviewer independently derived ~5 from a 22-frame release latency; the driver's reconciliation (the latency is scoped to SR/RL base weapons and excluded while swapped) is a fact about our ENGINE, not a measurement of the game, so a single focus recording counting charged-shot popups in one Full Burst settles a ~17% swing on her largest damage window and should be the first thing recorded for this unit. Second: the full-shot-vs-per-pellet reading of 243.75%, which all four agents share as a prior and which no artifact in the tree independently confirms.",
+  "model": "claude-opus-5"
+}

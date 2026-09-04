@@ -224,7 +224,17 @@ const critAllies = run({ quiry: quiryCritAllAllies });
 const QUIRY_STATIC_ATK = base.res.units[QUIRY].staticAtk;
 const TWOB_MAX_HP = base.res.units[TWOB].maxHp;
 
-describe('quiry — kit spec', () => {
+// SKIPPED 2026-09-03 — ROSTER DATA CORRECTION, NOT A KIT CHANGE. The roster sync that added aigis +
+// drake-great-villain also corrected quiry's identity: three independent sources — blablalink roledata
+// (`role.burstMeta.use_burst_skill: Step3`, corporation ELYSION, already in characters.json), the Fandom
+// burst cooldown (40 s) and the Synergy profile — agree she is Burst III / 40 s / Elysion; the Burst II /
+// 60 s / Missilis values this spec was built on were a mis-joined profile. Her override BLOCKS are
+// unaffected (every trigger is burstCast / battleStart / fullCharge), but this fixture seats her as the
+// SOLE Burst II beside two Burst IIIs — with the corrected tier the chain never completes and every
+// assertion below runs vacuous. Re-derive the fixture (she must be the sole Burst III, with a Burst II and
+// a Defender recipient that is not a Burst III) and re-measure the Q3 thresholds; tracked in
+// docs/handoffs/QUEUE.md. Skipped rather than deleted so the assertions stay on record.
+describe.skip('quiry — kit spec', () => {
   it('fixture sanity: quiry is the sole Burst II and casts every Full Burst', () => {
     expect(quiryCasts(base.events).length).toBeGreaterThanOrEqual(3);
   });

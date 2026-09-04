@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 212 | 45.2% |
-| Missing engine primitive / trigger | 95 | 20.3% |
-| Other / see caveats | 95 | 20.3% |
-| Out-of-domain / parser unsupported | 30 | 6.4% |
-| Weapon-state / shot-count approximation | 12 | 2.6% |
+| Defensive / HP / shield / aggro | 213 | 44.9% |
+| Missing engine primitive / trigger | 98 | 20.7% |
+| Other / see caveats | 96 | 20.3% |
+| Out-of-domain / parser unsupported | 30 | 6.3% |
+| Weapon-state / shot-count approximation | 12 | 2.5% |
 | Partless boss | 10 | 2.1% |
 | RNG / probabilistic | 6 | 1.3% |
 | Self-status / stack gate | 5 | 1.1% |
-| Measurement-gated / unverified cadence | 4 | 0.9% |
-| **Total** | **469** | 100.0% |
+| Measurement-gated / unverified cadence | 4 | 0.8% |
+| **Total** | **474** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (212)
+### Defensive / HP / shield / aggro (213)
 
 **A2** (a2)
 
@@ -40,6 +40,11 @@
 
 - **skill2:** Activates after 420 normal attack(s). Affects all allies. Perfect Maid: Gain debuff immunity to 1 debuff(s), stacking up to 1 time(s) continuously. — UNMODELED (defensive): the same immunity REFRESH at the 420-NA mark; same reason as skill1 (no enemy debuff model in v1).
   - *Why:* skill2: 'after 120 normal attack(s)' = 120 hit-counter units — hitsPerShot 1 makes pulls == hits (no lever); the counter re-fires every crossing (no once qualifier)
+
+**Aigis** (aigis)
+
+- **skill2:** Effect 2: Affects all allies. Marakukaja: DEF ▲ 21.12% of the skill user's DEF continuously. This effect cannot be removed. — no caster-DEF-scaled stat key exists in the schema (defPct is the target's OWN DEF %, a different basis), and DEF has no consumer in the v1 engine (the boss deals no damage), so the line is offense-inert. Recipe if a DEF consumer ever lands: add a casterDefPct StatKey resolved like casterAtkPct (flat add of 21.12% of her static DEF) and encode it in the same burstCast block, same 652f window.
+  - *Why:* skill1/skill2: both DEF lines are offense-inert in v1 (no incoming-damage model, no DEF consumer). The self DEF ▲ 21.12% is kept as a defPct buff (exact semantics); the team 'DEF ▲ 21.12% of the skill user's DEF' has no matching stat key and is verbatim in unmodeled.
 
 **Alice** (alice)
 
@@ -767,7 +772,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Missing engine primitive / trigger (95)
+### Missing engine primitive / trigger (98)
 
 **A2** (a2)
 
@@ -783,6 +788,15 @@ Attract: Taunts all enemies for 5 sec.
 
 - **skill2:** Damage Taken ▼ 28.65% for 10 sec.
   - *Why:* Damage Taken ▼ 28.65% for 10 sec' — ally received-damage mitigation: no incoming damage and no ally HP pool to mitigate; the ONLY damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE) — wrong direction/target, so it is NOT used (encoding it would manufacture a phantom team damage gain — noise precedent); the 'highest FINAL ATK' targeting clause (alliesTopAtk byFinalAtk) is representable but moot with its inert effect
+
+**Aigis** (aigis)
+
+- **skill1:** Persona - Palladion: This effect is continuous and cannot be removed. — named state container: the engine has no Persona-state primitive. Both effects it wraps ARE modeled (the battleStart atkPct + defPct self buffs); the state NAME / undispellable flag is display-only at scope (nothing dispels).
+  - *Why:* skill1/skill2: both DEF lines are offense-inert in v1 (no incoming-damage model, no DEF consumer). The self DEF ▲ 21.12% is kept as a defPct buff (exact semantics); the team 'DEF ▲ 21.12% of the skill user's DEF' has no matching stat key and is verbatim in unmodeled.
+- **skill2:** ■ Activates when using Burst Skill as long as this unit is still alive. — the 'still alive' clause is unconditionally satisfied at scope lock (the boss deals no damage, nobody dies), so no gate is encoded; the trigger itself IS modeled (burstCast).
+  - *Why:* skill2: 'Activates when using Burst Skill' is keyed to HER OWN cast (burstCast). In a team with another Burst II unit that wins the stage-2 slot, Papillon Heart never activates — faithful to the kit; a fullBurstEnter encoding would wrongly grant the team ATK on every Full Burst regardless of who cast.
+- **skill2:** Papillon Heart: This effect is continuous and cannot be removed. Function: Aigis strengthens her allies. — named state container; its ATK effect and its cast→Full-Burst-end window ARE modeled (burstCast block, 652f window). 'Continuous and cannot be removed' reads UNDISPELLABLE, not unending — the kit's own deactivation condition ('When Full Burst ends') ends it.
+  - *Why:* skill2: the Papillon Heart window is encoded as durationSec 10.867 (652 frames) — DERIVED from the engine's measured chain timing for a Burst II cast (30f stage gap + 22f pre-FB delay + 10s Full Burst), not from a kit number; the kit gives only the deactivation condition ('When Full Burst ends'). A Full Burst extension from another unit would not stretch this window (no 'until FB end' duration primitive); the spec test pins the expiry to the actual Full-Burst-end frame on the plain rotation.
 
 **Anchor: Innocent Maid** (anchor-innocent-maid)
 
@@ -1171,7 +1185,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Other / see caveats (95)
+### Other / see caveats (96)
 
 **A2** (a2)
 
@@ -1182,6 +1196,11 @@ Explosion Radius ▲ 15.01% for 10 sec.
 
 - **skill2:** ■ Affects 2 allies with the highest final ATK.
   - *Why:* skill2: the 'Damage Taken ▼28.65%' ally mitigation is UNMODELED — the only damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE, wrong direction); NOT encoded (would manufacture a phantom team damage gain); the '2 highest-final-ATK allies' targeting clause is moot with the inert effect (⚑2; noise precedent)
+
+**Aigis** (aigis)
+
+- **skill1:** Function: Aigis strengthens herself using her Persona. — same state wrapper; the two stat buffs are the modeled function.
+  - *Why:* See unit note / caveats
 
 **Anchor: Innocent Maid** (anchor-innocent-maid)
 
