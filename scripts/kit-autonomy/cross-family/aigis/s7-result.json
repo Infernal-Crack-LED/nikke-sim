@@ -1,0 +1,148 @@
+{
+  "slug": "aigis",
+  "kitDescription": "Aigis is an Iron SMG Supporter with a 20s Burst II cooldown whose kit is a pair of Persona-flavored buff packages plus a single burst nuke. From the start of battle she permanently buffs her own ATK and DEF by 21.12% each, with no expiry. When she personally casts her Burst Skill, she grants every ally (herself included) a flat ATK add equal to 21.12% of her own ATK, plus a matching DEF grant scaled off her DEF; both team buffs last until that Full Burst ends. Her Burst Skill itself is one instant hit dealing 396% of her final ATK as distributed damage to all enemies, landing just before Full Burst opens. In game terms she is a team-wide flat-ATK buffer whose contribution is the cast-gated ATK grant plus one moderate burst nuke per rotation, while her own SMG damage rides only her permanent self-buff.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S2 'window is BOUNDED' (s2Permanent/s2Short ally-sum bounds) — fails because aigis never casts behind crown in the blind fixture, so patching her S2 duration changes nothing",
+      "burst 'linear percent-of-final-ATK' (zero/shipped/doubled) — fails: no burst events exist to move her total",
+      "burst 'resolves BEFORE Full Burst opens' — fails: zero burst-bucket damage events from aigis",
+      "burst 'is Distributed-flavored' probe — fails: injected distributedDamagePct buff finds no distributed hit to feed",
+      "one further S2 assertion downstream of the empty own-cast event set (grant presence/shape family)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Persona - Palladion state wrapper",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Named state container, no engine primitive; both wrapped effects modeled; verbatim in unmodeled.skill1",
+        "blindSaid": "S2b-opus also listed the wrapper as unmodeled-verbatim; S6 folded it into caveats",
+        "formulaCheck": "No dispel/removal channel exists in the engine, so 'cannot be removed' is display-only at scope; correct",
+        "fireRateOk": true,
+        "explanation": "State-wrapper prose with no mechanic behind it at scope; documented verbatim with reason. Acceptable."
+      },
+      {
+        "kitLine": "Tarukaja: ATK ▲ 21.12% continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "battleStart/self/atkPct 21.12, no durationSec; test pins one apply at frame 0, expiresFrame null, removal moves her total, timed-10s counterfactual diverges",
+        "blindSaid": "S6 identical modulo passive-vs-battleStart trigger (both S2b reviewers: byte-equivalent with no duration); S5 asserted self-only scope and liveness",
+        "formulaCheck": "Plain ATK ▲% sums into the (1+ΣATK%) multiplier on staticAtk — correct bucket, self scope, permanent per prose",
+        "fireRateOk": true,
+        "explanation": "Exact stat, value, scope, permanence. Driver and blind converge; counterfactuals discriminate."
+      },
+      {
+        "kitLine": "Rakukaja: DEF ▲ 21.12% continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "defPct 21.12 self permanent, kept per keep-the-stat rule; test pins existence + byte-identical totals with it removed (inert by mechanism — no engine defPct reader)",
+        "blindSaid": "Both S2b reviewers and S6 agree: encode-but-inert; nearest-wrong is silent drop or boss-side damageTakenPct",
+        "formulaCheck": "defPct has no damage-bucket consumer in v1; encoding preserves the audit trail without moving any number",
+        "fireRateOk": true,
+        "explanation": "Encoded as its exact stat, proven inert by mechanism. The keep-vs-drop dispute was resolved correctly (kept, pinned, harmless)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when using Burst Skill",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast (her own cast); benched fixture (crown ahead at stage 2) proves zero grants when she never casts; fullBurstEnter counterfactual fires every FB and diverges",
+        "blindSaid": "All three blind roles flagged fullBurstEnter as THE highest-probability misread; all agree burstCast is correct",
+        "formulaCheck": "B2 cast precedes FB start by the measured 30f+22f chain gap; grants land on the cast frame, before fullBurstStart — matches engine ordering",
+        "fireRateOk": true,
+        "explanation": "The kit's own-cast keying is encoded and double-fixture-proven. Convergent across driver + both S2b reviewers + S5 + S6."
+      },
+      {
+        "kitLine": "as long as this unit is still alive",
+        "category": "REAL-GOTCHA",
+        "subkind": "SILENT_DROP",
+        "driverSaid": "Not encoded and not recorded anywhere — absent from blocks, unmodeled, caveats, and note",
+        "blindSaid": "S6 recorded it explicitly as SKIPPED-AS-TRIVIAL caveat; S5 declared it scope-trivial with no assertion; both S2b reviewers called it scope-trivial",
+        "formulaCheck": "No death model at scope lock, so the clause is unconditionally true; zero damage consequence today",
+        "fireRateOk": true,
+        "explanation": "Unanimously inert at scope, but the no-silent-drops rule wants the skip recorded. One-line documentation nit, not a modeling error."
+      },
+      {
+        "kitLine": "Matarukaja: ATK ▲ 21.12% of user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 21.12 to allies incl. self; test pins flat value ≈ 0.2112×her staticAtk uniform across 4 targets, one apply per target per cast, self included; own-atkPct and self-only/excludeSelf counterfactuals all diverge",
+        "blindSaid": "S6 identical stat/value/target; both S2b reviewers named atkPct-21.12 and excludeSelf as the nearest-wrong models; S5 asserted flat-resolution, uniformity, full-comp target set",
+        "formulaCheck": "SSOT §1a: 'ATK ▲ X% of caster's ATK' converts at apply time to a flat add of caster final ATK × X, uniform across targets — exact match; static-vs-live basis residual is magnitude-gated, out of scope",
+        "fireRateOk": true,
+        "explanation": "Right stat family, right basis, right target set, and the two trap misreads (target-scaled %, self-exclusion) are both pinned as counterfactuals."
+      },
+      {
+        "kitLine": "Deactivation cond.: When Full Burst ends",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "durationSec 10.867 (652f = 30f stage gap + 22f pre-FB delay + 600f FB) derived from measured chain timing, flagged ⚑ in caveat; test pins every expiresFrame to the actual fullBurstEnd frame; permanent and 0.5s counterfactuals diverge on totals",
+        "blindSaid": "S6 authored 11s with the same derivation and an explicit ⚑ + measurement recipe; both S2b reviewers demanded the ⚑ label and an FB-end pin; S5 bounded the window on both sides rather than pinning seconds",
+        "formulaCheck": "Engine has no until-event buff removal; wall-clock stand-in is the documented precedent (yukiko 622f). Frame-exact on the plain rotation; known residual: teammate fullBurstExtend would not stretch it — stated in the caveat",
+        "fireRateOk": true,
+        "explanation": "Event-condition converted to a derived window with the derivation, the ⚑, the residual, and a test that pins expiry to real fullBurstEnd frames. Fully documented; S6's 11s vs driver's 10.867s is the same model at lower precision."
+      },
+      {
+        "kitLine": "Marakukaja: DEF ▲ 21.12% of user's DEF",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim in unmodeled.skill2 with recipe (add casterDefPct StatKey resolved like casterAtkPct when a DEF consumer lands)",
+        "blindSaid": "Both S2b reviewers and S5: GAP/UNMODELED (no caster-scaled DEF primitive exists). S6 alone shipped defPct-21.12-on-allies as a labeled basis approximation — the wrong basis (target's own DEF), damage-inert today",
+        "formulaCheck": "defPct is target-scaled and inert in v1; no faithful primitive exists, so verbatim unmodeled + recipe is the honest disposition; the driver's resolution matches the prose and the majority of blind reads",
+        "fireRateOk": true,
+        "explanation": "Documented gap, driver sided with the prose over S6's basis-mismatched proxy. The S6 divergence is real but damage-neutral and was the weaker reading."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 396% of final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage atkPct 396, trigger burstCast; test pins once-per-cast, burst bucket, atkPct 396, drop-counterfactual zeroes the slot and lowers her total",
+        "blindSaid": "S6 identical magnitude; S5 asserted zero/shipped/doubled linearity",
+        "formulaCheck": "rate% = 396 as a single function-type instance; cast-instant timing gives noFb by engine ordering (no forced flag needed) — matches the measured burst-cast boundary rule",
+        "fireRateOk": true,
+        "explanation": "Exact kit magnitude, correct instance shape, correct count per rotation."
+      },
+      {
+        "kitLine": "as distributed damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flavor 'distributed'; test pins mult.distributed === 1 with no amp seated; S5's self-only distributedDamagePct probe lifts only her total, confirming the flavor tag",
+        "blindSaid": "S6 identical flavor with the split-vs-merge ⚑ (single partless boss → full 396% lands)",
+        "formulaCheck": "SSOT §1g: distributed instances read Distributed Damage ▲ and deal the same total vs one target — full value on the single boss is correct, not a fudge",
+        "fireRateOk": true,
+        "explanation": "Flavor routing correct and probe-verified; multi-target split is unobservable at scope and flagged by S6."
+      },
+      {
+        "kitLine": "Affects all enemies (timing + tag)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstDesc 'allEnemies' per owner ruling 2026-08-10 (literal-only amp scope), enforced roster-wide by census-burst-amp-scope.test.ts; nuke pinned inFullBurst false / fbMajorApplied false / rangeApplied false; fullBurstEnter counterfactual flips fbMajorApplied true",
+        "blindSaid": "S2b-opus called the tag 'reflexive' over-credit risk; S2b-kimi and S5 wanted the pre-FB timing pinned (it is); S6 omitted the tag and set explicit crit:true",
+        "formulaCheck": "Burst-cast damage lands 22f before FB opens — no +50% major, no range on riders, crit-eligible by the engine's burst-slot rider convention (driver omits crit field, S6 set it; behaviorally identical per the shipped convention). The tag question is settled by the owner ruling + the existing labeled census fixture, which outranks the opus dissent",
+        "fireRateOk": true,
+        "explanation": "Timing boundaries all pinned against the named counterfactual. The burstDesc dispute resolves for the driver: an existing enforced fixture + owner ruling is the independent method; the bar is met."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP",
+      "slot": "skill2",
+      "summary": "'as long as this unit is still alive' clause is neither encoded nor recorded in unmodeled/caveats/note",
+      "evidence": "Prose: 'Activates when using Burst Skill as long as this unit is still alive.' Driver's override records nothing for it; S6 logged it as SKIPPED-AS-TRIVIAL, S5 declared it scope-trivial, both S2b reviewers called it scope-trivial (no death model at scope lock, so unconditionally true and damage-neutral)",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Add one line to unmodeled.skill2 (or a caveat) noting the clause is scope-trivial in v1 (nobody dies at scope lock) — no mechanic to encode, just the audit record. No number, no fudge."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "0.9",
+  "verdict": "GO",
+  "verdictRationale": "The one real gotcha is a low-severity documentation nit: the alive clause is silently absent rather than recorded as scope-trivial (fix = one unmodeled line). Everything load-bearing is FAITHFUL and discriminating — the own-cast burstCast keying (the misread all three blind roles predicted) is pinned two ways, including the benched-behind-crown fixture where a fullBurstEnter model provably over-fires; the caster-scaled flat ATK basis is pinned against the target-scaled-atkPct trap; the FB-end window is a documented ⚑ derived from measured chain timing and pinned to real fullBurstEnd frames; the nuke's pre-FB/no-major/no-range boundaries are pinned against the fullBurstEnter counterfactual. Convergence reads RED only on the unmodified blind file, and every red is a blind-side fixture defect the second S2b reviewer predicted in advance: crown outranks aigis at stage 2 so she never casts, and the blind non-vacuity gate is satisfied by liter's casterAtkPct rather than hers (a blind-author bug); with the minimal repair that lets her cast, the blind suite is 11/11 green against the shipped override — genuine convergence on the model, not just the totals. The burstDesc 'allEnemies' dissent from the opus reviewer is overruled by the owner ruling plus the enforced census fixture, which per the prove-it-differently rule is the independent method — the bar is met and no further experiment is owed. The S6 defPct-on-allies proxy for Marakukaja was the weaker reading (wrong basis) and the driver correctly resolved it to verbatim-unmodeled. Same-model residual for the owner to spot-check: the 10.867s window is exact only for the plain 30f/22f/600f chain — any comp with a Full-Burst extender or a stalled chain makes the fixed durationSec drift from the kit's event condition, and every agent (driver included) shares the same chain-timing prior; the S6 measurement recipe (popup/banner read across the FB boundary on a focus recording) is the cheap independent check if that ever matters. For GO: ship as-is; optionally add the one-line alive-clause record.",
+  "model": "kimi-code/k3"
+}

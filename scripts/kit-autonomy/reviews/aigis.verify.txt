@@ -1,0 +1,28 @@
+S2d INDEPENDENT VERIFICATION MATRIX — aigis — kit-autonomy gauntlet 2026-09-03
+Command: npx vitest run scripts/tests/units/aigis.test.ts --reporter=verbose (shipped override on disk; every DISCRIMINATING case runs the named nearest-wrong counterfactual via withPatchedOverride in the same file and asserts it diverges — GREEN-vs-shipped and RED-vs-counterfactual are both inside the listed assertions).
+
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > fixture sanity: she casts at stage 2 on every rotation and every rotation reaches Full Burst
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > benched fixture sanity: crown wins every stage-2 cast, aigis never casts
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A1 — S1 Tarukaja: ATK ▲ 21.12% continuously, self, from battle start > applies once at t=0, self-held, with NO expiry
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A1 — S1 Tarukaja: ATK ▲ 21.12% continuously, self, from battle start > IS LOAD-BEARING: removing it moves her total
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A1 — S1 Tarukaja: ATK ▲ 21.12% continuously, self, from battle start > DISCRIMINATING: a timed ("for 10 sec") reading would carry an expiry
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A2 — S1 Rakukaja: DEF ▲ 21.12% continuously, self (kept as its stat; inert in v1) > exists as an exact defPct buff: once at t=0, self, no expiry
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A2 — S1 Rakukaja: DEF ▲ 21.12% continuously, self (kept as its stat; inert in v1) > DISCRIMINATING vs a silent drop: the dropped model emits no DEF event at all
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A2 — S1 Rakukaja: DEF ▲ 21.12% continuously, self (kept as its stat; inert in v1) > is inert BY MECHANISM (no engine reader consumes defPct): all four totals byte-identical
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A3 — S2 Papillon Heart on HER burst cast: all allies ATK ▲ 21.12% of her ATK until Full Burst ends > fires on every one of her casts, on the cast frame, to all four allies (self included)
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A3 — S2 Papillon Heart on HER burst cast: all allies ATK ▲ 21.12% of her ATK until Full Burst ends > is a FLAT add of 21.12% of HER static ATK, uniform across targets
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A3 — S2 Papillon Heart on HER burst cast: all allies ATK ▲ 21.12% of her ATK until Full Burst ends > the window ends exactly on the Full-Burst-end frame (652f after a Burst II cast)
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A3 — S2 Papillon Heart on HER burst cast: all allies ATK ▲ 21.12% of her ATK until Full Burst ends > IS LOAD-BEARING for the team: the allies deal more with the grant than without it
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A3 — S2 Papillon Heart on HER burst cast: all allies ATK ▲ 21.12% of her ATK until Full Burst ends > keys to HER OWN cast: benched behind crown she never casts, so it never fires
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A3 — S2 Papillon Heart on HER burst cast: all allies ATK ▲ 21.12% of her ATK until Full Burst ends > DISCRIMINATING: a fullBurstEnter reading fires on every Full Burst even when benched
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A3 — S2 Papillon Heart on HER burst cast: all allies ATK ▲ 21.12% of her ATK until Full Burst ends > DISCRIMINATING: self-only / allies-except-self readings change the target set
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A3 — S2 Papillon Heart on HER burst cast: all allies ATK ▲ 21.12% of her ATK until Full Burst ends > DISCRIMINATING: a permanent reading has no expiry
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A3 — S2 Papillon Heart on HER burst cast: all allies ATK ▲ 21.12% of her ATK until Full Burst ends > DISCRIMINATING: a target-scaled ATK % (each ally's own ATK) is a different stat and moves helm
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A4 — burst: 396% of final ATK as distributed damage to all enemies > fires once per cast at the kit magnitude, in the burst bucket
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A4 — burst: 396% of final ATK as distributed damage to all enemies > casts BEFORE the Full Burst window opens: no +50% major, FB not yet live
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A4 — burst: 396% of final ATK as distributed damage to all enemies > is crit-eligible (engine rider convention); distributed multiplier 1 with no amp seated
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A4 — burst: 396% of final ATK as distributed damage to all enemies > is distributed-flavored and TAGGED 'allEnemies' — her clause is trina's literal amp string
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A4 — burst: 396% of final ATK as distributed damage to all enemies > DISCRIMINATING: a Full-Burst-entry-keyed nuke would take the +50% major inside FB
+ ✓ scripts/tests/units/aigis.test.ts > aigis — kit spec > A4 — burst: 396% of final ATK as distributed damage to all enemies > DISCRIMINATING: dropping the nuke zeroes the burst slot and lowers her total
+
+assertions passed: 23
