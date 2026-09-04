@@ -93,7 +93,8 @@ type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type Shot = Extract<SimEvent, { kind: 'shot' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const yanShots = (evs: SimEvent[]) =>
@@ -136,9 +137,9 @@ const noS1 = withPatchedOverride('yan', (ov) => {
 });
 /** Y3 counterfactual: S2 gated to Full Burst windows only. */
 const s2InFbOnly = withPatchedOverride('yan', (ov) => {
-  const blocks = ov.skill2.filter((b: any) => b.trigger.kind === 'shotFired');
+  const blocks = ov.skill2.filter((b: any) => b.trigger.kind === 'fullCharge');
   if (blocks.length < 2) {
-    throw new Error('yan S2 shotFired blocks missing — fixture is stale');
+    throw new Error('yan S2 fullCharge blocks missing — fixture is stale');
   }
   for (const b of blocks) {
     b.fbGate = 'inFb';
@@ -165,7 +166,9 @@ const noS2 = withPatchedOverride('yan', (ov) => {
 /** Y6 reference: the burst damage line removed. */
 const noBurstDmg = withPatchedOverride('yan', (ov) => {
   const before = ov.burst.length;
-  ov.burst = ov.burst.filter((b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage'));
+  ov.burst = ov.burst.filter(
+    (b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage')
+  );
   if (ov.burst.length === before) {
     throw new Error('yan burst flatDamage block missing — fixture is stale');
   }
@@ -188,9 +191,9 @@ describe('yan — kit spec', () => {
 
     it('fires once per Full Burst entry, exactly on the FB-start frames', () => {
       expect(starts.length, 'no Full Burst in the fixture').toBeGreaterThan(0);
-      expect([...new Set(applied.map((b) => b.frame))].sort((a, b) => a - b)).toEqual(
-        [...new Set(starts)].sort((a, b) => a - b)
-      );
+      expect(
+        [...new Set(applied.map((b) => b.frame))].sort((a, b) => a - b)
+      ).toEqual([...new Set(starts)].sort((a, b) => a - b));
     });
 
     it('her B1 cast strictly PRECEDES the Full Burst window it opens', () => {
@@ -204,7 +207,9 @@ describe('yan — kit spec', () => {
 
     it('DISCRIMINATING: a burstCast-keyed encoding lands on the cast frames, not FB entry', () => {
       const cfFrames = [
-        ...new Set(yanApplies(onCast.events, 'chargeDamagePct').map((b) => b.frame)),
+        ...new Set(
+          yanApplies(onCast.events, 'chargeDamagePct').map((b) => b.frame)
+        ),
       ].sort((a, b) => a - b);
       expect(cfFrames).not.toEqual([...new Set(starts)].sort((a, b) => a - b));
     });
@@ -254,13 +259,18 @@ describe('yan — kit spec', () => {
         const out: Record<string, number> = {};
         for (const d of dmg(evs)) {
           if (d.bucket === bucket) {
-            out[`${d.slug}:${d.amount}`] = (out[`${d.slug}:${d.amount}`] ?? 0) + 1;
+            out[`${d.slug}:${d.amount}`] =
+              (out[`${d.slug}:${d.amount}`] ?? 0) + 1;
           }
         }
         return out;
       };
-      expect(rates(base.events, 'skill')).toEqual(rates(s1Gone.events, 'skill'));
-      expect(rates(base.events, 'burst')).toEqual(rates(s1Gone.events, 'burst'));
+      expect(rates(base.events, 'skill')).toEqual(
+        rates(s1Gone.events, 'skill')
+      );
+      expect(rates(base.events, 'burst')).toEqual(
+        rates(s1Gone.events, 'burst')
+      );
     });
   });
 
@@ -338,7 +348,7 @@ describe('yan — kit spec', () => {
       }
     });
 
-    it('is live: removing S2 moves EVERY ally\'s total', () => {
+    it("is live: removing S2 moves EVERY ally's total", () => {
       for (const s of ['yan', 'crown', 'ada', 'helm']) {
         expect(base.totals[s], s).not.toBe(s2Gone.totals[s]);
       }
@@ -374,7 +384,9 @@ describe('yan — kit spec', () => {
     it('is UNSCOPED: it lifts crit even on skill-bucket hits (ada grenades)', () => {
       const skillCrit = (evs: SimEvent[]) =>
         dmg(evs)
-          .filter((d) => d.slug === 'ada' && d.bucket === 'skill' && d.critEligible)
+          .filter(
+            (d) => d.slug === 'ada' && d.bucket === 'skill' && d.critEligible
+          )
           .map((d) => d.critRate.toFixed(9));
       expect(skillCrit(base.events)).not.toEqual(skillCrit(s2Gone.events));
     });
@@ -399,7 +411,9 @@ describe('yan — kit spec', () => {
 
     it('is live: removing it deletes exactly her burst-bucket damage', () => {
       expect(
-        dmg(burstGone.events).filter((d) => d.slug === 'yan' && d.srcSlot === 'burst')
+        dmg(burstGone.events).filter(
+          (d) => d.slug === 'yan' && d.srcSlot === 'burst'
+        )
       ).toEqual([]);
       expect(nukes.length).toBeGreaterThan(0);
     });

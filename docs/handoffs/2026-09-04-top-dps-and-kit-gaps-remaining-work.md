@@ -100,13 +100,19 @@ already: `fullCharge`, `selfStatus`, `copyResource` primitives and the §6 prose
 
 ### B1. Mechanical, unblocked (no new evidence needed)
 
-1. **fullCharge roster tail** — ~20 overrides still carry `shotFired` blocks under "Full Charge"
-   kit text: `a2`, `delta`, `emilia`, `exia`, `frima`, `harran`, `himeno`, `laplace`, `n102`,
-   `nihilister`, `rapunzel`, `rapunzel-pure-grace`, `raven`, `velvet`, `vesti-tactical-upgrade`,
-   `yan`, `yuni`, `zwei`. (`mari` is kit-silent — NOT a migration candidate.)
-   **Plan:** per unit, match each `shotFired` block to its kit clause, migrate only
-   full-charge-worded lines, A/B byte-identical. ⚠ `zwei` is SG — migration there is a behavior
-   CHANGE (block goes silent), needs a real read of her charge mechanics first.
+1. **fullCharge roster tail** — ~~20 overrides~~ **DONE 2026-09-04** (17 units migrated: `a2`,
+   `delta`, `emilia`, `exia`, `frima`, `harran`, `himeno`, `laplace`, `n102`, `nihilister`,
+   `rapunzel`, `rapunzel-pure-grace`, `raven`, `velvet`, `vesti-tactical-upgrade`, `yan`, `yuni`;
+   per-line kit matching, all spec suites green, mirrors synced). `zwei` verified NOT a candidate
+   — her only "full charge" text is the burst's `Full Charge Damage: 300%` weapon stat; her two
+   `shotFired` blocks map to "normal attack" kit clauses and correctly stay (SG pulls are
+   uncharged — migrating would silence them). Left as `shotFired` by design: `harran` skill1
+   (25%-chance line), `laplace` burst (Hero-Vision max-stacks line), counted shapes
+   (`frima` chargeCounter, velvet hitCount), and the compound "Full Charge maintained >1s while
+   Shield" lines on `rapunzel-pure-grace` (no primitive). `velvet`'s S1 migration is NOT
+   byte-inert in swapped mode — it resolves her own flagged trigger-premise inconsistency (swap
+   MG rounds no longer feed a "Full Charge" line), damage-neutral per her note. (`mari` remains
+   kit-silent — NOT a migration candidate.)
 2. **`rei-ayanami-tentative-name` + `rem` selfStatus migrations** — both still carry the retired
    boss-`targetStatus` self-mode proxy. Mechanically identical to the landed `asuka-wille`
    migration; behavior-identical per their notes.

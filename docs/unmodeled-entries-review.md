@@ -924,7 +924,7 @@ Damage Taken ▼ 52.5% for 5 sec.
 **Harran** (harran)
 
 - **skill2:** ■ Activates when killing an enemy. Affects self. ATK ▲ 3.02%, stacks up to 15 time(s) and lasts for 10 sec. (no kill trigger primitive — the v1 boss never dies and there are no adds; zero stacks accrue at scope lock; see ⚑3)
-  - *Why:* skill2: 'Gain Pierce for 1 round(s)' is encoded LITERALLY as gainPierce durationShots 1 on shotFired (the round-count form, 2026-08-11). For HER this is a pure fidelity change and behaviourally a NO-OP: the per-shot re-grant refreshes the budget on every pull, so it never decrements and the tag stays live exactly as the duration-less form did (measured byte-identical, same tagged-frame set — only her first shot is untagged, in both, because the grant lands after that shot's damage). The round budget matters for carriers whose grant does NOT re-arm every shot; here it just says what the kit says. Damage-inert at scope lock (partless boss, no Pierce Damage ▲ carrier lands on her).
+  - *Why:* skill2: 'Gain Pierce for 1 round(s)' is encoded LITERALLY as gainPierce durationShots 1 on the fullCharge trigger (the round-count form, 2026-08-11) — fullCharge fires only on charged pulls; for an SR, every pull, the engine's charge path releasing exclusively at full charge (⚑ tier 3 engine-wide premise — revisit if the engine can emit a partial shot). For HER this is a pure fidelity change and behaviourally a NO-OP: the per-shot re-grant refreshes the budget on every pull, so it never decrements and the tag stays live exactly as the duration-less form did (measured byte-identical, same tagged-frame set — only her first shot is untagged, in both, because the grant lands after that shot's damage). The round budget matters for carriers whose grant does NOT re-arm every shot; here it just says what the kit says. Damage-inert at scope lock (partless boss, no Pierce Damage ▲ carrier lands on her).
 
 **Jackal** (jackal)
 
@@ -1769,7 +1769,7 @@ Deals 50.33% of final ATK as additional damage.
 **Vesti: Tactical Upgrade** (vesti-tactical-upgrade)
 
 - **skill2:** ■ Activates when landing Full Charge attacks if self is in Battle Formation status. Affects self. ATK ▲ 20% for 3 sec.
-  - *Why:* skill2: 'Battle Formation' (S2b ATK ▲20% gate) is UNMODELED — the driver ADOPTED the blind consensus (S2b claude-fable-5 + S5/S6 claude-opus-5 all independently re-derived INERT). 'Battle Formation' is a self-status granted nowhere in this kit, so the line never fires in-scope regardless of the 2026-08-24 selfStatus gate; encoding it ungated (or even fbGate-gated) would credit an unprovable +20% ATK. The driver's fbGate:'inFb' reading (Battle Formation == Full Burst) is retained as the measurement-gated ALTERNATIVE (⚑6): restore a shotFired + fbGate:'inFb' atkPct 20 / 3s block if footage shows the proc tracking Full Burst windows
+  - *Why:* skill2: 'Battle Formation' (S2b ATK ▲20% gate) is UNMODELED — the driver ADOPTED the blind consensus (S2b claude-fable-5 + S5/S6 claude-opus-5 all independently re-derived INERT). 'Battle Formation' is a self-status granted nowhere in this kit, so the line never fires in-scope regardless of the 2026-08-24 selfStatus gate; encoding it ungated (or even fbGate-gated) would credit an unprovable +20% ATK. The driver's fbGate:'inFb' reading (Battle Formation == Full Burst) is retained as the measurement-gated ALTERNATIVE (⚑6): restore a fullCharge + fbGate:'inFb' atkPct 20 / 3s block if footage shows the proc tracking Full Burst windows
 
 **Yulha** (yulha)
 
@@ -1788,7 +1788,7 @@ Deals 50.33% of final ATK as additional damage.
 **Laplace (Treasure)** (laplace)
 
 - **skill2:** Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage.
-  - *Why:* skill2: the 132.45% full-charge additional hit is shotFired + swapGate:'unswapped' — it fires on base full-charge pulls only, NOT the swap beam (gauntlet 2026-07-26 S7 ruling: the burst labels beam damage 'Normal Damage', and both blind derivations read exclusion; the prior every-shot reading was a circular cite of the kit-silent chargeTimeSec ⚑). OWNER-CONFIRMED 2026-08-12: the 132.45% additional hit fires on her BASE full-charge shots only, not on the swap beam. The gauntlet ruling stands and needs no footage
+  - *Why:* skill2: the 132.45% full-charge additional hit is fullCharge + swapGate:'unswapped' — the fullCharge trigger fires only on charged pulls; for an RL, every pull (the engine's charge path releases exclusively at full charge) — it fires on base full-charge pulls only, NOT the swap beam (gauntlet 2026-07-26 S7 ruling: the burst labels beam damage 'Normal Damage', and both blind derivations read exclusion; the prior every-shot reading was a circular cite of the kit-silent chargeTimeSec ⚑). OWNER-CONFIRMED 2026-08-12: the 132.45% additional hit fires on her BASE full-charge shots only, not on the swap beam. The gauntlet ruling stands and needs no footage
 
 **Little Mermaid** (little-mermaid)
 

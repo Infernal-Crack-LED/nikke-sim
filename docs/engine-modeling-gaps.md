@@ -68,7 +68,7 @@
 | `flatDamage` | 100 | 2b, a2, anchor, anis, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
-| `fullCharge` | 14 | ade-agent-bunny, anis-star, bready, cinderella, diesel-winter-sweets, eunhwa-tactical-upgrade, helm, liberalio, … |
+| `fullCharge` | 31 | a2, ade-agent-bunny, anis-star, bready, cinderella, delta, diesel-winter-sweets, emilia, … |
 | `gainPierce` | 15 | ade-agent-bunny, asuka, d-killer-wife, dorothy, grave, harran, makima, mari, … |
 | `gaugeHits` | 4 | eve, liberalio, little-mermaid, snow-white-heavy-arms |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
@@ -116,7 +116,7 @@
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 2 | flora, naga |
-| `shotFired` | 28 | a2, clay, delta, delta-ninja-thief, emilia, exia, frima, harran, … |
+| `shotFired` | 13 | clay, delta-ninja-thief, harran, helm-aquamarine, laplace, mari, neon-vision-eye, phantom, … |
 | `stackedNuke` | 1 | maiden-ice-rose |
 | `stageCast` | 1 | rupee-winter-shopper |
 | `stageEnter` | 13 | cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, … |

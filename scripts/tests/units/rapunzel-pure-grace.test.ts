@@ -34,7 +34,7 @@
 //       rapunzel-pure-grace focus recording, buff-icon uptime of the 10.41% Attack Damage vs the
 //       shield icon. Tier: Tier-2 state gate. Shield half gated (requiresShielded, self-supplied);
 //       label 'Delusion is permanent in the no-incoming-damage sim' precedent for the always-on half.
-//   L4  shotFired → self → heal (event-only; SR = one full charge per pull, helm/liberalio precedent).
+//   L4  fullCharge → self → heal (event-only; fires only on charged pulls = every SR pull).
 //       Self-targeted recovery events have NO consumer on her and no HP amount is modeled: damage-inert
 //       — modeled for kit-completeness; pinned by the neutrality groups (no damage movement) and by the
 //       crown-consumer target-scope pin (the heal reaches NO ally — an ally-widened mis-encoding would
@@ -161,7 +161,9 @@ const rpgNoL7 = withPatchedOverride(SLUG, (ov) => {
     (b: any) => !hasStatValue(b, 'attackDamagePct', 15.24)
   );
   if (ov.burst.length === before) {
-    throw new Error(`${SLUG} burst 15.24 attackDamagePct block missing — stale`);
+    throw new Error(
+      `${SLUG} burst 15.24 attackDamagePct block missing — stale`
+    );
   }
 });
 /** N reference: BOTH damage lines (L3 + L7) removed — the defensive residue must be neutral. */
@@ -251,8 +253,8 @@ describe('fixture sanity', () => {
     const casts = castsOf(base.events, SLUG);
     expect(shots.length).toBeGreaterThan(50);
     expect(casts.length).toBeGreaterThanOrEqual(1);
-    // SR = one full charge per trigger pull (helm/liberalio precedent): pin it so the
-    // shotFired≈fullCharge read behind L4 is honest.
+    // SR = one full charge per trigger pull: pin it so the
+    // fullCharge-behind-L4 read is honest.
     expect(
       shots.filter((s) => s.charged).length,
       'an SR pull that is NOT a full charge would break the full-charge read'
@@ -278,7 +280,10 @@ describe('SH — shared shields emit shield events (L1 battle-start, L2 on her b
   it('SH1 — L1: naga is shielded at battle start (frame 0 firing)', () => {
     const firings = nagaShieldFirings(base.events);
     expect(firings.length).toBeGreaterThan(0);
-    expect(firings[0], 'the battle-start shared shield must land at frame 0').toBe(0);
+    expect(
+      firings[0],
+      'the battle-start shared shield must land at frame 0'
+    ).toBe(0);
   });
 
   it('SH2 — L2: every later firing sits exactly on one of HER burstCast frames', () => {
@@ -290,7 +295,7 @@ describe('SH — shared shields emit shield events (L1 battle-start, L2 on her b
       expect(
         castFrames.has(f),
         `shield re-fire at frame ${f} has no ${SLUG} burstCast — a fullBurstEnter ` +
-          'keying would leak liter\'s B1 casts, a dropped L2 would leave no re-fires'
+          "keying would leak liter's B1 casts, a dropped L2 would leave no re-fires"
       ).toBe(true);
     }
     // One re-shield per cast of HERS, no extras: the firing set is exactly {0} ∪ her cast frames.
@@ -301,7 +306,7 @@ describe('SH — shared shields emit shield events (L1 battle-start, L2 on her b
     expect(nagaShieldFirings(noShields.events).length).toBe(0);
   });
 
-  it('SH4 — her permanent shield window keeps naga\'s requiresShielded burst branch live', () => {
+  it("SH4 — her permanent shield window keeps naga's requiresShielded burst branch live", () => {
     // Naga's burst carries TWO casterAtkPct branches: 16.18 unconditional + 31.02 requiresShielded
     // (both resolve to flat-ATK values at apply time, so read BRANCH COUNT, not the % literal).
     // With rapunzel-pure-grace's durationless (permanent) shield covering naga from frame 0, BOTH
@@ -314,7 +319,8 @@ describe('SH — shared shields emit shield events (L1 battle-start, L2 on her b
           continue;
         }
         (
-          perFrame.get(b.frame) ?? perFrame.set(b.frame, new Set()).get(b.frame)!
+          perFrame.get(b.frame) ??
+          perFrame.set(b.frame, new Set()).get(b.frame)!
         ).add(Math.round(b.value));
       }
       return perFrame;
@@ -346,13 +352,18 @@ describe('G — S1-c Attack Damage ▲10.41% is permanent, team-wide and shield-
     expect(applies.length).toBe(TEAM.length);
     for (const b of applies) {
       expect(b.frame).toBe(0);
-      expect(b.expiresFrame, 'a "continuous" line must carry no wall-clock expiry').toBeNull();
+      expect(
+        b.expiresFrame,
+        'a "continuous" line must carry no wall-clock expiry'
+      ).toBeNull();
     }
     expect(new Set(applies.map((b) => b.targetIdx)).size).toBe(TEAM.length);
   });
 
   it('G2 — removing ONLY the shield blocks kills the buff (the gate is real, self-supplied)', () => {
-    expect(rpgBuffApplies(noShields.events, 'attackDamagePct', 10.41).length).toBe(0);
+    expect(
+      rpgBuffApplies(noShields.events, 'attackDamagePct', 10.41).length
+    ).toBe(0);
   });
 
   it('G3 — it moves damage: carry and self both lose damage without it', () => {
@@ -365,7 +376,7 @@ describe('G — S1-c Attack Damage ▲10.41% is permanent, team-wide and shield-
 // L4 — the per-full-charge self-heal: event-only, and SELF-targeted (crown-consumer pin)
 // ===============================================================================================
 describe('L4 — S2 self-heal is real, per-shot, and reaches NO ally', () => {
-  it('crown\'s recovery consumer fires identically with and without L4 (the heal never reaches an ally)', () => {
+  it("crown's recovery consumer fires identically with and without L4 (the heal never reaches an ally)", () => {
     // Crown is the fixture's natural recovery consumer ("when recovery takes effect" → 20.99 team
     // Attack Damage). L4 targets SELF only, so it can never feed crown: an ally-widened mis-encoding
     // would add recovery firings to crown and move these frames. Her own kit carries no 'recovery'
@@ -399,7 +410,7 @@ describe('B — burst: L6 self Max HP (inert) and L7 team Attack Damage (load-be
     for (const b of l6) {
       expect(
         castFrames.has(b.frame),
-        'a fullBurstEnter keying would fire on liter\'s casts too'
+        "a fullBurstEnter keying would fire on liter's casts too"
       ).toBe(true);
     }
   });
@@ -413,21 +424,25 @@ describe('B — burst: L6 self Max HP (inert) and L7 team Attack Damage (load-be
       expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
     }
     for (const [frame, count] of perFrame) {
-      expect(count, `frame ${frame} reached ${count} holders`).toBe(TEAM.length);
+      expect(count, `frame ${frame} reached ${count} holders`).toBe(
+        TEAM.length
+      );
     }
     const castFrames = new Set(casts.map((c) => c.frame));
     expect(
       [...perFrame.keys()].every((f) => castFrames.has(f)),
       'L7 must be keyed to HER burstCast, not fullBurstEnter (liter is the decoy B1)'
     ).toBe(true);
-    expect(perFrame.size, 'one application per cast of hers').toBe(casts.length);
+    expect(perFrame.size, 'one application per cast of hers').toBe(
+      casts.length
+    );
   });
 
-  it('B3 — L7 moves the carry\'s damage', () => {
+  it("B3 — L7 moves the carry's damage", () => {
     expect(noL7.totals[ADA]).toBeLessThan(base.totals[ADA]);
   });
 
-  it('B4 — L6 is inert: removing it changes NO unit\'s damage', () => {
+  it("B4 — L6 is inert: removing it changes NO unit's damage", () => {
     expect(noL6.totals).toEqual(base.totals);
   });
 });

@@ -134,7 +134,7 @@ const harranWindowCrit = withPatchedOverride('harran', (ov) => {
   if (!b) {
     throw new Error('harran S2 critRatePct block missing — fixture is stale');
   }
-  b.trigger = { kind: 'shotFired' };
+  b.trigger = { kind: 'fullCharge' };
   const e = b.effects.find((x: any) => x.stat === 'critRatePct');
   delete e.durationShots;
   e.durationSec = 1;
@@ -381,10 +381,10 @@ describe('harran — kit spec', () => {
       )
     );
 
-    it('is a ONE-ROUND budget on her own shotFired (not a 1s timer, not a permanent tag)', () => {
+    it('is a ONE-ROUND budget on her own fullCharge (not a 1s timer, not a permanent tag)', () => {
       const b = (ov.skill2 ?? []).find((x: any) => hasGainPierce(x));
       expect(b, 'the pierce re-arm block must exist').toBeTruthy();
-      expect(b.trigger).toEqual({ kind: 'shotFired' });
+      expect(b.trigger).toEqual({ kind: 'fullCharge' });
       expect(b.target).toEqual({ kind: 'self' });
       const e = b.effects.find((x: any) => x.kind === 'gainPierce');
       // The kit prints rounds. This is a STRUCTURAL pin by necessity: for a per-shot re-arm

@@ -463,9 +463,9 @@ describe('emilia — kit spec', () => {
       );
       expect(inventory.sort()).toEqual(
         [
-          'skill1:shotFired:self:chargeSpeedPct',
-          'skill1:shotFired:self:chargeDamagePct',
-          'skill2:shotFired:enemy:hitRepeat',
+          'skill1:fullCharge:self:chargeSpeedPct',
+          'skill1:fullCharge:self:chargeDamagePct',
+          'skill2:fullCharge:enemy:hitRepeat',
           'skill2:fullBurstEnter:self:maxAmmoFlat',
           'burst:burstCast:self:chargeSpeedPct',
           'burst:burstCast:self:chargeDamagePct',

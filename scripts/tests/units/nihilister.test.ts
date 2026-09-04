@@ -279,8 +279,8 @@ function burnTicksPerFullWindow(evs: SimEvent[]) {
 }
 
 describe('nihilister — kit spec', () => {
-  describe('N1 — S1 full-charge: Gain Pierce for 1 round (windowed gainPierce on shotFired)', () => {
-    it('is a shotFired-keyed, self-targeted, ROUND-COUNT gainPierce — not a static flag and not a seconds stand-in', () => {
+  describe('N1 — S1 full-charge: Gain Pierce for 1 round (windowed gainPierce on fullCharge)', () => {
+    it('is a fullCharge-keyed, self-targeted, ROUND-COUNT gainPierce — not a static flag and not a seconds stand-in', () => {
       const ov = shipped();
       expect(
         ov.hasPierce,
@@ -288,7 +288,7 @@ describe('nihilister — kit spec', () => {
       ).toBeUndefined();
       const blk = ov.skill1.find((b: any) => hasKind(b, 'gainPierce'));
       expect(blk, 'no gainPierce block in skill1').toBeDefined();
-      expect(blk.trigger.kind).toBe('shotFired');
+      expect(blk.trigger.kind).toBe('fullCharge');
       expect(blk.target.kind).toBe('self');
       const eff = blk.effects.find((e: any) => e.kind === 'gainPierce');
       // The kit says "for 1 round(s)" — a ROUND budget, which the engine now expresses directly

@@ -103,9 +103,9 @@ const laplaceBaseS2Value = withPatchedOverride('laplace', (ov) => {
  *  fires on EVERY shot including the swap beam (the model the S7 judge ruled a REAL-GOTCHA). */
 const laplaceS2NoGate = withPatchedOverride('laplace', (ov) => {
   const b = ov.skill2[0];
-  if (!b || b.trigger.kind !== 'shotFired' || b.swapGate !== 'unswapped') {
+  if (!b || b.trigger.kind !== 'fullCharge' || b.swapGate !== 'unswapped') {
     throw new Error(
-      'laplace S2a shotFired+unswapped block missing — fixture is stale'
+      'laplace S2a fullCharge+unswapped block missing — fixture is stale'
     );
   }
   delete b.swapGate;
@@ -395,7 +395,7 @@ describe('laplace (Treasure) — kit spec', () => {
     //
     // Encoded with the EXISTING resource primitives (soda-twinkling-bunny precedent), not a new
     // engine gate: a `heroVision` pool capped at 5, +1 per base full-charge pull
-    // (shotFired + swapGate 'unswapped' — the beam grants none), read by `resourceGate` on the
+    // (fullCharge + swapGate 'unswapped' — the beam grants none), read by `resourceGate` on the
     // two clauses. APPROXIMATION, deliberate and documented: a resource does not expire, so the
     // pool is monotone. That matches the refresh rule at scope lock (she fires continuously, so
     // the 15s clock never lapses) and diverges only across a >15s firing pause, which the
@@ -408,7 +408,7 @@ describe('laplace (Treasure) — kit spec', () => {
       const feeder = ov.skill1.find((b: any) =>
         b.effects.some((e: any) => e.kind === 'resource')
       );
-      expect(feeder.trigger.kind).toBe('shotFired');
+      expect(feeder.trigger.kind).toBe('fullCharge');
       expect(
         feeder.swapGate,
         'the beam does not charge → grants no stacks'

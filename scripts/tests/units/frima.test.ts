@@ -18,7 +18,8 @@
 //
 // DEF ▼ lines — ENCODED 2026-08-10 on the enemy defPct channel (bossDefNow scales cfg.bossDef,
 //   floor 0; channel damage math owned by scripts/tests/engine/enemy-def-debuff.test.ts):
-//   F5 Sleepy = shotFired → enemy defPct -4 /10s maxStacks 5 (every SR pull is a full charge);
+//   F5 Sleepy = fullCharge → enemy defPct -4 /10s maxStacks 5 (fires only on charged pulls =
+//     every SR pull);
 //   F6 the burst rider = defPct -9.86 /10s riding the nuke block AFTER the flatDamage (kit
 //     order). Both sub-0.1% at the scope-lock 140-DEF basis, live at web raid DEF defaults.
 //     NOT encoded as damageTakenPct — a different bucket that would over-credit a team vuln the
@@ -43,9 +44,9 @@
 //        mis-encoding is damage-neutral at steady state — Wake Up uptime is ~100% either way,
 //        since the ~7.85s re-trigger cycle < the 10s duration — so it is not behaviour-pinnable;
 //        it is wrong in principle and documented in the override note.)
-//   F2 = shotFired + swapGate:'swapped' → allies trueDamagePct 28.16 / 5s. shotFired == "attacking
-//        with Full Charge" for an SR (every pull is a full charge; the swap inherits base
-//        chargeFrames so swap shots stay charged). swapGate is the Wake Up gate.
+//   F2 = fullCharge + swapGate:'swapped' → allies trueDamagePct 28.16 / 5s. fullCharge fires only
+//        on charged pulls — every pull for an SR (the swap inherits base chargeFrames, so swap
+//        shots stay charged). swapGate is the Wake Up gate.
 //   F3 = burstCast + swapGate:'swapped' → allies trueDamagePct 49.97 / 10s.
 //   F4 = burstCast → enemy flatDamage 101.66 (plain flavor; the 10-highest-DEF targeting collapses
 //        to the single boss). B1 cast lands BEFORE the FB window → never takes the +50% major.
@@ -242,7 +243,7 @@ const trueApplies = (evs: SimEvent[], value: number) =>
 
 describe('frima (Treasure) — kit spec', () => {
   describe('premise — every frima pull is a full charge (SR)', () => {
-    it('all shot events are charged, so shotFired == "attacking with Full Charge"', () => {
+    it('all shot events are charged, so the fullCharge trigger fires on every pull', () => {
       const all = shots(base.events);
       expect(all.length).toBeGreaterThan(100);
       expect(all.every((s) => s.charged)).toBe(true);

@@ -29,9 +29,10 @@
 //       Nearest-wrong (fable S2b): a sign-flipped consumeAmmo on ALLIES (the "removes 5% ammo" mis-targeted)
 //       — would force ally reloads and cut team damage. GREEN vs shipped (no such block → 0 ally reloads),
 //       RED vs the consumeAmmo-on-allies counterfactual (ally reload events appear).
-//   V2  "Full Charge while NOT in Full Burst" = shotFired + fbGate:'outFb' (the schema's canonical outFb
-//       example is Velvet). For an SR in auto-play every trigger pull IS a full charge, so shotFired is the
-//       faithful proxy for "Full Charge attack"; the outFb gate is the load-bearing clause. Two effects —
+//   V2  "Full Charge while NOT in Full Burst" = fullCharge + fbGate:'outFb' (the schema's canonical outFb
+//       example is Velvet). fullCharge fires only on charged pulls — every pull for her SR — and also
+//       excludes her swap MG's uncharged rounds, which the old shotFired proxy could not express; the
+//       outFb gate is the load-bearing clause. Two effects —
 //       atkPct 30.5 (ATK bucket) AND attackDamagePct 30.5 (Damage-Up bucket) — NOT a collapsed atkPct 61.
 //       Nearest-wrong (a): dropping the outFb gate (buff also refreshes on in-FB charges). Nearest-wrong (b):
 //       collapsing both 30.5s into one doubled atkPct. Both discriminated (gate: 0 in-FB applies; collapse:
@@ -42,7 +43,7 @@
 //     full-charge, so V3 is gated off (swapGate:'unswapped') and the V4 50-hit proc — unreachable
 //     for an SR — becomes the payout instead. Two fixtures partition this: FIXTURE (sole-B2, she
 //     casts every rotation) and FIXTURE_OFF (crown takes every stage-2 cast, she never swaps).
-//   V3  "Full Charge DURING Full Burst" = shotFired + fbGate:'inFb' + swapGate:'unswapped' → all allies. "ATK ▲25.2% of the skill
+//   V3  "Full Charge DURING Full Burst" = fullCharge + fbGate:'inFb' + swapGate:'unswapped' → all allies. "ATK ▲25.2% of the skill
 //       user's ATK" = casterAtkPct — a FLAT add of 25.2% of VELVET's ATK (resolves to ~25133 at apply), NOT
 //       atkPct (a 25.2% scaler on each ally's own ATK). "Charge Damage ▲100.8%" = chargeDamagePct (additive
 //       points in the charge bucket), NOT chargeDamageMultPct (a base-charge multiplier). Nearest-wrong (a):
@@ -201,7 +202,7 @@ const cfConsumeAllies = withPatchedOverride('velvet', (ov: any) => {
 });
 /** The skill1 outFb self-buff block (V2 under test). */
 const isS1SelfBuff = (b: any) =>
-  b.trigger?.kind === 'shotFired' &&
+  b.trigger?.kind === 'fullCharge' &&
   b.fbGate === 'outFb' &&
   b.effects?.some((e: any) => e.stat === 'atkPct' && e.value === 30.5);
 /** V2 nearest-wrong (gate): drop the outFb gate (buff also refreshes on in-FB charges). */
@@ -221,15 +222,19 @@ const cfS1NoGate = withPatchedOverride('velvet', (ov: any) => {
 });
 /** The skill2 inFb team-buff block (V3 under test). */
 const isS2TeamBuff = (b: any) =>
-  b.trigger?.kind === 'shotFired' &&
+  b.trigger?.kind === 'fullCharge' &&
   b.fbGate === 'inFb' &&
   b.effects?.some((e: any) => e.stat === 'casterAtkPct');
-/** V3 nearest-wrong (swap gate): drop swapGate — the MG's 60/s shots then feed the team buff. */
+/** V3 nearest-wrong (swap gate + trigger): drop swapGate AND revert to the old shotFired proxy —
+ *  the MG's 60/s shots then feed the team buff. Post-migration the fullCharge trigger alone
+ *  silences the MG (its rounds are uncharged), so the swapGate-drop discriminates only in
+ *  combination with the proxy revert. */
 const cfS2NoSwapGate = withPatchedOverride('velvet', (ov: any) => {
   let hit = 0;
   for (const b of ov.skill2) {
     if (isS2TeamBuff(b)) {
       delete b.swapGate;
+      b.trigger = { kind: 'shotFired' };
       hit++;
     }
   }
@@ -383,7 +388,11 @@ const s2NoSwapGate = run({ velvet: cfS2NoSwapGate });
 const swapInheritsSr = run({ velvet: cfSwapInheritsSr });
 const noSkill1 = run({ velvet: cfNoSkill1 });
 const consumeAllies = run({ velvet: cfConsumeAllies });
-const s1NoGate = run({ velvet: cfS1NoGate });
+// the V2 outFb-gate counterfactual runs on FIXTURE_OFF: in the sole-B2 fixture her swap MG
+// (uncharged) covers every Full Burst but the last ~0.9s — shorter than one charge cycle — so she
+// has NO in-FB charged pulls there and a dropped outFb gate would be vacuous. Off-B2 she
+// full-charges her SR straight through every Full Burst, which is where the gate bites.
+const s1NoGateOff = runOff({ velvet: cfS1NoGate });
 // the three V3 counterfactuals run on FIXTURE_OFF (see offNoGate/offAtkPct/offChargeMult above):
 // the team buff cannot fire at all in the sole-B2 fixture, so a counterfactual run there would be
 // vacuously zero for both the shipped encoding and the nearest-wrong reading.
@@ -454,10 +463,15 @@ describe('velvet — kit spec', () => {
       expect(countInFb(atkDmg, wins)).toBe(0);
     });
     it('DISCRIMINATING (gate): dropping outFb lets the buff refresh on in-FB charges (applications appear inside FB)', () => {
+      // FIXTURE_OFF, where she full-charges through every FB: shipped gate → zero in-FB applies;
+      // dropped gate → in-FB applies appear.
+      expect(countInFb(offVelBuffs(off.events, 'atkPct', 30.5), offWins)).toBe(
+        0
+      );
       expect(
         countInFb(
-          velBuffs(s1NoGate.events, 'atkPct', 30.5),
-          fbWindows(s1NoGate.events)
+          offVelBuffs(s1NoGateOff.events, 'atkPct', 30.5),
+          fbWindows(s1NoGateOff.events)
         )
       ).toBeGreaterThan(0);
     });
@@ -491,7 +505,7 @@ describe('velvet — kit spec', () => {
         `${inSwap.length} team-buff applications landed inside her own swap window, where she cannot full-charge`
       ).toBe(0);
     });
-    it('DISCRIMINATING (gate): without swapGate the MG shots feed the team buff ~600x per window', () => {
+    it('DISCRIMINATING (gate): without swapGate AND with the old shotFired proxy the MG shots feed the team buff ~600x per window', () => {
       const cf = velBuffs(s2NoSwapGate.events, 'casterAtkPct');
       const swapWindows = velBursts(s2NoSwapGate.events).map(
         (c) => [c.frame, c.frame + 10 * FPS] as [number, number]

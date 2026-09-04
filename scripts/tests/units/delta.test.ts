@@ -140,7 +140,9 @@ const deltaRawMaxHpPctS1 = withPatchedOverride('delta', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'targetMaxHpPct');
   if (!e) {
-    throw new Error('delta S1 targetMaxHpPct effect missing — fixture is stale');
+    throw new Error(
+      'delta S1 targetMaxHpPct effect missing — fixture is stale'
+    );
   }
   e.stat = 'maxHpPct';
 });
@@ -248,14 +250,14 @@ describe('delta (base) — kit spec', () => {
   describe('D1 — S1 grants Max HP ▲8.82% for 10s to HERSELF on every full charge', () => {
     const applied = deltaHpBuffs(base.events);
 
-    it('is a self targetMaxHpPct 8.82 / 10s block on shotFired (structural, shipped JSON)', () => {
+    it('is a self targetMaxHpPct 8.82 / 10s block on fullCharge (structural, shipped JSON)', () => {
       const ov = loadOverride('delta')!;
       const blocks = (ov.skill1 as any[]).filter((b) =>
         hasStat(b, 'targetMaxHpPct')
       );
       expect(blocks.length).toBe(1);
       const [b] = blocks;
-      expect(b.trigger).toEqual({ kind: 'shotFired' });
+      expect(b.trigger).toEqual({ kind: 'fullCharge' });
       expect(b.target).toEqual({ kind: 'self' });
       const e = b.effects.find((x: any) => x.stat === 'targetMaxHpPct');
       expect(e.value).toBe(8.82);
@@ -273,7 +275,7 @@ describe('delta (base) — kit spec', () => {
       expect([...new Set(applied.map((b) => b.targetSlug))]).toEqual(['delta']);
     });
 
-    it('fires on EVERY charged pull (shotFired cadence, not once per magazine)', () => {
+    it('fires on EVERY charged pull (fullCharge cadence, not once per magazine)', () => {
       const shots = deltaShots(base.events).length;
       expect(
         applied.length,

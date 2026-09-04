@@ -142,7 +142,7 @@ const himenoS1Laundered = withPatchedOverride(HIMENO, (ov) => {
   ov.skill1 = [
     {
       slot: 'skill1',
-      trigger: { kind: 'shotFired' },
+      trigger: { kind: 'fullCharge' },
       target: { kind: 'enemy' },
       effects: [
         { kind: 'buff', stat: 'damageTakenPct', value: 6.94, durationSec: 3 },
