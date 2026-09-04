@@ -1,0 +1,104 @@
+{
+  "slug": "drake-great-villain",
+  "kitDescription": "Drake: Great Villain is a Wind Defender shotgun Burst III whose kit revolves around Full Burst. Whenever any Full Burst begins she swaps her normal shotgun for Super Duper Overdrive, a 15-pellet charge shotgun with a fixed 1.5-second charge, a 6-round magazine, and a 300% full-charge multiplier; when that state ends she dumps her entire magazine and must reload from empty. Each time a Full Burst ends she permanently raises all allies' Max HP by 10.5% of her own Max HP, stacking up to four times, and her own permanent Fashionably Late passive converts 6.23% of her live Max HP into ATK, so her damage ramps upward across the fight as the stacks land. Her burst gives herself +27.5% Attack Damage for 25 seconds and hits all enemies for 1350% of final ATK.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1-b: 'dropping the ammo dump OVER-credits drake (it costs her a reload every cycle)' — fails on the blind author's solo-B3 fixture only: removing the dump LOWERED her total (334.4M vs 348.3M) because the extra post-FB shots shift her burst-gauge feed and delay two of five Full Bursts. On the driver's two-B3 control fixture the same counterfactual moves the expected way (+14.3M). Mechanism is correctly modeled; the blind assertion's fixture is rotation-sensitive. Classified RECON_ERROR, not a model divergence."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Changes the weapon in use: Super Duper",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap on fullBurstEnter, self: damagePct 243.75 (full-shot total), chargeTimeSec 1.5 + chargeTimeClamp 1.5, chargeMultPct 300, maxAmmo 6, weapon SG + pelletCount 15, durationSec 10",
+        "blindSaid": "S2b(x2)/S5/S6 all: fullBurstEnter (not burstCast), same field set; both S2b reviewers independently flagged the clamp-vs-chargeTimeSec fork and the weapon:'SG' load-bearing pellet routing",
+        "formulaCheck": "SG swap routes through UNIGEO pellet landing + per-landed-pellet gauge (SSOT §7); charge bucket = chargeMult/100 = 3.0 per §1d; swap shots land inside FB so +0.5 major applies by timing (§1b)",
+        "fireRateOk": true,
+        "explanation": "Driver test pins exactly 6 charged shots per window at 90f cadence emptying the 6-round mag, 243.75%×landing fraction, ×3.0 charge, fbMajorApplied=true; live in every FB window including helm-completed ones. Clamp-only counterfactual (never charges) pinned as an engine gotcha — driver correctly ships both chargeTimeSec and chargeTimeClamp. durationSec 10 is kit-silent but documented as a ⚑ caveat with a measurement recipe."
+      },
+      {
+        "kitLine": "Removes 100% of ammo.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd block: instantReload THEN consumeAmmo fraction 1 — instantReload stands in for the weapon-change hand-back (owner ruling 2026-08-12), clearing the in-progress swap-gun reload so the dump forces a FRESH base-weapon reload on the FB-end frame (probe: reload at 1016 = 944+72f, first post-FB shot at 1040 with fresh 9-round mag)",
+        "blindSaid": "All blind roles encoded bare consumeAmmo{fraction:1} on fullBurstEnd — which the driver proved INERT in this engine (consumeAmmo's !reloading guard + FB-end triggers resolving before swap expiry; bare encoding lets the swap-gun reload complete ~12f after FB end with a full base mag, probe: reload at 956)",
+        "formulaCheck": "Real weapon swap returns the base weapon full (owner ruling); kit line exists to cancel that refill → one full 111f-class base reload per FB exit is the stated cost",
+        "fireRateOk": true,
+        "explanation": "The most valuable output of this gauntlet run: the driver caught an ENGINE-ordering gotcha all four blind roles missed and encoded the faithful behavior, documented in the override note with probe evidence. Driver test pins dumpNoReset (bare consumeAmmo) byte-identical to noDump, and pins the fresh reload at every FB end. The blind S6 encoding, had it shipped, would have been a REAL-GOTCHA (ENGINE: block present but never fires). The single S5 RED is a fixture-sensitivity artifact of the blind test's direction assertion (rotation/gauge coupling on the solo-B3 comp), not a faithfulness divergence — RECON_ERROR on the blind side."
+      },
+      {
+        "kitLine": "Charge Time: Fixed at 1.5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeTimeSec 1.5 + chargeTimeClamp 1.5 (both needed: clamp alone inherits base chargeFrames 0 and never charges; sec alone is charge-speed-buff-mutable)",
+        "blindSaid": "S2b-opus: clamp marker required; S6 shipped both fields with the same reasoning",
+        "formulaCheck": "Charge Speed is subtractive on charge time (§4 mechanics); 'Fixed at' wording = clamp semantics",
+        "fireRateOk": true,
+        "explanation": "Both-fields encoding is the conservative faithful read; counterfactuals pin each failure mode. Shot-economy residue (no release latency while swapped → 6 shots/window, vs opus-S2b's ~5 expectation) is an engine convention carried as a ⚑ caveat with recipe — the engine rule (bolt recovery SR/RL-only, never while swapped) is documented in the driver notes."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Max HP ▲ 10.5% of the skill user's max",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd, allies (self included), casterMaxHpPct 10.5, maxStacks 4, no durationSec",
+        "blindSaid": "S2b(x2)/S5/S6 block-identical to driver",
+        "formulaCheck": "caster-scaled flat maxHpFlat at emit; ally copies offensively inert per the e3 rule (ally-granted Max HP never feeds a conversion); self copies feed her own atkOfMaxHpPct",
+        "fireRateOk": true,
+        "explanation": "Driver test pins application on every FB-end frame to all four targets, uniform caster-scaled value, stacks 1→2→3→4 capped, expiresFrame null; discriminating counterfactuals (FB-enter keying, timed, non-stacking, self-only) all diverge as predicted. Ally byte-identity with/without the grant confirms the e3 inertness."
+      },
+      {
+        "kitLine": "Fashionably Late: ATK ▲ 6.23% of max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "battleStart, self, atkOfMaxHpPct 6.23, no durationSec — live re-read of own Max HP so the S2a stacks feed it",
+        "blindSaid": "All blind roles identical; both S2b reviewers independently named the atkOfCasterMaxHpPct snapshot trap as the highest-risk shared-prior misread",
+        "formulaCheck": "atkOfMaxHpPct = own live Max HP × % per §1a; snapshot encoding would freeze at frame-0 HP and silently delete the 4-stack ramp",
+        "fireRateOk": true,
+        "explanation": "Driver pins the load-bearing coupling arithmetically: post-4-stack baseAtk lift == 6.23% × 4 × (10.5% × maxHp) exactly, the snapshot counterfactual matches at t=0 and diverges by exactly that lift after stack 4, and atkPct is a different stat/total. The coupling both S2b reviewers feared is pinned, not just asserted."
+      },
+      {
+        "kitLine": "(without restoring HP)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "honored by construction — bare Max HP buff emits no recovery event; recorded as caveat, unmodeled empty",
+        "blindSaid": "kimi-S2b listed it unmodeled-verbatim; opus-S2b said it belongs inside the modeled block",
+        "formulaCheck": "No HP pool at scope lock; a maxHpFlat grant is not a heal in the engine's event taxonomy",
+        "fireRateOk": true,
+        "explanation": "No-op clause correctly non-modeled and documented; the two S2b dispositions are a cosmetic disagreement, not a divergence."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Attack Damage ▲ 27.5% for 25 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, self, attackDamagePct 27.5, durationSec 25",
+        "blindSaid": "All blind roles identical; both fixtures (solo-B3, two-B3) exist precisely to discriminate burstCast from fullBurstEnter",
+        "formulaCheck": "attackDamagePct is the additive DamageUp bucket per §1e; 25s on a 40s CD is a real duty cycle (~62.5% uptime), not permanent",
+        "fireRateOk": true,
+        "explanation": "Driver pins once-per-own-cast application, self-only, expiresFrame = applyFrame+1500; counterfactuals (allies targeting lifts helm; 10s duration expires early; FB-enter re-keying over-credits on helm-led rotations) all diverge. S5's permanent-duration counterfactual also moved damage the predicted direction."
+      },
+      {
+        "kitLine": "Deals 1350% of final ATK as Burst Skill",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, enemy, flatDamage atkPct 1350, burstDesc 'allEnemies', unflavored, crit-eligible at engine rider convention; buff block precedes damage block so the nuke carries the same-cast +27.5%",
+        "blindSaid": "S6 block-identical; kimi-S2b claimed burst damage does not crit in-game (reconciled: roster-wide convention is crit-eligible, yukiko pin 2026-08-19, and the SSOT's popup-verified Cinderella nuke crit pair at ×1.5 supports it)",
+        "formulaCheck": "Burst-cast direct damage resolves pre-FB: fbMajorApplied=false, inFullBurst=false, no range, no core — matches the MEASURED boundary rule (§1b); same-cast self-buff applies (buffs from earlier in the same cast/rotation do apply)",
+        "fireRateOk": true,
+        "explanation": "Driver pins one nuke per cast at 1350 in the burst bucket, no FB major, and dmgUp delta of exactly 0.275 vs the no-buff counterfactual (ordering is load-bearing and correct). burstDesc 'allEnemies' matches the literal-only amp rule (owner 2026-08-10) and is census-enforced. The noFb-forcing counterfactual is byte-identical, confirming pre-FB resolution."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1",
+  "verdict": "GO",
+  "verdictRationale": "Every kit line is FAITHFUL or documented, and the two blind re-derivations converged block-for-block with the driver on skill2 and burst (S6 diff: 4 identical blocks, the only delta being the driver's instantReload addition). The run's real signal is the S1 ammo-dump line: all four blind roles shipped an encoding (bare consumeAmmo on fullBurstEnd) that the driver proved is inert in this engine — FB-end triggers resolve before the swap-expiry hand-back and consumeAmmo's !reloading guard skips a unit already mid-reload — and the driver's instantReload-then-consumeAmmo encoding, documented in the note with frame-level probe evidence (reload at 1016 vs 956), is the faithful representation of the kit's stated cost, not a fudge. The single S5-vs-driver RED is a blind-side fixture artifact: the direction assertion was proven on a rotation-sensitive solo-B3 comp where removing the dump perturbs gauge feed and delays Full Bursts; on the pinned two-B3 fixture the counterfactual moves the predicted way and the driver's own test pins it. Discrimination is fully satisfied (29/29 assertions with named counterfactuals all diverging, including the load-bearing HP→ATK coupling both S2b reviewers flagged as the highest-risk trap). Remaining residuals for the owner to spot-check, all flagged ⚑ with recipes rather than silently modeled: the swap shot economy (engine fires 6 shots/window with no swap-side release latency — an engine convention, not a measurement), the 243.75% full-shot-vs-per-pellet read (base-SG convention, split unverified against footage), and the kit-silent 10s swap duration (desyncs under ally fullBurstExtend). None of these block GO; each is a measurement recipe away.",
+  "model": "kimi-code/k3"
+}

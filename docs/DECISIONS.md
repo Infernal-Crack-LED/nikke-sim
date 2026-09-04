@@ -6511,6 +6511,7 @@ merged 2026-08-25):
   search, pool preconditions fail loudly) and `scripts/tests/generators/healer-constraint.test.ts`
   (pins the exclusions with a completeness check, and re-runs the reporting account's 27-unit pool:
   every team fields a healer that can heal). Landed via pull request #149.
+
 ## Skill-level scaling: unscaled effect kinds + `levelScale`/`levelConst` for derived values (2026-08-25)
 
 A community report compared the Roster Generator against a live Shooting Range fight:
@@ -6573,3 +6574,69 @@ hinted 42.24 × 25 = 1056.0). Measured at 1/1/1 vs 10/10/10: `nayuta` −15.3% �
    her skill2 table; also `eve`, `neon-vision-eye`, `emma-tactical-upgrade`, `red-hood`).
    `levelScale` resolves within one slot, and scaling off the wrong slot's level would be wrong
    anyway — may indicate those blocks are filed under the wrong slot.
+
+## Aigis + Drake: Great Villain enter the sim; new-unit sync seeds from the blablalink roster (2026-09-03)
+
+- **Decision 1 — bakery-bot seeds a newly released NIKKE from the game's own (blablalink) roster
+  the day it ships, instead of waiting for Nikke Synergy to list it.** Drake: Great Villain
+  (`drake-great-villain`, released 2026-09-03) had no database row at all because the deployed sync
+  only seeded from Synergy; Aigis (`aigis`) had a row (Synergy id 220) plus a stale orphan row under
+  her untranslated Japanese name from the days before the dictionary caught up. `buildCharacters`
+  now seeds any roster entry no other source lists (id = `slugify(name)`, no invented aliases, seeded
+  LAST so Synergy/manual entries win on a normalized-name collision); the roster is fetched once and
+  reused by the roledata backfill. Landed on bakery-bot branch `feat/blablalink-roster-seed`
+  (`1bc9e58`, tests 432/432) and run once locally against the shared database: 1 seeded, 1 roledata
+  fetch, 1 Fandom cooldown row (burst 40 s; both skills passive), 1 portrait. The bot's scheduled
+  sync keeps doing this once that branch deploys. Her release date is hand-carried in
+  `src/data/sync.ts` MANUAL_RELEASE_DATES (2026-09-03, Fandom + roster date) exactly like yukiko's,
+  until Synergy lists her. Not done: deleting the three orphan Japanese-named rows (`アイギス`, `雪子`,
+  `水着マルチャーナ`) — an owner call on the production table; they only add noise to the sync's
+  "unmatched base stats" line.
+- **Decision 2 — `drake-great-villain`'s "when Super Duper Overdrive ends → Removes 100% of ammo" is
+  encoded as `instantReload` THEN `consumeAmmo` on `fullBurstEnd`, not as the bare `consumeAmmo` all
+  four blind gauntlet roles wrote.** The bare encoding is inert in this engine (Full-Burst-end triggers
+  resolve before the same-frame swap hand-back, and `consumeAmmo` skips a unit already mid-reload of
+  the swap gun) — she would exit every Full Burst with a free full magazine. The instantReload stands
+  in for the weapon change itself (base gun returns full, owner ruling 2026-08-12) so the dump starts a
+  fresh full base reload on the Full-Burst-end frame. Per-unit workaround by design; the engine-side
+  fix (`swapEnd` primitive or expiry-before-trigger ordering) is filed as
+  `docs/engine-modeling-gaps.md` §22 and would retire the instantReload.
+- **Decision 3 — Aigis's Marakukaja (all allies DEF ▲ 21.12% of the skill user's DEF) is UNMODELED,
+  not proxied.** The schema has no caster-DEF-scaled stat key and `defPct` scales the target's OWN DEF
+  (a different basis); DEF has no consumer in v1 either way. The S6 blind override's `defPct` proxy was
+  ruled the weaker reading by both judges. Her S1 self DEF line IS kept as `defPct` (exact semantics).
+- **Decision 4 — routing for this gauntlet run (owner instruction, this run only): the driver was
+  Claude Fable 5.1, so every role the protocol pins to `claude-fable-5` went to `kimi-code/k3`;
+  S5/S6 stayed on `claude-opus-5`; Tier-2 second reviewer/judge `claude-opus-5`.** Both units:
+  Tier 2, GO from both judges (aigis 0.9 kimi / 0.83 opus; drake-great-villain 1.0 / 1.0).
+  `scripts/kit-autonomy/CROSS-FAMILY-PROTOCOL.md` is unchanged — this is a per-run deviation, not a
+  new default.
+- **Decision 5 — the same sync corrected `quiry`'s roster identity, and the corrected data stands.**
+  Main carried her as Burst II / 60 s / Missilis (released 2022-12-15) from a mis-joined Synergy
+  profile; the datamined roledata already in characters.json (`use_burst_skill: Step3`, corporation
+  ELYSION), the Fandom burst cooldown (40 s) and the re-matched Synergy profile (Elysion, 2023-10-19)
+  all agree on Burst III / 40 s / Elysion — three independent sources against one stale join, so the
+  synced values are kept. Her override BLOCKS are tier-independent and untouched; the note prose now
+  states the corrected identity. Her 2026-08-05 spec test (`scripts/tests/units/quiry.test.ts`) was
+  built on a fixture that seats her as the sole Burst II beside two Burst IIIs, which the corrected tier
+  makes vacuous (she never casts), so the suite is `describe.skip` with the reason in its header and a
+  re-derivation item in `docs/handoffs/QUEUE.md`. She is MODEL_ONLY and on no graded comp, so the board
+  does not move. Also carried by the sync, all upstream alias edits: `laplace-ultimate-hero`'s
+  "laplaceuh" respelled "lapluh", `maxwell`'s "mw" removed, `maxwell-ordinary-mechanic` gained
+  "maxwell alt", and the Persona-collab nicknames for `queen-makoto` / `yukiko`.
+- **Tooling ruling folded in:** the cross-family bridges' 2026-08-16 shape check required a `verdict`
+  key on every reply, which rejected every valid S2b/S5/S6 payload (those roles return `spec` /
+  `override` by contract) and forced a hand rescue per dispatch. `dispatch-claude.sh`,
+  `dispatch-kimi.sh` and `scripts/extract-review-json.py` now accept `verdict` OR `spec` OR
+  `override`. New committed tool: `scripts/kit-autonomy/build-judge-packet.ts` assembles the S7
+  packet from the run's artifacts (the driver definition prescribed hand-concatenation).
+- **Evidence:** every magnitude is literal kit text (DATAMINED); the only derived constants are
+  aigis's 652 f Papillon Heart window (30 f stage gap + 22 f pre-FB + 600 f, the yukiko 622 f
+  precedent, pinned to the engine's own `fullBurstEnd` frames) and the swap window's 10 s. Spec tests:
+  `scripts/tests/units/aigis.test.ts` (23 assertions) and
+  `scripts/tests/units/drake-great-villain.test.ts` (30), each carrying its named nearest-wrong
+  counterfactuals; blind convergence 11/11 (aigis, adapted fixture) and 22/23 (drake-great-villain,
+  unmodified — the one RED is a solo-fixture rotation artifact both judges classified RECON_ERROR).
+  Owner review surface: `scripts/kit-autonomy/manual-review/{aigis,drake-great-villain}.md`. Two
+  roster-level findings routed off the units: open-questions U41 (`casterAtkPct` static-vs-final ATK
+  basis) and engine-modeling-gaps §22.

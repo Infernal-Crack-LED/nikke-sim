@@ -26,6 +26,32 @@ fewest videos. Master plan: `docs/handoffs/2026-07-16-full-sweep-plan.md`. Dashb
 `npx tsx scripts/board-read.ts`. **Submission intake: 0 pending** (Nikke Sim Data Submission Google
 Form → `/submission-intake` → `/probe-processing` → hand-tune; this line is the tracked count).
 
+### NEW UNITS 2026-09-03 — aigis + drake-great-villain follow-ups (OPEN)
+
+Landed on branch `kit-autonomy-aigis-drake-great-villain` (nikke-sim) + `feat/blablalink-roster-seed`
+(bakery-bot); both unpushed pending the owner. Owner review surface:
+`scripts/kit-autonomy/manual-review/{aigis,drake-great-villain}.md`.
+
+- **bakery-bot:** push + open the PR for `feat/blablalink-roster-seed` and deploy — until then the
+  scheduled sync on Railway still lacks roster seeding (the local run already seeded
+  `drake-great-villain` into the shared database). Optional cleanup of the three orphan
+  Japanese-named rows (`アイギス`, `雪子`, `水着マルチャーナ`) that pad the sync's unmatched list; Prydwen
+  tier cache has no entry for aigis / yukiko / drake-great-villain (`npm run refresh:prydwen`, local only).
+- **Record first (drake-great-villain):** one focus recording counting charged-shot popups inside a
+  single Full Burst — the sim pins exactly 6 at a 90 f cadence (engine convention: no swap-side release
+  latency); a ~17% swing on her largest damage window. Same footage settles the 243.75% full-shot vs
+  per-pellet read.
+- **Engine follow-up:** `docs/engine-modeling-gaps.md` §22 — `swapEnd` trigger primitive or
+  expiry-before-trigger ordering, retiring the `instantReload` workaround in her override.
+- **U41** (`docs/open-questions.md`) — `casterAtkPct` resolves off the caster's static ATK; the formula
+  doc says final ATK. Roster-wide; measure on aigis.
+- **quiry spec re-derivation:** the same sync corrected her to Burst III / 40 s / Elysion (DECISIONS
+  2026-09-03, decision 5); `scripts/tests/units/quiry.test.ts` is `describe.skip` because its fixture
+  seats her as the sole Burst II. Re-derive with her as the sole Burst III (a Burst II plus a
+  non-Burst-III Defender recipient), re-measure the Q3 recovery thresholds, un-skip.
+- **aigis window:** the 652 f Papillon Heart durationSec drifts from "until Full Burst ends" under a
+  Full-Burst extender; only matters if such a comp is graded.
+
 ### TREASURE SKILL-LEVEL SCALING — no per-level data source (OPEN, needs investigation)
 
 **19 units cannot scale their skill levels at all**, and it is a DATA gap, not an authoring one.

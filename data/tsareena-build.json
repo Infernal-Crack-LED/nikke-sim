@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-08-20T21:08:54.195Z",
+  "syncedAt": "2026-09-04T15:32:25.392Z",
   "source": "bakery-bot DB nikke_characters.sheet_data (community Tsareena build sheet)",
   "units": {
     "a2": {
@@ -51,23 +51,6 @@
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": null,
         "notes": "Mainly used for strong attack buffs"
-      }
-    },
-    "alice": {
-      "priority": "Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/7/10",
-        "cube": "Resilience · Bastion",
-        "overloadMinimum": "2x Charge Speed 2xAmmo",
-        "overloadIdeal": "2x Charge Speed · 2x Ammo · 4x Element · 4xAttack",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Tetra Tower · PvP (Low Prio)",
-        "burstGen": "Auto: Low Manual: High",
-        "pairWith": null,
-        "notes": "Manual fast shooting is much better damage during her burst."
       }
     },
     "anchor-innocent-maid": {
@@ -258,7 +241,7 @@
       }
     },
     "blanc": {
-      "priority": "Low Priority",
+      "priority": "PvP Medium Priority",
       "annotations": [],
       "build": {
         "skillLevels": "7/7/10",
@@ -279,7 +262,7 @@
       "annotations": [],
       "build": {
         "skillLevels": "10/10/10",
-        "cube": "Resilience · Bastion · Destruction",
+        "cube": "Diffusion · Resilience",
         "overloadMinimum": "3x Element · 1x Ammo",
         "overloadIdeal": "4x Element · 4x Attack · 1x Ammo · 3x Crit Damage",
         "overloadGear": "Yes",
@@ -408,23 +391,6 @@
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": null,
         "notes": "Has a 25% damage taken debuff for enemies on her own burst. Very useful to use in teams with heavy damage B2 or B1 girls"
-      }
-    },
-    "d-killer-wife": {
-      "priority": "PvE Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "7+/10/7+",
-        "cube": "Resilience · Wingman",
-        "overloadMinimum": "2x Ammo",
-        "overloadIdeal": "2x Ammo · 4x Attack · 4x Element",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "No",
-        "levelDoll": "No",
-        "endgameUses": "Solo Raid · Elysion Tower",
-        "burstGen": "Auto: Low Manual: High",
-        "pairWith": null,
-        "notes": "Mainly used for cooldown reduction which doesnt require her to burst"
       }
     },
     "dorothy-serendipity": {
@@ -604,7 +570,7 @@
         "skillLevels": "10/10/10",
         "cube": "Resilience · Highest Level",
         "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 4x Critical Damage/Rate",
+        "overloadIdeal": "4x Element · 4x Attack · 3x Charge speed · 1x Crit Rate",
         "overloadGear": "Yes",
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes (High Prio)",
@@ -886,21 +852,21 @@
         "notes": "Pair with Anchor to keep her from stunning herself"
       }
     },
-    "maxwell": {
+    "maxwell-ordinary-mechanic": {
       "priority": "PvE Low Priority",
       "annotations": [],
       "build": {
-        "skillLevels": "10/1/10",
-        "cube": "Destruction · Resilience · Bastion",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 4x Crit Damage",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
+        "skillLevels": "7+/10/4+",
+        "cube": "Vigor · Resilience · Adjutant · Quantum",
+        "overloadMinimum": "1x Ammo",
+        "overloadIdeal": "4x Element · 3x Attack · 1x Ammo · 4x Charge Speed",
+        "overloadGear": "Yes (Low Prio)",
+        "overloadLevelFive": "No",
         "levelDoll": "Yes (Low Prio)",
-        "endgameUses": "Solo Raid · Union Raid",
-        "burstGen": "Auto: Low Manual: High",
+        "endgameUses": "Solo raid · Missilis Tower",
+        "burstGen": "Auto: High Manual: High",
         "pairWith": null,
-        "notes": null
+        "notes": "Very large burst gen while being a flex support. Mediocre buffs for most but increases HP for nikkes like Lapluh and Cindy"
       }
     },
     "mihara-bonding-chain": {
@@ -1090,6 +1056,23 @@
         "notes": null
       }
     },
+    "phantom": {
+      "priority": "PvE Low Priority",
+      "annotations": [],
+      "build": {
+        "skillLevels": "10/10/7+",
+        "cube": "Resilience · Diffusion",
+        "overloadMinimum": "2x Element · 2x Attack",
+        "overloadIdeal": "4x Element · 4x Attack · 1x Ammo · 3x Crit Damage",
+        "overloadGear": "Yes",
+        "overloadLevelFive": "Yes",
+        "levelDoll": "Yes (High Prio)",
+        "endgameUses": "Solo Raid",
+        "burstGen": "Auto: Low Manual: Low",
+        "pairWith": null,
+        "notes": "Dependant on her hit rate buffs to deal maximum damage. She wants to constantly be hitting an enemy to not drop buffs"
+      }
+    },
     "prika": {
       "priority": "High Support Priority",
       "annotations": [],
@@ -1122,6 +1105,23 @@
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": null,
         "notes": "If you are using her burst do not pair with anyone who provides increased max ammo"
+      }
+    },
+    "queen": {
+      "priority": "PvE Medium Priority",
+      "annotations": ["C"],
+      "build": {
+        "skillLevels": "10/10/7+",
+        "cube": "Diffusion · Resilience · Bastion",
+        "overloadMinimum": "2x Element · 2x Attack",
+        "overloadIdeal": "4x Element · 4x Attack · 2x Ammo · 2x Crit Damage/Rate",
+        "overloadGear": "Yes",
+        "overloadLevelFive": "Yes",
+        "levelDoll": "Yes",
+        "endgameUses": "Solo Raid",
+        "burstGen": "Auto: Medium Manual: Medium",
+        "pairWith": "Yukiko",
+        "notes": "Huge atk buffs and high distributed damage when paired with Yukiko. Atk buffs are not the best buff for her."
       }
     },
     "quency-escape-queen": {
@@ -1209,23 +1209,6 @@
         "notes": "If you are using auto burst make sure you position her after your Burst 1 and 2"
       }
     },
-    "rei-ayanami": {
-      "priority": "PvE Low Priority",
-      "annotations": ["C"],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Bastion · Resilience · Destruction",
-        "overloadMinimum": "3x Element · 1x Ammo",
-        "overloadIdeal": "4x Element · 4x Ammo · 4x Attack",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid",
-        "burstGen": "Auto: Low Manual: Low",
-        "pairWith": null,
-        "notes": null
-      }
-    },
     "rei-ayanami-tentative-name": {
       "priority": "Low Priority",
       "annotations": ["C"],
@@ -1278,7 +1261,7 @@
       }
     },
     "rouge": {
-      "priority": "PvE Medium Priority",
+      "priority": "PvE Low Priority",
       "annotations": [],
       "build": {
         "skillLevels": "10/10/10",
@@ -1333,7 +1316,7 @@
       "annotations": [],
       "build": {
         "skillLevels": "10/7/10",
-        "cube": "Bastion",
+        "cube": "Diffusion",
         "overloadMinimum": "2x Element · 2x Attack · 1xAmmo",
         "overloadIdeal": "4x Element · 4x Attack · 1x Ammo · 3x Charge Speed",
         "overloadGear": "Yes",
@@ -1441,7 +1424,7 @@
         "overloadGear": "Yes (Low Prio)",
         "overloadLevelFive": "Yes (Low Prio)",
         "levelDoll": "Yes (Low Prio)",
-        "endgameUses": "Solo Raid",
+        "endgameUses": "Story · Solo Raid",
         "burstGen": "Auto: Low Manual: High",
         "pairWith": "True damage carries",
         "notes": null
@@ -1532,8 +1515,25 @@
         "notes": null
       }
     },
-    "zwei": {
+    "yukiko": {
       "priority": "PvE Medium Priority",
+      "annotations": ["C"],
+      "build": {
+        "skillLevels": "7+/10/10",
+        "cube": "Diffusion · Resilience · Bastion",
+        "overloadMinimum": "2x Element · 2x Attack",
+        "overloadIdeal": "4x Element · 4x Attack · 2x Ammo · 2x Crit Damage/Rate",
+        "overloadGear": "Yes",
+        "overloadLevelFive": "Yes",
+        "levelDoll": "Yes",
+        "endgameUses": "Solo Raid",
+        "burstGen": "Auto: Low Manual: Low",
+        "pairWith": "Queen (Makoto Niijima)",
+        "notes": "Huge atk buffs and high distributed damage when paired with Makoto. Atk buffs are not the best buff for her."
+      }
+    },
+    "zwei": {
+      "priority": "PvE Low Priority",
       "annotations": [],
       "build": {
         "skillLevels": "10/10/10",
