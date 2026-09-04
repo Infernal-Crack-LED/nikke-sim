@@ -37,7 +37,8 @@
       "target": {
         "kind": "alliesOfElementWeapon",
         "element": "Wind",
-        "weapon": "AR"
+        "weapon": "AR",
+        "count": 99
       },
       "effects": [
         {

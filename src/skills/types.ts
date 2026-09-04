@@ -96,7 +96,7 @@ export type TriggerDef =
       count: number;
       countInFb?: number;
       countInFbStage?: number;
-      perPull?: boolean; // true = count trigger PULLS (1 per shot), false/omitted = count landed PELLETS (`hitsPerShot` per shot). The SG 10× lever.
+      perPull?: boolean; // true = count trigger PULLS (1 per shot), false/omitted = count PELLETS FIRED (`hitsPerShot` per shot — the shot's pellet count, NOT its landed fraction). The SG 10× lever.
       // WHICH attacks advance the counter. Default 'always' — every normal attack accrues, and the
       // block's gates (fbGate/swapGate/…) are checked only when a threshold is CROSSED, so a
       // crossing the gate blocks still SPENDS its N. That is right for a kit worded "every N normal
