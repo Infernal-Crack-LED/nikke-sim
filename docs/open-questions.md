@@ -14,6 +14,27 @@ DECISIONS leaves the stale question here reading as live — always move it.
 
 ## UNANSWERED
 
+### U41 — `casterAtkPct` basis: the caster's STATIC ATK (engine) or the caster's FINAL ATK (formula doc)? (opened 2026-09-03)
+
+Surfaced by the `claude-opus-5` second judge of the `aigis` kit-autonomy gauntlet, reading the SSOT
+against the engine rather than any agent disagreeing. `docs/data/damage-calculation.md` §1a says an
+"ATK ▲ X% of the skill user's ATK" grant converts at application time to a flat add of the caster's
+**final** ATK × X. The engine (`src/engine/sim.ts`, the `casterAtkPct` branch of the buff
+application) resolves it off `owner.staticAtk` — the sheet ATK, before the caster's own ATK ▲ %
+buffs. The two agree only for a caster with no live ATK ▲ % of her own at cast time.
+
+Every `casterAtkPct` carrier is affected roster-wide (liter, crown, aigis, naga, … — census by grep
+before acting), and the encoding side is NOT in question: `casterAtkPct` is the right stat for the
+kit wording either way. Sized on `aigis`: her permanent Tarukaja (self ATK ▲ 21.12%) is live at every
+cast, so her Matarukaja team grant would be ~21% larger under the final-ATK reading. Not a per-unit
+fix — changing it for one unit would be worse than the status quo.
+
+**Resolving it:** one focus recording where a caster-scaled buffer ALSO self-buffs ATK (aigis is the
+cleanest: no other ATK source of her own), reading an ally's popup with the grant live and comparing
+against the two predicted flat adds (they differ by the buffer's own ATK ▲ %, ~21% here — well
+outside popup noise). Then either the engine snapshots the caster's live effective ATK at apply time,
+or §1a is corrected to say sheet ATK. Until measured the engine's current behaviour stands.
+
 ### U40 — `mihara-bonding-chain` Ensnaring stack count at burst time (opened 2026-08-17)
 
 The sim's Ensnaring pool time-averages 13.39 stacks and always reaches 20 before each burst
