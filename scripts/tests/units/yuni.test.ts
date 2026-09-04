@@ -298,7 +298,9 @@ const buffs = (evs: SimEvent[]) =>
 const yuniBuffs = (evs: SimEvent[], stat: string) =>
   buffs(evs).filter((b) => b.casterIdx === YUNI && b.stat === stat);
 const yuniBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'yuni');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'yuni'
+  );
 const yuniShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'yuni');
 const yuniNukes = (evs: SimEvent[]) =>
@@ -314,8 +316,9 @@ const bossBuffs = (evs: SimEvent[]) =>
 /** Group a unit's shots by magazine ordinal. */
 function byMag(evs: SimEvent[], slug: string): Map<number, Shot[]> {
   const m = new Map<number, Shot[]>();
-  for (const s of
-    evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === slug)) {
+  for (const s of evs.filter(
+    (e): e is Shot => e.kind === 'shot' && e.slug === slug
+  )) {
     (m.get(s.magIndex) ?? m.set(s.magIndex, []).get(s.magIndex)!).push(s);
   }
   return m;
@@ -401,7 +404,9 @@ describe('yuni — kit spec', () => {
             evs
               .filter(
                 (e): e is Damage =>
-                  e.kind === 'damage' && e.slug === 'yuni' && e.bucket === 'normal'
+                  e.kind === 'damage' &&
+                  e.slug === 'yuni' &&
+                  e.bucket === 'normal'
               )
               .map((d) => d.atkPct)
           ),
@@ -544,9 +549,10 @@ describe('yuni — kit spec', () => {
     // the window's only observable is on-recovery CONSUMER behaviour (helm H8 precedent).
     // Fixture B observes through crown's "when recovery takes effect" block with crown's
     // OWN hitCount heal patched out; liter/ada carry no heal effects, so every recovery
-    // firing is attributable to yuni's S2 line. NOTE: crown (B2) wins every stage-2 slot
-    // in this fixture, so yuni casts ZERO bursts here (B2 starvation) — that is exactly
-    // what starves the burst-keyed counterfactual below.
+    // firing is attributable to yuni's S2 line. NOTE: crown (B2) wins nearly every stage-2
+    // slot in this fixture, so yuni casts at most one burst — the burst-keyed
+    // counterfactual below is discriminated by its cast-capped count, not by zero casts
+    // (the 2026-09-04 sameWeapon landing moved her from 0 casts to 1).
     const frames = recoveryFrames(healBase.events);
     const firstShot = yuniShots(healBase.events)[0]?.frame ?? Infinity;
 
@@ -572,9 +578,20 @@ describe('yuni — kit spec', () => {
       expect(recoveryFrames(healNone.events)).toHaveLength(0);
     });
 
-    it('DISCRIMINATING: a burst-keyed heal starves (yuni casts zero bursts beside crown)', () => {
-      expect(yuniBursts(healOnBurst.events)).toHaveLength(0);
-      expect(recoveryFrames(healOnBurst.events)).toHaveLength(0);
+    it('DISCRIMINATING: a burst-keyed heal is cast-capped, not pull-capped', () => {
+      // Was "starves — yuni casts ZERO bursts beside crown"; the 2026-09-04 sameWeapon landing
+      // shifted fixture B's rotation and she now casts ONCE, so the zero-starvation basis is
+      // gone. The trigger identity is still pinned by the count shape: a burstCast-keyed heal
+      // seeds one 10-tick window per cast (1 cast → 10 firings), while the shipped per-pull
+      // model fires once per tick of every pull's overlapping window (833 over 86 pulls).
+      const casts = yuniBursts(healOnBurst.events).length;
+      expect(casts).toBeGreaterThan(0);
+      expect(recoveryFrames(healOnBurst.events).length).toBeLessThanOrEqual(
+        casts * 10
+      );
+      expect(recoveryFrames(healBase.events).length).toBeGreaterThan(
+        yuniShots(healBase.events).length
+      );
     });
   });
 

@@ -3040,11 +3040,20 @@ export function runSim(
           owner.reloading = false;
           owner.reloadProgress = 0;
           // A same-weapon flavor swap (the gun never changes, only its normals become true damage:
-          // chisato/clay/jill/frima) does NOT reload the mag; only a real weapon swap picks up a
-          // fresh magazine. (kit-audit chisato #2 — the kit grants no reload here.) The marker is
-          // the authored `sameWeapon`, NOT `trueNormals`: a REAL weapon can also deal true damage
-          // (takina's burst gun, owner ruling 2026-08-12), and reading the flavor as the economy
-          // left such a unit stuck with the base weapon's magazine mid-window.
+          // chisato/clay/jill/frima + ada/snow-white-heavy-arms since 2026-09-04) does NOT reload
+          // the mag; only a real weapon swap picks up a fresh magazine. (kit-audit chisato #2 —
+          // the kit grants no reload here.) The marker is the authored `sameWeapon`, NOT
+          // `trueNormals`: a REAL weapon can also deal true damage (takina's burst gun, owner
+          // ruling 2026-08-12), and reading the flavor as the economy left such a unit stuck with
+          // the base weapon's magazine mid-window.
+          //
+          // KNOWN EDGE (documented, ungated — cross-family review follow-up 2026-09-01): the
+          // reload-cancel above is UNconditional but the refill below is not. A `sameWeapon`
+          // entry that lands mid-reload therefore cancels the reload WITHOUT refilling, producing
+          // the otherwise-impossible `ammo == 0 && reloading == false` (the next fire attempt
+          // restarts the reload from zero). Uncosted; if a unit's burst timing ever lands its
+          // swap entry inside its own reload cycle, cost it then or gate the cancel on
+          // `!e.sameWeapon`.
           if (!e.sameWeapon) {
             owner.ammo = maxAmmo(owner, frame);
           }

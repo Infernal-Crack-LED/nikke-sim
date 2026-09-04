@@ -1,16 +1,21 @@
 # Remaining work — top-ranked DPS validation + unmodeled kit pieces (2026-09-04)
 
-**SSOT for the two in-flight threads** from the 2026-08-21 → 2026-08-25 commits: (A) validating the
-sim's top-ranked DPS against community lists and recordings, and (B) reviewing missing/unmodeled
-kit pieces (the 2026-08-23 top-board kit-faithfulness audit and its follow-ups). This doc
-categorizes everything still OPEN in those two threads and gives the implement/review plan per
-item. AI-facing.
+**SSOT for the two in-flight threads** from the 2026-08-21 → 2026-09-04 work (main + the
+2026-09-01 worktree audit, merged 2026-09-04): (A) validating the sim's top-ranked DPS against
+community lists and recordings, and (B) reviewing missing/unmodeled kit pieces (the 2026-08-23
+top-board kit-faithfulness audit, its follow-ups, and the 2026-09-01 code-correctness pass over
+the same population). This doc categorizes everything still OPEN in those two threads and gives
+the implement/review plan per item. AI-facing.
 
 **Sources of truth this doc aggregates** (each owns its own detail; this doc is the index):
 
-- `docs/b3-dps-rank-audit.md` — sim chart vs community damage lists (generated 2026-08-16 by
+- `docs/b3-dps-rank-audit.md` — sim chart vs community damage lists (regenerated 2026-09-04 by
   `scripts/audit-b3-ranks.ts`; regenerable).
 - `docs/kit-faithfulness-audit-2026-08-23.md` — 45-unit top-board audit, FINDINGS ONLY.
+- `docs/kit-code-audit-2026-09-01.md` — CODE-correctness pass over the same top-board population
+  (24 units): given the engine's actual primitive implementations, does each authored block do
+  what the override/note/test claims? Landed half merged 2026-09-04 (three board-inert fixes +
+  the sameWeapon proposal); open items are Category E below.
 - `docs/handoffs/2026-08-24-kit-audit-primitive-followups.md` — what landed (fullCharge,
   selfStatus, copyResource) and every open thread with its gate.
 - `docs/handoffs/2026-08-25-skill-level-scaling.md` — scaling fix landed; per-unit backlog open.
@@ -27,8 +32,9 @@ denominator, shortfall explainer) stay in `docs/handoffs/QUEUE.md` and are not r
 
 ## Category A — validating the top-ranked DPS (b3 rank audit follow-ups)
 
-The audit compared 70 slugs (neutral + eleweak arms) and flagged 23 units where sim rank disagrees
-with the community lists by ≥10. **Nothing from it has been enacted.**
+The audit compared 70 slugs (neutral + eleweak arms) and flags units where sim rank disagrees
+with the community lists by ≥10 (22 flagged in the 2026-09-04 re-run). **Nothing from it has been
+enacted.**
 
 ### A0. Re-run the rank audit against the current chart — DONE 2026-09-04
 
@@ -133,7 +139,11 @@ already: `fullCharge`, `selfStatus`, `copyResource` primitives and the §6 prose
 
 1. **`cinderella` G1 same-cast snapshot** — the audit's largest open faithfulness risk
    (~20–25% nuke swing; `burstSnapshotsPreFb: false` vs the e3-video reading). Override already
-   carries "⚑ OWNER RESOLUTION REQUIRED" with the one-popup recipe (u8 e3 footage).
+   carries "⚑ OWNER RESOLUTION REQUIRED" with the one-popup recipe (u8 e3 footage). ⚠ 2026-09-01
+   audit addendum: the flag is a **roster-wide no-op** — `33c6c060` (2026-08-13) moved
+   `stageEnter` 30f earlier, so flipping it does NOT make the nuke lose the same-cast conversion;
+   the documented remedy does not work, and a pre-FB reading would need a new primitive. The
+   G1 pin test passes identically at either flag value (test-quality finding, E4).
 2. **`flora` `sides: 2` vs `sides: 1`** (U38, shared with `rouge`) — shipped choice is the
    inflating one; widens a 45.12% caster-ATK buff + crown's recovery-event feed. One reading
    settles it.
@@ -192,7 +202,12 @@ Engine fix landed (0 SILENT, 13 pinned assertions). Remaining:
    (`ein`, `eve`, `neon-vision-eye` ×2, `emma-tactical-upgrade`, `red-hood`) may mean the blocks
    are filed under the wrong slot — **worth a look before building cross-slot anchor support.**
    No-table values: `ark-ranger-black` ×2, `cinderella`, `cinderella-crystal-wave`, `sin`, `soda`,
-   `soda-twinkling-bunny`.
+   `soda-twinkling-bunny`. 2026-09-01 audit addendum (same defect class): `dorothy-serendipity`'s
+   whole `consolidation` block bypasses scaling with NO warning (`resolveSkills` scales `blocks`
+   only; its `attackDamagePct 72` is a level-varying skill1 value), and `instantReload.fraction`
+   is structurally unannotatable (13 overrides; SBS's real S2-L1 refill is 30%, sim always 100%).
+   All zero at 10/10/10 — live only in the web app's skill sliders; fixes byte-identical at max
+   level.
 3. **C3. Census tails.** 8 overrides have no level data at all (`anne-miracle-fairy`,
    `laplace-ultimate-hero`, `maxwell-ordinary-mechanic`, `queen`, `rei-ayanami-tentative-name`,
    `yukiko`, 2 noop controls); 3 ambiguous level tables where two varying arrays share a max
@@ -229,17 +244,97 @@ The ACTIONABLE residue:
 
 ---
 
+## Category E — kit CODE-correctness audit (2026-09-01) open items
+
+From `docs/kit-code-audit-2026-09-01.md` (merged 2026-09-04). LANDED: the three board-inert fixes
+(ark-ranger-black `alliesOfElementWeapon` count, milk-blooming-bunny distributed flavor, perPull
+comment) and the sameWeapon proposal (DECISIONS 2026-09-04). Provenance caution: the numbers below
+were measured by the reviewing agents and NOT orchestrator-re-run — re-run the A/B before acting
+on any of them.
+
+### E1. Board-moving flags (owner/measurement gated, ranked by weight)
+
+1. **`mihara-bonding-chain` — two undisclosed levers, opposite signs.** (a) The 40-normals block
+   drops the kit's "on a target in the Ensnaring Chains state" precondition — her burst CANCELS
+   Ensnaring at cast, so the gate is closed for her whole own-FB window; adding
+   `resourceGate {ensnaring, min:1}` measures −16.22% (MED confidence on the reading —
+   bootstrapping: nothing re-opens the gate inside her own FB). (b) The battle-start Restraint
+   line is DEAD — initial 10 never spent (all dump blocks gate on own-FB end); floor ≥ +4.31%.
+   She reads 1.076 HOT. **Plan:** owner ruling on both readings + measurement.
+2. **`maiden-ice-rose` — stack-pile refresh is a game-truth question.** `applyBuff` refreshes the
+   whole pile; she holds the 10-cap (+63.4% Max HP) where the note claims "~1-2 stacks
+   steady-state" (wrong ~5×). Per-stack expiry would cost −10.15% and needs an engine primitive.
+   **Minimum action:** correct the note to describe the shipped model. Game-truth ruling gates
+   more.
+3. **`asuka-wille` ATF residual ≈ −3.9%, mis-mechanised** — the stack is ONE buff entry whose
+   expiry is overwritten per re-application (26 stacks at full strength for 9s, then gone), not
+   the gradual expiry the note describes. Refines B2.2/B4.2; same measurement gate.
+4. **`eve` burst block ORDER worth +3.89%** — the nuke resolves BEFORE the same-cast Mk2
+   casterAtkPct +50. Roster split is 14 buff-first vs 10 nuke-first; nothing anywhere guards
+   intra-block effect order (cross-ref B1.3 census). Cross-cutting game-behaviour question;
+   minimum action is to pin + state the shipped order.
+5. **`diesel-winter-sweets` Intro/Highlight latch** — shipped alternates (5 of 9 FBs); the two
+   candidate once-per-battle latch readings BRACKET the shipped value (+2.74% / −22%); "MUTUALLY
+   EXCLUSIVE" is an unsourced premise. Owner ruling.
+6. **`cinderella-crystal-wave` reload clamp at the wrong end of the kit's window** — inert on the
+   8/12 solo cell; graded T8 0.9200 → 0.9872 (+7.31%) with the proposed `"mode": "Snipe"` fix.
+   Makes her hotter — needs a full board re-read first. Cross-ref B2.3 (her 100000 sentinel).
+7. **`mana` σ-gated `burstGenPct` costs a Full Burst** vs the always-on reading (9 vs 10 FBs on
+   the cell); the note's cited verification is insensitive by construction (CD-gated casts).
+   Owner ruling on the reading.
+
+### E2. Code-correct but silently wrong off the board (web app)
+
+- **Skill-scaling escapes** — folded into C2 (dorothy consolidation no-warning,
+  `instantReload.fraction` ×13, the cross-slot trio).
+- **`dorothy-serendipity` `pelletFraction` (a DAMAGE quantity) feeds `hitFraction` (the
+  burst-GAUGE credit fraction)** — a 1-pellet-fixed shot credits full per-trigger gauge; +41.9%
+  gauge-weighted shot total vs a 1-landed-pellet reading. FB count unchanged on the control comp;
+  the demonstrable defect is the field conflation. Cross-ref B5 (gauge cluster).
+- **`rapi-red-hood` `requiresPulls: 120` is always-open** — `u.pulls` is a lifetime counter (120
+  reached in ~3s); the note's "CHARGE-GATED" claim is a false claim of coverage. Zero board
+  impact; fix the claim or the gate.
+- **`liberalio` `excludeSelf` + `statImmunities` double-guard** — the pre-2026-08-14 workaround
+  wasn't retired; contradicts her own caveat. Inert cleanup.
+
+### E3. Test-quality findings (pins that cannot discriminate)
+
+`maiden-ice-rose` M1 (asserts `max(stacks) >= 2` — passes at 2 or 10), `ark-ranger-black`
+A5/A6/A7 (one-Wind-AR fixture can't discriminate the slicing; two pins pin a mis-slotted bucket
+as correct), `cinderella` G1 (identical at either flag value), `scarlet-black-shadow` B7
+(order claim in prose only). Plus the framework coverage gap: every per-unit spec runs at
+`ol: 'base5'` while the ranked cells are 8/12 — OL-line interactions are regression-snapshot-only.
+**Plan:** strengthen the five named pins; consider one 8/12 spec as a coverage probe.
+
+### E4. Prose-drift additions (beyond the 2026-08-23 §6 list)
+
+Highest-value: **`drake`'s "No real-fight recording yet" is FALSE** and blocks reuse of in-tree
+probe data (`docs/probes/ar-sg-smg/drake sg.MP4`, `sg-pellet-landing.json`, gauge trace) — her
+⚑1 "MANDATORY" cadence tuple is already answered there. Also: `neon-vision-eye` gauge-economy
+paragraph (falsified by `5456a5d0`), `bready` chargeFrames premise (removed by `4e228978`),
+`helm` rl3 provenance (ruled non-decomposable 2026-08-17), `milk-blooming-bunny` removed-model
+narration + contradicting caveat, `scarlet-black-shadow` opening sentence (1/2/3 vs shipped
+scalar), `liberalio` impossible "burst slot omitted" claim, and stale SPEC-TEST headers on `ada`,
+`phantom`, `snow-white-heavy-arms`, `asuka-wille`, `diesel-winter-sweets`.
+**Plan:** capture-first prose surgery, batched with B1.4.
+
+---
+
 ## Recommended execution order
 
 1. ~~**A0**~~ **DONE 2026-09-04** — re-ran `audit-b3-ranks` against the 2026-08-25 chart; flags stable.
 2. **B1** — mechanical batch: fullCharge tail, rei/rem selfStatus, validator/census follow-ups,
    palimpsests. Byte-identical or findings-only; land in per-unit slices with green gates.
-3. **A3 + B3** — one batched owner-ruling ask: treasure re-basis, flora sides, mint disposition,
-   cinderella G1 recipe go/no-go, grave U19, crust.
+   (IN PROGRESS 2026-09-04.)
+3. **A3 + B3 + E1** — one batched owner-ruling ask: treasure re-basis, flora sides, mint
+   disposition, cinderella G1 (now needs a new primitive, not just the flag), grave U19, crust,
+   plus the E1 readings (mihara ×2, maiden pile-refresh, dws latch, ccw clamp, mana σ).
 4. **B2** — build `selfStatusEnd` + `consumeStatus` (capability only, no consumer enactment).
 5. **B4.1** — the single HR→core measurement (de-risks 6 units at once).
 6. **A1/A2** — publish recording asks (raven first); process incoming footage through the normal
    probe → hand-tune pipeline; scarlet-black-shadow isolated-burst measurement.
-7. **B5** — batched gauge cluster (one session, owner-bounded).
+7. **B5 + E2-gauge** — batched gauge cluster (one session, owner-bounded; include the dorothy
+   pelletFraction→hitFraction conflation).
 8. **C1** — treasure data-source investigation; fall back to owner ruling.
-9. **D1** + **C2/C3** — measurement recipes and census tails as footage/capacity allow.
+9. **E3 + E4 + B1.4** — pin-strengthening + prose-drift surgery batch.
+10. **D1** + **C2/C3** — measurement recipes and census tails as footage/capacity allow.

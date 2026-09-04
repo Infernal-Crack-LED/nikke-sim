@@ -187,8 +187,11 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
     const arcana = byName('N5 snowwhite-HA fire').carriers[0];
     expect(arcana.slug).toBe('arcana-fortune-mate');
     // RE-PINNED 2026-08-15: swha's per-sub-hit gauge credit re-based N5's rotation shape.
-    expect(arcana.basePer60).toBeCloseTo(2.89, 1);
-    expect(arcana.trigPer60).toBeCloseTo(3.85, 1);
+    // RE-PINNED 2026-09-04: swha's swap is now `sameWeapon` — her swap shots feed shotGauge
+    // and the entry/exit magazine refills are gone, re-basing N5's rotation in BOTH arms
+    // (base 2.89 → 2.34, trig 3.85 → 3.26; the ~1.4× per-trigger lift is intact).
+    expect(arcana.basePer60).toBeCloseTo(2.34, 1);
+    expect(arcana.trigPer60).toBeCloseTo(3.26, 1);
     // team-rate lift (pinned at 1 decimal)
     expect(byName('soda-tb control (neutral)').baseTeamRate).toBeCloseTo(
       31.57,
@@ -202,16 +205,14 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
     expect(byName('misc B3s (run I order)').trigTeamRate).toBeCloseTo(38.86, 1);
   });
 
-  it('THE EXCLUSION: the per-trigger arm moves no SG comp EXCEPT misc B3s (12→13) and N5 (13→12)', () => {
+  it('THE EXCLUSION: the per-trigger arm moves no SG comp EXCEPT misc B3s (12→13)', () => {
     for (const r of reports) {
-      // Two comps' counts differ between arms; both are pinned explicitly below:
-      //   N5 — the per-trigger arm pulls it back from 13 to 12 (per-sub-hit gauge on swha).
+      // One comp's counts differ between arms; pinned explicitly below:
       //   misc B3s — the comp sits near the 13-FB boundary (anis-star's full 2.8-gauge
       //   skill-impact credit, hitsPerShot 1); the extra SG per-trigger gauge tips it over.
-      if (
-        r.comp === 'N5 snowwhite-HA fire' ||
-        r.comp === 'misc B3s (run I order)'
-      ) {
+      // (N5 used to be the second exception, 13→12; the 2026-09-04 sameWeapon landing moved
+      // its BASE arm to the measured 12 on its own, so the arms agree there now.)
+      if (r.comp === 'misc B3s (run I order)') {
         continue;
       }
       expect(r.trigFb).toBe(r.baseFb);
@@ -226,7 +227,9 @@ describe('multihit-crediting audit (investigation-plan item 4)', () => {
     expect(byName('soda-tb control (neutral)').measured).toBe(10);
     expect(byName('N2 modernia wind').trigFb).toBe(9);
     expect(byName('N2 modernia wind').measured).toBe(10);
-    expect(byName('N5 snowwhite-HA fire').baseFb).toBe(13);
+    // N5: the shipped base arm's known one-FB overshoot (13 vs measured 12) was corrected to
+    // ground truth by the sameWeapon landing — both arms now read the measured 12.
+    expect(byName('N5 snowwhite-HA fire').baseFb).toBe(12);
     expect(byName('N5 snowwhite-HA fire').trigFb).toBe(12);
     expect(byName('N5 snowwhite-HA fire').measured).toBe(12);
   });

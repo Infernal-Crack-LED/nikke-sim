@@ -178,9 +178,12 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
         'N1 rapi/quency wind': [49, 269],
         // soda-tb and N5 seat gaugeHits carriers (little-mermaid 10, snow-white-heavy-arms 5/10);
         // the census now counts sub-hits rather than aggregated damage events.
+        // N5 RE-PINNED 2026-09-04 (was [178, 1220]): swha's swap is now `sameWeapon` — no
+        // entry/exit magazine refill means fewer swap shots, hence fewer gauge impacts in
+        // both windows.
         'soda-tb control (neutral)': [35, 489],
         'N2 modernia wind': [1370, 7597],
-        'N5 snowwhite-HA fire': [178, 1220],
+        'N5 snowwhite-HA fire': [172, 1166],
       };
       for (const [comp, [unlocked, locked]] of Object.entries(pinned)) {
         expect(byName(comp).unlockedImpacts).toBe(unlocked);
@@ -231,8 +234,10 @@ describe('non-bullet gauge-source census (investigation-plan item 2)', () => {
     it('counts `gaugeHits` sub-hits, not one aggregated damage event', () => {
       // A flatDamage with gaugeHits: N emits one damage event but credits gauge N times.
       // The census used to count the event as one impact; after the fix it counts N.
+      // RE-PINNED 2026-09-04 (was 156): `sameWeapon` on swha's swap — fewer swap shots, so
+      // fewer gauge-crediting sub-hits.
       const n5 = byName('N5 snowwhite-HA fire');
-      expect(n5.perUnitUnlockedImpacts['snow-white-heavy-arms']).toBe(156);
+      expect(n5.perUnitUnlockedImpacts['snow-white-heavy-arms']).toBe(144);
 
       const soda = byName('soda-tb control (neutral)');
       expect(soda.perUnitUnlockedImpacts['little-mermaid']).toBe(20);

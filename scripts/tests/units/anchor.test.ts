@@ -65,13 +65,12 @@ const ANCHOR = 3;
 /** SOLO comp: anchor is the only B1 (the fullBurstEnter discriminator fixture). */
 const SOLO_SLUGS = ['anchor', 'crown', 'ada'] as const;
 /** RL magazine size from characters.json (data-driven, not hand-typed). */
-const AMMO = data.characters['anchor'].ammo;
+const AMMO = data.characters.anchor.ammo;
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 type Shot = Extract<SimEvent, { kind: 'shot' }>;
-type Reload = Extract<SimEvent, { kind: 'reload' }>;
 
 function run(overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
@@ -105,10 +104,15 @@ const buffs = (evs: SimEvent[]) =>
 const anchorShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'anchor');
 const anchorCasts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'anchor');
-/** anchor's magazine depletions — one `reload` event per emptied magazine. */
-const anchorReloads = (evs: SimEvent[]) =>
-  evs.filter((e): e is Reload => e.kind === 'reload' && e.slug === 'anchor');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'anchor'
+  );
+/** anchor's magazine depletions — one last-bullet shot (`ammoAfter: 0`) per emptied magazine.
+ *  Keyed on the shot, not the `reload` event: a depletion at fight end has no following reload
+ *  (the 2026-09-04 sameWeapon landing shifted this fixture to exactly that shape — 16 depletions,
+ *  15 reloads). */
+const anchorDepletions = (evs: SimEvent[]) =>
+  anchorShots(evs).filter((s) => s.ammoAfter === 0 && !s.unlimitedAmmo);
 /** anchor's S1 DEF-grant applications. */
 const defApplies = (evs: SimEvent[]) =>
   buffs(evs).filter((b) => b.casterIdx === ANCHOR && b.stat === 'defPct');
@@ -204,15 +208,15 @@ describe('anchor — kit spec', () => {
 
   describe('A1 — S1: last bullet hits → self DEF ▲23.82% for 5 sec', () => {
     const applied = defApplies(base.events);
-    const RELOAD_COUNT = anchorReloads(base.events).length;
+    const DEPLETION_COUNT = anchorDepletions(base.events).length;
 
-    it('fires once per magazine depletion — one application per reload, not per shot', () => {
+    it('fires once per magazine depletion — one application per emptied magazine, not per shot', () => {
       // liter's escalating maxAmmoPct stretches her magazine 6 → 8–9 rounds during its 5s
-      // uptime, so shots÷ammo is NOT the cycle count; the engine's `reload` events are the
-      // one-per-depletion marker.
+      // uptime, so shots÷ammo is NOT the cycle count; the last-bullet shot (ammoAfter 0) is the
+      // one-per-depletion marker (a `reload` event isn't: a fight-ending depletion has none).
       expect(applied.length).toBeGreaterThan(0);
-      expect(RELOAD_COUNT).toBeGreaterThan(0);
-      expect(applied.length).toBe(RELOAD_COUNT);
+      expect(DEPLETION_COUNT).toBeGreaterThan(0);
+      expect(applied.length).toBe(DEPLETION_COUNT);
       expect(applied.length).toBeLessThan(SHOT_COUNT);
     });
 

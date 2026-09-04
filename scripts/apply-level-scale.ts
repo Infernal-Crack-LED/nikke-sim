@@ -238,16 +238,6 @@ const ROWS: Row[] = [
     anchors: [105.59],
     why: 'note: "fullCharge, swapGate:\'swapped\': +1055.9% sequential" = the same 105.59 volley shot x10 (exact; 42.24 x 25 = 1056.0, not this value)',
   },
-  {
-    slug: 'snow-white-heavy-arms',
-    slot: 'burst',
-    kind: 'weaponSwap',
-    field: 'damagePct',
-    value: 69.04,
-    const: true,
-    why: 'note: "weaponSwap: the same 69.04% shot" — 69.04 IS her AR normalAttackMultiplier, a weapon stat. ⚑ OPEN: this swap may warrant sameWeapon:true, which would also change its ammo economy (no magazine refill at either end) — a behaviour change, deliberately NOT made here',
-  },
-
   // ---- sakura-bloom-in-summer -----------------------------------------------------------
   {
     slug: 'sakura-bloom-in-summer',

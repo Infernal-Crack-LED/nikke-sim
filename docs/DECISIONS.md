@@ -6511,6 +6511,7 @@ merged 2026-08-25):
   search, pool preconditions fail loudly) and `scripts/tests/generators/healer-constraint.test.ts`
   (pins the exclusions with a completeness check, and re-runs the reporting account's 27-unit pool:
   every team fields a healer that can heal). Landed via pull request #149.
+
 ## Skill-level scaling: unscaled effect kinds + `levelScale`/`levelConst` for derived values (2026-08-25)
 
 A community report compared the Roster Generator against a live Shooting Range fight:
@@ -6573,3 +6574,40 @@ hinted 42.24 × 25 = 1056.0). Measured at 1/1/1 vs 10/10/10: `nayuta` −15.3% �
    her skill2 table; also `eve`, `neon-vision-eye`, `emma-tactical-upgrade`, `red-hood`).
    `levelScale` resolves within one slot, and scaling off the wrong slot's level would be wrong
    anyway — may indicate those blocks are filed under the wrong slot.
+
+## `sameWeapon` lands on `ada` + `snow-white-heavy-arms` — the parked 2026-09-01 proposal, enacted (2026-09-04)
+
+Owner-directed landing of the kit-code-audit proposal (`kitaudit-sameweapon-proposal`, committed
+red-by-design 2026-09-01, "the evidence favours landing"; the call was made 2026-09-04).
+
+- **The rule.** `weaponSwap.sameWeapon` marks "the gun is not replaced" and is the sole gate on
+  the magazine refill at swap entry AND exit. The independent partition check (DECISIONS
+  2026-08-12): a same-weapon swap sets `damagePct` exactly equal to the unit's own
+  `normalAttackMultiplier`. Over all 26 `weaponSwap` effects, exactly two violated it without the
+  flag — `ada` (61.3 == 61.3) and `snow-white-heavy-arms` (69.04 == 69.04). Both kits modify the
+  gun in hand and neither grants a reload; both were missed when the marker landed 2026-08-12.
+  (`moran` 14.7 vs 14.71 is a near-miss, not a violator — her kit reads "Changes the weapon in
+  use", a real swap.)
+- **Measured impact (from the proposal's regenerated snapshots/boards).** Every graded comp's
+  full-burst count still matches its measured value — the rotation invariant HOLDS, including N5
+  swha fire 12 vs 12. `snow-white-heavy-arms` −6.28% (N5) / +1.87% (T1); `ada` −1.79%; teammates
+  move via rotation. Direction is faithful > fit — both units read COLD already, the takina
+  precedent's warned direction.
+- **Blast radius, all re-pinned on landing.** The two `multihit-crediting` N5 pins had locked the
+  shipped deterministic base arm at 13 against a measured 12 (a documented one-FB overshoot in
+  that battery) — the fix corrects the base arm TO 12 = measured, so the exclusion now names only
+  misc B3s. The `gauge-source-census` impact-split pins moved 178→172 / 156→144 / locked 1220→1166
+  (fewer swap shots without the free refills). `anchor` A1's applied-vs-reloads equality broke by
+  end-of-fight truncation (16 depletions, 15 reloads) — re-pinned on the last-bullet shot marker
+  (`ammoAfter: 0`), which is the more direct depletion count. `yuni` Y5's zero-burst starvation
+  discriminator lost its basis (she now casts once beside crown in fixture B) — rewritten as
+  cast-capped vs pull-capped count discrimination.
+- **Follow-ups closed on landing** (kit-code-audit QUEUE item 10): the dead
+  `apply-level-scale.ts` whitelist entry for swha's swap `damagePct` removed (scale.ts
+  short-circuits sameWeapon first; its AR→SR typo goes with it); the mid-reload swap-entry edge
+  (unconditional reload-cancel + sameWeapon-gated refill ⇒ `ammo == 0 && reloading == false` is
+  reachable) is documented uncosted at the sim.ts site and in STATE.md — gate the cancel only if a
+  unit's burst timing ever lands there.
+- **Evidence:** the 2026-09-01 audit's two-agent independent convergence on the defect class, the
+  cross-family (kimi-code/k3) CLEAN review that reproduced the exact 6-failure blast radius, and
+  the post-landing `verify.sh` green (including regenerated board artifacts).

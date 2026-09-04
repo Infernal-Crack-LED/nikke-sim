@@ -29,14 +29,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 ### KIT CODE AUDIT 2026-09-01 — open items (OWNER DECISIONS NEEDED)
 
 Full findings + measured board impacts: `docs/kit-code-audit-2026-09-01.md`. Three board-inert
-fixes already landed; everything below is FLAGGED ONLY, nothing enacted.
+fixes already landed; everything below is FLAGGED ONLY, nothing enacted. Categorized with
+per-item plans in `docs/handoffs/2026-09-04-top-dps-and-kit-gaps-remaining-work.md` (Category E).
 
-1. **`ada` + `snow-white-heavy-arms` missing `weaponSwap.sameWeapon`** — proposal committed on
-   branch `kitaudit-sameweapon-proposal` (RED by design: 6 tests — 4 fixture/drift pins plus the
-   two N5 `multihit-crediting` pins, whose shipped deterministic base arm sits at 13 vs measured 12
-   and moves to 12 with the fix; the CLAUDE.md-cited misc-B3s fact is untouched). Bug is
-   unambiguous (DECISIONS 2026-08-12 partition); all graded FB counts hold; swha −6.28%/+1.87%,
-   ada −1.79%, faithful > fit. **Owner call** — the evidence favours landing.
+1. ~~**`ada` + `snow-white-heavy-arms` missing `weaponSwap.sameWeapon`**~~ — **LANDED 2026-09-04**
+   (owner call; DECISIONS 2026-09-04). Proposal merged, 6 red tests re-pinned/re-fixtured, board
+   artifacts regenerated, verify.sh green.
 2. **`mihara-bonding-chain` (#1 Fire) — two undisclosed levers with opposite signs.** The
    40-normals block drops the kit's "on a target in the Ensnaring Chains state" precondition
    (−16.22% if gated); the battle-start Restraint line is dead (≥ +4.31% if fixed). She reads
@@ -74,15 +72,12 @@ fixes already landed; everything below is FLAGGED ONLY, nothing enacted.
       why ark-ranger-black truncated silently. The one instance is fixed; **the defect CLASS is
       open** — require (or warn on) an explicit `count` for that target kind so "leftmost-1 by
       accident" becomes a build error. It is the only ally target that slices.
-    - If the `sameWeapon` proposal lands: one uncosted edge — swap entry force-cancels an
-      in-progress reload but with `sameWeapon` does not refill, so a `sameWeapon` entry can produce
-      the otherwise-impossible `ammo == 0 && reloading == false` and fire a swap shot from an empty
-      magazine. Pre-existing marker semantics (chisato/clay/jill/frima already ship it), but the
-      proposal extends exposure to two units whose burst timing is independent of their reload
-      cycle. Either document it in the `sameWeapon` contract or gate the reload-cancel on it.
-    - If the proposal lands: `scripts/apply-level-scale.ts` whitelist entry for swha becomes dead
-      weight (scale.ts short-circuits sameWeapon `damagePct` first), and its comment has an
-      AR→SR typo — snow-white-heavy-arms is an SR.
+    - ~~If the `sameWeapon` proposal lands: the mid-reload swap-entry edge~~ — **LANDED
+      2026-09-04**: documented uncosted at the sim.ts swap-entry site + STATE.md (gate the
+      reload-cancel only if a unit's burst timing ever lands mid-reload).
+    - ~~If the proposal lands: `scripts/apply-level-scale.ts` whitelist entry~~ — **DONE
+      2026-09-04**: dead swha entry removed (AR→SR typo with it); `apply-level-scale.ts --check`
+      and `audit-skill-scaling.ts snow-white-heavy-arms` both clean.
 
 11. **Test-quality:** `maiden-ice-rose` M1, `ark-ranger-black` A6/A5/A7, `cinderella` G1 and
     `scarlet-black-shadow` B7 cannot discriminate what they claim to pin. Also: every per-unit
