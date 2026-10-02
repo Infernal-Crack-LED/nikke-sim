@@ -750,8 +750,9 @@ export interface CharacterSkills {
   // sibling of hasTrueNormals, exactly as pierceModes is to hasPierce. For a self-mode kit line
   // "Normal attacks deal true damage. This effect is continuous" gated on the unit's own mode
   // (guilty-mighty-bunny / sin-swift-bunny Bunny Mode: Engage). Like pierceModes it resolves
-  // once at setup from the selected mode, so it covers the BASE weapon; a burst weaponSwap
-  // carries its own `trueNormals` on a mode-gated block.
+  // once at setup from the selected mode. It covers swap shots too — the normal-fire path reads
+  // `swap.trueNormals || hasTrueNormals` — so a kit whose burst weapon is ALSO true in that mode
+  // needs no swap-level flag.
   trueNormalsModes?: string[];
   consolidation?: ConsolidationConfig; // pellet-consolidation mode (dorothy-S) — see OverrideFile / A26
   // named resource pools tracked live per unit (soda-twinkling-bunny's Golden Chip): initialized
