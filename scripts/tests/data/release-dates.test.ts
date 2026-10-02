@@ -87,10 +87,14 @@ describe('release dates are well-formed', () => {
   // 2026-09-03: aigis left the list the Synergy way (her row landed upstream, 2026-08-13);
   // drake-great-villain (released that day) entered the roster already dated through the same
   // MANUAL_RELEASE_DATES fallback as yukiko, so she never joins the list.
+  //
+  // 2026-10-02: anne-miracle-fairy left the list the Synergy way (2022-12-15 arrived through the
+  // DB attributes), emptying it; guilty-mighty-bunny and sin-swift-bunny entered the roster
+  // already dated the same way.
   it('only the Synergy-rowless units have no release date', () => {
     const undated = Object.entries(characters)
       .filter(([, c]) => c.releaseDate == null)
       .map(([slug]) => slug);
-    expect([...undated].sort()).toEqual(['anne-miracle-fairy']);
+    expect([...undated].sort()).toEqual([]);
   });
 });

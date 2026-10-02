@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-09-04T15:32:24.924Z",
+  "syncedAt": "2026-10-02T16:13:58.046Z",
   "characters": {
     "2b": {
       "slug": "2b",
@@ -6751,11 +6751,11 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": null,
-      "releaseDate": null,
+      "rl3": 16.8,
+      "releaseDate": "2022-12-15",
       "burstGaugePerShot": 1.4,
       "treasure": false,
-      "nicknames": ["anne"],
+      "nicknames": ["amf", "anne"],
       "skills": {
         "skill1": "■ Activates after 3 normal attacks. Affects all Supporter allies.\nRestores HP equal to 6.07% of attack damage. Lasts for 5 sec.",
         "skill2": "■ Affects all allies. Activates when above 90% HP.\nIncoming Healing ▲ 23.46%.\n■ Activates when the last bullet hits the target while this unit's HP is at 90% or above. Affects all enemies.\nIncoming Healing ▼ 78.93% for 10 sec.",
@@ -24600,10 +24600,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": null,
+      "rl3": 12,
       "releaseDate": "2026-09-03",
       "burstGaugePerShot": 2,
       "treasure": false,
+      "nicknames": ["dgv"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects self.\nChanges the weapon in use: Super Duper Overdrive\nCharge Time: Fixed at 1.5 sec\nDamage: 243.75% of final ATK\nPellet Count: 15\nFull Charge Damage: 300%\nMax Ammunition Capacity: 6\n■ Activates when Super Duper Overdrive ends. Affects self.\nRemoves 100% of ammo.",
         "skill2": "■ Activates when Full Burst ends. Affects all allies.\nMax HP ▲ 10.5% of the skill user's max HP (without restoring HP) continuously. Stacks up to 4 times.\n■ Activates at the start of battle. Affects self.\nFashionably Late: ATK ▲ 6.23% of the skill user's final max HP continuously.",
@@ -34677,6 +34678,480 @@
         "maxLevel": 1200,
         "critDamage": 150,
         "resourceId": 400
+      }
+    },
+    "guilty-mighty-bunny": {
+      "slug": "guilty-mighty-bunny",
+      "name": "Guilty: Mighty Bunny",
+      "imageUrl": "https://sg-tools-cdn.blablalink.com/bq-11/ei-42/d53cd7ad07fba15f5a4f26cade6da8d8.png",
+      "weapon": "SR",
+      "burst": "III",
+      "burstCooldownSec": 40,
+      "class": "Attacker",
+      "element": "Water",
+      "manufacturer": "Missilis",
+      "normalAttackMultiplier": 69.04,
+      "coreAttackMultiplier": 200,
+      "ammo": 6,
+      "reloadFrames": 141,
+      "chargeFrames": 60,
+      "chargeMultiplier": 250,
+      "hitsPerShot": 1,
+      "rl3": 16.8,
+      "releaseDate": "2026-09-17",
+      "burstGaugePerShot": 2.8,
+      "treasure": false,
+      "nicknames": ["gmb"],
+      "skills": {
+        "skill1": "■ Activates at the start of battle. Affects self.\nATK ▲ 20.1%. This effect is continuous.\n■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds while this unit is not in the Mighty Stomp state. Affects self.\nInitiates a new Bunny Mode based on the current mode.\nActivates if this unit is in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\nActivates if this unit is not in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. \nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
+        "skill2": "■ Activates only if this unit is in the Bunny Mode: Engage state.\nChain Release\nFunction: Changes some attacks' damage into true damage.\nEffect 1: Affects self. Normal attacks deal true damage. This effect is continuous and cannot be removed.\nEffect 2: Affects self. Mighty Stomp deals true damage. This effect is continuous and cannot be removed.\nEffect 3: Activates when landing a Full Charge attack. Affects the target. Deals 370.08% of final ATK as true damage.\n■ Activates only when this unit is in the Bunny Mode: Stance state.\nChain Enhance\nFunction: Enhances this unit's offensive capabilities.\nEffect 1: Affects self. Attack Damage ▲ 20.45%. This effect is continuous and cannot be removed.\nEffect 2: Affects self. Charge Damage ▲ 40%. This effect is continuous and cannot be removed.\nEffect 3: Activates when landing a Full Charge attack. Affects the target. Deals 450.89% of final ATK as additional damage.",
+        "burst": "■ Affects self.\nMighty Stomp: Changes the weapon in use\nCharge Time: Fixed at 1.5 sec\nDamage: 101.3% of final ATK\nFull Charge Damage: 250%\nDuration: 1 rounds\nAdditional Effect 1: Charge Damage ▲ 1400% for 1 rounds.\nAdditional Effect 2: Attack Damage ▲ 77.35% for 10 sec."
+      },
+      "skillCooldownsSec": {
+        "skill1": null,
+        "skill2": null,
+        "burst": 40
+      },
+      "role": {
+        "weapon": {
+          "shot_id": 1040401,
+          "shot_detail": {
+            "id": 1040401,
+            "damage": 6904,
+            "max_ammo": 6,
+            "shake_id": 2,
+            "ShakeType": "Fire_SR",
+            "fire_type": "Instant",
+            "zoom_rate": 30,
+            "input_type": "UP",
+            "shot_count": 1,
+            "ShakeWeight": 120,
+            "attack_type": "Metal",
+            "camera_work": "camera_work_01",
+            "charge_time": 100,
+            "penetration": 0,
+            "reload_time": 200,
+            "shot_timing": "Concurrence",
+            "spot_radius": 0,
+            "weapon_type": "SR",
+            "is_targeting": false,
+            "muzzle_count": 1,
+            "rate_of_fire": 60,
+            "name_localkey": "Sniper Rifle",
+            "prefer_target": "Back",
+            "reload_bullet": 10000,
+            "counter_enermy": "Metal_Type",
+            "multi_aim_range": 0,
+            "spot_last_delay": 20,
+            "core_damage_rate": 20000,
+            "end_rate_of_fire": 60,
+            "spot_first_delay": 20,
+            "center_shot_count": 0,
+            "reload_start_ammo": 5,
+            "full_charge_damage": 25000,
+            "multi_target_count": 0,
+            "spot_radius_object": 0,
+            "uptype_fire_timing": 0,
+            "burst_energy_pershot": 28000,
+            "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+            "maintain_fire_stance": 0,
+            "spot_explosion_range": 0,
+            "use_function_id_list": [0],
+            "accuracy_change_speed": 0,
+            "hurt_function_id_list": [0],
+            "spot_projectile_speed": 0,
+            "accuracy_change_pershot": 0,
+            "prefer_target_condition": "None",
+            "rate_of_fire_reset_time": 0,
+            "full_charge_burst_energy": 25000,
+            "end_accuracy_circle_scale": 10,
+            "auto_accuracy_change_speed": 0,
+            "rate_of_fire_change_pershot": 0,
+            "start_accuracy_circle_scale": 10,
+            "target_burst_energy_pershot": 56000,
+            "auto_accuracy_change_pershot": 0,
+            "auto_end_accuracy_circle_scale": 10,
+            "auto_start_accuracy_circle_scale": 10
+          },
+          "bonusrange_max": 100,
+          "bonusrange_min": 45
+        },
+        "burstMeta": {
+          "burst_duration": 1000,
+          "use_burst_skill": "Step3",
+          "burst_apply_delay": 1,
+          "change_burst_step": "StepFull"
+        },
+        "skillDetails": {
+          "skill1_id": 2404101,
+          "skill2_id": 2404201,
+          "skill1_table": "StateEffect",
+          "skill2_table": "StateEffect",
+          "skill1_detail": {
+            "id": 2404101,
+            "icon": "icn_skill_damage_01",
+            "group_id": 24041,
+            "skill_level": 1,
+            "name_localkey": "What Should I Do...?",
+            "next_level_id": 2404102,
+            "level_up_cost_id": 20102,
+            "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_01}%. This effect is continuous.</color>\n■ Activates at the start of battle and when Full Charge is maintained for {description_value_02} or more seconds while this unit is not in the Mighty Stomp state. Affects self.\n<color=#00AEFF>Initiates a new <word_group=10110>Bunny Mode</word_group> based on the current mode.</color>\nActivates if this unit is in the <word_group=10110>Bunny Mode</word_group>: Stance state.\n<color=#00AEFF>Initiates <word_group=10110>Bunny Mode</word_group>: Engage. This effect is continuous and cannot be removed.</color>\nActivates if this unit is not in the <word_group=10110>Bunny Mode</word_group>: Stance state.\n<color=#00AEFF>Initiates <word_group=10110>Bunny Mode</word_group>: Stance. This effect is continuous and cannot be removed.</color>\n■ Activates when this unit enters the <word_group=10110>Bunny Mode</word_group>: Engage state. Affects all allies in the <word_group=10110>Bunny Mode</word_group>: Stance state. \n<color=#00AEFF>Initiates <word_group=10110>Bunny Mode</word_group>: Engage. This effect is continuous and cannot be removed.</color>\n■ Activates when this unit enters the <word_group=10110>Bunny Mode</word_group>: Stance state. Affects all allies in the <word_group=10110>Bunny Mode</word_group>: Engage state.\n<color=#00AEFF>Initiates <word_group=10110>Bunny Mode</word_group>: Stance. This effect is continuous and cannot be removed.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "11.88",
+                  "12.79",
+                  "13.7",
+                  "14.62",
+                  "15.53",
+                  "16.45",
+                  "17.36",
+                  "18.27",
+                  "19.19",
+                  "20.1"
+                ]
+              },
+              {
+                "description_value": [
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 1"
+          },
+          "skill2_detail": {
+            "id": 2404201,
+            "icon": "icn_skill_atkup_01",
+            "group_id": 24042,
+            "skill_level": 1,
+            "name_localkey": "Can I Take These Off...?",
+            "next_level_id": 2404202,
+            "level_up_cost_id": 20202,
+            "description_localkey": "■ Activates only if this unit is in the <word_group=10110>Bunny Mode</word_group>: Engage state.\n<color=#00AEFF>Chain Release\nFunction: Changes some attacks' damage into true damage.\nEffect 1: Affects self. Normal attacks deal true damage. This effect is continuous and cannot be removed.\nEffect 2: Affects self. Mighty Stomp deals true damage. This effect is continuous and cannot be removed.\nEffect 3: Activates when landing a Full Charge attack. Affects the target. Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as true damage.</color>\n■ Activates only when this unit is in the <word_group=10110>Bunny Mode</word_group>: Stance state.\n<color=#00AEFF>Chain Enhance\nFunction: Enhances this unit's offensive capabilities.\nEffect 1: Affects self. Attack Damage ▲ {description_value_02}%. This effect is continuous and cannot be removed.\nEffect 2: Affects self. Charge Damage ▲ {description_value_03}%. This effect is continuous and cannot be removed.\nEffect 3: Activates when landing a Full Charge attack. Affects the target. Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "218.68",
+                  "235.51",
+                  "252.33",
+                  "269.15",
+                  "285.97",
+                  "302.79",
+                  "319.61",
+                  "336.44",
+                  "353.26",
+                  "370.08"
+                ]
+              },
+              {
+                "description_value": [
+                  "12.08",
+                  "13.01",
+                  "13.94",
+                  "14.87",
+                  "15.8",
+                  "16.73",
+                  "17.66",
+                  "18.59",
+                  "19.52",
+                  "20.45"
+                ]
+              },
+              {
+                "description_value": [
+                  "23.64",
+                  "25.45",
+                  "27.27",
+                  "29.09",
+                  "30.91",
+                  "32.73",
+                  "34.55",
+                  "36.36",
+                  "38.18",
+                  "40"
+                ]
+              },
+              {
+                "description_value": [
+                  "266.44",
+                  "286.93",
+                  "307.43",
+                  "327.92",
+                  "348.42",
+                  "368.91",
+                  "389.41",
+                  "409.9",
+                  "430.4",
+                  "450.89"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 2"
+          },
+          "ulti_skill_id": 1404301,
+          "ulti_skill_detail": {
+            "id": 1404301,
+            "icon": "icn_skill_c404_ult",
+            "group_id": 14043,
+            "shake_id": 1,
+            "skill_type": "ChangeWeapon",
+            "attack_type": "Water",
+            "skill_level": 1,
+            "counter_type": "Metal_Type",
+            "duration_type": "Shots",
+            "name_localkey": "I'm Finally Free...!",
+            "next_level_id": 1404302,
+            "prefer_target": "HighAttack",
+            "resource_name": "c404_ulti",
+            "duration_value": 1,
+            "skill_cooltime": 4000,
+            "level_up_cost_id": 20302,
+            "skill_value_data": [
+              {
+                "skill_value": 6130,
+                "skill_value_type": "Percent"
+              },
+              {
+                "skill_value": 300,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 1040402,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 1,
+                "skill_value_type": "Integer"
+              }
+            ],
+            "skill_cooltime_list": [
+              4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
+            ],
+            "description_localkey": "■ Affects self.\n<color=#00AEFF>Mighty Stomp: Changes the weapon in use\nCharge Time: Fixed at 1.5 sec\nDamage: {description_value_03}% of <word_group=10025>final</word_group> ATK\nFull Charge Damage: 250%\nDuration: {description_value_04} rounds\nAdditional Effect 1: Charge Damage ▲ {description_value_05}% for {description_value_06} rounds.\nAdditional Effect 2: Attack Damage ▲ {description_value_01}% for {description_value_02} sec.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "45.71",
+                  "49.22",
+                  "52.74",
+                  "56.25",
+                  "59.77",
+                  "63.29",
+                  "66.8",
+                  "70.32",
+                  "73.83",
+                  "77.35"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "61.3",
+                  "65.74",
+                  "70.19",
+                  "74.63",
+                  "79.08",
+                  "83.52",
+                  "87.97",
+                  "92.41",
+                  "96.86",
+                  "101.3"
+                ]
+              },
+              {
+                "description_value": [
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1"
+                ]
+              },
+              {
+                "description_value": [
+                  "827.27",
+                  "890.91",
+                  "954.55",
+                  "1018.18",
+                  "1081.82",
+                  "1145.45",
+                  "1209.09",
+                  "1272.73",
+                  "1336.36",
+                  "1400"
+                ]
+              },
+              {
+                "description_value": [
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "prefer_target_condition": "None",
+            "info_description_localkey": "Burst Skill",
+            "after_use_function_id_list": [140430101, 140430102, 140430103],
+            "after_hurt_function_id_list": [0],
+            "before_use_function_id_list": [0],
+            "before_hurt_function_id_list": [0]
+          }
+        },
+        "statScaling": {
+          "grow_grade": 140402,
+          "grade_core_id": 1,
+          "stat_enhance_id": 5102,
+          "stat_enhance_detail": {
+            "id": 5102,
+            "core_hp": 200,
+            "grade_hp": 3000,
+            "core_attack": 200,
+            "grade_ratio": 200,
+            "core_defence": 200,
+            "grade_attack": 20,
+            "grade_defence": 100,
+            "core_bio_resist": 0,
+            "grade_bio_resist": 0,
+            "core_metal_resist": 0,
+            "core_energy_resist": 0,
+            "grade_metal_resist": 0,
+            "grade_energy_resist": 0
+          }
+        },
+        "element": {
+          "element_id": [200001],
+          "element_details": [
+            {
+              "id": 200001,
+              "element": "Water",
+              "group_id": 5000002,
+              "element_icon": "icn_element_water",
+              "weak_element_id": 400001,
+              "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+              "element_name_localekey": "Water",
+              "element_code_name_localekey": "Code: P.S.I.D."
+            }
+          ]
+        },
+        "piece": {
+          "piece_id": 5100404,
+          "piece_detail": {
+            "id": 5100404,
+            "class": "Attacker",
+            "order": 40400,
+            "use_id": 0,
+            "use_type": "None",
+            "item_rare": "SSR",
+            "item_type": "Piece",
+            "stack_max": 9999999,
+            "use_value": 0,
+            "corporation": "MISSILIS",
+            "resource_id": 404,
+            "item_sub_type": "CharacterPiece",
+            "name_localkey": "Guilty: Mighty Bunny's Spare Body",
+            "use_limit_count": false,
+            "inventory_filter": ["etc"],
+            "description_localkey": "Used for a Nikke's Limit Break.\nSpare Bodies for a fully enhanced Nikke will be converted into Body Labels."
+          }
+        },
+        "meta": {
+          "id": 140401,
+          "class": "Attacker",
+          "order": 10090,
+          "name_code": 5182,
+          "corporation": "MISSILIS",
+          "resource_id": 404,
+          "name_localkey": "Guilty: Mighty Bunny",
+          "original_rare": "SSR",
+          "critical_ratio": 1500,
+          "category_type_1": "None",
+          "category_type_2": "None",
+          "category_type_3": "None",
+          "critical_damage": 15000,
+          "eff_category_type": "Walk",
+          "eff_category_value": 0
+        }
+      },
+      "generatorSupported": false,
+      "simSupported": false,
+      "baseStats": {
+        "hp": 13500,
+        "atk": 600,
+        "def": 76,
+        "core": {
+          "hp": 200,
+          "atk": 200,
+          "def": 200
+        },
+        "grade": {
+          "hp": 3000,
+          "atk": 20,
+          "def": 100,
+          "ratio": 200
+        },
+        "critRate": 15,
+        "maxLevel": 1400,
+        "critDamage": 150,
+        "resourceId": 404
       }
     },
     "harran": {
@@ -83960,6 +84435,519 @@
         "maxLevel": 1200,
         "critDamage": 150,
         "resourceId": 401
+      }
+    },
+    "sin-swift-bunny": {
+      "slug": "sin-swift-bunny",
+      "name": "Sin: Swift Bunny",
+      "imageUrl": "https://sg-tools-cdn.blablalink.com/sf-15/bt-22/b678b9e08938807c4f9d7e372d2a7b75.png",
+      "weapon": "SR",
+      "burst": "III",
+      "burstCooldownSec": 40,
+      "class": "Attacker",
+      "element": "Water",
+      "manufacturer": "Missilis",
+      "normalAttackMultiplier": 69.04,
+      "coreAttackMultiplier": 200,
+      "ammo": 6,
+      "reloadFrames": 141,
+      "chargeFrames": 60,
+      "chargeMultiplier": 250,
+      "hitsPerShot": 1,
+      "rl3": 8.4,
+      "releaseDate": "2026-09-24",
+      "burstGaugePerShot": 2.8,
+      "treasure": false,
+      "nicknames": ["ssb"],
+      "skills": {
+        "skill1": "■ Activates at the start of battle. Affects self.\nATK ▲ 15.35%. This effect is continuous.\n■ Activates during Full Charge if this unit is not in the Swift Piercing state. Affects self.\nNormal Attack Damage Multiplier ▲ 100% for 1 round(s).\nCharge Damage ▲ 52.12% for 1 round(s).\n■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds. Affects self.\nInitiates a new Bunny Mode based on the current mode.\nActivates if this unit is in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\nActivates if this unit is not in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. \nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
+        "skill2": "■ Activates only if this unit is in the Bunny Mode: Engage state.\nNoise Bullets\nFunction: Changes some attacks' damage into true damage.\nEffect 1: Normal attacks deal true damage. This effect is continuous and cannot be removed.\nEffect 2: Swift Piercing deals true damage. This effect is continuous and cannot be removed.\n■ Activates only if this unit is in the Bunny Mode: Stance state.\nEnhanced Bullets\nFunction: Enhances this unit's offensive capabilities.\nEffect 1: Critical Rate ▲ 35.14%. This effect is continuous and cannot be removed.\nEffect 2: Critical Damage ▲ 75.12%. This effect is continuous and cannot be removed.\n■ Activates when using Burst Skill. Affects self.\nSwift Piercing: Changes the weapon in use\nCharge Time: Fixed at 0.5 sec\nDamage: 73.22% of final ATK\nFull Charge Damage: 300%\nDuration: 5 sec",
+        "burst": "■ Affects self.\nATK ▲ 110% for 5 sec.\n■ Affects all enemies.\nDeals 516.6% of final ATK as Burst Skill damage.\n■ Activates if this unit is in the Bunny Mode: Stance state. Affects the same targets.\nDeals 958.9% of final ATK as additional damage.\n■ Activates if this unit is in the Bunny Mode: Engage state. Affects the same targets.\nDeals 854.6% of final ATK as true damage."
+      },
+      "skillCooldownsSec": {
+        "skill1": null,
+        "skill2": null,
+        "burst": 40
+      },
+      "role": {
+        "weapon": {
+          "shot_id": 1040501,
+          "shot_detail": {
+            "id": 1040501,
+            "damage": 6904,
+            "max_ammo": 6,
+            "shake_id": 2,
+            "ShakeType": "Fire_SR",
+            "fire_type": "Instant",
+            "zoom_rate": 30,
+            "input_type": "UP",
+            "shot_count": 1,
+            "ShakeWeight": 120,
+            "attack_type": "Metal",
+            "camera_work": "camera_work_01",
+            "charge_time": 100,
+            "penetration": 0,
+            "reload_time": 200,
+            "shot_timing": "Concurrence",
+            "spot_radius": 0,
+            "weapon_type": "SR",
+            "is_targeting": false,
+            "muzzle_count": 1,
+            "rate_of_fire": 60,
+            "name_localkey": "Sniper Rifle",
+            "prefer_target": "Back",
+            "reload_bullet": 10000,
+            "counter_enermy": "Metal_Type",
+            "multi_aim_range": 0,
+            "spot_last_delay": 20,
+            "core_damage_rate": 20000,
+            "end_rate_of_fire": 60,
+            "spot_first_delay": 20,
+            "center_shot_count": 0,
+            "reload_start_ammo": 5,
+            "full_charge_damage": 25000,
+            "multi_target_count": 0,
+            "spot_radius_object": 0,
+            "uptype_fire_timing": 0,
+            "burst_energy_pershot": 28000,
+            "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+            "maintain_fire_stance": 0,
+            "spot_explosion_range": 0,
+            "use_function_id_list": [0],
+            "accuracy_change_speed": 0,
+            "hurt_function_id_list": [0],
+            "spot_projectile_speed": 0,
+            "accuracy_change_pershot": 0,
+            "prefer_target_condition": "None",
+            "rate_of_fire_reset_time": 0,
+            "full_charge_burst_energy": 25000,
+            "end_accuracy_circle_scale": 10,
+            "auto_accuracy_change_speed": 0,
+            "rate_of_fire_change_pershot": 0,
+            "start_accuracy_circle_scale": 10,
+            "target_burst_energy_pershot": 56000,
+            "auto_accuracy_change_pershot": 0,
+            "auto_end_accuracy_circle_scale": 10,
+            "auto_start_accuracy_circle_scale": 10
+          },
+          "bonusrange_max": 100,
+          "bonusrange_min": 45
+        },
+        "burstMeta": {
+          "burst_duration": 1000,
+          "use_burst_skill": "Step3",
+          "burst_apply_delay": 1,
+          "change_burst_step": "StepFull"
+        },
+        "skillDetails": {
+          "skill1_id": 2405101,
+          "skill2_id": 2405201,
+          "skill1_table": "StateEffect",
+          "skill2_table": "StateEffect",
+          "skill1_detail": {
+            "id": 2405101,
+            "icon": "icn_skill_damage_01",
+            "group_id": 24051,
+            "skill_level": 1,
+            "name_localkey": "Bunny Shift",
+            "next_level_id": 2405102,
+            "level_up_cost_id": 20102,
+            "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_01}%. This effect is continuous.</color>\n■ Activates during Full Charge if this unit is not in the Swift Piercing state. Affects self.\n<color=#00AEFF>Normal Attack Damage <word_group=10029>Multiplier</word_group> ▲ {description_value_02}% for {description_value_03} round(s).\nCharge Damage ▲ {description_value_04}% for {description_value_05} round(s).</color>\n■ Activates at the start of battle and when Full Charge is maintained for {description_value_06} or more seconds. Affects self.\n<color=#00AEFF>Initiates a new <word_group=10110>Bunny Mode</word_group> based on the current mode.</color>\nActivates if this unit is in the <word_group=10110>Bunny Mode</word_group>: Stance state.\n<color=#00AEFF>Initiates <word_group=10110>Bunny Mode</word_group>: Engage. This effect is continuous and cannot be removed.</color>\nActivates if this unit is not in the <word_group=10110>Bunny Mode</word_group>: Stance state.\n<color=#00AEFF>Initiates <word_group=10110>Bunny Mode</word_group>: Stance. This effect is continuous and cannot be removed.</color>\n■ Activates when this unit enters the <word_group=10110>Bunny Mode</word_group>: Engage state. Affects all allies in the <word_group=10110>Bunny Mode</word_group>: Stance state. \n<color=#00AEFF>Initiates <word_group=10110>Bunny Mode</word_group>: Engage. This effect is continuous and cannot be removed.</color>\n■ Activates when this unit enters the <word_group=10110>Bunny Mode</word_group>: Stance state. Affects all allies in the <word_group=10110>Bunny Mode</word_group>: Engage state.\n<color=#00AEFF>Initiates <word_group=10110>Bunny Mode</word_group>: Stance. This effect is continuous and cannot be removed.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "9.07",
+                  "9.77",
+                  "10.47",
+                  "11.16",
+                  "11.86",
+                  "12.56",
+                  "13.26",
+                  "13.95",
+                  "14.65",
+                  "15.35"
+                ]
+              },
+              {
+                "description_value": [
+                  "59.09",
+                  "63.64",
+                  "68.18",
+                  "72.73",
+                  "77.27",
+                  "81.82",
+                  "86.36",
+                  "90.91",
+                  "95.45",
+                  "100"
+                ]
+              },
+              {
+                "description_value": [
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1"
+                ]
+              },
+              {
+                "description_value": [
+                  "30.8",
+                  "33.17",
+                  "35.54",
+                  "37.91",
+                  "40.27",
+                  "42.64",
+                  "45.01",
+                  "47.38",
+                  "49.75",
+                  "52.12"
+                ]
+              },
+              {
+                "description_value": [
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1"
+                ]
+              },
+              {
+                "description_value": [
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 1"
+          },
+          "skill2_detail": {
+            "id": 2405201,
+            "icon": "icn_skill_statcritical_01",
+            "group_id": 24052,
+            "skill_level": 1,
+            "name_localkey": "Bullet Switch",
+            "next_level_id": 2405202,
+            "level_up_cost_id": 20202,
+            "description_localkey": "■ Activates only if this unit is in the <word_group=10110>Bunny Mode</word_group>: Engage state.\n<color=#00AEFF>Noise Bullets\nFunction: Changes some attacks' damage into true damage.\nEffect 1: Normal attacks deal true damage. This effect is continuous and cannot be removed.\nEffect 2: Swift Piercing deals true damage. This effect is continuous and cannot be removed.</color>\n■ Activates only if this unit is in the <word_group=10110>Bunny Mode</word_group>: Stance state.\n<color=#00AEFF>Enhanced Bullets\nFunction: Enhances this unit's offensive capabilities.\nEffect 1: Critical Rate ▲ {description_value_01}%. This effect is continuous and cannot be removed.\nEffect 2: Critical Damage ▲ {description_value_02}%. This effect is continuous and cannot be removed.</color>\n■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF>Swift Piercing: Changes the weapon in use\nCharge Time: Fixed at 0.5 sec\nDamage: {description_value_03}% of <word_group=10025>final</word_group> ATK\nFull Charge Damage: 300%\nDuration: {description_value_04} sec</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "20.76",
+                  "22.36",
+                  "23.96",
+                  "25.56",
+                  "27.15",
+                  "28.75",
+                  "30.35",
+                  "31.95",
+                  "33.54",
+                  "35.14"
+                ]
+              },
+              {
+                "description_value": [
+                  "44.39",
+                  "47.8",
+                  "51.22",
+                  "54.63",
+                  "58.05",
+                  "61.46",
+                  "64.88",
+                  "68.29",
+                  "71.71",
+                  "75.12"
+                ]
+              },
+              {
+                "description_value": [
+                  "43.27",
+                  "46.59",
+                  "49.92",
+                  "53.25",
+                  "56.58",
+                  "59.91",
+                  "63.24",
+                  "66.56",
+                  "69.89",
+                  "73.22"
+                ]
+              },
+              {
+                "description_value": [
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 2"
+          },
+          "ulti_skill_id": 1405301,
+          "ulti_skill_detail": {
+            "id": 1405301,
+            "icon": "icn_skill_c405_ult",
+            "group_id": 14053,
+            "shake_id": 1,
+            "skill_type": "InstantAll",
+            "attack_type": "Water",
+            "skill_level": 1,
+            "counter_type": "Metal_Type",
+            "duration_type": "None",
+            "name_localkey": "Swift Piercing",
+            "next_level_id": 1405302,
+            "prefer_target": "Random",
+            "resource_name": "c405_ulti",
+            "duration_value": 0,
+            "skill_cooltime": 4000,
+            "level_up_cost_id": 20302,
+            "skill_value_data": [
+              {
+                "skill_value": 30526,
+                "skill_value_type": "Percent"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              }
+            ],
+            "skill_cooltime_list": [
+              4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
+            ],
+            "description_localkey": "■ Affects self.\n<color=#00AEFF>ATK ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>\n■ Activates if this unit is in the <word_group=10110>Bunny Mode</word_group>: Stance state. Affects the same targets.\n<color=#00AEFF>Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as additional damage.</color>\n■ Activates if this unit is in the <word_group=10110>Bunny Mode</word_group>: Engage state. Affects the same targets.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as true damage.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "65",
+                  "70",
+                  "75",
+                  "80",
+                  "85",
+                  "90",
+                  "95",
+                  "100",
+                  "105",
+                  "110"
+                ]
+              },
+              {
+                "description_value": [
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5"
+                ]
+              },
+              {
+                "description_value": [
+                  "305.26",
+                  "328.75",
+                  "352.23",
+                  "375.71",
+                  "399.19",
+                  "422.67",
+                  "446.15",
+                  "469.64",
+                  "493.12",
+                  "516.6"
+                ]
+              },
+              {
+                "description_value": [
+                  "566.62",
+                  "610.21",
+                  "653.8",
+                  "697.38",
+                  "740.97",
+                  "784.55",
+                  "828.14",
+                  "871.73",
+                  "915.31",
+                  "958.9"
+                ]
+              },
+              {
+                "description_value": [
+                  "504.99",
+                  "543.84",
+                  "582.68",
+                  "621.53",
+                  "660.37",
+                  "699.22",
+                  "738.06",
+                  "776.91",
+                  "815.75",
+                  "854.6"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "prefer_target_condition": "None",
+            "info_description_localkey": "Burst Skill",
+            "after_use_function_id_list": [0],
+            "after_hurt_function_id_list": [140530103, 140530104],
+            "before_use_function_id_list": [140530101],
+            "before_hurt_function_id_list": [0]
+          }
+        },
+        "statScaling": {
+          "grow_grade": 140502,
+          "grade_core_id": 1,
+          "stat_enhance_id": 5102,
+          "stat_enhance_detail": {
+            "id": 5102,
+            "core_hp": 200,
+            "grade_hp": 3000,
+            "core_attack": 200,
+            "grade_ratio": 200,
+            "core_defence": 200,
+            "grade_attack": 20,
+            "grade_defence": 100,
+            "core_bio_resist": 0,
+            "grade_bio_resist": 0,
+            "core_metal_resist": 0,
+            "core_energy_resist": 0,
+            "grade_metal_resist": 0,
+            "grade_energy_resist": 0
+          }
+        },
+        "element": {
+          "element_id": [200001],
+          "element_details": [
+            {
+              "id": 200001,
+              "element": "Water",
+              "group_id": 5000002,
+              "element_icon": "icn_element_water",
+              "weak_element_id": 400001,
+              "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+              "element_name_localekey": "Water",
+              "element_code_name_localekey": "Code: P.S.I.D."
+            }
+          ]
+        },
+        "piece": {
+          "piece_id": 5100405,
+          "piece_detail": {
+            "id": 5100405,
+            "class": "Attacker",
+            "order": 40500,
+            "use_id": 0,
+            "use_type": "None",
+            "item_rare": "SSR",
+            "item_type": "Piece",
+            "stack_max": 9999999,
+            "use_value": 0,
+            "corporation": "MISSILIS",
+            "resource_id": 405,
+            "item_sub_type": "CharacterPiece",
+            "name_localkey": "Sin: Swift Bunny's Spare Body",
+            "use_limit_count": false,
+            "inventory_filter": ["etc"],
+            "description_localkey": "Used for a Nikke's Limit Break.\nSpare Bodies for a fully enhanced Nikke will be converted into Body Labels."
+          }
+        },
+        "meta": {
+          "id": 140501,
+          "class": "Attacker",
+          "order": 10091,
+          "name_code": 5183,
+          "corporation": "MISSILIS",
+          "resource_id": 405,
+          "name_localkey": "Sin: Swift Bunny",
+          "original_rare": "SSR",
+          "critical_ratio": 1500,
+          "category_type_1": "None",
+          "category_type_2": "None",
+          "category_type_3": "None",
+          "critical_damage": 15000,
+          "eff_category_type": "Walk",
+          "eff_category_value": 0
+        }
+      },
+      "generatorSupported": false,
+      "simSupported": false,
+      "baseStats": {
+        "hp": 13500,
+        "atk": 600,
+        "def": 76,
+        "core": {
+          "hp": 200,
+          "atk": 200,
+          "def": 200
+        },
+        "grade": {
+          "hp": 3000,
+          "atk": 20,
+          "def": 100,
+          "ratio": 200
+        },
+        "critRate": 15,
+        "maxLevel": 1400,
+        "critDamage": 150,
+        "resourceId": 405
       }
     },
     "snow-crane": {

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-04",
+  "updated": "2026-10-02",
   "source": "bakery-bot DB nikke_characters.prydwen_tiers.bossing",
   "tiers": {
     "2b": "B",
@@ -70,9 +70,11 @@
     "folkwang": "D",
     "frima": "C",
     "grave": "S",
+    "greatドレイク": "?",
     "guillotine": "C",
     "guillotine-winter-slayer": "A",
     "guilty": "B",
+    "guilty-mighty-bunny": "?",
     "harran": "F",
     "helm": "SS",
     "helm-aquamarine": "A",
@@ -175,6 +177,7 @@
     "scarlet-black-shadow": "SS",
     "signal": "F",
     "sin": "E",
+    "sin-swift-bunny": "?",
     "snow-crane": "D",
     "snow-white": "S",
     "snow-white-heavy-arms": "SSS",
@@ -204,6 +207,8 @@
     "yuni": "F",
     "zwei": "S",
     "アイギス": "?",
+    "バニーギルティ": "?",
+    "バニーシン": "?",
     "水着マルチャーナ": "?",
     "雪子": "?"
   }

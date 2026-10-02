@@ -462,6 +462,12 @@
     "fullChargeBonus": 0,
     "source": "datamined"
   },
+  "guilty-mighty-bunny": {
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
   "harran": {
     "basePerTrigger": 290,
     "targetPerTrigger": 580,
@@ -1098,6 +1104,12 @@
     "basePerTrigger": 20,
     "targetPerTrigger": 40,
     "fullChargeBonus": 0,
+    "source": "datamined"
+  },
+  "sin-swift-bunny": {
+    "basePerTrigger": 280,
+    "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
     "source": "datamined"
   },
   "snow-crane": {
