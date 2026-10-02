@@ -14,7 +14,13 @@
 // Writes scripts/kit-autonomy/cross-family/<slug>/s7-packet.md (dispatch it with dispatch-kimi.sh /
 // dispatch-claude.sh) and mirrors it to results/<slug>-judge-packet.md, the committed evidence copy.
 // The judge is NOT blind (it grades artifacts), so no redaction runs here.
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -91,9 +97,22 @@ const base = {
 const s2bMain = JSON.parse(
   read(`scripts/kit-autonomy/reviews/${slug}.test-review.json`)
 ) as { model?: string };
-const s2bSecond = optional(
-  `scripts/kit-autonomy/reviews/${slug}.test-review-opus.json`
+// The Tier-2 second reviewer is saved as `<slug>.test-review-<model-tag>.json`; the tag names the
+// model (opus under the Kimi-era routing, fable51 under the 2026-10-02 Claude-only routing), so
+// take whichever single second-reviewer file exists rather than one hard-coded name.
+const reviewsDir = join(ROOT, 'scripts', 'kit-autonomy', 'reviews');
+const secondNames = readdirSync(reviewsDir).filter(
+  (f) => f.startsWith(`${slug}.test-review-`) && f.endsWith('.json')
 );
+if (secondNames.length > 1) {
+  console.error(
+    `❌ more than one second-reviewer file for ${slug}: ${secondNames.join(', ')}`
+  );
+  process.exit(1);
+}
+const s2bSecond = secondNames[0]
+  ? read(`scripts/kit-autonomy/reviews/${secondNames[0]}`)
+  : undefined;
 const s2bSecondJson = s2bSecond
   ? (JSON.parse(s2bSecond) as { model?: string })
   : undefined;
