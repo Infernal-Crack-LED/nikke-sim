@@ -12,8 +12,8 @@
 | Reason | Entries | Share |
 | --- | --- | --- |
 | Defensive / HP / shield / aggro | 212 | 45.2% |
-| Missing engine primitive / trigger | 95 | 20.3% |
-| Other / see caveats | 95 | 20.3% |
+| Missing engine primitive / trigger | 98 | 20.9% |
+| Other / see caveats | 92 | 19.6% |
 | Out-of-domain / parser unsupported | 30 | 6.4% |
 | Weapon-state / shot-count approximation | 12 | 2.6% |
 | Partless boss | 10 | 2.1% |
@@ -767,7 +767,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Missing engine primitive / trigger (95)
+### Missing engine primitive / trigger (98)
 
 **A2** (a2)
 
@@ -1009,6 +1009,15 @@ Damage Taken ▼ 57.86% for 15 sec. — UNMODELED (inert): no incoming-damage mo
 - **burst:** Affects all allies. Removes 1 debuff(s).
   - *Why:* BURST 'Removes 1 debuff(s), all allies': UNMODELED — defensive/utility debuff cleanse; the v1 boss applies no debuffs, so there is nothing to remove and no DPS channel (carried verbatim in unmodeled.burst)
 
+**Mihara: Bonding Chain** (mihara-bonding-chain)
+
+- **skill2:** Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.
+  - *Why:* skill2: the two scope-locked lines — 'skill user is incapacitated' (Ensnaring Chains stacks ▲ 20) and 'enemy is neutralized' (Restraint Chain ▲ 1) — are inert: no incapacitated or enemy-neutralized trigger exists in the engine, the sim's caster is never incapacitated, and the fight ends when the boss falls.
+- **skill2:** Ensnaring Chains stacks ▲ 20.
+  - *Why:* skill2: the two scope-locked lines — 'skill user is incapacitated' (Ensnaring Chains stacks ▲ 20) and 'enemy is neutralized' (Restraint Chain ▲ 1) — are inert: no incapacitated or enemy-neutralized trigger exists in the engine, the sim's caster is never incapacitated, and the fight ends when the boss falls.
+- **skill2:** Restraint Chain ▲ 1, up to 10.
+  - *Why:* skill2: the two scope-locked lines — 'skill user is incapacitated' (Ensnaring Chains stacks ▲ 20) and 'enemy is neutralized' (Restraint Chain ▲ 1) — are inert: no incapacitated or enemy-neutralized trigger exists in the engine, the sim's caster is never incapacitated, and the fight ends when the boss falls.
+
 **Misato** (misato)
 
 - **skill2:** Only activates when Shooting Manual is at max stacks. Affects self.
@@ -1171,7 +1180,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Other / see caveats (95)
+### Other / see caveats (92)
 
 **A2** (a2)
 
@@ -1284,15 +1293,6 @@ Explosion Radius ▲ 15.01% for 10 sec.
   - *Why:* See unit note / caveats
 - **skill1:** Removes Metal γ.
   - *Why:* See unit note / caveats
-
-**Mihara: Bonding Chain** (mihara-bonding-chain)
-
-- **skill2:** Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.
-  - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
-- **skill2:** Ensnaring Chains stacks ▲ 20.
-  - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
-- **skill2:** Restraint Chain ▲ 1, up to 10.
-  - *Why:* skill2: after 40 normal attacks during Full Burst on an Ensnared target, Ensnaring stacks +1. This does NOT consume Restraint and does NOT deal the 50.06% S1 dump damage.
 
 **Milk: Blooming Bunny** (milk-blooming-bunny)
 
@@ -1591,7 +1591,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 **Mihara: Bonding Chain** (mihara-bonding-chain)
 
 - **skill2:** Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.
-  - *Why:* skill2: incapacitated +20 and enemy-neutralized +1 lines are inert at scope lock.
+  - *Why:* skill2: the two scope-locked lines — 'skill user is incapacitated' (Ensnaring Chains stacks ▲ 20) and 'enemy is neutralized' (Restraint Chain ▲ 1) — are inert: no incapacitated or enemy-neutralized trigger exists in the engine, the sim's caster is never incapacitated, and the fight ends when the boss falls.
 
 **Milk: Blooming Bunny** (milk-blooming-bunny)
 

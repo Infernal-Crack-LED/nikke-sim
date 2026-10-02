@@ -15,6 +15,14 @@
       {
         "slot": "skill1",
         "family": "resource",
+        "name": "magazine",
+        "producer": 0,
+        "consumer": 1,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
         "name": "scrap",
         "producer": 0,
         "consumer": 0,
@@ -72,6 +80,14 @@
       }
     ],
     "exia": [
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "hackingCode",
+        "producer": 0,
+        "consumer": 1,
+        "order": "producer-first"
+      },
       {
         "slot": "skill2",
         "family": "resource",
@@ -139,6 +155,14 @@
         "family": "resource",
         "name": "sigma",
         "producer": 1,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "sigma",
+        "producer": 1,
         "consumer": 1,
         "order": "same-block"
       },
@@ -147,7 +171,25 @@
         "family": "resource",
         "name": "sigma",
         "producer": 3,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "sigma",
+        "producer": 3,
         "consumer": 1,
+        "order": "consumer-first"
+      }
+    ],
+    "marciana-marine-study": [
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "whistle",
+        "producer": 1,
+        "consumer": 0,
         "order": "consumer-first"
       }
     ],
@@ -165,6 +207,86 @@
       {
         "slot": "skill1",
         "family": "resource",
+        "name": "ensnaring",
+        "producer": 2,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "ensnaring",
+        "producer": 3,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "ensnaring",
+        "producer": 4,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "ensnaring",
+        "producer": 5,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "ensnaring",
+        "producer": 6,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "ensnaring",
+        "producer": 7,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "ensnaring",
+        "producer": 8,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "ensnaring",
+        "producer": 9,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "ensnaring",
+        "producer": 10,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "ensnaring",
+        "producer": 11,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
         "name": "restraint",
         "producer": 1,
         "consumer": 2,
@@ -1041,6 +1163,22 @@
         "producer": 11,
         "consumer": 11,
         "order": "same-block"
+      },
+      {
+        "slot": "burst",
+        "family": "resource",
+        "name": "ensnaring",
+        "producer": 0,
+        "consumer": 0,
+        "order": "same-block"
+      },
+      {
+        "slot": "burst",
+        "family": "resource",
+        "name": "mirror",
+        "producer": 0,
+        "consumer": 1,
+        "order": "producer-first"
       }
     ],
     "pepper": [
@@ -1056,11 +1194,35 @@
     "phantom": [
       {
         "slot": "skill1",
+        "family": "resource",
+        "name": "thiefsDagger",
+        "producer": 2,
+        "consumer": 4,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "thiefsDagger",
+        "producer": 3,
+        "consumer": 4,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill1",
         "family": "status",
         "name": "Calling Card",
         "producer": 1,
         "consumer": 0,
         "order": "consumer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "resource",
+        "name": "distAmp",
+        "producer": 0,
+        "consumer": 2,
+        "order": "producer-first"
       },
       {
         "slot": "skill2",
@@ -1166,6 +1328,14 @@
       }
     ],
     "soda-twinkling-bunny": [
+      {
+        "slot": "skill1",
+        "family": "resource",
+        "name": "goldenChip",
+        "producer": 1,
+        "consumer": 0,
+        "order": "consumer-first"
+      },
       {
         "slot": "burst",
         "family": "resource",

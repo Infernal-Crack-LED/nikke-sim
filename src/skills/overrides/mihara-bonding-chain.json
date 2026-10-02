@@ -17,7 +17,7 @@
     "skill2: the 40-normals-in-Full-Burst Ensnaring generation carries fbGate:\"inFb\" AND countScope:\"gated\".",
     "burst: Dragging Chain snapshots Ensnaring into a `mirror` resource at cast (copyResource), then cancels Ensnaring; the 10s DoT ticks read mirror \u00d7 50.05, so a first burst with no accumulated stacks mirrors 0 and later bursts mirror up to the 20 cap.",
     "skill1: the 0.4s/stack dump cadence is the measured 'specific timing'; it is currently omitted at battle start (initial 10 restraint sits until her first own-FB end), which is a minor first-cycle undercount in long fights.",
-    "skill2: incapacitated +20 and enemy-neutralized +1 lines are inert at scope lock."
+    "skill2: the two scope-locked lines \u2014 'skill user is incapacitated' (Ensnaring Chains stacks \u25b2 20) and 'enemy is neutralized' (Restraint Chain \u25b2 1) \u2014 are inert: no incapacitated or enemy-neutralized trigger exists in the engine, the sim's caster is never incapacitated, and the fight ends when the boss falls."
   ],
   "skill1": [
     {

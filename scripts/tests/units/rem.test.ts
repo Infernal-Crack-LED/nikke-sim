@@ -17,10 +17,10 @@
 //
 // SELF-STATUS GATE (the crux of this kit): "Demon's Breath" is a SELF status Rem applies with her own
 // burst (the R1 crit buff). The R2 ATK stack accrues ONLY "in Demon's Breath status" — i.e. inside the
-// 10s window after each of her burst casts. The engine has NO self-status / requiresOwnBuff gate, so the
-// override proxies the personal window as a name-keyed boss targetStatus 'Demon's Breath' (10s, applied by
-// the burst) and gates R2 on requiresTargetStatus — the gauntlet-validated asuka-wille/marciana/privaty
-// pattern. The proxy is asserted BEHAVIOURALLY here: every R2 stack must land inside [castFrame, castFrame
+// 10s window after each of her burst casts. The override opens the personal window as a per-unit
+// selfStatus 'Demon's Breath' (10s, applied by the burst, on Rem herself) and gates R2 on
+// requiresSelfStatus — migrated off the retired boss-targetStatus proxy 2026-08-24 (asuka-wille
+// template); no cross-unit read is possible in either direction. The gate is asserted BEHAVIOURALLY here: every R2 stack must land inside [castFrame, castFrame
 // +600f] for some Rem burst cast (the ungated counterfactual accrues stacks across the whole fight and so
 // leaks stacks into the gaps BETWEEN windows — the discrimination that proves the gate is live).
 //
@@ -150,7 +150,7 @@ const cfAtkStackUngated = withPatchedOverride('rem', (ov: any) => {
   if (!b) {
     throw new Error('rem S1 atkPct block missing — fixture is stale');
   }
-  delete b.requiresTargetStatus; // drop the Demon's Breath gate → accrues the whole fight
+  delete b.requiresSelfStatus; // drop the Demon's Breath gate → accrues the whole fight
 });
 const cfAtkStackScopeAllies = withPatchedOverride('rem', (ov: any) => {
   const b = ov.skill1.find(isAtkStack);
@@ -268,7 +268,7 @@ describe('rem — kit spec', () => {
         "ATK stacks accrued OUTSIDE the Demon's Breath window — the gate is not live"
       ).toEqual([]);
     });
-    it('DISCRIMINATING (gate): with requiresTargetStatus DROPPED, stacks leak into the inter-window gaps', () => {
+    it('DISCRIMINATING (gate): with requiresSelfStatus DROPPED, stacks leak into the inter-window gaps', () => {
       const ungated = byStat(atkStackUngated.events, 'atkPct', 4.22);
       const outOfWindow = ungated.filter(
         (b) => !inWindow(atkStackUngated.events, b.frame)

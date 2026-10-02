@@ -12,7 +12,7 @@
 // file pins:
 //
 //   S1 ■ landing 7 normal attacks while in Attack State → target: 286.37% final ATK addl dmg   [H1]
-//        (gated to the 10s post-burst window via the 'Attack State' boss-status proxy)
+//        (gated to the 10s post-burst window via the 'Attack State' selfStatus window)
 //   S2 ■ entering Full Burst → all allies: ATK ▲11.61% of caster ATK for 10 sec                [H2]
 //   BU ■ self: Attack State — Attack Damage ▲35.9% / ATK ▲63.36% of caster ATK, 10 sec         [H3]
 //      ■ all enemies: 990.2% of final ATK as Burst Skill damage                                [H4]
@@ -26,7 +26,7 @@
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates
 // nothing):
-//   H1  the proc is GATED to the Attack-State window: removing requiresTargetStatus lets hitCount:7
+//   H1  the proc is GATED to the Attack-State window: removing requiresSelfStatus lets hitCount:7
 //       fire across the WHOLE fight (strictly more procs, many outside every burst window). Shipped
 //       must fire FEWER procs and EVERY one must land ≤10s after a Rei burst cast.
 //   H2  casterAtkPct (a FLAT add = 11.61% of Rei's static ATK, identical for every ally) vs atkPct
@@ -83,14 +83,14 @@ const hasStat = (b: any, stat: string) =>
 /** H1 counterfactual: drop the Attack-State gate so hitCount:7 fires across the whole fight. */
 const reiUngatedS1 = withPatchedOverride(SLUG, (ov) => {
   const blk = ov.skill1.find(
-    (b: any) => b.requiresTargetStatus === 'Attack State'
+    (b: any) => b.requiresSelfStatus === 'Attack State'
   );
   if (!blk) {
     throw new Error(
       'rei S1 Attack-State-gated block missing — fixture is stale'
     );
   }
-  delete blk.requiresTargetStatus;
+  delete blk.requiresSelfStatus;
 });
 /** H2 counterfactual: the team ATK buff as a target-scaled atkPct instead of flat casterAtkPct. */
 const reiS2AtkPct = withPatchedOverride(SLUG, (ov) => {
@@ -174,7 +174,7 @@ describe('rei-ayanami-tentative-name — kit spec', () => {
       }
     });
 
-    it('DISCRIMINATING: ungated (no requiresTargetStatus) fires strictly more often, across the whole fight', () => {
+    it('DISCRIMINATING: ungated (no requiresSelfStatus) fires strictly more often, across the whole fight', () => {
       const ungatedProcs = reiDamage(ungated.events, 'skill1');
       expect(ungatedProcs.length).toBeGreaterThan(procs.length);
       // …and at least one ungated proc falls OUTSIDE every burst window (the gate is what removed it).

@@ -57,6 +57,30 @@ const gate = (name: string) => block({ requiresTargetStatus: name });
 const earn = (name: string) =>
   block({ effects: [{ kind: 'resource', name, delta: 1 }] });
 const spendGate = (name: string) => block({ resourceGate: { name, min: 3 } });
+const perResBuff = (name: string) =>
+  block({
+    effects: [
+      {
+        kind: 'buff',
+        stat: 'atkPct',
+        value: 0,
+        perResource: { name, mult: 1 },
+      },
+    ],
+  });
+const perResDot = (name: string) =>
+  block({
+    target: { kind: 'enemy' },
+    effects: [
+      {
+        kind: 'dot',
+        atkPct: 0,
+        durationSec: 10,
+        intervalSec: 1,
+        perResource: { name, mult: 1 },
+      },
+    ],
+  });
 
 describe('blockOrderPairs — the primitive', () => {
   it('reads producer-first, and flips to consumer-first when the two are swapped', () => {
@@ -139,6 +163,83 @@ describe('blockOrderPairs — the primitive', () => {
     ).toEqual([]);
     expect(blockOrderPairs({ skill1: [inflict('Wipe Out')] })).toEqual([]);
   });
+
+  it('treats copyResource as producer of its target AND consumer of its source', () => {
+    // mihara's burst shape in miniature: snapshot ensnaring into mirror, then zero ensnaring,
+    // then a later block's DoT reads mirror.
+    const pairs = blockOrderPairs({
+      burst: [
+        block({
+          effects: [
+            { kind: 'copyResource', name: 'mirror', from: 'ensnaring' },
+            { kind: 'resource', name: 'ensnaring', delta: -20 },
+          ],
+        }),
+        perResDot('mirror'),
+      ],
+    });
+    expect(pairs).toEqual([
+      {
+        slot: 'burst',
+        family: 'resource',
+        name: 'ensnaring',
+        producer: 0,
+        consumer: 0,
+        order: 'same-block',
+      },
+      {
+        slot: 'burst',
+        family: 'resource',
+        name: 'mirror',
+        producer: 0,
+        consumer: 1,
+        order: 'producer-first',
+      },
+    ]);
+    // Swapping the two BLOCKS flips the mirror pair; swapping the two EFFECTS inside block 0
+    // does not — the census is block-granular, intra-block effect order is out of its scope.
+    const swapped = blockOrderPairs({
+      burst: [
+        perResDot('mirror'),
+        block({
+          effects: [
+            { kind: 'copyResource', name: 'mirror', from: 'ensnaring' },
+            { kind: 'resource', name: 'ensnaring', delta: -20 },
+          ],
+        }),
+      ],
+    });
+    expect(swapped.find((p) => p.name === 'mirror')?.order).toBe(
+      'consumer-first'
+    );
+  });
+
+  it('treats perResource buff and dot carriers as consumers of the pool they scale from', () => {
+    expect(
+      blockOrderPairs({ skill1: [perResBuff('coin'), earn('coin')] })
+    ).toEqual([
+      {
+        slot: 'skill1',
+        family: 'resource',
+        name: 'coin',
+        producer: 1,
+        consumer: 0,
+        order: 'consumer-first',
+      },
+    ]);
+    expect(
+      blockOrderPairs({ burst: [earn('coin'), perResDot('coin')] })
+    ).toEqual([
+      {
+        slot: 'burst',
+        family: 'resource',
+        name: 'coin',
+        producer: 0,
+        consumer: 1,
+        order: 'producer-first',
+      },
+    ]);
+  });
 });
 
 describe('block-order guard — the shipped overrides', () => {
@@ -150,7 +251,7 @@ describe('block-order guard — the shipped overrides', () => {
     expect(live).toEqual(pinned);
   });
 
-  it('pins the two documented dependents in the direction their prose claims', () => {
+  it('pins the documented dependents in the direction their prose claims', () => {
     // phantom: the gate sits FIRST, so the shot that inflicts Calling Card does not yet benefit.
     expect(live.phantom.find((p) => p.name === 'Calling Card')?.order).toBe(
       'consumer-first'
@@ -160,6 +261,21 @@ describe('block-order guard — the shipped overrides', () => {
     expect(
       live['d-killer-wife'].find((p) => p.name === 'Wipe Out')?.order
     ).toBe('producer-first');
+    // mihara-bonding-chain: the burst snapshots ensnaring into mirror and zeroes ensnaring in ONE
+    // block (ensnaring same-block), and the DoT block that reads mirror comes AFTER the copy
+    // (mirror producer-first). The copy-then-zero EFFECT order inside that block is beyond this
+    // census — it is pinned behaviorally by scripts/tests/units/mihara-bonding-chain.test.ts.
+    const mihara = live['mihara-bonding-chain'].filter(
+      (p) => p.slot === 'burst'
+    );
+    expect(mihara.find((p) => p.name === 'ensnaring')?.order).toBe(
+      'same-block'
+    );
+    expect(mihara.find((p) => p.name === 'mirror')).toMatchObject({
+      producer: 0,
+      consumer: 1,
+      order: 'producer-first',
+    });
   });
 
   it('is NOT vacuous — reordering a shipped pair changes the census', () => {
@@ -177,6 +293,6 @@ describe('block-order guard — the shipped overrides', () => {
   it('pins the census size, so a unit dropping out of it is loud too', () => {
     const units = Object.keys(pinned).length;
     const pairs = Object.values(pinned).reduce((n, p) => n + p.length, 0);
-    expect([units, pairs]).toEqual([15, 144]);
+    expect([units, pairs]).toEqual([16, 165]);
   });
 });

@@ -414,6 +414,7 @@ describe('structuralCheck — same-unit status order warning (audit F2.5)', () =
     const r = structuralCheck(
       'liter',
       minimal({
+        resources: [{ name: 'coin', initial: 0 }],
         skill2: [
           block({ effects: [{ kind: 'resource', name: 'coin', delta: 1 }] }),
           block({ resourceGate: { name: 'coin', min: 3 } }),
@@ -444,6 +445,139 @@ describe('structuralCheck — same-unit status order warning (audit F2.5)', () =
     expect(r.errors).toEqual([]);
     expect(r.warnings.join('\n')).toMatch(
       /status "Hacked": .* cross-slot only, so the ORDER is fixed by the slot flatten order/
+    );
+  });
+});
+
+describe('structuralCheck — declared resource pools (resources[])', () => {
+  it('rejects a resource delta naming an undeclared pool', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        skill1: [
+          block({ effects: [{ kind: 'resource', name: 'coin', delta: 1 }] }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors.join('\n')).toMatch(
+      /skill1\[0\]: resource "coin" is not declared in resources\[\]/
+    );
+  });
+
+  it('rejects a copyResource whose target OR source is undeclared', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        resources: [{ name: 'mirror', initial: 0 }],
+        burst: [
+          block({
+            effects: [
+              { kind: 'copyResource', name: 'mirror', from: 'ensnaring' },
+            ],
+          }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors.join('\n')).toMatch(
+      /burst\[0\]: copyResource source "ensnaring" is not declared in resources\[\]/
+    );
+    expect(r.errors.join('\n')).not.toMatch(/copyResource target/);
+  });
+
+  it('rejects a perResource reader (buff or dot) naming an undeclared pool', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        skill1: [
+          block({
+            effects: [
+              {
+                kind: 'buff',
+                stat: 'atkPct',
+                value: 0,
+                perResource: { name: 'coin', mult: 1.3 },
+              },
+            ],
+          }),
+        ],
+        burst: [
+          block({
+            target: { kind: 'enemy' },
+            effects: [
+              {
+                kind: 'dot',
+                atkPct: 0,
+                durationSec: 10,
+                intervalSec: 1,
+                perResource: { name: 'coin', mult: 50 },
+              },
+            ],
+          }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors.join('\n')).toMatch(
+      /skill1\[0\]: perResource reader "coin" \(on buff\) is not declared in resources\[\]/
+    );
+    expect(r.errors.join('\n')).toMatch(
+      /burst\[0\]: perResource reader "coin" \(on dot\) is not declared in resources\[\]/
+    );
+  });
+
+  it('accepts resource / copyResource / perResource names that ARE declared', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        resources: [
+          { name: 'coin', initial: 0, min: 0, max: 5 },
+          { name: 'mirror', initial: 0, min: 0, max: 5 },
+        ],
+        skill1: [
+          block({ effects: [{ kind: 'resource', name: 'coin', delta: 1 }] }),
+        ],
+        burst: [
+          block({
+            effects: [{ kind: 'copyResource', name: 'mirror', from: 'coin' }],
+          }),
+          block({
+            effects: [
+              {
+                kind: 'buff',
+                stat: 'atkPct',
+                value: 0,
+                perResource: { name: 'mirror', mult: 1 },
+              },
+            ],
+          }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors).toEqual([]);
+  });
+
+  it('sees an undeclared pool nested inside escalating steps', () => {
+    const r = structuralCheck(
+      'liter',
+      minimal({
+        skill2: [
+          block({
+            effects: [
+              {
+                kind: 'escalating',
+                steps: [{ kind: 'resource', name: 'coin', delta: 1 }],
+              },
+            ],
+          }),
+        ],
+      }),
+      CTX
+    );
+    expect(r.errors.join('\n')).toMatch(
+      /skill2\[0\]: resource "coin" is not declared in resources\[\]/
     );
   });
 });
@@ -813,12 +947,24 @@ describe('structuralCheck — levelScale / levelConst annotations', () => {
   it('accepts levelConst on perResource.mult (a dotted field path)', () => {
     const r = structuralCheck(
       'liter',
-      withEffect({
-        kind: 'buff',
-        stat: 'atkPct',
-        value: 0,
-        perResource: { name: 'x', mult: 14 },
-        levelConst: ['perResource.mult'],
+      minimal({
+        resources: [{ name: 'x', initial: 0 }],
+        skill1: [
+          {
+            slot: 'skill1',
+            trigger: { kind: 'passive' },
+            target: { kind: 'self' },
+            effects: [
+              {
+                kind: 'buff',
+                stat: 'atkPct',
+                value: 0,
+                perResource: { name: 'x', mult: 14 },
+                levelConst: ['perResource.mult'],
+              },
+            ],
+          },
+        ],
       }),
       CTX_LV
     );

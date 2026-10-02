@@ -324,7 +324,8 @@ function checkLevelScale(
  * currently ships. Two families qualify, and both are documented as order-dependent in
  * src/skills/types.ts:
  *   status   — a `targetStatus` effect (producer) vs a `requiresTargetStatus` gate (consumer)
- *   resource — a `resource` delta (producer) vs a `resourceGate` (consumer)
+ *   resource — a `resource` delta or a `copyResource` target (producer) vs a `resourceGate`,
+ *              a `copyResource` source, or a `perResource` carrier (consumer)
  * In both, the gate is evaluated at TRIGGER time and the effect written at APPLY time, so two
  * blocks firing on the SAME frame resolve by their position in the flat block array
  * (src/skills/index.ts `SLOTS.flatMap`).
@@ -353,6 +354,18 @@ export interface BlockOrderPair {
  * `same-block` is the third case: one block both writes and reads the same name (the gate sees
  * the PRE-write pool). Not reorderable today, but recorded so that SPLITTING such a block into
  * two is as loud as reordering them.
+ *
+ * The resource family has two site kinds beyond the gate pair. A `copyResource` effect is BOTH
+ * sides at once: producer of its `name` (the pool it writes) and consumer of its `from` (the pool
+ * it snapshots) — mihara-bonding-chain's burst copies ensnaring into mirror and zeroes ensnaring
+ * in the same block, which lands here as ensnaring `same-block` plus mirror `producer-first` into
+ * the DoT block that reads it. A `perResource` carrier (buff/dot) is a consumer: it re-reads the
+ * pool LIVE every frame rather than at one gate moment, so for those pairs `order` records the
+ * shipped position, not a gate-miss hazard.
+ *
+ * OUT OF SCOPE: the EFFECTS-array order inside one block. The census is block-granular, so a
+ * swap of two effects within a single block (e.g. mihara's copy-then-zero) does not change any
+ * pair — that order is pinned behaviorally instead (scripts/tests/units/mihara-bonding-chain.test.ts).
  */
 export function blockOrderPairs(override: any): BlockOrderPair[] {
   const pairs: BlockOrderPair[] = [];
@@ -381,6 +394,26 @@ export function blockOrderPairs(override: any): BlockOrderPair[] {
       for (const e of collectEffects(b?.effects, 'resource')) {
         if (typeof e?.name === 'string') {
           producers.push({ family: 'resource', name: e.name, i });
+        }
+      }
+      // copyResource is both ends of a pair: it WRITES `name` and READS `from`.
+      for (const e of collectEffects(b?.effects, 'copyResource')) {
+        if (typeof e?.name === 'string') {
+          producers.push({ family: 'resource', name: e.name, i });
+        }
+        if (typeof e?.from === 'string') {
+          consumers.push({ family: 'resource', name: e.from, i });
+        }
+      }
+      // perResource is a property of buff/dot effects, not a kind of its own.
+      for (const e of collectEffects(b?.effects, 'buff')) {
+        if (typeof e?.perResource?.name === 'string') {
+          consumers.push({ family: 'resource', name: e.perResource.name, i });
+        }
+      }
+      for (const e of collectEffects(b?.effects, 'dot')) {
+        if (typeof e?.perResource?.name === 'string') {
+          consumers.push({ family: 'resource', name: e.perResource.name, i });
         }
       }
       if (typeof b?.requiresTargetStatus === 'string') {
@@ -512,7 +545,16 @@ function blockOrderWarnings(override: any, warnings: string[]) {
       continue;
     }
     const { noun, wrote, read } = label(family);
-    const mine = pairs.filter((p) => p.family === family && p.name === name);
+    // The census also counts copyResource sources and perResource carriers as consumers, but the
+    // "gate reads at trigger" prose below only describes the GATE consumers this function's own
+    // sites map tracks — keep the rendering scoped to those (a perResource reader re-reads the
+    // pool live; its census pair is a position record, not a gate hazard).
+    const mine = pairs.filter(
+      (p) =>
+        p.family === family &&
+        p.name === name &&
+        cons.includes(`${p.slot}[${p.consumer}]`)
+    );
     // Capped: a pool with several earners and several gates (rouge's coin: 6 pairs) would otherwise
     // bury the warning. The full list is `lint-target-status.ts --block-order`.
     const SHOWN = 4;
@@ -1101,8 +1143,12 @@ export function structuralCheck(
     });
   }
 
-  // `copyResource` copies between declared resource pools; an undeclared name would silently write
-  // to a missing pool (the engine falls back to unbounded defaults) or read from one.
+  // Every resource-pool reference must be declared in `resources[]`: a `resource` delta,
+  // a `copyResource` target/source, or a `perResource` reader naming an undeclared pool
+  // silently falls back to the engine's unbounded defaults instead of the intended
+  // clamped/initialized pool. (Roster sweep 2026-09-04, all 189 overrides: 0 references to
+  // undeclared pools across these three kinds — the guard is pinned by tests, not by luck.)
+  // `resourceGate` names stay unguarded: block-level gates were out of this extension's scope.
   const declaredResources = new Set(
     (override.resources ?? [])
       .filter((r: any) => typeof r?.name === 'string')
@@ -1124,6 +1170,23 @@ export function structuralCheck(
           errors.push(
             `${slot}[${bi}]: copyResource source "${e.from}" is not declared in resources[]`
           );
+        }
+      }
+      for (const e of collectEffects(b?.effects, 'resource')) {
+        if (e.name && !declaredResources.has(e.name)) {
+          errors.push(
+            `${slot}[${bi}]: resource "${e.name}" is not declared in resources[]`
+          );
+        }
+      }
+      for (const kind of ['buff', 'dot']) {
+        for (const e of collectEffects(b?.effects, kind)) {
+          const name = e?.perResource?.name;
+          if (name && !declaredResources.has(name)) {
+            errors.push(
+              `${slot}[${bi}]: perResource reader "${name}" (on ${kind}) is not declared in resources[]`
+            );
+          }
         }
       }
     });
