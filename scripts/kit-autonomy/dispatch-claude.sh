@@ -123,8 +123,22 @@ if [[ "$MODE" == "code-review" ]]; then
 else
   CLAUDE_ARGS+=(--max-turns 3 --allowedTools "DISABLED")
 fi
-RAW="$(printf '%s' "$PROMPT" | claude -p "${CLAUDE_ARGS[@]}" \
+# BLIND dispatches run from an EMPTY temp directory. `claude -p` attaches session context from its
+# working directory — the repo's git status (branch + recent commit subjects), the project CLAUDE.md
+# and the project's auto-memory — so launched from the repo, every "blind" role was handed the
+# driver's commit messages (2026-10-02: an S6 writer flagged it; a subject named the primitive the
+# driver had just added for that unit). Kimi/Qwen dispatches never had this channel, which is why it
+# only surfaced once every role routed to Claude. Code-review keeps the repo cwd: it is sighted and
+# needs to read the code.
+DISPATCH_CWD="$ROOT"
+if [[ "$MODE" == "blind" ]]; then
+  DISPATCH_CWD="$(mktemp -d)"
+fi
+RAW="$(cd "$DISPATCH_CWD" && printf '%s' "$PROMPT" | claude -p "${CLAUDE_ARGS[@]}" \
   2>/dev/null)" || true
+if [[ "$MODE" == "blind" ]]; then
+  rmdir "$DISPATCH_CWD" 2>/dev/null || true
+fi
 
 # Extract the model's text response from the CLI JSON envelope.
 RESULT_TEXT="$(printf '%s' "$RAW" | jq -r '.result // empty' 2>/dev/null)" || true

@@ -884,6 +884,16 @@ export function structuralCheck(
     }
   }
 
+  // pierceModes / trueNormalsModes name kit modes the unit can be in; an undeclared one can never
+  // be selected, so the grant would be silently dead (the same rule as a block-level `mode`).
+  for (const key of ['pierceModes', 'trueNormalsModes'] as const) {
+    for (const m of override[key] ?? []) {
+      if (!override.modes?.includes(m)) {
+        errors.push(`${key}: mode "${m}" not declared in top-level modes[]`);
+      }
+    }
+  }
+
   for (const slot of SLOTS) {
     const blocks = override[slot];
     if (blocks === undefined) {

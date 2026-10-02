@@ -1,0 +1,178 @@
+{
+  "note": "Sin: Swift Bunny (slug sin-swift-bunny) — SR/Attacker/Water/Missilis, Burst III cd 40s, ammo 6, charge 1s, full charge 250%. VARIANT of the base unit `sin` (AR/Electric) — a different unit and kit. Kit-autonomy gauntlet 2026-10-02. BUNNY MODE is modeled as a user-selectable kit mode: modes ['Stance','Engage'], Stance first because the kit's battle-start line puts a unit that is not in Stance INTO Stance, so a fight opens in Stance and stays there unless the player deliberately holds Full Charge for 1 second (the sim releases at full charge, so it never holds — the rapunzel-pure-grace precedent for the 'Full Charge maintained for 1 or more seconds' clause). Selecting Engage models a player who toggled once at the opening and stayed there; in-fight re-toggling is unmodeled. SKILL1 'Bunny Shift': battleStart self ATK ▲ 15.35% (continuous); 'during Full Charge if not in Swift Piercing' = fullCharge with swapGate 'unswapped' → self Normal Attack Damage Multiplier ▲ 100% (normalAttackPct) and Charge Damage ▲ 52.12%, each durationShots 1 — the repo's per-pull round convention (engine-modeling-gaps theme 21: a per-pull grant's '1 round(s)' is the NEXT round), so in steady fire every base full-charge shot carries both. SKILL2 'Bullet Switch': Noise Bullets (mode Engage) = trueNormalsModes ['Engage'], which makes her normal attacks True-flavored — the base weapon (Effect 1) and the Swift Piercing swap shots (Effect 2; the engine applies the unit's static true-normal flavor to swap shots too, so the swap needs no flag of its own); Enhanced Bullets (mode Stance) = self Critical Rate ▲ 35.14% + Critical Damage ▲ 75.12% (continuous, passive). 'Activates when using Burst Skill' = burstCast (skill2 slot) → self weaponSwap Swift Piercing: damagePct 73.22 ('Damage: 73.22% of final ATK'), chargeTimeSec 0.5 + chargeTimeClamp 0.5 ('Charge Time: Fixed at 0.5 sec'), chargeMultPct 300, durationSec 5 (one block serves both modes). BURST 'Swift Piercing': self ATK ▲ 110% for 5 sec, then all enemies 516.6% of final ATK as Burst Skill damage (burstDesc allEnemies); Stance adds 958.9% as plain additional damage, Engage adds 854.6% as true damage; both read 'Affects the same targets', which inherits the preceding block's 'Affects all enemies' clause (owner ruling 2026-08-10, scripts/census-burst-amp-scope.ts), so both carry burstDesc allEnemies like the 516.6% line.",
+  "modes": ["Stance", "Engage"],
+  "trueNormalsModes": ["Engage"],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds. Affects self. Initiates a new Bunny Mode based on the current mode. Activates if this unit is in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed. Activates if this unit is not in the Bunny Mode: Stance state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
+      "■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed.",
+      "■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed."
+    ],
+    "skill2": [
+      "Noise Bullets Function: Changes some attacks' damage into true damage. — named state wrapper; its two effects ARE modeled (trueNormalsModes ['Engage'] for normals and the Swift Piercing shots).",
+      "Enhanced Bullets Function: Enhances this unit's offensive capabilities. — named state wrapper; its two effects ARE modeled (Stance Critical Rate ▲ 35.14%, Critical Damage ▲ 75.12%)."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill1 Bunny Mode TOGGLE (unmodeled as a live mechanic): the mode is a static per-fight selection (modes, Stance default). The in-game switch needs Full Charge held for 1 or more seconds, which the sim never does (it releases at full charge). Engage is the player-choice mode; the cost of the one opening hold (about 1 second of delayed fire) is not charged. Repeated toggling mid-fight is not modeled.",
+    "skill1 ALLY MODE SYNC (unmodeled): entering Engage or Stance pulls every ally in the opposite Bunny Mode along with her, so on a team with Guilty: Mighty Bunny (guilty-mighty-bunny) both units are always in the SAME mode. Nothing enforces that here — select the same mode for both.",
+    "skill1 'during Full Charge … for 1 round(s)' follows the per-pull round convention (theme 21): the buff is granted as a full-charge shot fires and rides her NEXT round. In steady fire every base shot is covered; at the swap boundaries the first base shot after Swift Piercing ends fires without it, and the last base shot before her cast hands it to the first Swift Piercing shot. ⚑ estimate = one boundary shot per burst cycle each way; recipe = compare the first post-Swift-Piercing base-shot popup with a steady-state base-shot popup in a focus video (equal = the buff covers the charged shot itself); tier = MEASUREMENT-GATED.",
+    "skill2 Swift Piercing shot economy: the kit states only the 0.5 sec fixed charge. The engine fires a weapon-swap state without the SR release delay (swap states are exempt from the bolt cycle), so pulls land every 30 frames, and the kit gives the swap no magazine; the engine's real-weapon swap entry refills to her current maximum magazine and hands the base weapon back full at the 5 sec timed end. ⚑ estimate = one full magazine per Swift Piercing window; recipe = count her Swift Piercing shots and any in-window reload in a focus video; tier = MEASUREMENT-GATED."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "battleStart"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 15.35
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "swapGate": "unswapped",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": 100,
+          "durationShots": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 52.12,
+          "durationShots": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "mode": "Stance",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 35.14
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 75.12
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 73.22,
+          "chargeTimeSec": 0.5,
+          "chargeTimeClamp": 0.5,
+          "chargeMultPct": 300,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 110,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 516.6,
+          "burstDesc": "allEnemies"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "mode": "Stance",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 958.9,
+          "burstDesc": "allEnemies"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "mode": "Engage",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 854.6,
+          "flavor": "true",
+          "burstDesc": "allEnemies"
+        }
+      ]
+    }
+  ]
+}

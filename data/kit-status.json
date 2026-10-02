@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-04",
+  "generatedAt": "2026-10-02",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -14,21 +14,21 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 186,
-      "pending": 2,
-      "authored": 1
+      "unit-tested": 188,
+      "authored": 1,
+      "pending": 2
     },
     "tier": {
-      "MODEL_ONLY": 155,
+      "MODEL_ONLY": 157,
       "VALIDATED": 10,
       "MEASURED": 14,
       "CALIBRATED": 10
     },
     "band": {
-      "±8%": 9,
+      "±15%": 11,
       "±3% ✓": 10,
-      "±15%": 10,
       "±5%": 6,
+      "±8%": 8,
       ">15%": 10
     }
   },
@@ -153,17 +153,17 @@
         "records": [
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.9283
+            "ratio": 0.9158
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 0.9187
+            "ratio": 0.9092
           }
         ],
         "n": 2,
-        "mean": 0.9235,
-        "mad": 0.0765,
-        "band": "±8%",
+        "mean": 0.9125,
+        "mad": 0.0875,
+        "band": "±15%",
         "temp": "COLD ▼"
       }
     },
@@ -317,6 +317,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-09-03; GO faithfulness 0.9 (kimi-code/k3 binding) + 0.83 (claude-opus-5 second judge); cross-family S2b(kimi-k3 + opus)/S5/S6(opus)/S7(kimi-k3 + opus) converged — driver Claude Fable, fable-pinned roles routed to kimi-k3 by owner instruction",
+      "date": "2026-09-03",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "Papillon Heart window = 652f derived from chain timing (drifts under a Full-Burst extender); casterAtkPct static-vs-final caster ATK basis (U41, roster-wide); Marakukaja unmodeled (no caster-DEF stat key)",
       "unmodeled": {
         "skill1": [
           "Persona - Palladion: This effect is continuous and cannot be removed. — named state container: the engine has no Persona-state primitive. Both effects it wraps ARE modeled (the battleStart atkPct + defPct self buffs); the state NAME / undispellable flag is display-only at scope (nothing dispels).",
@@ -336,14 +343,7 @@
         "burst: the 396% nuke is TAGGED burstDesc 'allEnemies' — her clause is the literal string trina's amp quotes ('Burst Skill damage of skills with \"Affects all enemies\"', owner ruling 2026-08-10: literal-only), so the nuke is amp-eligible whenever such an amp is live. Enforced roster-wide by scripts/tests/census-burst-amp-scope.test.ts."
       ],
       "note": "NEW unit (no base counterpart) — Persona-style kit (Persona - Palladion / Papillon Heart), SMG/Supporter/Iron, Burst II (cd 20s). SKILL1: battle-start self ATK ▲ 21.12% (atkPct) + DEF ▲ 21.12% (defPct), both PERMANENT — 'continuously' with no deactivation condition, so battleStart with no durationSec. The DEF line is kept as its exact stat buff (the target's own DEF %) even though DEF has no consumer in v1 (no incoming damage), per the keep-the-stat rule. SKILL2: 'Activates when using Burst Skill' = her OWN burst cast (burstCast — NOT fullBurstEnter: a different Burst II ally completing the chain does not activate Papillon Heart, and the two diverge exactly when another Burst II is fielded). Matarukaja = ATK ▲ 21.12% of the SKILL USER'S ATK to ALL allies, self included (casterAtkPct — resolved at apply time to a flat add of 21.12% of her static ATK, uniform across the team). The window is the kit's own deactivation condition, 'When Full Burst ends': for a Burst II cast that is cast → stage-3 cast (30f chain gap) → Full Burst entry (22f pre-FB delay) → FB end (10s) = 652f ≈ 10.87s, encoded as durationSec 10.867 — DERIVED from the engine's measured chain timing, not a kit number. Marakukaja (DEF ▲ 21.12% of the skill user's DEF to all allies) is UNMODELED: the effect schema has no caster-DEF-scaled stat key (defPct scales the TARGET'S own DEF, a different quantity), and DEF has no consumer in v1, so the line is offense-inert with nothing to encode it faithfully against. BURST: 396% of final ATK as distributed damage to all enemies — cast-instant (lands 22f before Full Burst opens, so no +50% Full Burst major), crit-eligible, TAGGED burstDesc 'allEnemies' (her clause is the literal string trina's Burst-Skill-Damage amp quotes; literal-only per owner ruling 2026-08-10). Kit-autonomy gauntlet 2026-09-03.",
-      "board": null,
-      "date": "2026-09-03",
-      "evidence": "kit-autonomy gauntlet 2026-09-03; GO faithfulness 0.9 (kimi-code/k3 binding) + 0.83 (claude-opus-5 second judge); cross-family S2b(kimi-k3 + opus)/S5/S6(opus)/S7(kimi-k3 + opus) converged — driver Claude Fable, fable-pinned roles routed to kimi-k3 by owner instruction",
-      "residual": "Papillon Heart window = 652f derived from chain timing (drifts under a Full-Burst extender); casterAtkPct static-vs-final caster ATK basis (U41, roster-wide); Marakukaja unmodeled (no caster-DEF stat key)",
-      "graded": {
-        "teams": 0,
-        "within3pct": 0
-      }
+      "board": null
     },
     "alice": {
       "name": "Alice",
@@ -642,11 +642,11 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9051
+            "ratio": 0.9039
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9131
+            "ratio": 0.9118
           },
           {
             "comp": "T2 elec-weak (boss Water)",
@@ -682,12 +682,12 @@
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9215
+            "ratio": 0.8927
           }
         ],
         "n": 12,
-        "mean": 0.897,
-        "mad": 0.103,
+        "mean": 0.8944,
+        "mad": 0.1056,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -819,14 +819,14 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.0348
+            "ratio": 1.0205
           }
         ],
         "n": 1,
-        "mean": 1.0348,
-        "mad": 0.0348,
-        "band": "±5%",
-        "temp": "HOT ▲"
+        "mean": 1.0205,
+        "mad": 0.0205,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "aria": {
@@ -1542,15 +1542,15 @@
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.8724
+            "ratio": 0.8746
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 1.0087
+            "ratio": 1.0115
           }
         ],
         "n": 7,
-        "mean": 0.9027,
+        "mean": 0.9034,
         "mad": 0.0998,
         "band": "±15%",
         "temp": "COLD ▼"
@@ -1826,11 +1826,11 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.1626
+            "ratio": 1.1666
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.1573
+            "ratio": 1.1612
           },
           {
             "comp": "T2 elec-weak (boss Water)",
@@ -1838,7 +1838,7 @@
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.0194
+            "ratio": 1.0271
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
@@ -1850,11 +1850,11 @@
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.95
+            "ratio": 0.9644
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 1.0188
+            "ratio": 1.0222
           },
           {
             "comp": "PH water B3s (boss Fire)",
@@ -1886,8 +1886,8 @@
           }
         ],
         "n": 17,
-        "mean": 1.0094,
-        "mad": 0.0437,
+        "mean": 1.0114,
+        "mad": 0.044,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -2223,12 +2223,12 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.0242
+            "ratio": 0.9983
           }
         ],
         "n": 1,
-        "mean": 1.0242,
-        "mad": 0.0242,
+        "mean": 0.9983,
+        "mad": 0.0017,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -2414,6 +2414,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-09-03; GO faithfulness 1.0 (kimi-code/k3 binding) + 1.0 (claude-opus-5 second judge); cross-family S2b(kimi-k3 + opus)/S5/S6(opus)/S7(kimi-k3 + opus) converged — driver Claude Fable, fable-pinned roles routed to kimi-k3 by owner instruction",
+      "date": "2026-09-03",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "swap shot economy: exactly 6 charged shots/window at 90f is an engine convention (no swap-side release latency) — count popups in one Full Burst first; 243.75% full-shot vs per-pellet read unconfirmed; 10s swap window vs a Full-Burst extender; the bare consumeAmmo dump is inert engine-wide (gaps §22)",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
@@ -2429,14 +2436,7 @@
         "burst: the 1350% nuke is TAGGED burstDesc 'allEnemies' — her clause is the literal string trina's amp quotes ('Burst Skill damage of skills with \"Affects all enemies\"', owner ruling 2026-08-10: literal-only), so the nuke is amp-eligible whenever such an amp is live. Enforced roster-wide by scripts/tests/census-burst-amp-scope.test.ts."
       ],
       "note": "VARIANT of base drake (Drake (Treasure) — SG/Attacker/Fire/Burst III); this is Drake: Great Villain — SG/Defender/Wind/Burst III (cd 40s), an entirely different unit. SKILL1: 'Activates when entering Full Burst' = ANY team Full Burst entry (fullBurstEnter — including rotations another Burst III completes; NOT burstCast, which would fire only on her own casts). The swap is encoded literally: weaponSwap damagePct 243.75 (the kit's 'Damage' line, read as the FULL-SHOT total across all pellets — the same convention as a real SG unit's normalAttackMultiplier), chargeTimeSec 1.5 + chargeTimeClamp 1.5 ('Charge Time: Fixed at 1.5 sec' — a fixed charge, so charge-speed buffs do not shorten it), chargeMultPct 300 ('Full Charge Damage: 300%'), maxAmmo 6, weapon 'SG' + pelletCount 15 (the swap is a real shotgun, so its shots take the SG pellet-landing / range-band / auto-core routing with a 15-pellet spread), durationSec 10 (the swap lives exactly as long as the Full Burst that summoned it). 'Activates when Super Duper Overdrive ends → Removes 100% of ammo' is keyed to fullBurstEnd (the swap's own end frame: it expires the frame Full Burst ends) as instantReload THEN consumeAmmo fraction 1: the instantReload stands in for the weapon change itself — the swap gun vanishes and the base shotgun comes back with a full magazine (owner ruling 2026-08-12 on real weapon swaps; the engine applies that same refill one step later in the frame) — and it matters because her 6 swap rounds are spent by ~9s into the window, so at Full Burst end she is mid-way through the swap gun's own reload, which the weapon change abandons; without the reset the ammo dump would find her already reloading and skip the fresh base-weapon reload the kit charges. The net effect is one full base-weapon reload starting at every Full Burst end, which is the kit's stated cost. SKILL2: 'when Full Burst ends → all allies: Max HP ▲ 10.5% of the skill user's max HP, stacks up to 4' = fullBurstEnd, allies (self included), casterMaxHpPct 10.5, maxStacks 4, no expiry ('continuously'). Her OWN stacks feed her Fashionably Late conversion (own-kit Max HP counts, ally-granted does not — the e3 rule), so her ATK steps up after each of the first four Full Bursts; allies' copies are offense-inert. 'Fashionably Late: ATK ▲ 6.23% of the skill user's final max HP continuously' = battleStart, self, atkOfMaxHpPct 6.23 (re-reads her LIVE Max HP every frame, so it tracks the stacks up — an apply-time snapshot would miss them). BURST: self Attack Damage ▲ 27.5% for 25 sec (attackDamagePct, own casts only) + 1350% of final ATK as Burst Skill damage to all enemies — cast-instant (no +50% Full Burst major), crit-eligible, unflavored, TAGGED burstDesc 'allEnemies' (literal-only amp rule, owner 2026-08-10). Kit-autonomy gauntlet 2026-09-03.",
-      "board": null,
-      "date": "2026-09-03",
-      "evidence": "kit-autonomy gauntlet 2026-09-03; GO faithfulness 1.0 (kimi-code/k3 binding) + 1.0 (claude-opus-5 second judge); cross-family S2b(kimi-k3 + opus)/S5/S6(opus)/S7(kimi-k3 + opus) converged — driver Claude Fable, fable-pinned roles routed to kimi-k3 by owner instruction",
-      "residual": "swap shot economy: exactly 6 charged shots/window at 90f is an engine convention (no swap-side release latency) — count popups in one Full Burst first; 243.75% full-shot vs per-pellet read unconfirmed; 10s swap window vs a Full-Burst extender; the bare consumeAmmo dump is inert engine-wide (gaps §22)",
-      "graded": {
-        "teams": 0,
-        "within3pct": 0
-      }
+      "board": null
     },
     "e-h": {
       "name": "E.H.",
@@ -2524,11 +2524,11 @@
         "records": [
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.6248
+            "ratio": 0.6261
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 0.6502
+            "ratio": 0.6505
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
@@ -2536,8 +2536,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.7276,
-        "mad": 0.2724,
+        "mean": 0.7281,
+        "mad": 0.2719,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -3345,6 +3345,52 @@
       "note": "PROMOTED + SOLO-VALIDATED 2026-07-16 (loaded override; independently corroborated by a blind kit-parse). Solo real/sim 0.981 (real 71,581,952) — was ~1.35 COLD on the bare parser until S1's self-ATK-stacks were modeled. SG core bands are HR-CLEAN (isabel read); the old 'SG MAGNITUDE-CAPPED/HR-contaminated' cap is DEAD. Guilty (SG / B2 / Attacker / Wind; ammo 9, reloadFrames 181, hitsPerShot 10 pellets, normalMult 231.4, coreMult 200). MODEL: S1 'Mind If I Borrow This?' = every 6 normal attacks gain a stack of ATK ▲8.81% up to 5/10s → hitCount:60 (6 shots × 10 pellets/shot, per the engine's +hitsPerShot-per-shot counter — same convention as dorothy's 80-pellet counter), self, casterAtkPct 8.81 dur 10 maxStacks 5. Kit says 'Duplicate 8.81% ATK of ally with the HIGHEST ATK' — no schema stat sources off the highest ally, so modeled as casterAtkPct (%-of-CASTER's-ATK, engine line 947), a proxy that is exact when Guilty (an Attacker, highest base combat ATK class) is herself the top-ATK ally and slightly cold when a more-buffed ally outranks her (⚑4). Steady-state stack level EMERGES from cadence+reload (ramps to 5 over the first ~30 shots, then holds since a 6-shot refresh < the 10s stack life within one 9-round mag) — NOT pinned, moves with ⚑1. S2 = every 12 normal attacks (hitCount:120), all Wind Code allies (alliesOfElement Wind, includes self): (a) 'Increases stack count of stackable buffs by 1' → addStack count 1 (bumps whatever stackable buffs allies carry, including her own S1 5→6); (b) ATK ▲4.13%/10s → buff atkPct 4.13 dur 10 (near-permanent at this cadence). BURST (B2, cooldown 20s; casts each rotation in a standard control team, so these fire): (a) 284.32% Burst Skill damage → enemy on burstCast (auto FB-exempt — engine snapshots burst-cast pre-FB, no noFb per prior 2); (b) CONDITIONAL 'when Mind If I Borrow This? is fully stacked' → DEF ▼20.25%/5s on boss (buff defPct −20.25, target enemy — LIVE via the enemy DEF ▼ channel (2026-08-10): scales cfg.bossDef in the FinalATK subtraction — sub-0.1% at the scope-lock 140-DEF graded basis, worth its full percentage at the web raid DEF defaults) + 277.71% additional damage (flatDamage on burstCast, auto FB-exempt). Both gated on 5 S1 stacks; the engine has no full-stack gate, so modeled ALWAYS-ON assuming full stacks — true for every burst after the ~20-30s ramp, so the very first burst's additional-damage is slightly over-credited (⚑2). AUDIT: every line IMPLEMENTED except the DEF▼ (inert-visible); NO weapon-swap, NO charge weapon (chargeFrames 0), NO Hit-Rate line, NO DoT, NO HP-scaling. Multi-projectile: SG 10 pellets handled by the engine's SG landing/core-by-band model (the HR-contaminated bands = the magnitude cap above, ⚑3). Element advantage = clean ×1.10 default (no Superior-Elemental-Code buff in kit, prior 7). ⚑1 CADENCE TUPLE (MANDATORY, datamine-unreliable): pullsPerSec est=SG-default 1.5, reloadFrames est=datamined 181 (~3.0s), rolling-reload unknown. Recipe: read rounds/min + reload gap from any focus video. Directly drives ⚑2 (stack ramp/hold). ⚑2 S1 STACK STEADY-STATE (prior 4): estimate = engine-derived from maxStacks:5/dur:10 at the ⚑1 cadence (≈5 held after ramp); first-burst additional-damage assumes full stacks. Recipe: read the ATK-buff-popup / stack-icon count and the HP of the first burst's 277.71% popup from a focus video. ⚑3 SG PELLET LANDING + CORE-BAND MAGNITUDE (prior 5 + G4): the engine's SG_LANDING_BY_BAND + CORE_BY_WEAPON_BAND are HR-contaminated → per-shot magnitude low-confidence. Recipe: HR=0 clean-SG band re-derive (open backlog) then re-grade. ⚑4 'HIGHEST-ATK ally' basis: casterAtkPct proxies off Guilty's own ATK; exact iff she is the top-ATK ally, else cold. Recipe: compare her S1 ATK-buff popup magnitude vs the actual highest-ATK teammate's ATK in a focus video. ⚑5 S2 'stack count of buffs +1': now encoded via addStack; the magnitude (exactly +1 stack) is kit-literal. Recipe: verify that a Wind team's stackable-buff popups ramp one trigger earlier with Guilty in a focus video. Kit-autonomy gauntlet 2026-07-25.",
       "board": null
     },
+    "guilty-mighty-bunny": {
+      "name": "Guilty: Mighty Bunny",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-10-02",
+        "findings": [
+          "kit-autonomy gauntlet 2026-10-02: GO, faithfulness 1.00 (judge claude-fable-5-1). Artifacts: scripts/kit-autonomy/results/guilty-mighty-bunny.json + scripts/kit-autonomy/manual-review/guilty-mighty-bunny.md.",
+          "low ENGINE (burst): Uses-based swap exit (maxShots 1) hands the base SR back with the swap-entry magazine minus the Stomp round, not the full magazine the 2026-08-12 real-weapon-change ruling describes for a swap exit; entry refills to her CURRENT max (9 with control-comp ammo buffs).",
+          "low FIDELITY (burst): The Stomp shot is routed as an ordinary SR normal attack: it cores at the flat 0.95 SR rate, takes the +30% range bonus in SR bands, and inherits SR burst-gauge value — none of which the kit states, and the driver's note does not record the convention."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds while this unit is not in the Mighty Stomp state. Affects self. Initiates a new Bunny Mode based on the current mode. Activates if this unit is in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed. Activates if this unit is not in the Bunny Mode: Stance state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
+          "■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed.",
+          "■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed."
+        ],
+        "skill2": [
+          "Chain Release Function: Changes some attacks' damage into true damage. — named state wrapper; its three effects ARE modeled (trueNormalsModes ['Engage'] for normals and the Mighty Stomp, the Engage fullCharge 370.08% true rider).",
+          "Chain Enhance Function: Enhances this unit's offensive capabilities. — named state wrapper; its three effects ARE modeled (Stance Attack Damage ▲ 20.45%, Charge Damage ▲ 40%, the Stance fullCharge 450.89% rider)."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1 Bunny Mode TOGGLE (unmodeled as a live mechanic): the mode is a static per-fight selection (modes, Stance default). The in-game switch needs Full Charge held for 1 or more seconds outside Mighty Stomp, which the sim never does (it releases at full charge). Engage is the player-choice mode; the cost of the one opening hold (about 1 second of delayed fire) is not charged. Repeated toggling mid-fight is not modeled.",
+        "skill1 ALLY MODE SYNC (unmodeled): entering Engage or Stance pulls every ally in the opposite Bunny Mode along with her, so on a team with Sin: Swift Bunny (sin-swift-bunny) both units are always in the SAME mode. Nothing enforces that here — select the same mode for both.",
+        "burst Mighty Stomp ammo: the kit gives the swap no magazine; the engine's real-weapon swap entry refills to her current maximum magazine and, because the swap ends by use (maxShots 1), hands the base weapon back with that magazine less the Stomp round — one short of the full base magazine the 2026-08-12 real-weapon-change ruling describes for a swap's exit, and not her pre-cast count. ⚑ estimate = a full magazine less one after each Stomp; recipe = count her shots between the Stomp and the next reload in a focus video; tier = MEASUREMENT-GATED.",
+        "burst durationSec 180 is a fight-length bound, not a kit value: the kit's duration is '1 rounds' (maxShots 1).",
+        "burst Mighty Stomp is routed as an ordinary SR shot (the swap declares no weapon class, so it inherits the base SR's): it cores at the flat SR rate, takes the +30% range bonus in SR range bands, and generates SR burst gauge. The kit names no class for the Stomp. ⚑ estimate = SR treatment; recipe = read the Stomp popup in a focus video (CORE HIT label frequency and size against her base charged shots at the same range); tier = MEASUREMENT-GATED."
+      ],
+      "note": "Guilty: Mighty Bunny (slug guilty-mighty-bunny) — SR/Attacker/Water/Missilis, Burst III cd 40s, ammo 6, charge 1s, full charge 250%. VARIANT of the base unit `guilty` (SG/Wind) — a different unit and kit. Kit-autonomy gauntlet 2026-10-02. BUNNY MODE is modeled as a user-selectable kit mode: modes ['Stance','Engage'], Stance first because the kit's battle-start line puts a unit that is not in Stance INTO Stance, so a fight opens in Stance and stays there unless the player deliberately holds Full Charge for 1 second (the sim releases at full charge, so it never holds — the rapunzel-pure-grace precedent for the 'Full Charge maintained for 1 or more seconds' clause). Selecting Engage models a player who toggled once at the opening and stayed there; in-fight re-toggling is unmodeled. SKILL1: battleStart self ATK ▲ 20.1% (continuous). SKILL2 'Chain Release' (mode Engage): trueNormalsModes ['Engage'] makes her normal attacks True-flavored — the base weapon (Effect 1) and the Mighty Stomp swap shot (Effect 2) — so ally True Damage ▲ buffs feed them; fullCharge → enemy flatDamage 370.08% flavor true (Effect 3, a skill hit: crits at her rate, never cores — the 2026-08-13 true-damage ruling). SKILL2 'Chain Enhance' (mode Stance): self Attack Damage ▲ 20.45% and Charge Damage ▲ 40% (both continuous, passive), and fullCharge → enemy flatDamage 450.89% plain additional damage. Both fullCharge riders also fire on the Mighty Stomp shot (it is a full-charge attack). BURST 'I'm Finally Free...!' (burstCast, self): weaponSwap Mighty Stomp — damagePct 101.3 ('Damage: 101.3% of final ATK'), chargeTimeSec 1.5 + chargeTimeClamp 1.5 ('Charge Time: Fixed at 1.5 sec'; the engine charges a swap only when it declares its own charge frames), chargeMultPct 250, maxShots 1 ('Duration: 1 rounds' — the swap ends right after its one shot), durationSec 180 as a fight-length bound only. Chain Release Effect 2 (Mighty Stomp deals true damage in Engage) needs no swap-level flag: the engine applies the unit's static true-normal flavor (trueNormalsModes) to swap shots as well, so the Stomp is True exactly in Engage. Additional Effect 1 = self chargeDamagePct 1400 durationShots 1 granted at the cast, so its one round is the Stomp shot. Additional Effect 2 = self attackDamagePct 77.35 for 10 sec.",
+      "board": null,
+      "date": "2026-10-02",
+      "evidence": "kit-autonomy gauntlet 2026-10-02; GO faithfulness 1.0 (binding S7 claude-fable-5-1) / 1.0 (second judge claude-fable-5); same-family only (Claude: S2b fable-5 + fable-5-1 / S5,S6 opus-5 / S7 fable-5-1 + fable-5) — no cross-family reviewer available; blind S5 GREEN vs the shipped override after a one-line harness-wiring adaptation; S6 block-equivalent",
+      "residual": "owner spot-check: Bunny Mode as a static selection (Stance default; Engage = one opening hold) — scope; both full-charge riders firing on the Mighty Stomp shot — trigger identity; 'Duration: 1 rounds' = one Stomp and the 1400% on that round only — duration; Stomp magazine handback and SR core/range routing are measurement-gated ⚑",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "harran": {
       "name": "Harran",
       "burst": "III",
@@ -3434,15 +3480,15 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9764
+            "ratio": 0.9815
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9978
+            "ratio": 1.003
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.0147
+            "ratio": 1.01
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
@@ -3470,8 +3516,8 @@
           }
         ],
         "n": 10,
-        "mean": 0.9842,
-        "mad": 0.0226,
+        "mean": 0.9848,
+        "mad": 0.0217,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -4217,7 +4263,7 @@
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.0043
+            "ratio": 1.0047
           },
           {
             "comp": "PH water B3s (boss Fire)",
@@ -6403,20 +6449,20 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.2751
+            "ratio": 1.2835
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.2313
+            "ratio": 1.2395
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.1368
+            "ratio": 1.1077
           }
         ],
         "n": 3,
-        "mean": 1.2144,
-        "mad": 0.2144,
+        "mean": 1.2102,
+        "mad": 0.2102,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -6764,7 +6810,7 @@
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.0131
+            "ratio": 1.0149
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
@@ -6780,8 +6826,8 @@
           }
         ],
         "n": 5,
-        "mean": 0.9357,
-        "mad": 0.0695,
+        "mean": 0.9361,
+        "mad": 0.0699,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -7232,11 +7278,11 @@
         "records": [
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.9598
+            "ratio": 0.9635
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 1.0697
+            "ratio": 1.0752
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
@@ -7244,8 +7290,8 @@
           }
         ],
         "n": 3,
-        "mean": 1.03,
-        "mad": 0.0568,
+        "mean": 1.0331,
+        "mad": 0.0574,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -7681,6 +7727,51 @@
       "note": "sin (Sin) — Missilis AR DEFENDER, Electric, Burst II, cd 20s, ammo 60, reloadFrames 81, normalMult 13.65 / coreMult 200, critRate 15 / critDamage 150. Kit-autonomy gauntlet 2026-08-05: GREENFIELD build (no shipped override existed; simSupported was false) — test-first re-derivation (scripts/tests/units/sin.test.ts, groups SN1/SN3/SN4/SN5/SN6 + counterfactual discrimination). A TANK whose offensive surface in the v1 DPS sim is exactly ONE damage line (her burst nuke) plus three structurally-faithful surfaces: the S1 Max-HP duplication, the Full-Burst-end gauge-fill window, and the burst-usage escalation's DEF step. || MODELED TODAY: (1) BURST line 2 → burstCast-keyed flatDamage 176.32 on `enemy` — its OWN ■ block carries NO activation clause, so it is unconditional on cast and NOT gated by the preceding >4-enemies header (the kit's trap reading); 'enemies within attack range' collapses to the single partless boss. Burst-cast damage lands BEFORE the Full Burst window opens, so it correctly never takes the +50% FB major (pinned in the test). (2) SKILL1 'Duplicate 15.03% Max HP of ally with the highest Max HP, lasts for 5 sec' → lastBullet → self highestAllyMaxHpPct 15.03, durationSec 5 — the quency S1 precedent (StatKey comment names sin as the next carrier): resolves at apply time to a maxHpFlat grant of (15.03/100) × max(all units' STATIC maxHp). ROSTER-TIE: every Defender shares the identical 16500+3000+200 static-HP basis and no non-Defender reaches it, so sin is ALWAYS tied for the team max — the highest-ally basis is provably value-identical to a self-% basis on every possible team (equivalence pinned in the test). In-game this line creates a SHIELD; v1 maps it as a Max-HP grant (the shield primitive's maxHpPct basis is caster-only and event-only) — both channels are offensively inert for sin (no HP→ATK conversion, no 'shielded' trigger of her own), so the divergence moves no damage. (3) SKILL2 line 1 'when Full Burst ends → self: Burst Gauge filling speed ▲16.17% for 5 sec' → fullBurstEnd → self burstGenPct 16.17, durationSec 5 — trigger IDENTITY is FB END (pinned frame-exactly against fullBurstEnd events; the fullBurstEnter counterfactual is discriminated). LIVE but damage-INERT at scope-lock: her gaugeGenerated rises (224.6 vs 211.6 without) yet the fixture rotation is CD-limited (liter B1 20s / helm B3 40s cap the chain cadence; the gauge caps before the next chain), so totals are byte-equal with and without it. (4) SKILL2 line 2 — the burst-usage escalation ('Effects vary according to the number of times used. Each subsequent effect triggers all effects before it') → resource pool 'burstUses' (+1 per OWN burstCast, gates read the PRE-increment value — soda-twinkling slot-order precedent): step 1 (lifesteal) fires from cast 1, step 3 (DEF ▲43.2%/5s) from cast 3 on, CUMULATIVE. Step 1's payload is a self heal-HoT (ticks:5 — the helm burst-heal precedent for 'Recover X% of attack damage as HP for N sec'): event-only, self-targeted, behaviorally SILENT in v1 (no log kind for recovery events; no unit consumes sin's own recovery). Step 3's defPct is inert in v1 (own DEF never feeds own damage) but pinned on the escalation schedule (absent on casts 1–2, present on every cast from the 3rd — instant-max and cast-3-only counterfactuals discriminated). || DELIBERATELY UNMODELED (verbatim in `unmodeled`): S1 Attract taunt 5s (no threat model; a partless boss with no ally-targeting AI — nero N7 / delta-ninja-thief Attract precedent); S2 step 2 'Incoming healing ▲ 51%' (no incoming-healing StatKey in the schema — nero grumpy-cat ruling; the escalation GATE still advances on every cast, so steps 1/3 fire on exactly the right casts); BURST line 1 'Damage Taken ▲12.23% for 5 sec' gated on 'enemy unit(s) (excluding Nikkes) are more than 4' — the gate is NEVER satisfied at single-boss scope (1 enemy), so unmodeled IS the faithful encoding (the sim's whole domain is one boss); the schema also has no enemy-count primitive, and the nearest-wrong ungated damageTakenPct would over-credit the WHOLE team ~12% per sin burst — the largest error this kit can produce (S2b's named trap; absence canary in the test). || FIXTURE NOTE: ['liter','sin','helm'] boss Water (her ×1.1 Electric major), focus sin — sin is the SOLE B2 (a crown-style competing B2 would starve her to zero casts — S2b fixture-validity warning, avoided by construction); 10 own casts / 5 Full Bursts in 180s, so the escalation's cast-3 threshold genuinely fires. || EVIDENCE TIER: every magnitude/duration/trigger is kit-text-literal (DATAMINED lvl-10); the only estimates are the ⚑ cadences below. || TIER 2 encoding (scoped self-only buff windows, fullBurstEnd trigger identity, burstCast-vs-fullBurstEnter keying, and a resource-gated usage escalation). ⚑ FLAGS: (⚑1 CADENCE TUPLE, mandatory) AR rate_of_fire 720 (12/s) + ammo 60 + reloadFrames 81 shipped at datamine-synced values (no charFixes; no odd-fire-mode text tell → NOT escalated). Drives her pull count, the S1 lastBullet cadence (~5s mag + 1.35s reload ≈ 6.35s per grant cycle) and her gauge contribution. Estimate = datamine as-is. Recipe = rounds/min + reload gap from any focused sin video. Tier: low. (⚑2 OUT-OF-DOMAIN, multi-enemy content — TIER 3) the burst's Damage Taken ▲12.23%/5s debuff needs an enemy-count gate (>4 non-Nikke enemies) the schema lacks; at single-boss scope its impact is exactly zero (gate never met). Recipe: if multi-target fights ever enter scope — enemy-count gate primitive + the debuff as damageTakenPct on all enemies, 5s per cast. Estimate: zero at scope lock. Faithful > fit; measured > fudge. || Kit-autonomy gauntlet 2026-08-05: cross-family S2b (claude-fable-5) review — converged on SN1/SN3/SN5/SN6 + the taunt/debuff residuals; DIVERGED on the escalation cluster (S2b: model it cumulative; driver had assumed no usage-count primitive — falsified by the resources/resourceGate schema; ruling: model steps 1+3, step 2 unmodeled for the missing StatKey; adjudicated by S7).",
       "board": null
     },
+    "sin-swift-bunny": {
+      "name": "Sin: Swift Bunny",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-10-02",
+        "findings": [
+          "kit-autonomy gauntlet 2026-10-02: GO, faithfulness 1.0 (judge claude-fable-5-1). Artifacts: scripts/kit-autonomy/results/sin-swift-bunny.json + scripts/kit-autonomy/manual-review/sin-swift-bunny.md.",
+          "low FIDELITY (skill1): Per-pull round convention (theme 21) shifts the 'during Full Charge … for 1 round' pair one round late: the fight's very first charged shot and the first base shot after each Swift Piercing window fire unbuffed (69.04 / charge 2.5), while the first Swift Piercing shot of each window inherits the last base grant (146.44 / charge 3.5212) despite the 'if not in Swift Piercing' clause.",
+          "low FIDELITY (skill2): Swift Piercing shot economy is kit-silent beyond the 0.5s fixed charge: the shipped 9 shots per window rest on (a) the engine's swap-state exemption from the 22f bolt cycle (30f spacing, no release latency) and (b) a magazine refill to her current max ammo; the driver documents (b) but not (a)."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds. Affects self. Initiates a new Bunny Mode based on the current mode. Activates if this unit is in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed. Activates if this unit is not in the Bunny Mode: Stance state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
+          "■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed.",
+          "■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed."
+        ],
+        "skill2": [
+          "Noise Bullets Function: Changes some attacks' damage into true damage. — named state wrapper; its two effects ARE modeled (trueNormalsModes ['Engage'] for normals and the Swift Piercing shots).",
+          "Enhanced Bullets Function: Enhances this unit's offensive capabilities. — named state wrapper; its two effects ARE modeled (Stance Critical Rate ▲ 35.14%, Critical Damage ▲ 75.12%)."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1 Bunny Mode TOGGLE (unmodeled as a live mechanic): the mode is a static per-fight selection (modes, Stance default). The in-game switch needs Full Charge held for 1 or more seconds, which the sim never does (it releases at full charge). Engage is the player-choice mode; the cost of the one opening hold (about 1 second of delayed fire) is not charged. Repeated toggling mid-fight is not modeled.",
+        "skill1 ALLY MODE SYNC (unmodeled): entering Engage or Stance pulls every ally in the opposite Bunny Mode along with her, so on a team with Guilty: Mighty Bunny (guilty-mighty-bunny) both units are always in the SAME mode. Nothing enforces that here — select the same mode for both.",
+        "skill1 'during Full Charge … for 1 round(s)' follows the per-pull round convention (theme 21): the buff is granted as a full-charge shot fires and rides her NEXT round. In steady fire every base shot is covered; at the swap boundaries the first base shot after Swift Piercing ends fires without it, and the last base shot before her cast hands it to the first Swift Piercing shot. ⚑ estimate = one boundary shot per burst cycle each way; recipe = compare the first post-Swift-Piercing base-shot popup with a steady-state base-shot popup in a focus video (equal = the buff covers the charged shot itself); tier = MEASUREMENT-GATED.",
+        "skill2 Swift Piercing shot economy: the kit states only the 0.5 sec fixed charge. The engine fires a weapon-swap state without the SR release delay (swap states are exempt from the bolt cycle), so pulls land every 30 frames, and the kit gives the swap no magazine; the engine's real-weapon swap entry refills to her current maximum magazine and hands the base weapon back full at the 5 sec timed end. ⚑ estimate = one full magazine per Swift Piercing window; recipe = count her Swift Piercing shots and any in-window reload in a focus video; tier = MEASUREMENT-GATED."
+      ],
+      "note": "Sin: Swift Bunny (slug sin-swift-bunny) — SR/Attacker/Water/Missilis, Burst III cd 40s, ammo 6, charge 1s, full charge 250%. VARIANT of the base unit `sin` (AR/Electric) — a different unit and kit. Kit-autonomy gauntlet 2026-10-02. BUNNY MODE is modeled as a user-selectable kit mode: modes ['Stance','Engage'], Stance first because the kit's battle-start line puts a unit that is not in Stance INTO Stance, so a fight opens in Stance and stays there unless the player deliberately holds Full Charge for 1 second (the sim releases at full charge, so it never holds — the rapunzel-pure-grace precedent for the 'Full Charge maintained for 1 or more seconds' clause). Selecting Engage models a player who toggled once at the opening and stayed there; in-fight re-toggling is unmodeled. SKILL1 'Bunny Shift': battleStart self ATK ▲ 15.35% (continuous); 'during Full Charge if not in Swift Piercing' = fullCharge with swapGate 'unswapped' → self Normal Attack Damage Multiplier ▲ 100% (normalAttackPct) and Charge Damage ▲ 52.12%, each durationShots 1 — the repo's per-pull round convention (engine-modeling-gaps theme 21: a per-pull grant's '1 round(s)' is the NEXT round), so in steady fire every base full-charge shot carries both. SKILL2 'Bullet Switch': Noise Bullets (mode Engage) = trueNormalsModes ['Engage'], which makes her normal attacks True-flavored — the base weapon (Effect 1) and the Swift Piercing swap shots (Effect 2; the engine applies the unit's static true-normal flavor to swap shots too, so the swap needs no flag of its own); Enhanced Bullets (mode Stance) = self Critical Rate ▲ 35.14% + Critical Damage ▲ 75.12% (continuous, passive). 'Activates when using Burst Skill' = burstCast (skill2 slot) → self weaponSwap Swift Piercing: damagePct 73.22 ('Damage: 73.22% of final ATK'), chargeTimeSec 0.5 + chargeTimeClamp 0.5 ('Charge Time: Fixed at 0.5 sec'), chargeMultPct 300, durationSec 5 (one block serves both modes). BURST 'Swift Piercing': self ATK ▲ 110% for 5 sec, then all enemies 516.6% of final ATK as Burst Skill damage (burstDesc allEnemies); Stance adds 958.9% as plain additional damage, Engage adds 854.6% as true damage; both read 'Affects the same targets', which inherits the preceding block's 'Affects all enemies' clause (owner ruling 2026-08-10, scripts/census-burst-amp-scope.ts), so both carry burstDesc allEnemies like the 516.6% line.",
+      "board": null,
+      "date": "2026-10-02",
+      "evidence": "kit-autonomy gauntlet 2026-10-02; GO faithfulness 1.0 (binding S7 claude-fable-5-1) / 1.0 (second judge claude-fable-5); same-family only (Claude: S2b fable-5 + fable-5-1 / S5,S6 opus-5 / S7 fable-5-1 + fable-5) — no cross-family reviewer available; blind S5 GREEN vs the shipped override after a one-line harness-wiring adaptation; S6 block-equivalent",
+      "residual": "owner spot-check: Bunny Mode as a static selection (Stance default) — scope; 'during Full Charge … for 1 round(s)' on the theme-21 next-round convention (boundary shots shift across the Swift Piercing edge) — duration; Swift Piercing keyed to her own burst cast, not Full Burst entry — trigger identity; swap shot economy and the allEnemies tag on the mode riders are measurement-gated ⚑",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "snow-crane": {
       "name": "Snow Crane",
       "burst": "II",
@@ -7838,26 +7929,26 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.951
+            "ratio": 0.9534
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9664
+            "ratio": 0.9688
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.0121
+            "ratio": 0.9963
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9903
+            "ratio": 0.9316
           }
         ],
         "n": 4,
-        "mean": 0.9799,
-        "mad": 0.0261,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 0.9625,
+        "mad": 0.0375,
+        "band": "±5%",
+        "temp": "COLD ▼"
       }
     },
     "snow-white-innocent-days": {

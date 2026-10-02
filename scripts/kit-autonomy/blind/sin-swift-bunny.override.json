@@ -1,0 +1,189 @@
+{
+  "slug": "sin-swift-bunny",
+  "modes": [
+    "Bunny Mode: Stance",
+    "Bunny Mode: Engage"
+  ],
+  "trueNormalsModes": [
+    "Bunny Mode: Engage"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 15.35
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "swapGate": "unswapped",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": 100,
+          "durationShots": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 52.12,
+          "durationShots": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "mode": "Bunny Mode: Stance",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 35.14
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 75.12
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 73.22,
+          "chargeTimeSec": 0.5,
+          "chargeTimeClamp": 0.5,
+          "chargeMultPct": 300,
+          "maxAmmo": 10,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 110,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 516.6,
+          "burstDesc": "allEnemies"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "mode": "Bunny Mode: Stance",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 958.9,
+          "burstDesc": "allEnemies"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "mode": "Bunny Mode: Engage",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 854.6,
+          "flavor": "true",
+          "burstDesc": "allEnemies"
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates at the start of battle and when Full Charge is maintained for 1 or more seconds. Initiates a new Bunny Mode based on the current mode. (In-fight TOGGLE: only the battle-start half is modeled, as the default mode 'Bunny Mode: Stance'; no engine primitive alternates a self mode mid-fight, and selfStatus cannot be removed/flipped.)",
+      "Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. (Cross-unit mode sync; no other roster unit carries a Bunny Mode state and modes are per-unit static at setup.)",
+      "Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state. Initiates Bunny Mode: Stance. (Same reason.)"
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ MODE IS STATIC. The kit TOGGLES Stance↔Engage at battle start and on every Full Charge held ≥1 sec; this override freezes one mode for the whole fight (default 'Bunny Mode: Stance', which is what the battle-start branch resolves to: the unit is not yet in Stance, so it initiates Stance). Every mode-gated number — skill2 crit rate/crit damage, trueNormalsModes, the 958.9% vs 854.6% burst rider — is therefore an UPPER bound for its own mode and a ZERO for the other; real play is roughly a 50/50 alternation. Grade both modes and read the pair, never one.",
+    "⚑ 'Swift Piercing' is only a NAME here. No kit line in this packet says 'Pierce' or 'Additional Effect: Pierce', so neither hasPierce nor weaponSwap.hasPierce nor a gainPierce effect is set. If footage shows pierce behaviour on the swap shots, add weaponSwap.hasPierce (swap-scoped), not the whole-fight flag.",
+    "skill2 'Noise Bullets' Effect 1 (normal attacks true) and Effect 2 (Swift Piercing true) are both carried by the single top-level trueNormalsModes:['Bunny Mode: Engage'] — the normal-fire path reads swap.trueNormals || hasTrueNormals, so the mode-scoped flag already covers the swapped weapon. No swap-level trueNormals is set (it would be unconditional and would leak true damage into Stance).",
+    "noFb is NOT set anywhere (default OFF, measured-only). The burst instances are burst-cast damage and are FB-exempt by engine timing; the skill1 1-round buffs take Full Burst by landing timing.",
+    "The weaponSwap omits `weapon` and `pullsPerSec`: the kit states no class change and no cadence for Swift Piercing, so it inherits the base SR class/band/auto-core and base cadence. chargeTimeClamp 0.5 encodes the literal 'Fixed at 0.5 sec' (charge-speed buffs cannot beat it); chargeTimeSec 0.5 is the same value as the swap's own full-charge time."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the raw kit prose only (no test, no driver override, no board). Structure: S1 = permanent self ATK 15.35 + a per-full-charge 1-ROUND pair (Normal Attack Damage Multiplier 100 → normalAttackPct, Charge Damage 52.12 → chargeDamagePct) gated swapGate:'unswapped' for the literal 'if this unit is not in the Swift Piercing state' clause; S2 = mode-split passive (Stance: crit rate 35.14 / crit damage 75.12; Engage: true normals via trueNormalsModes) plus the burst-cast Swift Piercing weapon swap (73.22% per shot, 0.5s fixed charge, 300% full-charge mult, 5s); burst = self ATK 110 for 5s, 516.6% to all enemies, and ONE of the two mode riders (Stance 958.9% additional / Engage 854.6% true). 'for 1 round(s)' is read as a ROUND budget (durationShots), never seconds. Biggest open risk is the frozen mode (see caveats) and the kit-silent swap magazine.",
+  "hasPierce": false
+}

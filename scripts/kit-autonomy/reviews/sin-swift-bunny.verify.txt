@@ -1,0 +1,29 @@
+S2d INDEPENDENT VERIFICATION MATRIX — sin-swift-bunny — kit-autonomy gauntlet 2026-10-02
+Arm 1 (pre-S3, NO override on disk — the new unit's starting state): RED as required:
+    Error: sin-swift-bunny: no override on disk — fixture is stale
+          Tests  no tests
+Arm 2 (shipped override): npx vitest run scripts/tests/units/sin-swift-bunny.test.ts --reporter=verbose — every COUNTERFACTUAL case runs the named nearest-wrong encoding via withPatchedOverride in the same file and asserts it diverges, so GREEN-vs-shipped and RED-vs-counterfactual are both inside the listed assertions.
+
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S1 — battle-start ATK ▲ 15.35% (self, continuous) > one self grant at frame 0, no expiry 2ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S2 — during Full Charge outside Swift Piercing: Normal Attack ×2 + Charge Damage ▲ 52.12% (1 round) > granted as a 1-round pair on every unswapped charged shot 25ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S2 — during Full Charge outside Swift Piercing: Normal Attack ×2 + Charge Damage ▲ 52.12% (1 round) > steady-state base shots fire at 69.04 × 2 with charge 2.5 + 0.5212 23ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S2 — during Full Charge outside Swift Piercing: Normal Attack ×2 + Charge Damage ▲ 52.12% (1 round) > steady-state Swift Piercing shots carry neither buff 3259ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S2 — during Full Charge outside Swift Piercing: Normal Attack ×2 + Charge Damage ▲ 52.12% (1 round) > documented boundary residue (theme-21 next-round convention): first SP shot inherits, first base shot after misses 122ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S2 — during Full Charge outside Swift Piercing: Normal Attack ×2 + Charge Damage ▲ 52.12% (1 round) > COUNTERFACTUAL: an ungated grant lifts every Swift Piercing shot 3464ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S3 — Bunny Mode is a kit mode, Stance by default; Enhanced Bullets in Stance > the default selection behaves exactly as Stance 0ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S3 — Bunny Mode is a kit mode, Stance by default; Enhanced Bullets in Stance > Stance: Critical Rate ▲ 35.14% and Critical Damage ▲ 75.12% from frame 0, self 1ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S3 — Bunny Mode is a kit mode, Stance by default; Enhanced Bullets in Stance > Engage: neither 1ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S4 — Noise Bullets: true-flavored normals and Swift Piercing only in Engage > Engage base-weapon shots take the True Damage ▲ buff 10ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S4 — Noise Bullets: true-flavored normals and Swift Piercing only in Engage > Engage Swift Piercing shots take it too 10ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S4 — Noise Bullets: true-flavored normals and Swift Piercing only in Engage > Stance shots do not 30ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S5 — Swift Piercing on burst use: 0.5s fixed charge, 73.22%, ×3.0, 5 sec > every shot inside the window is a charged Swift Piercing shot, 30 frames apart 25ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S5 — Swift Piercing on burst use: 0.5s fixed charge, 73.22%, ×3.0, 5 sec > base fire resumes after the window 1ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S5 — Swift Piercing on burst use: 0.5s fixed charge, 73.22%, ×3.0, 5 sec > COUNTERFACTUAL: a fullBurstEnter-keyed swap also fires on the rotations helm completes 28ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S5 — Swift Piercing on burst use: 0.5s fixed charge, 73.22%, ×3.0, 5 sec > COUNTERFACTUAL: a 1.0s charge spaces the Swift Piercing shots 60 frames 30ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S6 — burst: ATK ▲ 110% (5 sec) + 516.6% + the mode-branched rider > ATK ▲ 110% self-only at each cast, 300 frames 1ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S6 — burst: ATK ▲ 110% (5 sec) + 516.6% + the mode-branched rider > rider set: Stance {516.6, 958.9}, Engage {516.6, 854.6}; one each per cast, pre-Full-Burst 4ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S6 — burst: ATK ▲ 110% (5 sec) + 516.6% + the mode-branched rider > the Engage 854.6% is true damage; the 516.6% is not 23ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S6 — burst: ATK ▲ 110% (5 sec) + 516.6% + the mode-branched rider > the burst hits snapshot the ATK ▲ 110% (listed first); applied after them they miss it 22ms
+ ✓ scripts/tests/units/sin-swift-bunny.test.ts > S6 — burst: ATK ▲ 110% (5 sec) + 516.6% + the mode-branched rider > COUNTERFACTUAL: a mode-blind encoding fires both riders 20ms
+
+      Tests  21 passed (21)

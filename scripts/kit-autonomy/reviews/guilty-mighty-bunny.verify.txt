@@ -1,0 +1,31 @@
+S2d INDEPENDENT VERIFICATION MATRIX — guilty-mighty-bunny — kit-autonomy gauntlet 2026-10-02
+Arm 1 (pre-S3, NO override on disk — the new unit's starting state): RED as required:
+    Error: guilty-mighty-bunny: no override on disk — fixture is stale
+          Tests  no tests
+Arm 2 (shipped override): npx vitest run scripts/tests/units/guilty-mighty-bunny.test.ts --reporter=verbose — every COUNTERFACTUAL case runs the named nearest-wrong encoding via withPatchedOverride in the same file and asserts it diverges, so GREEN-vs-shipped and RED-vs-counterfactual are both inside the listed assertions.
+
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G1 — S1 battle-start ATK ▲ 20.1% (self, continuous) > one self grant at frame 0, no expiry 2ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G2 — Bunny Mode is a kit mode, Stance by default > the default selection behaves exactly as Stance 0ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G2 — Bunny Mode is a kit mode, Stance by default > Stance: Chain Enhance buffs from frame 0, only the 450.89% rider 1ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G2 — Bunny Mode is a kit mode, Stance by default > Engage: no Chain Enhance buffs, only the 370.08% rider 1ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G2 — Bunny Mode is a kit mode, Stance by default > COUNTERFACTUAL: a mode-blind encoding fires both riders 33ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G3 — the full-charge rider fires on every charged shot, the Stomp included > one rider per charged shot, frame-locked to it 2ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G3 — the full-charge rider fires on every charged shot, the Stomp included > the Stomp shots carry a rider 1ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G3 — the full-charge rider fires on every charged shot, the Stomp included > COUNTERFACTUAL: an unswapped-only rider drops the Stomp riders 33ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G4 — Engage rider (Chain Release E3) is true damage from a skill > a True Damage ▲ buff lands in its dmgUp; a plain rider ignores it 1ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G4 — Engage rider (Chain Release E3) is true damage from a skill > never cores (skill-sourced) 1ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G5 — true-flavored normals and Stomp only in Engage > Engage base-weapon normals take the True Damage ▲ buff (trueNormalsModes) 30ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G5 — true-flavored normals and Stomp only in Engage > Stance base-weapon normals do not 29ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G5 — true-flavored normals and Stomp only in Engage > the Engage Stomp is true (trueNormalsModes covers swap shots); without the field it is not 27ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G5 — true-flavored normals and Stomp only in Engage > the Stance Stomp is not true 30ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G6 — Mighty Stomp: one 1.5s-charge shot per cast > exactly one Stomp per cast, charged, the first shot after the cast, ≥ 90 frames later 5ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G6 — Mighty Stomp: one 1.5s-charge shot per cast > the Stomp lands inside Full Burst and takes the +50% major (it fires ~1.5s after the cast) 0ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G6 — Mighty Stomp: one 1.5s-charge shot per cast > COUNTERFACTUAL: without maxShots the swap keeps firing Stomps 29ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G6 — Mighty Stomp: one 1.5s-charge shot per cast > COUNTERFACTUAL: a 1.0s charge fires the Stomp earlier 27ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G7 — Charge Damage ▲ 1400% for exactly one round (the Stomp) > Stomp charge multiplier = 2.5 + 14.0 (+0.4 Stance); the next base shot is back to base 3ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G7 — Charge Damage ▲ 1400% for exactly one round (the Stomp) > granted at each cast as a 1-round buff 0ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G7 — Charge Damage ▲ 1400% for exactly one round (the Stomp) > COUNTERFACTUAL: a 2-round buff also lifts the shot after the Stomp 20ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G8 — Attack Damage ▲ 77.35% for 10 sec (self) > self-only, once per cast, 600 frames 1ms
+ ✓ scripts/tests/units/guilty-mighty-bunny.test.ts > G8 — Attack Damage ▲ 77.35% for 10 sec (self) > COUNTERFACTUAL: an all-allies reading lands on four targets 19ms
+
+      Tests  23 passed (23)

@@ -1,0 +1,122 @@
+{
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "battle start, self: ATK 15.35%",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply stat atkPct value 15.35 exists with targetSlug === sin-swift-bunny only; zeroing it lowers her total while every teammate total stays byte-identical. RED under casterAtkPct (flat-resolved value, never 15.35) and under an allies/allies-incl-self target set."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Normal Atk Dmg Mult 100% / 1 round",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply stat normalAttackPct value 100, durationShots === 1, self. RED under attackDamagePct 100 (additive Damage-Up bucket, wrong magnitude path), under normalAttackMultiplier folding, and under durationSec:1 (a seconds window, not a round budget). Widening durationShots to 10 must raise total damage, so the window is non-vacuous."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage 52.12% / 1 round",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply stat chargeDamagePct value 52.12, durationShots === 1, self. RED under chargeDamageMultPct (base-charge scaler, a different bucket) and under a seconds window."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "if NOT in Swift Piercing state",
+      "disposition": "FIX",
+      "assertion": "Deleting swapGate/requiresSelfStatus from the carrying skill1 blocks must raise the COUNT of normalAttackPct-100 applications (the 0.5s swap charge out-pulls the 1.0s base charge roughly 2:1). RED under an ungated block, where control and patched counts are equal."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates during Full Charge",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: the carrying block trigger is fullCharge (shotFired accepted as the byte-identical unswapped-SR proxy) and target is self. RED under fullBurstEnter / interval / burstCast, all of which decouple the buff from her pull."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Initiates a new Bunny Mode",
+      "disposition": "GAP",
+      "assertion": "it.skip. No primitive: modes[] is a static setup-time selection, and fullCharge fires at release so a 1s HOLD has no trigger. Flagged consequence: a static-mode model locks one S2 half plus one burst rider in for the whole fight and over-credits it."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "allies in opposite mode join mode",
+      "disposition": "GAP",
+      "assertion": "it.skip. No cross-unit mode primitive (block.mode gates the owner only) and no roster ally carries a Bunny Mode, so the line is inert at scope regardless."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Engage: normal attacks true damage",
+      "disposition": "UNMODELED (payload) / FIX (scope)",
+      "assertion": "Structural: some true-normals encoding must exist (trueNormalsModes, swap trueNormals, or hasTrueNormals) AND hasTrueNormals must be FALSE, because the static flag would also true-flavor the Stance magazine. Damage payload is neutral in this fixture (no ally trueDamagePct) -> it.skip for the behavioral half."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stance: Crit Rate 35.14%",
+      "disposition": "FAITHFUL",
+      "assertion": "Exactly one authored critRatePct 35.14 effect, on a block carrying a mode/self-status gate, target self; present in the Stance-default run and ABSENT (0 applications) in the Engage-default run. RED under an ungated passive (live in both modes) and under critRateNormalPct (which would scope away her burst crit)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stance: Crit Damage 75.12%",
+      "disposition": "FAITHFUL",
+      "assertion": "Same pair test on critDamagePct 75.12; cross-checked against the burst rider ratio so the crit buffs and the 958.9% rider must agree on WHICH run is Stance. RED if the two S2 halves and the two burst branches are gated to different modes."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Swift Piercing: weapon change",
+      "disposition": "FAITHFUL",
+      "assertion": "One weaponSwap on a burstCast/self block, durationSec 5, damagePct 73.22, chargeMultPct 300, charge time 0.5s, sameWeapon falsy. RED under fullBurstEnter (over-credits helm-completed Full Bursts in this 2x-B3 fixture), under sameWeapon:true (suppresses the real weapon change magazine refill; also contradicted by 73.22 != normalAttackMultiplier 69.04), and under a seconds/round mix-up on the 5s bound."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Charge Time fixed 0.5 / FC 300%",
+      "disposition": "FAITHFUL",
+      "assertion": "Monotone counterfactuals: 2x damagePct raises total (also the non-vacuity proof that the swap is entered), 0.5s -> 2.0s charge lowers total, 300% -> 600% full charge raises total. RED under a swap whose charge clamp or full-charge multiplier is dropped (patch becomes a no-op and the direction assertion fails)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Swift Piercing name (no Pierce line)",
+      "disposition": "FAITHFUL (negative)",
+      "assertion": "hasPierce falsy, pierceModes empty, no gainPierce effect, no swap hasPierce, no flatDamage pierce. RED under the nearest-wrong reading that treats the weapon NAME as an Additional Effect: Pierce line, which would switch on every ally Pierce Damage buff."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "self ATK 110% for 5 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply atkPct value exactly 110, targetSlug self, finite expiresFrame, and the application count equals the cast count derived independently as burstInstances/2. RED under casterAtkPct (flat value), under an allies target, and under a per-cast double-apply."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "516.6% Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "assertion": "Authored once at 516.6 on an UNGATED burst block, bucket burst, fbMajorApplied false (a burst cast lands before the FB window), core false, burstDesc allEnemies when tagged. It is also the per-cast minimum against which both rider ratios are measured."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Stance: +958.9% additional dmg",
+      "disposition": "FAITHFUL",
+      "assertion": "Per-cast ratio 958.9/516.6 = 1.8562 in the Stance run; mode-gated block. RED if the magnitude moves, if it is flavored true, or if it fires in the Engage run."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Engage: +854.6% true damage",
+      "disposition": "FAITHFUL",
+      "assertion": "flavor === 'true' and per-cast ratio 854.6/516.6 = 1.6543 in the Engage run. RED if the two riders are magnitude-swapped (ratios 1.8562 vs 1.6543 are 0.2 apart, far outside the 0.005 tolerance) or if the true flavor is dropped."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "mode gates on both riders",
+      "disposition": "FAITHFUL",
+      "assertion": "Control: burst-slot instances are an exact multiple of 2 and every cast group carries ONE rider ratio. Counterfactual (mode/requiresSelfStatus/resourceGate stripped from burst blocks): instances become a multiple of 3 and each triple carries BOTH ratios, with total damage strictly higher. This is the discriminating pair for the over-credit failure of firing both branches."
+    }
+  ],
+  "fixtures": "Single fixture, controlComp('sin-swift-bunny', true) = liter B1 / crown B2 / sin-swift-bunny B3 / helm B3 vs the Fire boss, focus on the carry, deterministic (no seed). The fixed-B3 slot is kept ON because a lone Burst III makes ZERO Full Bursts and her burst is the sole trigger of Swift Piercing plus both burst riders; helm's presence is also what makes the burstCast-vs-fullBurstEnter discrimination meaningful (a second B3 can complete a Full Burst she did not cast). 10 hoisted runs: control; Bunny-Mode-default rotated to modes[0] and to modes[1] (the mode strings are never hardcoded - they are read off the committed override and the default is rotated, so the test is blind to the names); burst mode gates stripped; S1 atkPct 15.35 zeroed; round window widened to 10; S1-b swap gate stripped; swap damagePct doubled; swap charge time slowed to 2s; swap full-charge raised to 600%. NOTE on leak hygiene: the effect-schema block names base `sin` as a future highestAllyMaxHpPct carrier - a DIFFERENT unit from sin-swift-bunny, no magnitudes, and the kit prose here has no Max HP line, so nothing about this unit leaked.",
+  "gaps": [
+    "it.skip S1-c Bunny Mode toggle (battle start + Full Charge maintained 1+ sec): no primitive - `modes` is a static setup-time selection so a mid-fight mode flip is inexpressible, and `fullCharge` fires at release so a 1-second hold past full charge has no trigger. The static-mode model holds one mode for the whole fight and over-credits it; real cadence is measurement-gated on footage.",
+    "it.skip S1-d / S1-e ally Bunny Mode propagation: no cross-unit mode primitive (block.mode gates the owner only), and no roster ally carries a Bunny Mode, so the lines are inert at scope.",
+    "it.skip S2-a Noise Bullets normal-attack true damage: payload is damage-neutral without an ally trueDamagePct buff, and the control comp (liter/crown/helm) grants none - replaced by a structural assertion that the flavor is encoded AND mode-scoped (hasTrueNormals must be false).",
+    "it.skip S2-a second clause, Swift Piercing deals true damage in Engage: same neutrality, plus the flavor must be mode-scoped on the swap itself, which this fixture cannot observe either way.",
+    "it.skip S2-c swap shot economy (magazine size / reload on the swapped weapon): kit-silent, an ALWAYS-FLAG field - a shot-count assertion would pin an estimate rather than the kit."
+  ],
+  "model": "claude-opus-5",
+  "leakDetected": null
+}

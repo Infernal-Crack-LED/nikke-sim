@@ -381,6 +381,10 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://nikkesim.app/unit/guilty-mighty-bunny</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://nikkesim.app/unit/harran</loc>
     <priority>0.7</priority>
   </url>
@@ -782,6 +786,10 @@
   </url>
   <url>
     <loc>https://nikkesim.app/unit/sin</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://nikkesim.app/unit/sin-swift-bunny</loc>
     <priority>0.7</priority>
   </url>
   <url>

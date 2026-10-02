@@ -1,0 +1,144 @@
+{
+  "note": "Guilty: Mighty Bunny (slug guilty-mighty-bunny) — SR/Attacker/Water/Missilis, Burst III cd 40s, ammo 6, charge 1s, full charge 250%. VARIANT of the base unit `guilty` (SG/Wind) — a different unit and kit. Kit-autonomy gauntlet 2026-10-02. BUNNY MODE is modeled as a user-selectable kit mode: modes ['Stance','Engage'], Stance first because the kit's battle-start line puts a unit that is not in Stance INTO Stance, so a fight opens in Stance and stays there unless the player deliberately holds Full Charge for 1 second (the sim releases at full charge, so it never holds — the rapunzel-pure-grace precedent for the 'Full Charge maintained for 1 or more seconds' clause). Selecting Engage models a player who toggled once at the opening and stayed there; in-fight re-toggling is unmodeled. SKILL1: battleStart self ATK ▲ 20.1% (continuous). SKILL2 'Chain Release' (mode Engage): trueNormalsModes ['Engage'] makes her normal attacks True-flavored — the base weapon (Effect 1) and the Mighty Stomp swap shot (Effect 2) — so ally True Damage ▲ buffs feed them; fullCharge → enemy flatDamage 370.08% flavor true (Effect 3, a skill hit: crits at her rate, never cores — the 2026-08-13 true-damage ruling). SKILL2 'Chain Enhance' (mode Stance): self Attack Damage ▲ 20.45% and Charge Damage ▲ 40% (both continuous, passive), and fullCharge → enemy flatDamage 450.89% plain additional damage. Both fullCharge riders also fire on the Mighty Stomp shot (it is a full-charge attack). BURST 'I'm Finally Free...!' (burstCast, self): weaponSwap Mighty Stomp — damagePct 101.3 ('Damage: 101.3% of final ATK'), chargeTimeSec 1.5 + chargeTimeClamp 1.5 ('Charge Time: Fixed at 1.5 sec'; the engine charges a swap only when it declares its own charge frames), chargeMultPct 250, maxShots 1 ('Duration: 1 rounds' — the swap ends right after its one shot), durationSec 180 as a fight-length bound only. Chain Release Effect 2 (Mighty Stomp deals true damage in Engage) needs no swap-level flag: the engine applies the unit's static true-normal flavor (trueNormalsModes) to swap shots as well, so the Stomp is True exactly in Engage. Additional Effect 1 = self chargeDamagePct 1400 durationShots 1 granted at the cast, so its one round is the Stomp shot. Additional Effect 2 = self attackDamagePct 77.35 for 10 sec.",
+  "modes": ["Stance", "Engage"],
+  "trueNormalsModes": ["Engage"],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds while this unit is not in the Mighty Stomp state. Affects self. Initiates a new Bunny Mode based on the current mode. Activates if this unit is in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed. Activates if this unit is not in the Bunny Mode: Stance state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
+      "■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed.",
+      "■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed."
+    ],
+    "skill2": [
+      "Chain Release Function: Changes some attacks' damage into true damage. — named state wrapper; its three effects ARE modeled (trueNormalsModes ['Engage'] for normals and the Mighty Stomp, the Engage fullCharge 370.08% true rider).",
+      "Chain Enhance Function: Enhances this unit's offensive capabilities. — named state wrapper; its three effects ARE modeled (Stance Attack Damage ▲ 20.45%, Charge Damage ▲ 40%, the Stance fullCharge 450.89% rider)."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill1 Bunny Mode TOGGLE (unmodeled as a live mechanic): the mode is a static per-fight selection (modes, Stance default). The in-game switch needs Full Charge held for 1 or more seconds outside Mighty Stomp, which the sim never does (it releases at full charge). Engage is the player-choice mode; the cost of the one opening hold (about 1 second of delayed fire) is not charged. Repeated toggling mid-fight is not modeled.",
+    "skill1 ALLY MODE SYNC (unmodeled): entering Engage or Stance pulls every ally in the opposite Bunny Mode along with her, so on a team with Sin: Swift Bunny (sin-swift-bunny) both units are always in the SAME mode. Nothing enforces that here — select the same mode for both.",
+    "burst Mighty Stomp ammo: the kit gives the swap no magazine; the engine's real-weapon swap entry refills to her current maximum magazine and, because the swap ends by use (maxShots 1), hands the base weapon back with that magazine less the Stomp round — one short of the full base magazine the 2026-08-12 real-weapon-change ruling describes for a swap's exit, and not her pre-cast count. ⚑ estimate = a full magazine less one after each Stomp; recipe = count her shots between the Stomp and the next reload in a focus video; tier = MEASUREMENT-GATED.",
+    "burst durationSec 180 is a fight-length bound, not a kit value: the kit's duration is '1 rounds' (maxShots 1).",
+    "burst Mighty Stomp is routed as an ordinary SR shot (the swap declares no weapon class, so it inherits the base SR's): it cores at the flat SR rate, takes the +30% range bonus in SR range bands, and generates SR burst gauge. The kit names no class for the Stomp. ⚑ estimate = SR treatment; recipe = read the Stomp popup in a focus video (CORE HIT label frequency and size against her base charged shots at the same range); tier = MEASUREMENT-GATED."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "battleStart"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 20.1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "mode": "Engage",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 370.08,
+          "flavor": "true"
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "mode": "Stance",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 20.45
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 40
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "mode": "Stance",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 450.89
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 101.3,
+          "chargeTimeSec": 1.5,
+          "chargeTimeClamp": 1.5,
+          "chargeMultPct": 250,
+          "maxShots": 1,
+          "durationSec": 180
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 1400,
+          "durationShots": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 77.35,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}
