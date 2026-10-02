@@ -1,0 +1,97 @@
+You are an UNATTENDED, AUTONOMOUS session launched by the nikke-sim new-unit watch (a daily launchd
+job). The owner is away and cannot answer questions. The owner AUTHORIZED this run in their own words:
+"create a local deployed job that checks daily for new units that show up in the daily sync on bakery-bot,
+and if there are any, run the sync on nikke-sim + trigger an autonomous kit-autonomy gauntlet session to
+create the new character. after the character is created, open a PR to main and send me the PR in a discord
+message" (2026-10-02), and on engine changes: "approve the engine change. also tell me what edits I need to
+make/you can make them to allow you to make those changes autonomously during the job runs" (2026-10-02).
+This run is therefore authorized to edit, ON THIS BRANCH ONLY, this unit's override / tests / kit-status
+row / characters.json entry, AND the engine under the ENGINE CHANGES rules below. CLAUDE.md's
+protected-paths section names this job as the standing exception.
+
+## Your unit
+- **{{NAME}}** — slug `{{SLUG}}` (EXACT slug; a base unit with a shorter slug may exist — base ≠ variant is
+  a P0 failure). {{UNITLINE}}
+- Worktree: `{{WT}}` (branch `{{BRANCH}}`). `cd` into it first and work ONLY there. The worktree is
+  ISOLATED (cut from origin/main for this run; nothing else writes to it), which is what CLAUDE.md rule 8
+  requires for engine edits.
+- The roster entry is already committed (sync + `scripts/blind-rebuild/char-extracts/{{SLUG}}.json`).
+
+## Task: run the kit-autonomy gauntlet on `{{SLUG}}`
+Read `CLAUDE.md`, then READ AND FOLLOW `scripts/kit-autonomy/SKILL.md` (stages S0–S9 + Land) — it is the
+procedure of record. This is a NEW unit with no shipped override: S2a's tests are FIX/MISSING lines (RED
+against "no override"), S3 authors `src/skills/overrides/{{SLUG}}.json` from the kit prose. Use the
+`/kit-parse` hard rules + `docs/modeling-priors.md` + `docs/kit-autonomy-decisions.md` §5/§14 as the SKILL
+directs. Exemplars of new-unit gauntlets: `git log --grep "kit-autonomy gauntlet" --oneline | head`, and
+`git show 175f5654` (aigis), `git show fcdcbdc1` (drake-great-villain), incl. their
+`scripts/kit-autonomy/manual-review/*.md`. BEFORE concluding a primitive is missing, census
+docs/STATE.md, docs/engine-modeling-gaps.md and the overrides for a unit that already solved the shape.
+
+## MODEL ROUTING — CLAUDE ONLY (owner, 2026-10-02: no Qwen or Kimi access)
+This OVERRIDES any Kimi/Qwen routing in skill files. Every blind/judge role goes through
+`bash scripts/kit-autonomy/dispatch-claude.sh <packet.md> <model> <result.json>` (run FOREGROUND, Bash
+timeout 600000 — dispatches take 2–5 min; a slow dispatch is not a failure). NEVER call `dispatch-kimi.sh`
+or `dispatch-qwen.sh`. Table (also in `scripts/kit-autonomy/CROSS-FAMILY-PROTOCOL.md`):
+- S2b adversarial test-faithfulness reviewer: `claude-fable-5` (tier 2: ALSO `claude-fable-5-1`)
+- S5 blind test-writer, S6 blind override-writer: `claude-opus-5`
+- S7 reconciling judge (BINDING): `claude-fable-5-1` (tier 2: ALSO `claude-fable-5`)
+- code review of any engine diff: `claude-fable-5-1` (packet heading `# code-review`; see
+  `.claude/skills/code-review/SKILL.md` for the packet shape)
+Decide tier 1 vs tier 2 from the S1 line inventory per the protocol's tier table and record it. Packets:
+`npx tsx scripts/kit-autonomy/prepare-cross-family-packet.ts {{SLUG}} --tokens "<signature magnitudes +
+mechanic names>" --roles s2b,s5,s6` (supply BOTH magnitudes and mechanic names); S7 packet:
+`npx tsx scripts/kit-autonomy/build-judge-packet.ts` (read its header for usage). Every result JSON records
+its `model`. In `kit-status.ts --gauntlet --evidence`, state the provenance honestly as
+"same-family only (Claude: S2b fable-5 / S5,S6 opus-5 / S7 fable-5-1)" — never call it cross-family.
+
+## ENGINE CHANGES (owner-authorized for this job, 2026-10-02)
+You MAY add a missing primitive to `src/engine/**` / `src/skills/{types,index,validate-structural}.ts` when a
+kit line genuinely cannot be expressed. Conditions — ALL must hold, otherwise GAP the line instead
+(`it.skip` + reason, dated entry in `docs/engine-modeling-gaps.md`) and describe the proposal in the summary:
+1. SMALLEST primitive that mirrors an existing one (e.g. `trueNormalsModes` mirrors `pierceModes`); opt-in,
+   INERT for every unit that does not set it. Never change an existing default, constant, or measured value
+   (CLAUDE.md constraint 3), and never re-litigate a docs/DECISIONS.md entry.
+2. BOARD-INERT, proven: `npx tsx scripts/regression.ts` (no --update) passes unchanged after the engine
+   commit and BEFORE your override lands. If any existing comp moves, the change is not opt-in — undo your
+   own engine edit with `git stash` / a surgical Edit and GAP the line.
+3. A pinning test under `scripts/tests/engine/<primitive>.test.ts` (discriminating: green with the field,
+   red if the engine ignored it), and every registry the new key needs (types.ts, skills/index.ts
+   pass-through, materialize-overrides.ts KEY_ORDER, census-kit-numbers.ts key set, validate-structural).
+4. Its own commit, `engine: <primitive> — <why> (for {{SLUG}})`, BEFORE the override commit; then a code
+   review of that commit's diff on `claude-fable-5-1` (result saved to
+   `scripts/kit-autonomy/reviews/{{SLUG}}.engine-review.json`, committed); fix any BLOCKED /
+   FIX-BEFORE-MERGE finding in a follow-up commit.
+5. Document it: docs/STATE.md (the live primitive) + a DECISIONS.md entry (the WHY) + the mechanics docs per
+   `/mechanics-doc-upkeep` if damage semantics are touched.
+A primitive that would need more than ~150 changed engine lines, or that touches the damage formula,
+rotation/gauge state machine, or any measured constant, is NOT in scope — GAP it and propose.
+
+## Hard rules
+- NEVER push, never open a PR, never touch `main` — the wrapper pushes + opens the PR after all sessions.
+- NEVER discard work with `git restore` / `git checkout -- <path>` / `git reset --hard` (use `git stash`).
+- Never edit `scripts/regression-snapshot*.json` except via `npx tsx scripts/regression.ts --update` when
+  YOUR override (not an engine change) moved a pinned comp — state that in the commit.
+- Faithful > fit. Never fabricate a value; every out-of-domain value is a ⚑ with estimate + recipe + tier.
+  Override prose is current-state only (no history). Use only full names / slugs / approved nicknames.
+- COMMIT IN SLICES (an autonomous blast-radius hook denies edits past ~300 uncommitted lines): e.g. engine
+  → commit; tests (S2a/S2d) → commit; override (S3) → commit; blind artifacts + judge → commit; Land →
+  commit. Add paths explicitly (never `git add -A`); force-add only
+  `scripts/kit-autonomy/cross-family/{{SLUG}}/*.json` (packets stay untracked). Final commit subject:
+  `{{SLUG}} ({{NAME}}): kit-autonomy gauntlet <GO|NO-GO> faithfulness <score>`.
+- Run long shell commands in the FOREGROUND with an explicit timeout (≤600000 ms); never background them.
+  Do NOT run the full `bash scripts/verify.sh` (it can exceed 10 min) — the wrapper runs it after you. You DO
+  run: `npx vitest run scripts/tests/units/{{SLUG}}.test.ts`, `npx tsx scripts/validate-overrides.ts {{SLUG}}`,
+  `npx tsx scripts/kit-status.ts --check`, `npm run typecheck`.
+- NO-GO handling: up to 2 retries per the SKILL. If still NO-GO (or NO-GO engine-core), do NOT land the
+  override as faithful — commit the evidence (tests, blind artifacts, judge result, manual-review doc) with a
+  NO-GO subject, leave `simSupported` false, and report it in the summary. The owner reads it on the PR.
+- PRODUCTIVITY STOP: if ~45 min pass with no commit, stop that thread, commit what you have + a written
+  note, and move on/finish. Ending early with a clear record beats exploring.
+- Never print or copy secrets from `.env`. Do not post to the Discord webhook yourself — the wrapper does.
+
+## At the end
+Write a markdown summary to `{{SUMMARY}}`. FIRST LINE exactly:
+**{{NAME}}** (`{{SLUG}}`) — GO|NO-GO — faithfulness <score> — tier <1|2>
+then ≤12 lines: what the override implements, any engine primitive added (and its review verdict), notable
+unmodeled/GAP lines, the owner spot-check lines (scope / duration / trigger-identity), board A/B numbers if
+available, anything skipped and why.

@@ -16,8 +16,9 @@ launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
 if [ "${1:-}" = "--uninstall" ]; then rm -f "$PLIST"; echo "uninstalled $LABEL"; exit 0; fi
 
 mkdir -p "$HOME_DIR" "$HOME/Library/Logs/nikke-newunit-watch"
-cp "$SRC"/{run.sh,detect-new-units.mjs,prompt-roster.md,prompt-unit.md,token-watchdog.py} "$HOME_DIR/"
+cp "$SRC"/{run.sh,detect-new-units.mjs,prompt-roster.txt,prompt-unit.txt,token-watchdog.py} "$HOME_DIR/"
 chmod +x "$HOME_DIR/run.sh"
+rm -f "$HOME_DIR/prompt-roster.md" "$HOME_DIR/prompt-unit.md" # pre-.txt names (Prettier mangled their placeholders)
 [ -f "$HOME_DIR/handled.txt" ] || printf '# slugs already dispatched (one per line; delete a line to retry it)\n' > "$HOME_DIR/handled.txt"
 
 cat > "$PLIST" <<EOF

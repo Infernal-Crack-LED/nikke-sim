@@ -12,8 +12,8 @@ database from the blablalink roster. Every day at 06:00 local, this job:
    worktree and branch and exits (it writes the log and marker only, with no Discord message).
 3. Commits the roster entry: the sync output, plus `scripts/blind-rebuild/char-extracts/<slug>.json` for
    each new unit. It records the slugs in `handled.txt` so a later run does not dispatch them twice.
-4. Starts a headless Claude session (`prompt-roster.md`) that fixes roster test pins the sync broke.
-5. Starts one headless Claude session per unit (`prompt-unit.md`) that runs the kit-autonomy gauntlet
+4. Starts a headless Claude session (`prompt-roster.txt`) that fixes roster test pins the sync broke.
+5. Starts one headless Claude session per unit (`prompt-unit.txt`) that runs the kit-autonomy gauntlet
    (`scripts/kit-autonomy/SKILL.md`). Routing is Claude-only: S2b `claude-fable-5`, S5/S6 `claude-opus-5`,
    S7 `claude-fable-5-1`, all through `dispatch-claude.sh`.
 6. Runs `bash scripts/verify.sh`, pushes the branch and opens a PR to `main`. The PR is a draft when verify

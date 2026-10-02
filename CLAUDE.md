@@ -226,6 +226,14 @@ These paths are load-bearing for the sim's accuracy guarantees. **Never modify t
 | `src/skills/overrides/**`           | Hand-verified per-unit kit models                           |
 | `scripts/regression-snapshot*.json` | Pinned regression baselines                                 |
 
+**Standing exception — the new-unit watch (owner, 2026-10-02).** The daily launchd job in
+[scripts/autopilot/new-unit-watch/](scripts/autopilot/new-unit-watch/README.md) is pre-approved to edit
+`data/**`, `src/skills/overrides/**` and `src/engine/**` for the NEW units it gauntlets, on its own isolated
+worktree/branch, landing only through the PR it opens (rule 8). Its engine edits are bounded by the ENGINE
+CHANGES section of `prompt-unit.txt`: a small opt-in primitive mirroring an existing one, proven
+board-inert by `scripts/regression.ts`, pinned by an engine test, code-reviewed, in its own commit —
+anything larger is GAPped and proposed instead. `.claude/**` stays hands-off for the job.
+
 ## Conventions
 
 - See [docs/CONVENTIONS.md](docs/CONVENTIONS.md) — evidence tiers, validation methodology,

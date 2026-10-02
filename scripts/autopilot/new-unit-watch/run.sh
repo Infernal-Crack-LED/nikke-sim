@@ -148,14 +148,14 @@ commits follow." > "$RUNDIR/roster-commit.log" 2>&1; then
 import os, sys
 t = open(sys.argv[1]).read()
 for k in ("WT", "BRANCH", "SLUG", "NAME", "UNITLINE", "UNITS", "SUMMARY"):
-    t = t.replace(f"__{k}__", os.environ.get(f"P_{k}", ""))
+    t = t.replace("{{" + k + "}}", os.environ.get(f"P_{k}", ""))
 print(t)
 PY
   }
 
   # ---- session 0: roster test pins ------------------------------------------------------------------
   export P_WT="$WT" P_BRANCH="$BRANCH" P_UNITS="$UNITS_MD" P_SUMMARY="$RUNDIR/roster.summary.md"
-  fill "$HOME_DIR/prompt-roster.md" > "$RUNDIR/roster.prompt.md"
+  fill "$HOME_DIR/prompt-roster.txt" > "$RUNDIR/roster.prompt.md"
   run_session "$RUNDIR/roster.prompt.md" "$ROSTER_MAX_MIN" "$ROSTER_MAX_TOK" roster
 
   # ---- one gauntlet session per unit ----------------------------------------------------------------
@@ -163,7 +163,7 @@ PY
     export P_SLUG="$s" P_SUMMARY="$RUNDIR/$s.summary.md"
     export P_NAME="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["units"][sys.argv[2]]["name"])' "$RUNDIR/detect.json" "$s")"
     export P_UNITLINE="$(python3 -c 'import json,sys;u=json.load(open(sys.argv[1]))["units"][sys.argv[2]];print(f"{u[\"weapon\"]} / {u[\"class\"]} / {u[\"element\"]} / Burst {u[\"burst\"]}, released {u[\"releaseDate\"]}.")' "$RUNDIR/detect.json" "$s")"
-    fill "$HOME_DIR/prompt-unit.md" > "$RUNDIR/$s.prompt.md"
+    fill "$HOME_DIR/prompt-unit.txt" > "$RUNDIR/$s.prompt.md"
     run_session "$RUNDIR/$s.prompt.md" "$UNIT_MAX_MIN" "$UNIT_MAX_TOK" "$s"
     [ -f "$P_SUMMARY" ] || printf '**%s** (`%s`) — NO SUMMARY (session died or hit a ceiling) — see %s\n' "$P_NAME" "$s" "$RUNDIR" > "$P_SUMMARY"
     if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
