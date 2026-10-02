@@ -75,18 +75,22 @@ describe('release dates are well-formed', () => {
   // A null is acceptable ONLY when Synergy has no row for the unit, so there is no date to
   // source — that is worth noticing every time the list grows. Audit-verified 2026-08-19
   // (`npx tsx scripts/audit-release-dates.ts --all`: 199 characters, 0 findings): aigis and
-  // yukiko (the Persona-collab roster sync) join anne-miracle-fairy as "ok (no date)" —
-  // Synergy carries no rows for them yet. When a row lands upstream, `npm run sync` fills the
+  // yukiko (the Persona-collab roster sync) joined anne-miracle-fairy as "ok (no date)" —
+  // Synergy carried no rows for them yet. When a row lands upstream, `npm run sync` fills the
   // date and this list must shrink accordingly.
   //
   // yukiko left the list on 2026-08-20 WITHOUT a Synergy row: she was missing from the New
   // Characters row, so sync.ts grew a MANUAL_RELEASE_DATES fallback carrying 2026-08-20 until
   // Synergy picks her up (701e5e99). So a unit can also leave this list by being hardcoded
   // there — the invariant is "no date only when nothing can supply one", not "only Synergy".
+  //
+  // 2026-09-03: aigis left the list the Synergy way (her row landed upstream, 2026-08-13);
+  // drake-great-villain (released that day) entered the roster already dated through the same
+  // MANUAL_RELEASE_DATES fallback as yukiko, so she never joins the list.
   it('only the Synergy-rowless units have no release date', () => {
     const undated = Object.entries(characters)
       .filter(([, c]) => c.releaseDate == null)
       .map(([slug]) => slug);
-    expect([...undated].sort()).toEqual(['aigis', 'anne-miracle-fairy']);
+    expect([...undated].sort()).toEqual(['anne-miracle-fairy']);
   });
 });

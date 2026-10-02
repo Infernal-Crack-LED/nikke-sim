@@ -275,6 +275,10 @@ describe('roster calibration — scored against the sweep-reviewed slice', () =>
       'asuka-wille',
       'bready',
       'diesel',
+      // `drake-great-villain` (Drake: Great Villain, NOT base drake): her "Removes 100% of ammo"
+      // IS encoded — `consumeAmmo fraction: 1` on fullBurstEnd — so the 100 cannot be digit-matched,
+      // exactly the instantReload case above. Dispositioned 2026-09-03 (kit-autonomy gauntlet).
+      'drake-great-villain',
       'emilia',
       'emma-tactical-upgrade',
       'eve',

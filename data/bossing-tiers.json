@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-20",
+  "updated": "2026-09-04",
   "source": "bakery-bot DB nikke_characters.prydwen_tiers.bossing",
   "tiers": {
     "2b": "B",
@@ -52,6 +52,7 @@
     "dorothy": "B",
     "dorothy-serendipity": "SS",
     "drake": "S",
+    "drake-great-villain": "?",
     "e-h": "B",
     "ein": "A",
     "elegg": "C",
@@ -121,6 +122,7 @@
     "modernia": "A",
     "moran": "SS",
     "mori": "E",
+    "n-miracle-fairy": "?",
     "n102": "C",
     "naga": "A",
     "nayuta": "SS",
@@ -201,6 +203,8 @@
     "yulha": "B",
     "yuni": "F",
     "zwei": "S",
-    "水着マルチャーナ": "?"
+    "アイギス": "?",
+    "水着マルチャーナ": "?",
+    "雪子": "?"
   }
 }

@@ -1,0 +1,86 @@
+{
+  "slug": "aigis",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 21.12
+        },
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 21.12
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 21.12,
+          "durationSec": 11
+        },
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 21.12,
+          "durationSec": 11
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 396,
+          "flavor": "distributed",
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill2 durationSec 11 is an UNMEASURED stand-in for the kit's event condition 'Deactivation condition: When Full Burst ends'. The engine has no until-event buff removal, so the window is derived from rotation arithmetic: her Burst-II cast → 30f chain gap to the B3 cast → 22f to Full Burst start → 10s Full Burst ≈ 10.87s. Wrong on any rotation where the chain stalls or a Full Burst is extended (fullBurstExtend carriers), and it does NOT self-truncate if the chain breaks after her cast.",
+    "⚑ skill2 Effect 2 basis mismatch: the kit grants DEF as a percentage of the SKILL USER'S DEF, but the schema has no caster-scaled DEF StatKey (only defPct = % of the target's own DEF). Encoded as defPct 21.12 to preserve the line rather than drop it; defPct is damage-inert in v1, so the mismatch moves no damage today, but it is NOT a faithful basis and would become wrong the moment a DEF consumer/scaler lands.",
+    "⚑ Base cadence (SMG, 120 ammo, reloadFrames 81, hitsPerShot 2, rate_of_fire) is datamined and in the known-unreliable field family — unverified against footage for this unit.",
+    "⚑ Burst damage crit eligibility (crit:true) is a convention, not kit text: the kit line states no crit behaviour and the schema default is crit-off for flatDamage.",
+    "Burst damage is left FB-eligible-by-timing (no noFb): the cast resolves before the Full Burst window opens, so the engine's own timing should exempt it. noFb is measured-only and is deliberately NOT set.",
+    "'Deals 396% of final ATK as distributed damage': distributed damage splits across enemy units in-game; the scope-lock fight is a single partless boss, so the full 396% is modeled as landing. Untested against a multi-target fight.",
+    "skill2's 'as long as this unit is still alive' clause is scope-trivial (nothing dies at scope lock) and is therefore not encoded as a gate.",
+    "skill1 uses `passive` rather than `battleStart`: the kit says 'continuous and cannot be removed' with no duration, and passive is always-on with no expiry semantics to get wrong."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. aigis is an SMG/Iron/Supporter/Burst II with a mechanically simple kit: S1 is a permanent unremovable self ATK/DEF pair (21.12% each, own-stat basis); S2 fires on HER OWN burst cast (kit wording 'Activates when using Burst Skill' — burstCast, NOT fullBurstEnter, so it does not fire on rotations another Burst II casts) and grants all allies a caster-scaled ATK add (casterAtkPct 21.12, i.e. 21.12% of aigis's own ATK as a flat add to every ally) plus the DEF counterpart, both ending when Full Burst ends. Burst is a single 396%-of-final-ATK distributed-damage instance on cast. There are no stacks, no weapon swap, no Hit-Rate line, no DoT, no gauge line, no core-strike wording, and no conditional/recurring riders — so the only real modeling choices are the S2 window length and the caster-DEF basis, both flagged above. The whole kit's damage contribution to a team is the S2 team ATK flat-add plus one burst nuke; her own SMG output rides only S1's 21.12% self ATK."
+}

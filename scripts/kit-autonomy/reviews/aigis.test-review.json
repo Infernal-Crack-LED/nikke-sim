@@ -1,0 +1,90 @@
+{
+  "slug": "aigis",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "start of battle; self; ATK ▲21.12% continuous",
+      "disposition": "FAITHFUL",
+      "scope": "generic self ATK buff (not normal-attack / crit scoped)",
+      "durationSemantics": "continuous/permanent from frame 0 ('continuous and cannot be removed') — passive or battleStart with no lapse; NEVER a timed durationSec",
+      "triggerIdentity": "battleStart (or passive) — fires once at frame 0; no re-trigger source exists in the kit",
+      "targetSet": "self only",
+      "nearestWrongModel": "encoded as a timed self buff (durationSec ~10) or as an allies-wide atkPct (carrying skill2's target onto skill1)",
+      "distinguishingAssertion": "exactly one buffApply at frame ~0 with stat 'atkPct', value 21.12, casterIdx===targetIdx===aigis's index, expiresFrame ≥ fight end (or absent); no buffApply on any other unit for this key; no second application later in the fight",
+      "inertness": "must not appear on allies; must not re-fire on her burstCast or fullBurstEnter",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Rakukaja: DEF ▲21.12% continuously (self)",
+      "disposition": "FAITHFUL",
+      "scope": "self DEF — offensively inert in v1 (defPct moves no damage) but kept per the keep-inert-stat rule",
+      "durationSemantics": "continuous/permanent, same as the paired ATK line",
+      "triggerIdentity": "battleStart/passive at frame 0",
+      "targetSet": "self only",
+      "nearestWrongModel": "dropped silently because defPct is inert; or mis-encoded as damageTakenPct on the boss (a very different, damage-bearing debuff)",
+      "distinguishingAssertion": "buffApply at frame ~0 with stat 'defPct', value 21.12, target aigis; totals(res) unchanged vs an override without this block (pure inertness pin)",
+      "inertness": "must not emit any boss-side debuff event (casterIdx===null buffApply) and must not move any unit's totalDamage",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "on own Burst use; all allies; ATK ▲21.12% of caster ATK",
+      "disposition": "FAITHFUL",
+      "scope": "generic ally ATK grant, flat-resolved off the skill user's ATK",
+      "durationSemantics": "'continuously… cannot be removed' BUT 'Deactivation condition: When Full Burst ends' — window = her burst cast → the ensuing Full Burst end. A durationSec ~10 stand-in is a ⚑ approximation of the FB window; permanent is WRONG, a short fixed seconds window that outlives or undershoots FB is WRONG",
+      "triggerIdentity": "burstCast (stage 2) — 'when using Burst Skill' keyed to HER OWN cast; NOT fullBurstEnter (any team FB) and NOT stageCast-anyone. 'As long as this unit is still alive' is scope-trivial in v1 (no deaths)",
+      "targetSet": "all allies INCLUDING self (no excludeSelf in the prose; she is an ally); value = 0.2112 × aigis.staticAtk flat at apply time, same flat number on every target",
+      "nearestWrongModel": "fullBurstEnter trigger (over-credits on rotations where the OTHER B2 in the comp casts and aigis never bursts) and/or raw atkPct 21.12 instead of caster-scaled flat casterAtkPct; also excludeSelf:true",
+      "distinguishingAssertion": "in a comp where a DIFFERENT Burst II unit casts every rotation (aigis benched from bursting): ZERO buffApply events with casterIdx===aigis and stat 'casterAtkPct' — red under a fullBurstEnter model. In a comp where aigis casts: buffApply keyed skill2 with stat 'casterAtkPct', value ≈ 0.2112×aigis.staticAtk (flat, NOT 21.12), one per ally including targetIdx===aigis, landing at the burstCast frame — strictly BEFORE the fullBurstStart frame; expiresFrame consistent with the FB-end deactivation (≈ fullBurstEnd frame), not infinite",
+      "inertness": "must not fire on team Full Bursts she did not open; must not refresh/stack across her successive casts beyond one active instance per window; must not alter her skill1 self atkPct",
+      "evidenceTier": "DATAMINED (magnitude) / CALIBRATED ⚑ (FB-window duration stand-in)",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Marakukaja: DEF ▲21.12% of caster DEF, allies",
+      "disposition": "UNMODELED",
+      "scope": "ally DEF grant scaled off caster DEF — schema has no caster-scaled DEF StatKey (defPct is self-only and inert); offensively inert in v1 regardless",
+      "durationSemantics": "same burst→FB-end window as the paired ATK line",
+      "triggerIdentity": "burstCast stage 2, same block as Matarukaja",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "encoded as defPct 21.12 on allies (wrong basis: that's %-of-target's-own-DEF, not of the caster's) or as a boss damageTakenPct debuff",
+      "distinguishingAssertion": "no event-log assertion possible (no stat key); faithfulness pin is presence of the verbatim line in unmodeled.skill2 with a note — its ABSENCE from unmodeled while also absent from blocks is the failure",
+      "inertness": "must not move any totalDamage; must not create a boss-held debuff event",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies; 396% final ATK distributed",
+      "disposition": "FAITHFUL",
+      "scope": "one instant burst-cast hit, distributed flavor; burstDesc 'allEnemies' tag for the burst-amp family",
+      "durationSemantics": "n/a — instant damage on cast",
+      "triggerIdentity": "burstCast stage 2 (her own cast). Burst-cast instant damage lands BEFORE the Full Burst window opens → FB-exempt (noFb / fbMajorApplied false); range bonus OFF on the rider",
+      "targetSet": "enemy (all-enemies distributed; engine collapses to the single boss)",
+      "nearestWrongModel": "allowed to take the +50% Full-Burst major (fbMajorApplied true) and/or the +30% range bonus; or flavor omitted so distributedDamagePct / burstSkillAoeDamagePct interactions can't resolve; or re-keyed to fullBurstEnter so it fires on FBs she didn't open and double-dips the window",
+      "distinguishingAssertion": "exactly one damage event per aigis burstCast with bucket 'burst', srcSlot 'burst', mult 396, inFullBurst false AND fbMajorApplied false AND rangeApplied false; zero burst-bucket damage events from aigis in rotations where another B2 cast (red under fullBurstEnter keying)",
+      "inertness": "must not generate repeated ticks (not a DoT), must not fire more than once per cast, must not move teammates' totals",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Tarukaja self atkPct 21.12 permanent",
+    "skill2:Matarukaja casterAtkPct 21.12%-of-aigis-ATK to all allies, burstCast-gated, FB-end expiry",
+    "burst:396% distributed flatDamage, FB-exempt, range-exempt"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Effect 2: Affects all allies. Marakukaja: DEF ▲ 21.12% of the skill user's DEF continuously. This effect cannot be removed."
+    ],
+    "burst": []
+  },
+  "notes": "Two shared-prior misreads are likely and must be reconciled: (1) skill2 trigger — 'Activates when using Burst Skill' is her OWN burstCast(stage 2), not fullBurstEnter; the controlComp B2 slot (crown) creates exactly the divergence case, so a test where aigis never casts but Full Bursts still happen is mandatory — under the wrong keying her skill2 fires every rotation. (2) Duration — the line says BOTH 'continuous, cannot be removed' AND 'Deactivation condition: When Full Burst ends'; a permanent buff (over-credit past the first window) and a generic durationSec:10 (decoupled from actual fullBurstEnd) are both wrong; whatever stand-in is used for the FB window is ⚑ CALIBRATED and should be asserted via expiresFrame ≈ fullBurstEnd frame since the engine emits no buffRemove on lapse. Also watch: Matarukaja is caster-scaled — buffApply value must be the flat 0.2112×staticAtk number, not 21.12 — and 'Affects all allies' includes self (no excludeSelf). Burst is a pre-FB cast hit: inFullBurst/fbMajorApplied must be false; Iron-vs-Fire boss gives no advantage so element ×1.10 is absent in the control fixture. Marakukaja (ally DEF of caster DEF) has no StatKey and belongs verbatim in unmodeled.skill2 — do NOT let it be silently dropped or proxied as defPct. If the driver marked any of the three load-bearing lines UNMODELED/non-load-bearing, that is a dispute to surface, not accept.",
+  "model": "kimi-code/k3"
+}

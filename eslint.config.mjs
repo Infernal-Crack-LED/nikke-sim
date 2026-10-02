@@ -86,6 +86,9 @@ export default tseslint.config(
       '.vite/**/*',
       '**/*.tsbuildinfo',
       'scripts/blind-rebuild/code-bundle/**/*',
+      // kit-autonomy blind-role artifacts are VERBATIM evidence (defects preserved on purpose) —
+      // excluded from tsconfig for the same reason; never linted or auto-fixed.
+      'scripts/kit-autonomy/blind/**/*',
       '**/*.txt',
     ],
   }

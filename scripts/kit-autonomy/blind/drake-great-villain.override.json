@@ -1,0 +1,128 @@
+{
+  "slug": "drake-great-villain",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 243.75,
+          "chargeTimeSec": 1.5,
+          "chargeTimeClamp": 1.5,
+          "chargeMultPct": 300,
+          "maxAmmo": 6,
+          "weapon": "SG",
+          "pelletCount": 15,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "consumeAmmo",
+          "fraction": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 10.5,
+          "maxStacks": 4
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "battleStart"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkOfMaxHpPct",
+          "value": 6.23
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 27.5,
+          "durationSec": 25
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1350,
+          "burstDesc": "allEnemies"
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Swap window length is kit-silent: 'Super Duper Overdrive' has no stated duration, only an 'ends' clause. Authored durationSec 10 = the nominal Full Burst window; a fullBurstExtend granter (e.g. a 15s FB) would desync the swap from FB and from the ammo-dump proxy below.",
+    "⚑ 'Activates when Super Duper Overdrive ends' has no swap-end trigger primitive; proxied to fullBurstEnd, which is exact only while the swap window equals the FB window.",
+    "⚑ damagePct 243.75 is authored as the FULL-SHOT total across all 15 pellets (base-SG convention: normalAttackMultiplier 201.5 spans 10 pellets). If the kit line is per-pellet the shot is ~15× larger — split-vs-merge is unread.",
+    "⚑ 'Charge Time: Fixed at 1.5 sec' authored as chargeTimeSec 1.5 + chargeTimeClamp 1.5 (the base weapon has chargeFrames 0, so the swap must both INTRODUCE a charge and pin it against charge-speed buffs). Whether the in-game 'fixed' also blocks charge-speed buffs from the FIRE-RATE side is unverified.",
+    "⚑ Base cadence tuple (rate_of_fire, reloadFrames 111, ammo 9) is datamined and known-unreliable; the swap's own pulls/s is not stated at all and inherits the base SG cadence.",
+    "S2a Max HP is granted to ALL allies including self, so the self-share feeds her own atkOfMaxHpPct conversion (e3 rule: caster===target) — her ATK ramps ~+42% of Max-HP-derived ATK after 4 Full Bursts. Ally-side grants are offensively inert but kept for kit completeness / future consumers.",
+    "Burst flatDamage left at engine-default crit/core handling (no core: the text says plain Burst Skill damage) and no noFb — a burst cast resolves before the FB window opens, which is timing, not a per-unit exemption."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Drake: Great Villain (SG/Wind/Defender/Burst III). S1 replaces her shotgun with a 1.5s-fixed-charge 15-pellet SG (6 ammo, ×3 full charge) on every Full Burst entry, and dumps her whole magazine when that window closes (forcing a reload into the post-FB lull). S2 is an HP-to-ATK engine: a 4-stack team Max HP grant that ticks up at every Full Burst END, plus a permanent self ATK ▲ 6.23% of her own final Max HP, so her own share of the stacks compounds into her damage over the fight. Burst is a self Attack Damage ▲27.5%/25s plus a 1350% AoE nuke. No kit line is skipped (all three unmodeled arrays are empty).",
+  "hasPierce": false
+}

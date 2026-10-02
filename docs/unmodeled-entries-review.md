@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 212 | 45.2% |
-| Missing engine primitive / trigger | 98 | 20.9% |
-| Other / see caveats | 92 | 19.6% |
-| Out-of-domain / parser unsupported | 30 | 6.4% |
-| Weapon-state / shot-count approximation | 12 | 2.6% |
+| Defensive / HP / shield / aggro | 213 | 44.9% |
+| Missing engine primitive / trigger | 102 | 21.5% |
+| Other / see caveats | 92 | 19.4% |
+| Out-of-domain / parser unsupported | 30 | 6.3% |
+| Weapon-state / shot-count approximation | 12 | 2.5% |
 | Partless boss | 10 | 2.1% |
 | RNG / probabilistic | 6 | 1.3% |
 | Self-status / stack gate | 5 | 1.1% |
-| Measurement-gated / unverified cadence | 4 | 0.9% |
-| **Total** | **469** | 100.0% |
+| Measurement-gated / unverified cadence | 4 | 0.8% |
+| **Total** | **474** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (212)
+### Defensive / HP / shield / aggro (213)
 
 **A2** (a2)
 
@@ -40,6 +40,11 @@
 
 - **skill2:** Activates after 420 normal attack(s). Affects all allies. Perfect Maid: Gain debuff immunity to 1 debuff(s), stacking up to 1 time(s) continuously. — UNMODELED (defensive): the same immunity REFRESH at the 420-NA mark; same reason as skill1 (no enemy debuff model in v1).
   - *Why:* skill2: 'after 120 normal attack(s)' = 120 hit-counter units — hitsPerShot 1 makes pulls == hits (no lever); the counter re-fires every crossing (no once qualifier)
+
+**Aigis** (aigis)
+
+- **skill2:** Effect 2: Affects all allies. Marakukaja: DEF ▲ 21.12% of the skill user's DEF continuously. This effect cannot be removed. — no caster-DEF-scaled stat key exists in the schema (defPct is the target's OWN DEF %, a different basis), and DEF has no consumer in the v1 engine (the boss deals no damage), so the line is offense-inert. Recipe if a DEF consumer ever lands: add a casterDefPct StatKey resolved like casterAtkPct (flat add of 21.12% of her static DEF) and encode it in the same burstCast block, same 652f window.
+  - *Why:* skill1/skill2: both DEF lines are offense-inert in v1 (no incoming-damage model, no DEF consumer). The self DEF ▲ 21.12% is kept as a defPct buff (exact semantics); the team 'DEF ▲ 21.12% of the skill user's DEF' has no matching stat key and is verbatim in unmodeled.
 
 **Alice** (alice)
 
@@ -391,7 +396,7 @@ ATK ▲ 20% of the skill user's ATK for 10 sec. — UNMODELED (inert): the destr
 **Maiden: Ice Rose** (maiden-ice-rose)
 
 - **skill1:** Activates when entering Burst Stage 1 with MP at 0. MP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.
-  - *Why:* The two UNMODELED S1 MP lines are bookkeeping enacted via the owner-specified fold ('+1 MP per full burst sat out, cap 12, all consumed on her burst' = the engine's fbMissedSinceBurst read in stackedNuke), NOT dropped
+  - *Why:* MP ECONOMY: the two S1 MP-bookkeeping lines (MP +1 when entering Burst Stage 1 with MP at 0; MP +1 when entering Full Burst with MP above 1; cap 12, all consumed on her burst) are not blocks — they are folded into the burst's stack count via the owner-specified reading '+1 MP per full burst she does NOT burst in, cap 12, all consumed on her burst' = the engine's fbMissedSinceBurst read in stackedNuke (both lines verbatim in unmodeled.skill1)
 
 **Makima** (makima)
 
@@ -521,7 +526,7 @@ Max HP ▲ 10.09% for 10 sec.
 **Neon: Vision Eye** (neon-vision-eye)
 
 - **skill1:** When attacked while not in Healthy Body: Invulnerability for 3 sec (5 times per battle) and debuff immunity; Healthy Body: incoming healing ▲10.26% for 20 sec (defensive — invuln/immunity/received-heal amp; emits no heal event, no cross-unit consumer wiring needed)
-  - *Why:* SKIPPED: S1 invuln/debuff-immunity/Healthy-Body heal (defensive); all gauge-plumbing lines (start +100, +2/attack, +45 on end, burst gauge <100 charge, gauge=100 drain) are bookkeeping for the cycle above; S2 full-burst-end 'burst-gauge fill +5% x gauge' (variable x gauge, burst-gen only); burst Explosion Radius +200% (inert, single boss)
+  - *Why:* SKIPPED (verbatim in unmodeled): S1 invulnerability/debuff-immunity/Healthy-Body heal (defensive); burst Explosion Radius +200% (AoE-inert on a single partless boss); the gauge-plumbing lines (start +100, +2 per normal attack, +45 on charge end, the <100 charge and =100 drain) are bookkeeping ABSORBED into the everyN 3 alternation
 
 **Nero** (nero)
 
@@ -767,7 +772,7 @@ Attract: Taunts all enemies for 5 sec.
 - **skill2:** Restores 7.52% of Cover HP.
   - *Why:* skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)
 
-### Missing engine primitive / trigger (98)
+### Missing engine primitive / trigger (102)
 
 **A2** (a2)
 
@@ -783,6 +788,15 @@ Attract: Taunts all enemies for 5 sec.
 
 - **skill2:** Damage Taken ▼ 28.65% for 10 sec.
   - *Why:* Damage Taken ▼ 28.65% for 10 sec' — ally received-damage mitigation: no incoming damage and no ally HP pool to mitigate; the ONLY damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE) — wrong direction/target, so it is NOT used (encoding it would manufacture a phantom team damage gain — noise precedent); the 'highest FINAL ATK' targeting clause (alliesTopAtk byFinalAtk) is representable but moot with its inert effect
+
+**Aigis** (aigis)
+
+- **skill1:** Persona - Palladion: This effect is continuous and cannot be removed. — named state container: the engine has no Persona-state primitive. Both effects it wraps ARE modeled (the battleStart atkPct + defPct self buffs); the state NAME / undispellable flag is display-only at scope (nothing dispels).
+  - *Why:* skill1/skill2: both DEF lines are offense-inert in v1 (no incoming-damage model, no DEF consumer). The self DEF ▲ 21.12% is kept as a defPct buff (exact semantics); the team 'DEF ▲ 21.12% of the skill user's DEF' has no matching stat key and is verbatim in unmodeled.
+- **skill2:** ■ Activates when using Burst Skill as long as this unit is still alive. — the 'still alive' clause is unconditionally satisfied at scope lock (the boss deals no damage, nobody dies), so no gate is encoded; the trigger itself IS modeled (burstCast).
+  - *Why:* skill2: 'Activates when using Burst Skill' is keyed to HER OWN cast (burstCast). In a team with another Burst II unit that wins the stage-2 slot, Papillon Heart never activates — faithful to the kit; a fullBurstEnter encoding would wrongly grant the team ATK on every Full Burst regardless of who cast.
+- **skill2:** Papillon Heart: This effect is continuous and cannot be removed. Function: Aigis strengthens her allies. — named state container; its ATK effect and its cast→Full-Burst-end window ARE modeled (burstCast block, 652f window). 'Continuous and cannot be removed' reads UNDISPELLABLE, not unending — the kit's own deactivation condition ('When Full Burst ends') ends it.
+  - *Why:* skill2: the Papillon Heart window is encoded as durationSec 10.867 (652 frames) — DERIVED from the engine's measured chain timing for a Burst II cast (30f stage gap + 22f pre-FB delay + 10s Full Burst), not from a kit number; the kit gives only the deactivation condition ('When Full Burst ends'). A Full Burst extension from another unit would not stretch this window (no 'until FB end' duration primitive); the spec test pins the expiry to the actual Full-Burst-end frame on the plain rotation.
 
 **Anchor: Innocent Maid** (anchor-innocent-maid)
 
@@ -1026,6 +1040,8 @@ Outgoing healing ▲ 30.05% continuously.
 
 **Neon: Vision Eye** (neon-vision-eye)
 
+- **skill2:** When Full Burst ends: 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5 sec' is MODELED (enacted 2026-08-09, owner faithfulness ruling) as two everyN:3 self burstGenPct blocks on HER OWN burstCast + delaySec 10 (≈ the FB end of the window her cast opened — cast-keyed, so a co-B3's Full Bursts never fire it), aligned to the Super cycle: after a Super cast the gauge is 0 (offset skipped, no buff); after the 1st charge window burstGenPct 330 for 5s (⚑ 5 × [1 cast + 45 end + 2×~10 in-window normals] — the normal count is a cadence estimate); after the 2nd, burstGenPct 500 (5 × the 100 cap, kit-structural). Empirically does not consume the Firepower cycle — every-3rd-Super held on video
+  - *Why:* THE CYCLE: the gauge starts at 100 (S2 battle-start grant) and a 0→100 refill takes two charge-bursts, so Super Firepower fires on her OWN burst casts 1, 4, 7, … — encoded as everyN 3 / everyNOffset 1 on a burstCast trigger, the cadence video-confirmed cast-by-cast
 - **burst:** Explosion Radius ▲200% for 10 sec (inert — single partless boss, no AoE surface)
   - *Why:* See unit note / caveats
 
@@ -1192,6 +1208,11 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **skill2:** ■ Affects 2 allies with the highest final ATK.
   - *Why:* skill2: the 'Damage Taken ▼28.65%' ally mitigation is UNMODELED — the only damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE, wrong direction); NOT encoded (would manufacture a phantom team damage gain); the '2 highest-final-ATK allies' targeting clause is moot with the inert effect (⚑2; noise precedent)
 
+**Aigis** (aigis)
+
+- **skill1:** Function: Aigis strengthens herself using her Persona. — same state wrapper; the two stat buffs are the modeled function.
+  - *Why:* See unit note / caveats
+
 **Anchor: Innocent Maid** (anchor-innocent-maid)
 
 - **skill1:** ■ Activates when entering Full Burst while an ally from the same squad is on the battlefield. Affects all allies.
@@ -1281,7 +1302,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 **Maiden: Ice Rose** (maiden-ice-rose)
 
 - **skill1:** Activates when entering Full Burst with MP above 1. MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.
-  - *Why:* The two UNMODELED S1 MP lines are bookkeeping enacted via the owner-specified fold ('+1 MP per full burst sat out, cap 12, all consumed on her burst' = the engine's fbMissedSinceBurst read in stackedNuke), NOT dropped
+  - *Why:* MP ECONOMY: the two S1 MP-bookkeeping lines (MP +1 when entering Burst Stage 1 with MP at 0; MP +1 when entering Full Burst with MP above 1; cap 12, all consumed on her burst) are not blocks — they are folded into the burst's stack count via the owner-specified reading '+1 MP per full burst she does NOT burst in, cap 12, all consumed on her burst' = the engine's fbMissedSinceBurst read in stackedNuke (both lines verbatim in unmodeled.skill1)
 
 **Mana** (mana)
 
@@ -1340,13 +1361,11 @@ Critical Rate ▲ 3.56% for 5 sec.
 **Neon: Vision Eye** (neon-vision-eye)
 
 - **skill2:** Firepower Gauge bookkeeping: gains 100 Firepower Gauge at battle start; +2 per normal attack during Firepower Charge; +45 when Firepower Charge ends (NOT a block — the steady-state consequence is ABSORBED into the skill1 Super block's everyN 3 / everyNOffset 1: start at 100 → Super on her burst casts 1, 4, 7…; video-confirmed cast-by-cast, Run B)
-  - *Why:* Gauge starts at 100 (S2) and takes 2 charge-bursts to refill -> Super fires on her burst casts 1, 4, 7 (everyN 3, everyNOffset 1 — the engine feature added for this)
-- **skill2:** When Full Burst ends: 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5 sec' is MODELED (enacted 2026-08-09, owner faithfulness ruling) as two everyN:3 self burstGenPct blocks on HER OWN burstCast + delaySec 10 (≈ the FB end of the window her cast opened — cast-keyed, so a co-B3's Full Bursts never fire it), aligned to the Super cycle: after a Super cast the gauge is 0 (offset skipped, no buff); after the 1st charge window burstGenPct 330 for 5s (⚑ 5 × [1 cast + 45 end + 2×~10 in-window normals] — the normal count is a cadence estimate); after the 2nd, burstGenPct 500 (5 × the 100 cap, kit-structural). Empirically does not consume the Firepower cycle — every-3rd-Super held on video
-  - *Why:* KNOWN LOW-SEVERITY FIDELITY NOTE (S7 judge, faithfulness 0.93, GO): the +35.05% Super ATK rider is keyed to her burstCast (inside the everyN 3 / offset 1 Super block) rather than fullBurstEnter as the kit wording ('when entering Full Burst') literally reads, a construction that predates the selfStatus channel (2026-08-24), which can now express 'FB-enter gated on Super Firepower live' directly
+  - *Why:* THE CYCLE: the gauge starts at 100 (S2 battle-start grant) and a 0→100 refill takes two charge-bursts, so Super Firepower fires on her OWN burst casts 1, 4, 7, … — encoded as everyN 3 / everyNOffset 1 on a burstCast trigger, the cadence video-confirmed cast-by-cast
 - **burst:** Firepower Gauge below 100: activates Firepower Charge, charging the gauge for 10 sec (bookkeeping — ABSORBED into the everyN 3 alternation)
-  - *Why:* The FB-end burst-gen line is MODELED (2026-08-09): 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5s' = everyN:3 self burstGenPct 330/500 on her OWN burstCast + delaySec 10 (≈ her FB end; co-B3 windows never fire it), zero after a Super (gauge drained); ⚑ in-window normal count estimated
+  - *Why:* FB-END BURST-GEN LINE (MODELED): 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5s' = two everyN:3 self burstGenPct blocks on her OWN burstCast + delaySec 10 (≈ the FB end of the window her cast opened — cast-keyed, so a co-B3's Full Bursts never fire it): burstGenPct 500 (5 × the 100 cap) after the 2nd charge window, burstGenPct 330 after the 1st, and nothing after a Super (the gauge is drained)
 - **burst:** Firepower Gauge at 100: consumes 100 Firepower Gauge on activating Super Firepower (bookkeeping — ABSORBED into the everyN 3 alternation)
-  - *Why:* The FB-end burst-gen line is MODELED (2026-08-09): 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5s' = everyN:3 self burstGenPct 330/500 on her OWN burstCast + delaySec 10 (≈ her FB end; co-B3 windows never fire it), zero after a Super (gauge drained); ⚑ in-window normal count estimated
+  - *Why:* FB-END BURST-GEN LINE (MODELED): 'Burst Gauge filling speed ▲5% × Firepower Gauge charge for 5s' = two everyN:3 self burstGenPct blocks on her OWN burstCast + delaySec 10 (≈ the FB end of the window her cast opened — cast-keyed, so a co-B3's Full Bursts never fire it): burstGenPct 500 (5 × the 100 cap) after the 2nd charge window, burstGenPct 330 after the 1st, and nothing after a Super (the gauge is drained)
 
 **Prika** (prika)
 

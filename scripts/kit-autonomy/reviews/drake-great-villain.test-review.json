@@ -1,0 +1,105 @@
+{
+  "slug": "drake-great-villain",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Changes the weapon in use: Super Duper",
+      "disposition": "FAITHFUL",
+      "scope": "Replaces the normal-attack weapon for the Full Burst window; swap shots are the only shots fired while active. Swap shot = 15 pellets (SG path), full-shot damagePct 243.75, charge fixed 1.5s (chargeTimeClamp, NOT chargeTimeSec — additive charge-speed buffs must not move it), full-charge mult 300% (chargeMultPct), maxAmmo 6.",
+      "durationSemantics": "From fullBurstEnter until Super Duper Overdrive ends (= Full Burst end; kit gives no seconds — the durationSec bound is the engine's FB window, ⚑-adjacent but structural). Not permanent, not round-count.",
+      "triggerIdentity": "fullBurstEnter — kit literally says 'Activates when entering Full Burst', so it fires on ANY team Full Burst, including a rotation where helm (the other B3) casts and drake-great-villain does not. NOT burstCast.",
+      "targetSet": "self (weapon swap is owner-only).",
+      "nearestWrongModel": "Keying the swap to burstCast (fires only on own casts, missing helm-led FBs; also fires pre-FB and desyncs the window), or encoding pellets as a normalAttackPct proxy / per-pellet damagePct instead of weapon:'SG' + pelletCount 15 + full-shot damagePct 243.75, or using chargeTimeSec so charge-speed buffs shrink the fixed 1.5s.",
+      "distinguishingAssertion": "In a rotation where helm casts B3 and drake-great-villain never casts: drake's shot events during the FB window still show the swap profile (mult consistent with 243.75 full-shot, 15-pellet SG landing, 6-round magazine, ~1 shot per 1.5s+release). RED under burstCast keying (base 201.5/10-pellet/9-ammo SG persists). Also: zero swap shots outside any FB window.",
+      "inertness": "Base weapon stats (201.5 mult, 10 pellets, 9 ammo) unchanged outside FB; swap must not refill/persist past FB end; charge time must be immune to chargeSpeedPct buffs.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes 100% of ammo.",
+      "disposition": "FAITHFUL",
+      "scope": "Ammo economy of the weapon in hand at swap end — the engine hands the base weapon back FULL on a real swap exit, so this dumps that fresh 9-round mag and forces an immediate 111-frame reload. Real DPS-relevant downtime, not cosmetic.",
+      "durationSemantics": "Instantaneous consumeAmmo {fraction:1} at swap end; no duration. Fires exactly once per swap.",
+      "triggerIdentity": "'When Super Duper Overdrive ends' — coterminous with fullBurstEnd here (no maxShots early-exit on this swap), so fullBurstEnd is the faithful trigger; keyed to the swap's end, not to burstCast and not to FB enter.",
+      "targetSet": "self.",
+      "nearestWrongModel": "Omitting the block ('the swap hand-back gives a full mag anyway, so consume is a no-op') — wrong because the consume lands AFTER hand-back, forcing a real reload; or firing it at fullBurstEnter (dumping the swap's own 6-round mag instantly).",
+      "distinguishingAssertion": "A reload event for drake-great-villain within a few frames after each fullBurstEnd, and zero drake shot events for ~111 frames post-FB. RED under the omitted model (she resumes firing the fresh base mag immediately) and under an enter-keyed model (reload event appears at FB start instead).",
+      "inertness": "No reload/ammo events from this line at battle start or mid-FB; allies' ammo untouched; lastBullet-side effects only fire via the forced reload, not before.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 10.5% of the skill user's max",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Max HP grant (maxHpFlat at emit), value = 0.105 × drake-great-villain's Max HP — caster-scaled (casterMaxHpPct), resolved off the CASTER's HP, identical flat value on every target.",
+      "durationSemantics": "'continuously. Stacks up to 4 times' → permanent stacking buff, maxStacks 4, one stack added per fullBurstEnd, NO durationSec. Not round-count, not seconds.",
+      "triggerIdentity": "fullBurstEnd — 'Activates when Full Burst ends'. Any team's FB ending adds a stack (helm-led rotations included). NOT fullBurstEnter, NOT burstCast.",
+      "targetSet": "all allies INCLUDING self (no 'except self' clause). The self-stack is load-bearing: it feeds her own S2 Fashionably Late ATK conversion (atkOfMaxHpPct only feeds when caster === target). Ally-held stacks are offensively inert but must still be applied per taxonomy #7.",
+      "nearestWrongModel": "excludeSelf targeting (drops the self-feed into her ATK — silently guts S2b's growth), targetMaxHpPct instead of casterMaxHpPct (value varies per ally instead of uniform 0.105×drake HP), a durationSec window, or an added heal ('without restoring HP' forbids any recovery event).",
+      "distinguishingAssertion": "buffApply events with stat 'maxHpFlat' fire ONLY on fullBurstEnd (never on fullBurstEnter/burstCast), value ≈ 0.105 × drake's max HP, five targets per fire INCLUDING targetSlug drake-great-villain, stacks climbing to maxStacks 4 over four FBs; zero 'recovery'/heal events attributable to this line. RED under excludeSelf (no self-target event), under targetMaxHpPct (per-target values differ), under enter-keying (events at FB start).",
+      "inertness": "Must not grant ATK directly; must not emit heals; ally-held stacks must not feed any ally's atkOfMaxHpPct; must not stack past 4.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Fashionably Late: ATK ▲ 6.23% of max HP",
+      "disposition": "FAITHFUL",
+      "scope": "Self ATK conversion off her OWN final Max HP (atkOfMaxHpPct) — re-reads her LIVE max HP every frame, so it grows as her own S2a stacks land. Ally-granted Max HP does NOT feed it (e3 rule).",
+      "durationSemantics": "'continuously' → permanent from frame 0; battleStart trigger with no durationSec (battleStart respects durationSec, so authoring any duration would wrongly lapse it).",
+      "triggerIdentity": "battleStart — 'Activates at the start of battle'. A passive is functionally equivalent for a permanent buff; either is faithful, a lapse is not.",
+      "targetSet": "self only.",
+      "nearestWrongModel": "atkPct 6.23 (ATK% of ATK — orders of magnitude off for a Defender HP pool), or atkOfCasterMaxHpPct (apply-time FLAT snapshot: the buff would never grow when S2a self-stacks land — this is the subtle shared-prior trap since self === caster here makes the two look interchangeable at t=0).",
+      "distinguishingAssertion": "Drake's per-shot damage after her 3rd/4th S2a self-stack exceeds her damage with 0 stacks by the HP-fed ATK delta (0.0623 × 0.105 × stacks × her max HP, modulo bucket composition). RED under the apply-time-snapshot encoding (damage flat across stack count) and under atkPct (delta ~100× too small).",
+      "inertness": "Must not scale off allies' max HP or ally-granted HP; must not buff allies; must not lapse mid-fight.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲ 27.5% for 25 sec.",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Damage-Up-bucket buff (attackDamagePct) on all of drake-great-villain's damage — base shots AND swap shots — for 25s. With 40s CD this is ~62.5% uptime, and since it applies at cast it is live through the following FB window.",
+      "durationSemantics": "Wall-clock durationSec 25 from her own cast frame. Not stacks, not rounds, not permanent.",
+      "triggerIdentity": "burstCast — a self line in her OWN burst block with no other activation clause (taxonomy #3). Fires only on rotations SHE casts; NOT fullBurstEnter (which would over-credit on helm-led rotations and shift the window later).",
+      "targetSet": "self only.",
+      "nearestWrongModel": "fullBurstEnter keying (over-fires in multi-B3 comps and starts the 25s at FB start rather than at cast), or passive/100%-uptime encoding to match a calibrated total.",
+      "distinguishingAssertion": "In a helm-cast rotation (drake never casts): ZERO buffApply events with stat 'attackDamagePct' and caster drake-great-villain. In a drake-cast rotation: exactly one such buffApply at the cast frame with value 27.5 and expiresFrame ≈ cast + 25s worth of frames. RED under fullBurstEnter (buff appears on helm-led FBs) and under passive (no buffApply cadence at all / permanent value).",
+      "inertness": "Allies receive nothing; the buff must not extend past 25s on refresh-free rotations; it must not amplify teammates' damage.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1350% of final ATK as Burst Skill",
+      "disposition": "FAITHFUL",
+      "scope": "Single burst-slot flatDamage instance, atkPct 1350, scope tag burstDesc 'allEnemies' (the line sits under 'Affects all enemies') so burstSkillAoeDamagePct-family amps can feed it. Burst-cast instant damage: FB-EXEMPT by timing (cast lands before the FB window opens), no +30% range bonus (universal rider/burst rule), no core.",
+      "durationSemantics": "Instant on cast; no duration, no DoT.",
+      "triggerIdentity": "burstCast (stage 3). Exactly one damage instance per own cast.",
+      "targetSet": "enemy (boss), all-enemies scope.",
+      "nearestWrongModel": "Omitting burstDesc:'allEnemies' (inert until an amp teammate exists, but unfaithful), letting the hit take the +50% FB major (over-credit — the cast precedes the window), encoding as distributed/sustained flavor, or ordering it BEFORE the self attackDamagePct effect in the block so the nuke misses her own 27.5% (kit order is buff line first, damage line second — faithful order lets the nuke carry it).",
+      "distinguishingAssertion": "The burst-slot damage event has mult consistent with 1350, inFullBurst=false / fbMajorApplied=false, rangeApplied=false, core bucket absent, and its magnitude reflects the +27.5% attackDamagePct applied earlier in the same cast. RED under FB-crediting (fbMajorApplied=true or +50% magnitude) and under reversed ordering (nuke 27.5% short).",
+      "inertness": "No additional hits/ticks after the cast; no damage when she sits out the rotation; must not crit beyond the engine's burst-damage default (burst skill damage does not crit in-game).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:L1 (Super Duper Overdrive weaponSwap, fullBurstEnter)",
+    "skill1:L2 (Removes 100% ammo at swap end → forced reload)",
+    "skill2:L1 (casterMaxHpPct stacks, fullBurstEnd, all allies incl. self)",
+    "skill2:L2 (atkOfMaxHpPct live HP→ATK conversion, battleStart)",
+    "burst:L1 (attackDamagePct 27.5 / 25s, burstCast self)",
+    "burst:L2 (1350% AoE nuke, burstCast, FB-exempt)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": ["(without restoring HP)"],
+    "burst": []
+  },
+  "notes": "Leak check: the redacted methodology/schema names 'drake' (maxAmmoFlat theme-14 comment) — that is the BASE unit drake (SG/MG-line carrier, different slug), not drake-great-villain; no target slug or target magnitudes appear, so leakDetected=null. Shared-prior traps I expect the driver to have faced: (1) S1 swap keyed burstCast instead of fullBurstEnter — the controlComp fixture includes helm as a second B3, so the helm-cast rotation is the cheap discriminator and MUST be asserted; (2) S2b encoded as atkOfCasterMaxHpPct — looks identical at t=0 (self === caster) but never grows with her own S2a stacks, a calibration-invisible divergence unless a multi-FB run compares her damage at 0 vs 4 stacks; (3) S2a excludeSelf — same gutting of the HP→ATK loop from the other side; (4) S1-L2 omitted as a 'no-op' because the swap hand-back refills — the consume lands AFTER hand-back and forces a real 111f reload each FB exit (assert the post-FB reload event + shot silence); (5) burst buff keyed fullBurstEnter (over-credits helm-led rotations and shifts the 25s window); (6) swap charge time authored chargeTimeSec instead of chargeTimeClamp ('Fixed at 1.5 sec'). ⚑ flags the driver should carry: swap shot economy beyond the kit-stated 1.5s charge (release/inter-shot overhead frames are kit-silent — ALWAYS-⚑ #3, estimate optimistically and label), and the swap's durationSec bound being the engine FB window rather than kit-stated seconds. All kit-printed magnitudes (243.75/15/300/6/10.5/6.23/27.5/25/1350) are DATAMINED-tier; nothing here needs a CALIBRATED guess except the swap cadence residue.",
+  "model": "kimi-code/k3"
+}

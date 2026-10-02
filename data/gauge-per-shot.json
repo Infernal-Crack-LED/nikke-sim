@@ -336,6 +336,12 @@
     "fullChargeBonus": 0,
     "source": "datamined"
   },
+  "drake-great-villain": {
+    "basePerTrigger": 200,
+    "targetPerTrigger": 400,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
   "e-h": {
     "basePerTrigger": 10,
     "targetPerTrigger": 20,

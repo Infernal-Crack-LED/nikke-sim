@@ -63,10 +63,10 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | StatKey | Factor | Composition | Applies to | Carriers | Enacted on |
 | --- | --- | --- | --- | --- | --- |
 | `atkOfCasterMaxHpPct` | FinalATK | flat ATK add of `% × caster's liveMaxHp` snapshotted at apply; stored as `casterAtkPct` | always | 1 | maxwell-ordinary-mechanic |
-| `atkOfMaxHpPct` | FinalATK | flat ATK add of `% × liveMaxHp`, **re-read every frame** | always | 4 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose |
-| `atkPct` | FinalATK | `staticAtk × (1 + Σ/100)` — dilutes against other ATK ▲% | always | 80 | a2, ada, ade-agent-bunny, alice, anis-star, anne-miracle-fairy, arcana-fortune-mate, ark-ranger-black, … |
-| `casterAtkPct` | FinalATK | flat ATK add, resolved at apply to `caster.staticAtk × %` — does NOT dilute | always | 49 | ada, ade, ade-agent-bunny, anchor-innocent-maid, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, … |
-| `defPct` | FinalATK | ENEMY-targeted at a nonzero value: scales cfg.bossDef by (1 + Σ/100), floor 0 (the DEF ▼ channel, 2026-08-10); SELF/ally-targeted stays read by nothing — own DEF does not enter own damage | enemy-targeted buffs only; sub-0.1% at the graded surfaces (scope-lock bossDef 140), live at the web raid DEF defaults | 34 | anchor, anis, bay, centi, crow, crown, crust, delta, … |
+| `atkOfMaxHpPct` | FinalATK | flat ATK add of `% × liveMaxHp`, **re-read every frame** | always | 5 | 2b, cinderella, drake-great-villain, laplace-ultimate-hero, maiden-ice-rose |
+| `atkPct` | FinalATK | `staticAtk × (1 + Σ/100)` — dilutes against other ATK ▲% | always | 81 | a2, ada, ade-agent-bunny, aigis, alice, anis-star, anne-miracle-fairy, arcana-fortune-mate, … |
+| `casterAtkPct` | FinalATK | flat ATK add, resolved at apply to `caster.staticAtk × %` — does NOT dilute | always | 50 | ada, ade, ade-agent-bunny, aigis, anchor-innocent-maid, anis-sparkling-summer, anis-star, arcana, … |
+| `defPct` | FinalATK | ENEMY-targeted at a nonzero value: scales cfg.bossDef by (1 + Σ/100), floor 0 (the DEF ▼ channel, 2026-08-10); SELF/ally-targeted stays read by nothing — own DEF does not enter own damage | enemy-targeted buffs only; sub-0.1% at the graded surfaces (scope-lock bossDef 140), live at the web raid DEF defaults | 35 | aigis, anchor, anis, bay, centi, crow, crown, crust, … |
 | `highestAllyAtkPct` | FinalATK | flat ATK add of `max(all staticAtk) × %` at apply; stored as `casterAtkPct` | always | 1 | guilty |
 | `critDamagePct` | Major (crit) | additive pp into `critBonus` (base `(critDamage−100)/100`) | crit-eligible instances | 28 | admi, aria, diesel-winter-sweets, dolla, emma-tactical-upgrade, epinel, guillotine, isabel, … |
 | `critRateNormalPct` | Major (crit) | additive pp into `critRate`, alongside `critRatePct` | `category === 'normal'` only | 3 | biscuit, helm, julia |
@@ -76,7 +76,7 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `elementDamagePct` | Element | additive pp on the 1.1 advantage base | elemental advantage only | 0 | _none_ |
 | `chargeDamageMultPct` | Charge | scales the BASE charge term (`baseCharge × %`), like the doll/collection lines | charge instances only | 2 | admi, helm |
 | `chargeDamagePct` | Charge | flat percentage points added AFTER the base term | charge instances only | 14 | a2, alice, ein, emilia, eunhwa, eunhwa-tactical-upgrade, himeno, n102, … |
-| `attackDamagePct` | DamageUp | additive pp — the unflavored member every instance reads | always | 52 | ade-agent-bunny, anchor-innocent-maid, anis-star, arcana, arcana-fortune-mate, asuka, asuka-wille, avistar, … |
+| `attackDamagePct` | DamageUp | additive pp — the unflavored member every instance reads | always | 53 | ade-agent-bunny, anchor-innocent-maid, anis-star, arcana, arcana-fortune-mate, asuka, asuka-wille, avistar, … |
 | `burstSkillAoeDamagePct` | DamageUp | additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured) | burst-slot hits tagged burstDesc:'allEnemies' | 1 | trina |
 | `burstSkillSingleDamagePct` | DamageUp | additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured) | burst-slot hits tagged burstDesc:'singleEnemy' | 1 | jackal |
 | `pierceDamagePct` | DamageUp | additive pp | Pierce-tagged shots (`hasPierce` / live `gainPierce` / per-shot tag) | 10 | ade-agent-bunny, d-killer-wife, diesel, dorothy-serendipity, grave, mari, milk-blooming-bunny, mint, … |
@@ -90,7 +90,7 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `distributedDamagePct` | Distributed | TWO consumers by buff target: on a unit → `Distributed = 1 + Σ/100`; on the ENEMY → joins `Taken`, and only while a Damage-Taken ▲ is live | distributed-flavored instances | 9 | anchor-innocent-maid, crust, delta-ninja-thief, elegg, mast-romantic-maid, phantom, queen, quency-escape-queen, … |
 | `normalAttackPct` | rate% | scales the normal-attack multiplier (with the doll SMG/SG line); bypassed while consolidating | normal attacks only | 6 | arcana-fortune-mate, asuka-wille, chime, jill, mast-romantic-maid, rumani |
 | `pelletCountFlat` | rate% | flat add to the SG effective pellet count (damage only — per-trigger gauge is NOT pumped) | SG, swap-off | 3 | arcana-fortune-mate, dorothy-serendipity, leona |
-| `casterMaxHpPct` | Max HP | flat Max HP grant of `caster.maxHp × %`, stored as `maxHpFlat` | feeds an ATK conversion only when self-granted (e3 rule) | 11 | ade, anis-star, avistar, cinderella, mary-bay-goddess, mast, maxwell-ordinary-mechanic, rouge, … |
+| `casterMaxHpPct` | Max HP | flat Max HP grant of `caster.maxHp × %`, stored as `maxHpFlat` | feeds an ATK conversion only when self-granted (e3 rule) | 12 | ade, anis-star, avistar, cinderella, drake-great-villain, mary-bay-goddess, mast, maxwell-ordinary-mechanic, … |
 | `highestAllyMaxHpPct` | Max HP | flat Max HP grant of `max(all maxHp) × %` at apply, stored as `maxHpFlat` | feeds an ATK conversion only when self-granted (e3 rule) | 2 | quency, sin |
 | `maxHpPct` | Max HP | converted at build time to a `maxHpFlat` SELF-grant (Vigor cube path); no kit carrier | feeds the holder’s own ATK conversion | 0 | _none_ |
 | `targetMaxHpPct` | Max HP | flat Max HP grant of the TARGET's own `maxHp × %`, stored as `maxHpFlat` | feeds an ATK conversion only when self-granted (e3 rule) | 17 | 2b, blanc, delta, diesel, folkwang, label, laplace-ultimate-hero, maiden-ice-rose, … |

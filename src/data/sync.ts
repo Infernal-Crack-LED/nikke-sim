@@ -79,6 +79,9 @@ const firstReleaseDate = (v: string | null | undefined): string | null =>
 // Remove an entry once synergy picks it up — the API path will take over.
 const MANUAL_RELEASE_DATES: Record<string, string> = {
   yukiko: '2026-08-20',
+  // Released 2026-09-03 (Fandom wiki + the blablalink roster seed the same day); Synergy has no
+  // row yet, so the date is hand-carried like yukiko's until the API path takes over.
+  'drake-great-villain': '2026-09-03',
 };
 
 // Shape of the DB's nikke_characters.sheet_data jsonb (the community Tsareena build sheet), as

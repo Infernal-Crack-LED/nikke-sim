@@ -113,11 +113,14 @@ def main() -> int:
     # whatever JSON happened to appear first. Without this, any valid-JSON input that is not a
     # dispatch envelope is copied out verbatim and reported as a successful rescue: a silent wrong
     # file, which on a recovery tool is worse than the crash it replaced.
-    if not isinstance(obj, dict) or 'verdict' not in obj:
+    # Accepted shapes: a gate/judge `verdict`, or the kit-autonomy blind-role payloads — `spec`
+    # (S2b review / S5 test-writer) and `override` (S6 override-writer) — which carry no verdict by
+    # contract. Same rule as the dispatch bridges' shape check (2026-09-03).
+    if not isinstance(obj, dict) or not any(k in obj for k in ('verdict', 'spec', 'override')):
         keys = ', '.join(sorted(obj)[:8]) if isinstance(obj, dict) else type(obj).__name__
         print(
-            f'{args.log_path}: extracted JSON has no `verdict` field (got: {keys}) — '
-            'this is not a review/gate result; nothing written',
+            f'{args.log_path}: extracted JSON has none of `verdict` / `spec` / `override` (got: {keys}) — '
+            'this is not a review/gate/blind-role result; nothing written',
             file=sys.stderr,
         )
         return 1

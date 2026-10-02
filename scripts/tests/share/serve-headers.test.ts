@@ -76,7 +76,21 @@ beforeAll(async () => {
   };
   put('index.html', INDEX);
   put('assets/App-AbCd1234.js', 'js');
-  put('dpschart.json', '{}');
+  put(
+    'dpschart.json',
+    JSON.stringify({
+      cells: {
+        // The /ranks default view — what ranksStaticHtml renders. The zz slug
+        // has no characters.json entry (synthetic-row skip); alice appears
+        // twice (profiled dupe — must render once).
+        'solo.neutral.c100.scope': [
+          ['alice', 11_110_000],
+          ['alice', 10_500_000, 'alt-profile'],
+          ['zz-not-a-real-unit', 9_990_000],
+        ],
+      },
+    })
+  );
   put('burstgen.json', '{}');
   put('b1b2dps.json', '{}');
   put('ol-default.json', '{}');
@@ -472,6 +486,24 @@ describe('serve.mjs cache-control classes', () => {
     // disagrees with this ranking for most units, and indexing a different
     // recommendation than the visitor sees is worse than indexing none.
     expect(body).not.toContain('No optimal line data yet.');
+    // Related characters: same-element/same-weapon neighbours as real links,
+    // never a self-link (lockstep with static.ts — production runs THIS port).
+    expect(body).toContain('<h2>Related characters</h2>');
+    expect(body).not.toContain('href="/unit/liter"');
+  });
+
+  // Lockstep mirror of the serve-api.test.ts /ranks body assertion — this
+  // file runs the .mjs server, which must emit the identical body.
+  it('/ranks serves the default DPS chart as links to unit pages with JS off', async () => {
+    const res = await fetch(`${base}/ranks`);
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    const body = html.split('</head>')[1] ?? '';
+    expect(body).toContain('B3 carry DPS ranking');
+    expect(body).toContain('ranks-list');
+    expect(body).not.toContain('href="/unit/zz-not-a-real-unit"');
+    expect(body.match(/href="\/unit\/alice"/g)?.length).toBe(1);
+    expect(body).toContain('11.11M DPS');
   });
 
   it('/characters serves every unit link with JS off', async () => {

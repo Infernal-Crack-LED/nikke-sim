@@ -467,6 +467,27 @@ export function UnitPage({ slug }: { slug: string | null }) {
   );
   const cardUrl = useUnitCardUrl(character ? slug : null, unitImageUrl(slug));
   const dps = useDpsStanding(character ? slug : null, character?.element);
+  // Related characters — same source as the no-JS body (data/characters.json),
+  // same selection as src/server/static.ts relatedUnitLinks (keep in lockstep).
+  const related = useMemo(() => {
+    if (slug == null || !character) {
+      return null;
+    }
+    const chars = data.characters as Record<
+      string,
+      { name?: string; element?: string; weapon?: string }
+    >;
+    const pick = (key: 'element' | 'weapon') =>
+      Object.entries(chars)
+        .filter(
+          ([s, c]) => s !== slug && c[key] != null && c[key] === character[key]
+        )
+        .sort(([sa, ca], [sb, cb]) =>
+          (ca.name ?? sa).localeCompare(cb.name ?? sb)
+        )
+        .slice(0, 6);
+    return { element: pick('element'), weapon: pick('weapon') };
+  }, [slug, character]);
 
   useEffect(() => {
     const pathname = window.location.pathname;
@@ -691,6 +712,40 @@ export function UnitPage({ slug }: { slug: string | null }) {
           </p>
         )}
       </section>
+
+      {related && (related.element.length > 0 || related.weapon.length > 0) && (
+        <section className="unit-section">
+          <h2>Related characters</h2>
+          {related.element.length > 0 && (
+            <div className="unit-related">
+              <h3>More {character.element} units</h3>
+              {related.element.map(([s, c]) => (
+                <a
+                  key={s}
+                  href={`/unit/${s}`}
+                  onClick={onSpaLinkClick(`/unit/${s}`)}
+                >
+                  {c.name ?? s}
+                </a>
+              ))}
+            </div>
+          )}
+          {related.weapon.length > 0 && (
+            <div className="unit-related">
+              <h3>More {character.weapon} users</h3>
+              {related.weapon.map(([s, c]) => (
+                <a
+                  key={s}
+                  href={`/unit/${s}`}
+                  onClick={onSpaLinkClick(`/unit/${s}`)}
+                >
+                  {c.name ?? s}
+                </a>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="unit-section">
         <h2>Tools</h2>

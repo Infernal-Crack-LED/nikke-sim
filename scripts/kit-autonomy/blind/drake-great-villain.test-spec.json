@@ -1,0 +1,57 @@
+{
+  "slug": "drake-great-villain",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst",
+      "disposition": "FAITHFUL",
+      "assertion": "Block is trigger fullBurstEnter / target self with a weaponSwap (damagePct 243.75, chargeMultPct 300, maxAmmo 6, pelletCount 15, weapon SG, fixed 1.5s charge, not sameWeapon). Behaviorally: every charged damage instance in the comp is x3.0 exactly and lands inside Full Burst. Fails under the nearest-wrong readings: passive/battleStart swap (x3 shots leak outside FB), missing chargeMultPct (no x3 shots at all), missing weapon:'SG' (bypasses the pellet-landing model), and — in the two-Burst-III fixture — an ownBurstGate:'cast' reading, which loses the other B3's Full Burst windows."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity: 6",
+      "disposition": "FAITHFUL",
+      "assertion": "maxAmmo 6 is a real shot economy: patching it to 1 forces mid-window reloads and lowers her total. Fails under a swap that inherits the base 9-round belt or drops maxAmmo."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes 100% of ammo",
+      "disposition": "FIX-RISK (commonly dropped as defensive)",
+      "assertion": "A self-targeted consumeAmmo (fraction 1) keyed to fullBurstEnd. Removing it INCREASES drake's damage by >0.2% — the base gun is handed back full on swap exit and this line dumps it, costing a 111-frame reload every cycle. Fails under the MISSING reading (line skipped as non-damage). No teammate-inertness claim is made: this line changes her shot count, hence her gauge feed and the rotation."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP 10.5% of skill user, 4 stacks",
+      "disposition": "FAITHFUL",
+      "assertion": "casterMaxHpPct 10.5, maxStacks 4, no durationSec, trigger fullBurstEnd, target allies WITHOUT excludeSelf. Events: maxHpFlat applications ramp 1..4, never exceed 4, carry one uniform flat value, and cover self plus every ally. Counterfactual maxStacks 4->1 lowers drake's damage >1% while leaving teammates byte-identical. Fails under targetMaxHpPct (per-target own HP -> non-uniform values), excludeSelf (kills the ATK ramp entirely), or a missing/uncapped stack count."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK 6.23% of skill user max HP",
+      "disposition": "FAITHFUL",
+      "assertion": "atkOfMaxHpPct 6.23, self, battleStart/passive, continuous. Zeroing it drops her total >2% with teammates byte-identical, and with it zeroed the stack counterfactual becomes an exact no-op — proving this conversion is the sole path from the Max HP stacks to damage. Fails under atkOfCasterMaxHpPct, which snapshots at apply time and, applied at battle start, would freeze at frame-0 Max HP and silently delete her whole 4-stack ramp."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage 27.5% for 25 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "attackDamagePct 27.5, durationSec 25, trigger burstCast, target self, applied >=3 times. Stretching the duration to permanent ADDS damage (40s cooldown means 25s can never be full uptime), and in the two-Burst-III fixture re-keying it to fullBurstEnter over-credits. Fails under atkPct (wrong bucket), a dropped duration, a rounds reading, or a full-burst-enter trigger."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1350% of final ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "flatDamage atkPct 1350 on a burstCast/enemy block, burstDesc not 'singleEnemy', core falsy. Removing it costs >1% of her total; forcing noFb:true is a byte-identical no-op, confirming the hit already resolves pre-Full-Burst (no +50% major) per the repo's measured burst-cast timing. Fails if the hit rides the FB major or is tagged single-target."
+    }
+  ],
+  "fixtures": "TWO. (1) soloB3 = controlComp('drake-great-villain', false) — liter B1 / crown B2 / drake B3: drake is the sole Burst III so she casts on every rotation, and excluding the fixed second B3 keeps its crit/charge buffs off every reading; it also leaves her swapped weapon as the ONLY charge weapon in the comp, which is what makes the unattributed `mult.charge > 1` event filter a clean Overdrive probe. Carries 10 of the 13 runs. (2) twoB3 = controlComp('drake-great-villain', true) — adds the fixed second Burst III so that some Full Bursts are not hers; this is the only fixture in which fullBurstEnter and burstCast/ownBurstGate diverge, so both trigger-identity counterfactuals live there behind an explicit non-vacuity assertion (her cast count strictly less than the Full Burst count). All runs deterministic (no seed), hoisted to module scope; 13 total.",
+  "gaps": [
+    "it.skip — GAP: no swapEnd trigger primitive exists, so 'when Super Duper Overdrive ends' is proxied by fullBurstEnd. With a teammate granting fullBurstExtend the weapon window closes before Full Burst ends and the ammo dump fires late; no extender is in either fixture, so the divergence is unobservable here.",
+    "it.skip — FLAGGED (kit-silent, always-flag field #3, weapon-swap shot economy): the Overdrive durationSec is nowhere in the prose. Assumed to be the Full Burst window it is granted at; the test only asserts durationSec >= 10. Recipe: count Overdrive shots per Full Burst on a focus recording.",
+    "it.skip — FLAGGED: burst-gauge economy of the 15-pellet swapped shotgun is unobservable from prose (per-trigger energy vs per-landed-pellet crediting at 15 rather than the base 10 pellets feeds back into her own rotation). Recipe: gauge-bar read on a focus recording.",
+    "NOT TESTED (outside the prose's reach): Hit-Rate -> core magnitude for the swapped SG, and the pellet-landing fraction at the scope-lock range band — both measured-only.",
+    "SHAPE AMBIGUITY handled defensively, not asserted: the packet describes the override slot as both a raw Block[] and a CharacterSkills carrying .blocks; blocksOf() reads either, so a shape mismatch cannot masquerade as a kit divergence."
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,143 @@
+{
+  "slug": "aigis",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates at start of battle; self",
+      "disposition": "FAITHFUL",
+      "scope": "Whole-fight, unscoped (not normal-attack/charge/crit scoped). Self only.",
+      "durationSemantics": "Permanent/continuous — no durationSec, no stacks, no round count. 'cannot be removed' is flavor (no dispel model in sim).",
+      "triggerIdentity": "battleStart (fires once at frame 0) or passive — byte-equivalent here because there is no durationSec. No gate.",
+      "targetSet": "self",
+      "nearestWrongModel": "Authoring battleStart WITH a durationSec (e.g. 10s or 60s), so the 'continuously' buff lapses mid-fight; or widening 'Affects self' to allies because skill2 grants the same 21.12% team-wide (the two lines are twins in magnitude, one self, one team).",
+      "distinguishingAssertion": "Collect buffApply where targetSlug==='aigis' && stat==='atkPct' && value===21.12: exactly ONE, at frame 0, with expiresFrame >= the sim's final frame (or undefined/Infinity). Assert no ally (liter/crown/helm) ever receives a buffApply with stat==='atkPct' && value===21.12.",
+      "inertness": "Must not fire again on any burstCast/fullBurstStart; must not touch any non-aigis targetIdx; must not create a second stack.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Rakukaja: DEF ▲21.12% continuously",
+      "disposition": "FAITHFUL",
+      "scope": "Self DEF, unscoped. Damage-inert in v1 (defPct is a declared no-op stat) but must still be ENCODED — taxonomy rule 7 (keep the stat for future consumers/scalers) and no-silent-drops.",
+      "durationSemantics": "Permanent/continuous, same block as Tarukaja.",
+      "triggerIdentity": "Same battleStart/passive self block as Effect 1 — one block, two buff effects.",
+      "targetSet": "self",
+      "nearestWrongModel": "Dropped entirely as 'defensive, no damage' (the recurring skip-defensive misread) — leaving no record and no future scaler feed; or routed to maxHpPct/atkOfMaxHpPct as if DEF converted to offense (it does not, nothing in this kit reads DEF).",
+      "distinguishingAssertion": "Assert a buffApply exists with targetSlug==='aigis' && stat==='defPct' && value===21.12 at frame 0. Separately assert damage inertness: totals(res) is byte-identical with and without that effect via withPatchedOverride (proving it is encoded-but-inert, not encoded-and-leaking).",
+      "inertness": "Must move ZERO damage for any unit; must not be encoded as any offensive stat.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ when using Burst Skill (self alive)",
+      "disposition": "FAITHFUL",
+      "scope": "Activation clause only — fires on AIGIS'S OWN burst cast. She is Burst II, so this is her stage-2 cast, which PRECEDES Full Burst by the chain gap (B2 cast → 30f → B3 cast → 22f → FB start ≈ 52f / 0.87s).",
+      "durationSemantics": "Trigger-level: instantaneous fire per own cast (once per rotation she bursts).",
+      "triggerIdentity": "trigger {kind:'burstCast'} — NOT fullBurstEnter, NOT stageCast{stage:2} (any ally's stage-2 cast), NOT stageEnter{stage:2}. 'as long as this unit is still alive' is scope-trivial (nobody dies at scope lock).",
+      "targetSet": "Block target {kind:'allies'} — 'all allies' includes self (no 'except self' clause).",
+      "nearestWrongModel": "Keying to fullBurstEnter (or ownBurstGate:'cast' + fullBurstEnter). This is the single highest-probability shared misread: it looks equivalent in a comp where she is the only B2, but it (a) starts the buff ~0.87s LATE, so every burst-cast damage instance that lands pre-FB (the B3 carry's own burst nuke, which is FB-exempt and lands before the window opens) misses the ATK buff, and (b) over-fires on any team Full Burst she did not complete.",
+      "distinguishingAssertion": "Record the frame of the burstCast event with srcSlot/slug 'aigis' (fBC) and the frame of fullBurstStart (fFB). Assert every buffApply with casterIdx===aigis's index && stat==='casterAtkPct' has frame === fBC and frame < fFB (strictly BEFORE full burst starts). Under the fullBurstEnter misread the apply frame equals fFB — RED.",
+      "inertness": "No apply at frame 0; no apply on a Full Burst in a rotation where aigis did not cast; exactly one apply per own cast per target.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all allies: ATK ▲21.12% of user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK (not normal-attack/charge scoped). CASTER-SCALED: '21.12% OF THE SKILL USER'S ATK' — a flat add derived from aigis's ATK, uniform across targets.",
+      "durationSemantics": "'continuously' + 'Deactivation condition: When Full Burst ends' → a window, not permanent and not a round count. See the deactivation row.",
+      "triggerIdentity": "burstCast (own cast) — inherits the block trigger above.",
+      "targetSet": "allies including self (5 buffApply events per cast: aigis + 4).",
+      "nearestWrongModel": "stat 'atkPct' 21.12 (scales each TARGET'S own ATK) instead of 'casterAtkPct'. Aigis is a Supporter (static ATK 98,367); the carry is typically an Attacker (118,027). atkPct over-credits the Attacker by ~(118,027−98,367)×0.2112 ≈ 4,152 ATK and under-credits a lower-ATK ally — a silent per-unit magnitude error that a total-damage eyeball will not catch.",
+      "distinguishingAssertion": "Assert each buffApply for this line has stat==='casterAtkPct' and value === closeTo(0.2112 × aigis.staticAtk, ~1e-6) — i.e. a FLAT ATK number in the ~20.8k range, NOT the raw 21.12 (harness rule: caster-scaled values are flat-resolved at apply time). Assert the SAME value is emitted for every targetIdx (uniform), which the atkPct misread cannot produce. Assert exactly 5 targets (self included) per cast.",
+      "inertness": "Must not also emit an atkPct 21.12 to allies (double-book with skill1's self line); the self-target instance must be a SECOND, distinct buff key from skill1's self atkPct, not a refresh of it.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all allies: DEF ▲21.12% of user's DEF",
+      "disposition": "GAP",
+      "scope": "Caster-DEF-scaled team DEF grant. The StatKey union has NO casterDefPct — only plain 'defPct' (declared inert in v1). There is no faithful primitive for '% of the skill user's DEF' granted to allies.",
+      "durationSemantics": "Same FB-end-bounded window as the ATK twin.",
+      "triggerIdentity": "burstCast (own cast), same block.",
+      "targetSet": "allies including self.",
+      "nearestWrongModel": "Either (a) silently dropped as defensive, leaving no audit record, or (b) 'approximated' by mapping it onto an OFFENSIVE stat because the ATK twin next to it is offensive. Also plausible: encoding it as casterAtkPct by copy-paste from the line above — which would DOUBLE the team ATK grant.",
+      "distinguishingAssertion": "Assert the count of buffApply with stat==='casterAtkPct' && casterIdx===aigis is exactly 5 per own cast (one per ally), NOT 10 — this catches the copy-paste double-book. If encoded as defPct 21.12 to allies, assert damage inertness by withPatchedOverride removal (totals byte-identical); otherwise it must appear verbatim in unmodeled.skill2.",
+      "inertness": "Zero damage movement for any unit under any encoding choice.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deactivation: When Full Burst ends",
+      "disposition": "GAP",
+      "scope": "Window bound on the whole Papillon Heart block. The engine has a fullBurstEnd TRIGGER but no 'remove this buff at FB end' effect, so the window must be approximated by durationSec measured FROM HER CAST FRAME.",
+      "durationSemantics": "NOT permanent, NOT 'continuously'-as-whole-fight, NOT round-scoped. Live span = (own B2 cast → FB start) + FB length ≈ 0.87s + 10s ≈ 10.87s at nominal chain timing. A flat durationSec:10 truncates the last ~52 frames of Full Burst.",
+      "triggerIdentity": "Applied on burstCast; expiry is an authored durationSec ⚑, not a real deactivation hook.",
+      "targetSet": "allies (all five instances share the window).",
+      "nearestWrongModel": "Two symmetric misreads: (1) reading 'continuously / cannot be removed' as PERMANENT and omitting durationSec entirely — the team ATK buff then persists through the whole ~20s cooldown gap, roughly doubling its uptime; (2) durationSec:10 taken from the nominal FB length, which starts the clock at the CAST rather than at FB start and so clips ~0.87s off the end of the FB window (the highest-value slice of the fight).",
+      "distinguishingAssertion": "From the buffApply, read expiresFrame; capture fullBurstEnd's frame (fEnd). Assert expiresFrame >= fEnd AND expiresFrame <= fEnd + ~10 frames — green only for a duration that spans cast→FB-end. The permanent misread gives expiresFrame >= final frame (or undefined) — RED; the durationSec:10 misread gives expiresFrame ≈ fEnd − 52 — RED. Also assert the buff is NOT active at a probe frame midway between fEnd and the next burstCast.",
+      "inertness": "Must be inert during the post-FB cooldown gap; must not extend past the FB it belongs to.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects all enemies",
+      "disposition": "FAITHFUL",
+      "scope": "Target clause for the burst damage line.",
+      "durationSemantics": "Instantaneous — no window.",
+      "triggerIdentity": "burstCast, burst slot (the burst block's own cast).",
+      "targetSet": "enemy (single boss at scope lock, so 'distributed across all enemies' resolves to the full amount on one target).",
+      "nearestWrongModel": "Tagging burstDesc:'allEnemies' reflexively — that tag exists ONLY to feed the jackal/trina Burst-Skill-Damage amplifier family; adding it here is harmless in the control comp but is a live over-credit the moment such an amp is present, and it is not what the clause means.",
+      "distinguishingAssertion": "Assert the burst damage event carries bucket 'burst' and that the override's burst flatDamage has no burstDesc field (inspection) — or, behaviourally, that totals are unchanged when the tag is stripped in the control comp (proving no amp present) while the encoding stays untagged.",
+      "inertness": "No ally-facing effect from this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "396% of final ATK, distributed damage",
+      "disposition": "FAITHFUL",
+      "scope": "One instant hit at cast, % of aigis's FINAL ATK (so it reads her own skill1 +21.12% and any team buffs live at cast). 'distributed' flavor → reads distributedDamagePct amps.",
+      "durationSemantics": "Instantaneous.",
+      "triggerIdentity": "burstCast, target enemy; lands PRE-Full-Burst (burst-cast damage always resolves before the FB window opens — no +50% FB major, no entry auras).",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Authoring core:true and/or crit:true and/or letting it take the +30% range bonus, on the intuition that a big burst nuke should core — the kit says nothing about core strike, so it gets no core; and the FB-exempt/pre-FB timing is easy to lose by attaching the damage to a fullBurstEnter block instead, which would silently hand it the +50% Full-Burst major.",
+      "distinguishingAssertion": "On the burst damage event assert: bucket==='burst', inFullBurst===false && fbMajorApplied===false (pre-FB resolution), core rate contribution 0 (no core bucket), rangeApplied===false, mult.charge===1, and flavor 'distributed'. Assert atkPct===396 by inspection with levelScale/levelConst handled. The fullBurstEnter misread flips fbMajorApplied to true — RED.",
+      "inertness": "Must fire exactly once per rotation in which aigis casts, never on a rotation where another B2 takes stage 2.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Tarukaja ATK ▲21.12% self, battleStart, permanent, stat atkPct",
+    "skill1:Rakukaja DEF ▲21.12% self, encoded-but-damage-inert (defPct)",
+    "skill2:trigger identity = own burstCast (pre-FB), NOT fullBurstEnter",
+    "skill2:Matarukaja = casterAtkPct 21.12 (flat-resolved off aigis's ATK), allies incl. self, 5 applies",
+    "skill2:window = own cast → Full Burst end (durationSec ≈ 10.87s ⚑), not permanent, not 10.0s",
+    "burst:396% final ATK, distributed flavor, pre-FB (no FB major), no core, no range",
+    "burst:Affects all enemies — untagged (no burstDesc amp scope)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Persona - Palladion: This effect is continuous and cannot be removed.",
+      "Function: Aigis strengthens herself using her Persona.",
+      "This effect cannot be removed. (no dispel/cleanse mechanic exists in the sim)"
+    ],
+    "skill2": [
+      "Papillon Heart: This effect is continuous and cannot be removed.",
+      "Function: Aigis strengthens her allies.",
+      "as long as this unit is still alive (scope-trivial — nobody dies at scope lock)",
+      "Marakukaja: DEF ▲ 21.12% of the skill user's DEF continuously. (no casterDefPct StatKey exists; damage-inert either way)"
+    ],
+    "burst": []
+  },
+  "notes": "HARNESS HAZARD — READ BEFORE TRUSTING ANY GREEN: aigis is BURST II, and controlComp is liter B1 / crown B2 / carry B3 / helm B3. Passing aigis as the `carry` puts a Burst-II unit in a Burst-III slot, and crown already occupies stage 2 — so aigis may cast her burst on NO rotation at all. Every skill2 and burst assertion above then passes vacuously against an empty event set (or fails for the wrong reason). The test MUST first assert `events.filter(e => e.kind==='burstCast' && <slug is aigis>).length >= 2` as a guard, and the fixture must remove/replace the competing B2 (patch crown out, or use a comp where aigis is the sole stage-2 caster). This is the same failure shape as the standing 'a lone B3 makes ZERO full bursts' rule, one tier up: a SECOND same-tier unit silently steals the cast. I expect this to be the driver's likeliest structural miss, ahead of any per-line misread.\n\nSHARED-PRIOR MISREADS I expect the driver to make: (1) fullBurstEnter for skill2 — the two triggers coincide in a single-B2 comp on damage TOTALS but diverge by ~52 frames, and that gap is exactly where the B3's FB-exempt burst-cast damage lands, so the error hides behind an aggregate ratio; (2) atkPct instead of casterAtkPct — the kit's 'of the skill user's ATK' is easy to skim past when skill1's self line one paragraph earlier IS a plain atkPct with the identical 21.12 magnitude; the two lines being twins in number is the trap. (3) 'continuously ... cannot be removed' read as permanent, with the 'Deactivation condition: When Full Burst ends' line — which sits BELOW the effects and reverses them — dropped as boilerplate. Any two of these three compound: a permanent fullBurstEnter-keyed atkPct grant would inflate the whole team for the entire fight while still looking like a plausible support kit.\n\nGAPS the driver must reconcile explicitly rather than paper over: (a) no casterDefPct primitive for Marakukaja; (b) no 'remove at Full Burst end' effect, so the window is a ⚑ CALIBRATED durationSec measured from her CAST frame, and it is composition-sensitive — any teammate with fullBurstExtend (or a boss transition shifting the chain) lengthens the real FB and a fixed durationSec then under-runs. State the ⚑ with the derivation (chain gap 52f + FB 10s ≈ 10.87s) and the recipe (read her buff's live span off a focus recording, or assert against fullBurstEnd in the test) rather than shipping a bare 10.\n\nEVIDENCE: every magnitude here (21.12, 21.12, 396) is literal kit prose — DATAMINED, no measurement gate. The only ⚑ in the unit is the FB-end window duration. Nothing in this kit touches weapon state, ammo, fire rate, DoT, stacks, pierce, or core, so the cadence/⚑ families in the methodology are all inapplicable — do NOT invent a hitCount or interval rider; there is no untriggered damage line anywhere in this kit.",
+  "model": "claude-opus-5"
+}

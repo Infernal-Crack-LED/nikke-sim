@@ -1,0 +1,82 @@
+{
+  "note": "NEW unit (no base counterpart) — Persona-style kit (Persona - Palladion / Papillon Heart), SMG/Supporter/Iron, Burst II (cd 20s). SKILL1: battle-start self ATK ▲ 21.12% (atkPct) + DEF ▲ 21.12% (defPct), both PERMANENT — 'continuously' with no deactivation condition, so battleStart with no durationSec. The DEF line is kept as its exact stat buff (the target's own DEF %) even though DEF has no consumer in v1 (no incoming damage), per the keep-the-stat rule. SKILL2: 'Activates when using Burst Skill' = her OWN burst cast (burstCast — NOT fullBurstEnter: a different Burst II ally completing the chain does not activate Papillon Heart, and the two diverge exactly when another Burst II is fielded). Matarukaja = ATK ▲ 21.12% of the SKILL USER'S ATK to ALL allies, self included (casterAtkPct — resolved at apply time to a flat add of 21.12% of her static ATK, uniform across the team). The window is the kit's own deactivation condition, 'When Full Burst ends': for a Burst II cast that is cast → stage-3 cast (30f chain gap) → Full Burst entry (22f pre-FB delay) → FB end (10s) = 652f ≈ 10.87s, encoded as durationSec 10.867 — DERIVED from the engine's measured chain timing, not a kit number. Marakukaja (DEF ▲ 21.12% of the skill user's DEF to all allies) is UNMODELED: the effect schema has no caster-DEF-scaled stat key (defPct scales the TARGET'S own DEF, a different quantity), and DEF has no consumer in v1, so the line is offense-inert with nothing to encode it faithfully against. BURST: 396% of final ATK as distributed damage to all enemies — cast-instant (lands 22f before Full Burst opens, so no +50% Full Burst major), crit-eligible, TAGGED burstDesc 'allEnemies' (her clause is the literal string trina's Burst-Skill-Damage amp quotes; literal-only per owner ruling 2026-08-10). Kit-autonomy gauntlet 2026-09-03.",
+  "unmodeled": {
+    "skill1": [
+      "Persona - Palladion: This effect is continuous and cannot be removed. — named state container: the engine has no Persona-state primitive. Both effects it wraps ARE modeled (the battleStart atkPct + defPct self buffs); the state NAME / undispellable flag is display-only at scope (nothing dispels).",
+      "Function: Aigis strengthens herself using her Persona. — same state wrapper; the two stat buffs are the modeled function."
+    ],
+    "skill2": [
+      "■ Activates when using Burst Skill as long as this unit is still alive. — the 'still alive' clause is unconditionally satisfied at scope lock (the boss deals no damage, nobody dies), so no gate is encoded; the trigger itself IS modeled (burstCast).",
+      "Papillon Heart: This effect is continuous and cannot be removed. Function: Aigis strengthens her allies. — named state container; its ATK effect and its cast→Full-Burst-end window ARE modeled (burstCast block, 652f window). 'Continuous and cannot be removed' reads UNDISPELLABLE, not unending — the kit's own deactivation condition ('When Full Burst ends') ends it.",
+      "Effect 2: Affects all allies. Marakukaja: DEF ▲ 21.12% of the skill user's DEF continuously. This effect cannot be removed. — no caster-DEF-scaled stat key exists in the schema (defPct is the target's OWN DEF %, a different basis), and DEF has no consumer in the v1 engine (the boss deals no damage), so the line is offense-inert. Recipe if a DEF consumer ever lands: add a casterDefPct StatKey resolved like casterAtkPct (flat add of 21.12% of her static DEF) and encode it in the same burstCast block, same 652f window."
+    ],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "battleStart"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 21.12
+        },
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 21.12
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 21.12,
+          "durationSec": 10.867
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 396,
+          "flavor": "distributed",
+          "burstDesc": "allEnemies"
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "skill2: the Papillon Heart window is encoded as durationSec 10.867 (652 frames) — DERIVED from the engine's measured chain timing for a Burst II cast (30f stage gap + 22f pre-FB delay + 10s Full Burst), not from a kit number; the kit gives only the deactivation condition ('When Full Burst ends'). A Full Burst extension from another unit would not stretch this window (no 'until FB end' duration primitive); the spec test pins the expiry to the actual Full-Burst-end frame on the plain rotation.",
+    "skill2: 'Activates when using Burst Skill' is keyed to HER OWN cast (burstCast). In a team with another Burst II unit that wins the stage-2 slot, Papillon Heart never activates — faithful to the kit; a fullBurstEnter encoding would wrongly grant the team ATK on every Full Burst regardless of who cast.",
+    "skill1/skill2: both DEF lines are offense-inert in v1 (no incoming-damage model, no DEF consumer). The self DEF ▲ 21.12% is kept as a defPct buff (exact semantics); the team 'DEF ▲ 21.12% of the skill user's DEF' has no matching stat key and is verbatim in unmodeled.",
+    "burst: the 396% nuke is TAGGED burstDesc 'allEnemies' — her clause is the literal string trina's amp quotes ('Burst Skill damage of skills with \"Affects all enemies\"', owner ruling 2026-08-10: literal-only), so the nuke is amp-eligible whenever such an amp is live. Enforced roster-wide by scripts/tests/census-burst-amp-scope.test.ts."
+  ]
+}

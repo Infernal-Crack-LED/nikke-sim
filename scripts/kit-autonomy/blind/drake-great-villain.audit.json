@@ -1,0 +1,141 @@
+{
+  "slug": "drake-great-villain",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter (team-wide FB entry, NOT burstCast — the clause names Full Burst entry, so it fires on any team FB, incl. rotations she does not cast)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Changes the weapon in use: Super Duper",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap (real weapon change — NOT sameWeapon: the gun is replaced, so fresh magazine on entry / base weapon returned full on exit)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Time: Fixed at 1.5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeTimeSec 1.5 + chargeTimeClamp 1.5 (base chargeFrames 0 — the swap introduces the charge and pins it)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage: 243.75% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.damagePct 243.75 (⚑ read as full-shot total, base-SG convention)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Pellet Count: 15",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.weapon 'SG' + pelletCount 15 (routes swap shots through the SG landing/gauge path; base hitsPerShot 10)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge Damage: 300%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeMultPct 300"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity: 6",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.maxAmmo 6 (weapon-state modifier = damage: caps shots per window at 6 before a reload)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when Super Duper Overdrive ends",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnd as a ⚑ proxy — no swap-end trigger primitive exists; exact only while swap duration == FB window"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes 100% of ammo.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "consumeAmmo fraction 1 (empties the returned magazine and forces an immediate reload — a real damage cost, not a flavor line)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when Full Burst ends. All allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnd, target allies (includes self — no excludeSelf in the text)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲10.5% of skill user's max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterMaxHpPct 10.5, maxStacks 4, no durationSec ('continuously'); self-share feeds her own atkOfMaxHpPct"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "(without restoring HP). Stacks up to 4 times",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "maxStacks 4; the no-restore parenthetical is a no-op at scope (no HP pool modeled), not a dropped mechanic"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at the start of battle. Self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger battleStart (literal wording; no durationSec = continuous, equivalent to passive here)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲6.23% of user's final max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkOfMaxHpPct 6.23 — re-reads her LIVE Max HP each frame, so it tracks her own S2a stacks up"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self. Attack Damage ▲27.5% 25s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast trigger, buff attackDamagePct 27.5 durationSec 25 (Damage Up bucket; 25s > her 40s CD window is NOT full uptime)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1350% of final ATK, all enemies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast trigger, target enemy, flatDamage atkPct 1350, burstDesc 'allEnemies' (jackal/trina amp scope tag); no core (text says plain Burst Skill damage)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].effects[0].durationSec",
+      "estimate": "10 sec (the nominal Full Burst window)",
+      "reasoning": "The kit gives the swap an entry clause and an 'ends' clause but NO duration. The only stated boundary in the text is Full Burst itself, and the 6-round magazine at a 1.5s fixed charge spends ~9-10s, which is self-consistent with an FB-length window. Anything longer would let the overdrive weapon fire outside FB, which the text does not authorize.",
+      "recipe": "Focus recording of a Drake: Great Villain FB: mark the frame the weapon model changes and the frame it reverts; compare against the FB banner end. Repeat once with a fullBurstExtend granter (e.g. modernia) in the team — if the swap tracks the extended FB, it is FB-bound; if it reverts at 10s regardless, it is a fixed timer."
+    },
+    {
+      "field": "skill1[1].trigger",
+      "estimate": "fullBurstEnd as a proxy for 'when Super Duper Overdrive ends'",
+      "reasoning": "There is no swap-end trigger primitive in the schema. Keying to fullBurstEnd is exact ONLY under the assumption above (swap window == FB window). If the swap is a fixed timer shorter/longer than FB, or ends early on ammo-out, the ammo dump fires at the wrong frame and mis-times the following reload.",
+      "recipe": "Same recording: count her post-FB shots. If she reloads immediately at FB end she was dumped on schedule; if she fires a partial base magazine first, the swap ended at a different time than FB."
+    },
+    {
+      "field": "skill1[0].effects[0].damagePct",
+      "estimate": "243.75 = FULL-SHOT total across all 15 pellets",
+      "reasoning": "Base SG convention in this schema: a real SG unit's normalAttackMultiplier is the whole-shot total (hers is 201.5 across 10 pellets), and weaponSwap.damagePct is documented as the full-shot total, not per-pellet. The kit prints the damage and pellet count as two lines of one weapon spec, which reads the same way. But split-vs-merge is always kit-silent and the 15-vs-10 pellet change makes the error mode a clean ×15.",
+      "recipe": "Read overdrive popups off a focus recording: count DISTINCT damage numbers per trigger pull (merged = 1 popup, split = up to 15) and check the summed value against 243.75% × final ATK × 3 (full charge)."
+    },
+    {
+      "field": "skill1[0].effects[0].chargeTimeClamp / chargeTimeSec",
+      "estimate": "both 1.5 sec",
+      "reasoning": "'Fixed at' is the clamp wording, but her base weapon has chargeFrames 0, so a clamp alone may have nothing to clamp — the swap has to establish a 1.5s charge AND pin it against ally charge-speed buffs. Authoring both is the conservative reading; if the engine's clamp path alone suffices, chargeTimeSec is redundant but harmless.",
+      "recipe": "Sim-side: run her with and without a charge-speed granter (e.g. an ally ▲ chargeSpeedPct) and assert the swapped shot interval is identical. Game-side: time charge-to-release in overdrive with a charge-speed buffer in team."
+    },
+    {
+      "field": "base cadence / reload tuple",
+      "estimate": "datamined ammo 9 / reloadFrames 111 / rate_of_fire as given",
+      "reasoning": "ALWAYS-⚑: rate_of_fire and reloadFrames are known-unreliable datamine fields, and the swap does not state its own cadence so it inherits the base SG's. Her post-FB forced reload makes the reload figure load-bearing for total shots in a way it is not for most units.",
+      "recipe": "Frame-count one base-weapon magazine (first shot to reload-complete) off a focus recording; compare shots-per-magazine and reload duration against the datamined tuple."
+    },
+    {
+      "field": "skill2[0] stack accrual",
+      "estimate": "1 stack per Full Burst END, cap 4 — no ramp haircut authored",
+      "reasoning": "Unlike a fitted steady-state, the trajectory here is fully kit-stated: stacks accrue on an observable trigger the engine already fires, so the engine's own accrual IS the ramp (0 stacks before the first FB ends, cap reached after 4). No time-average is needed and one would be wrong at both ends. Flagged only because the resulting ATK curve — via the self-share feeding atkOfMaxHpPct — makes her damage strongly back-loaded and sensitive to full-burst COUNT.",
+      "recipe": "Sim: assert buffApply events for stat 'maxHpFlat' fire exactly once per fullBurstEnd and stop at 4; cross-check her per-FB damage is monotonically increasing across the fight."
+    }
+  ],
+  "model": "claude-opus-5"
+}

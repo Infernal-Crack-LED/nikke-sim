@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-08-20T21:08:53.695Z",
+  "syncedAt": "2026-09-04T15:32:24.924Z",
   "characters": {
     "2b": {
       "slug": "2b",
@@ -2904,7 +2904,7 @@
       "imageUrl": "https://sg-tools-cdn.blablalink.com/wt-08/yq-88/1f6ff1c1e31a21e02982c6dd157297ec.png",
       "weapon": "SMG",
       "burst": "II",
-      "burstCooldownSec": 40,
+      "burstCooldownSec": 20,
       "class": "Supporter",
       "element": "Iron",
       "manufacturer": "Abnormal",
@@ -2915,14 +2915,19 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
-      "rl3": null,
-      "releaseDate": null,
+      "rl3": 5.7,
+      "releaseDate": "2026-08-13",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nPersona - Palladion: This effect is continuous and cannot be removed.\nFunction: Aigis strengthens herself using her Persona.\nEffect 1: Tarukaja: ATK ▲ 21.12% continuously. This effect cannot be removed.\nEffect 2: Rakukaja: DEF ▲ 21.12% continuously. This effect cannot be removed.",
         "skill2": "■ Activates when using Burst Skill as long as this unit is still alive.\nPapillon Heart: This effect is continuous and cannot be removed.\nFunction: Aigis strengthens her allies.\nEffect 1: Affects all allies. Matarukaja: ATK ▲ 21.12% of the skill user's ATK continuously. This effect cannot be removed.\nEffect 2: Affects all allies. Marakukaja: DEF ▲ 21.12% of the skill user's DEF continuously. This effect cannot be removed.\nDeactivation condition: When Full Burst ends.",
         "burst": "■ Affects all enemies.\nDeals 396% of final ATK as distributed damage."
+      },
+      "skillCooldownsSec": {
+        "skill1": null,
+        "skill2": null,
+        "burst": 20
       },
       "role": {
         "weapon": {
@@ -3253,7 +3258,7 @@
         }
       },
       "generatorSupported": false,
-      "simSupported": false,
+      "simSupported": true,
       "baseStats": {
         "hp": 11500,
         "atk": 450,
@@ -24578,6 +24583,440 @@
         "resourceId": 101
       }
     },
+    "drake-great-villain": {
+      "slug": "drake-great-villain",
+      "name": "Drake: Great Villain",
+      "imageUrl": "https://sg-tools-cdn.blablalink.com/qt-09/dz-44/fa2aa906019cb0ae178850acc02867e7.png",
+      "weapon": "SG",
+      "burst": "III",
+      "burstCooldownSec": 40,
+      "class": "Defender",
+      "element": "Wind",
+      "manufacturer": "Missilis",
+      "normalAttackMultiplier": 201.5,
+      "coreAttackMultiplier": 200,
+      "ammo": 9,
+      "reloadFrames": 111,
+      "chargeFrames": 0,
+      "chargeMultiplier": 0,
+      "hitsPerShot": 10,
+      "rl3": null,
+      "releaseDate": "2026-09-03",
+      "burstGaugePerShot": 2,
+      "treasure": false,
+      "skills": {
+        "skill1": "■ Activates when entering Full Burst. Affects self.\nChanges the weapon in use: Super Duper Overdrive\nCharge Time: Fixed at 1.5 sec\nDamage: 243.75% of final ATK\nPellet Count: 15\nFull Charge Damage: 300%\nMax Ammunition Capacity: 6\n■ Activates when Super Duper Overdrive ends. Affects self.\nRemoves 100% of ammo.",
+        "skill2": "■ Activates when Full Burst ends. Affects all allies.\nMax HP ▲ 10.5% of the skill user's max HP (without restoring HP) continuously. Stacks up to 4 times.\n■ Activates at the start of battle. Affects self.\nFashionably Late: ATK ▲ 6.23% of the skill user's final max HP continuously.",
+        "burst": "■ Affects self.\nAttack Damage ▲ 27.5% for 25 sec.\n■ Affects all enemies.\nDeals 1350% of final ATK as Burst Skill damage."
+      },
+      "skillCooldownsSec": {
+        "skill1": null,
+        "skill2": null,
+        "burst": 40
+      },
+      "role": {
+        "weapon": {
+          "shot_id": 1010401,
+          "shot_detail": {
+            "id": 1010401,
+            "damage": 20150,
+            "max_ammo": 9,
+            "shake_id": 2,
+            "ShakeType": "Fire_SG",
+            "fire_type": "Instant",
+            "zoom_rate": 0,
+            "input_type": "DOWN",
+            "shot_count": 10,
+            "ShakeWeight": 120,
+            "attack_type": "Metal",
+            "camera_work": "camera_work_01",
+            "charge_time": 0,
+            "penetration": 0,
+            "reload_time": 150,
+            "shot_timing": "Concurrence",
+            "spot_radius": 0,
+            "weapon_type": "SG",
+            "is_targeting": true,
+            "muzzle_count": 1,
+            "rate_of_fire": 90,
+            "name_localkey": "Shotgun",
+            "prefer_target": "Front",
+            "reload_bullet": 10000,
+            "counter_enermy": "Metal_Type",
+            "multi_aim_range": 0,
+            "spot_last_delay": 20,
+            "core_damage_rate": 20000,
+            "end_rate_of_fire": 90,
+            "spot_first_delay": 20,
+            "center_shot_count": 0,
+            "reload_start_ammo": 8,
+            "full_charge_damage": 10000,
+            "multi_target_count": 0,
+            "spot_radius_object": 0,
+            "uptype_fire_timing": 0,
+            "burst_energy_pershot": 2000,
+            "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+            "maintain_fire_stance": 0,
+            "spot_explosion_range": 0,
+            "use_function_id_list": [0],
+            "accuracy_change_speed": 0,
+            "hurt_function_id_list": [0],
+            "spot_projectile_speed": 0,
+            "accuracy_change_pershot": 0,
+            "prefer_target_condition": "None",
+            "rate_of_fire_reset_time": 0,
+            "full_charge_burst_energy": 0,
+            "end_accuracy_circle_scale": 250,
+            "auto_accuracy_change_speed": 0,
+            "rate_of_fire_change_pershot": 0,
+            "start_accuracy_circle_scale": 250,
+            "target_burst_energy_pershot": 4000,
+            "auto_accuracy_change_pershot": 0,
+            "auto_end_accuracy_circle_scale": 250,
+            "auto_start_accuracy_circle_scale": 250
+          },
+          "bonusrange_max": 25,
+          "bonusrange_min": 0
+        },
+        "burstMeta": {
+          "burst_duration": 1000,
+          "use_burst_skill": "Step3",
+          "burst_apply_delay": 1,
+          "change_burst_step": "StepFull"
+        },
+        "skillDetails": {
+          "skill1_id": 2104101,
+          "skill2_id": 2104201,
+          "skill1_table": "StateEffect",
+          "skill2_table": "StateEffect",
+          "skill1_detail": {
+            "id": 2104101,
+            "icon": "icn_skill_damage_01",
+            "group_id": 21041,
+            "skill_level": 1,
+            "name_localkey": "Super Duper Overdrive",
+            "next_level_id": 2104102,
+            "level_up_cost_id": 30102,
+            "description_localkey": "■ Activates when entering Full Burst. Affects self.\n<color=#00AEFF>Changes the weapon in use: Super Duper Overdrive\nCharge Time: Fixed at 1.5 sec\nDamage: {description_value_01}% of <word_group=10025>final</word_group> ATK\n<word_group=10038>Pellet</word_group> Count: 15\nFull Charge Damage: 300%\nMax Ammunition Capacity: {description_value_02}</color>\n■ Activates when Super Duper Overdrive ends. Affects self.\n<color=#00AEFF>Removes {description_value_03}% of ammo.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "121.88",
+                  "135.42",
+                  "148.96",
+                  "162.5",
+                  "176.04",
+                  "189.58",
+                  "203.12",
+                  "216.66",
+                  "230.2",
+                  "243.75"
+                ]
+              },
+              {
+                "description_value": [
+                  "6",
+                  "6",
+                  "6",
+                  "6",
+                  "6",
+                  "6",
+                  "6",
+                  "6",
+                  "6",
+                  "6"
+                ]
+              },
+              {
+                "description_value": [
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 1"
+          },
+          "skill2_detail": {
+            "id": 2104201,
+            "icon": "icn_skill_stathp_01",
+            "group_id": 21042,
+            "skill_level": 1,
+            "name_localkey": "Fashionably Late Villain",
+            "next_level_id": 2104202,
+            "level_up_cost_id": 30202,
+            "description_localkey": "■ Activates when Full Burst ends. Affects all allies.\n<color=#00AEFF>Max HP ▲ {description_value_02}% of the skill user's max HP (without restoring HP) continuously. Stacks up to {description_value_03} times.</color>\n■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Fashionably Late: ATK ▲ {description_value_01}% of the skill user's <word_group=10025>final</word_group> max HP continuously.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "3.12",
+                  "3.47",
+                  "3.82",
+                  "4.17",
+                  "4.52",
+                  "4.87",
+                  "5.22",
+                  "5.57",
+                  "5.92",
+                  "6.23"
+                ]
+              },
+              {
+                "description_value": [
+                  "5.77",
+                  "6.3",
+                  "6.83",
+                  "7.36",
+                  "7.89",
+                  "8.42",
+                  "8.95",
+                  "9.48",
+                  "10.01",
+                  "10.5"
+                ]
+              },
+              {
+                "description_value": [
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 2"
+          },
+          "ulti_skill_id": 1104301,
+          "ulti_skill_detail": {
+            "id": 1104301,
+            "icon": "icn_skill_c104_ult",
+            "group_id": 11043,
+            "shake_id": 1,
+            "skill_type": "InstantAll",
+            "attack_type": "Wind",
+            "skill_level": 1,
+            "counter_type": "Metal_Type",
+            "duration_type": "None",
+            "name_localkey": "Special Villainous Web",
+            "next_level_id": 1104302,
+            "prefer_target": "Random",
+            "resource_name": "c104_ulti",
+            "duration_value": 0,
+            "skill_cooltime": 4000,
+            "level_up_cost_id": 30302,
+            "skill_value_data": [
+              {
+                "skill_value": 75000,
+                "skill_value_type": "Percent"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              }
+            ],
+            "skill_cooltime_list": [
+              4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
+            ],
+            "description_localkey": "■ Affects self.\n<color=#00AEFF>Attack Damage ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "13.75",
+                  "15.28",
+                  "16.81",
+                  "18.34",
+                  "19.87",
+                  "21.4",
+                  "22.93",
+                  "24.46",
+                  "25.99",
+                  "27.5"
+                ]
+              },
+              {
+                "description_value": [
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25",
+                  "25"
+                ]
+              },
+              {
+                "description_value": [
+                  "750",
+                  "816.67",
+                  "883.34",
+                  "950.01",
+                  "1016.68",
+                  "1083.35",
+                  "1150.02",
+                  "1216.69",
+                  "1283.36",
+                  "1350"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "prefer_target_condition": "None",
+            "info_description_localkey": "Burst Skill",
+            "after_use_function_id_list": [0],
+            "after_hurt_function_id_list": [0],
+            "before_use_function_id_list": [110430101],
+            "before_hurt_function_id_list": [0]
+          }
+        },
+        "statScaling": {
+          "grow_grade": 110402,
+          "grade_core_id": 1,
+          "stat_enhance_id": 5204,
+          "stat_enhance_detail": {
+            "id": 5204,
+            "core_hp": 200,
+            "grade_hp": 3000,
+            "core_attack": 200,
+            "grade_ratio": 200,
+            "core_defence": 200,
+            "grade_attack": 20,
+            "grade_defence": 100,
+            "core_bio_resist": 0,
+            "grade_bio_resist": 0,
+            "core_metal_resist": 0,
+            "core_energy_resist": 0,
+            "grade_metal_resist": 0,
+            "grade_energy_resist": 0
+          }
+        },
+        "element": {
+          "element_id": [300001],
+          "element_details": [
+            {
+              "id": 300001,
+              "element": "Wind",
+              "group_id": 5000003,
+              "element_icon": "icn_element_wind",
+              "weak_element_id": 100001,
+              "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+              "element_name_localekey": "Wind",
+              "element_code_name_localekey": "Code: A.N.M.I."
+            }
+          ]
+        },
+        "piece": {
+          "piece_id": 5100104,
+          "piece_detail": {
+            "id": 5100104,
+            "class": "Defender",
+            "order": 10400,
+            "use_id": 0,
+            "use_type": "None",
+            "item_rare": "SSR",
+            "item_type": "Piece",
+            "stack_max": 9999999,
+            "use_value": 0,
+            "corporation": "MISSILIS",
+            "resource_id": 104,
+            "item_sub_type": "CharacterPiece",
+            "name_localkey": "Drake: Great Villain's Spare Body",
+            "use_limit_count": false,
+            "inventory_filter": ["etc"],
+            "description_localkey": "Used for a Nikke's Limit Break.\nSpare Bodies for a fully enhanced Nikke will be converted into Body Labels."
+          }
+        },
+        "meta": {
+          "id": 110401,
+          "class": "Defender",
+          "order": 10089,
+          "name_code": 5181,
+          "corporation": "MISSILIS",
+          "resource_id": 104,
+          "name_localkey": "Drake: Great Villain",
+          "original_rare": "SSR",
+          "critical_ratio": 1500,
+          "category_type_1": "None",
+          "category_type_2": "None",
+          "category_type_3": "None",
+          "critical_damage": 15000,
+          "eff_category_type": "Walk",
+          "eff_category_value": 0
+        }
+      },
+      "generatorSupported": false,
+      "simSupported": true,
+      "baseStats": {
+        "hp": 16500,
+        "atk": 400,
+        "def": 106,
+        "core": {
+          "hp": 200,
+          "atk": 200,
+          "def": 200
+        },
+        "grade": {
+          "hp": 3000,
+          "atk": 20,
+          "def": 100,
+          "ratio": 200
+        },
+        "critRate": 15,
+        "maxLevel": 1400,
+        "critDamage": 150,
+        "resourceId": 104
+      }
+    },
     "e-h": {
       "slug": "e-h",
       "name": "E.H.",
@@ -41510,7 +41949,7 @@
       "releaseDate": "2026-07-23",
       "burstGaugePerShot": 1.5,
       "treasure": false,
-      "nicknames": ["luh", "lapuh", "lap alt", "laplaceuh"],
+      "nicknames": ["luh", "lapuh", "lap alt", "lapluh"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nATK ▲ 4.05% of the skill user's final max HP continuously.\n■ Activates when performing a Full Charge attack. Affects self.\nWarm Up: Charge Speed ▲ 10% continuously. Stacks up to 5 times.\n■ Activates when Warm Up is at max stacks. Removes stacks and affects self.\nChanges the weapon in use: Electric Power, Fully Full Charge\nDamage: 9.45% of final ATK\nMax Ammunition Capacity: 120 (max ammunition effects refresh when the weapon in use changes)\nDeactivation condition: When all rounds are fired\nAdditional Effect: Gains Pierce\n■ Activates when Electric Power, Fully Full Charge ends. Affects self.\nRemoves 100% of ammo.",
         "skill2": "■ Activates after performing 12 normal attacks while in the Electric Power, Fully Full Charge state. Affects self.\nOver Energy ▲ 5% continuously, up to 100%.\n■ Activates when Over Energy reaches 100%. Resets Over Energy and affects self.\nAdvances to the next Over Energy stage. Effects vary for each stage of Over Energy. Each subsequent effect triggers all effects before it:\nStage 1: Max HP ▲ 2% continuously.\nStage 2: Max HP ▲ 3% continuously.\nStage 3: Max HP ▲ 7% continuously.\nStage 4: Max HP ▲ 10.5% continuously.\n■ Activates when entering Burst Stage 3. Affects self.\nAttack Damage ▲ 52.14% for 10 sec.",
@@ -51133,7 +51572,6 @@
       "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["mw"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects 2 allies with the highest final ATK.\nCharge Speed ▲ 4.48% for 10 sec. \nATK ▲ 43.1% for 10 sec.",
         "skill2": "■ Activates when there are above 5 enemy unit(s), excluding Nikkes. Affects self.\nCritical Rate ▲ 4.83%.\nCritical Damage ▲ 13.91%.",
@@ -51568,11 +52006,16 @@
       "releaseDate": "2026-07-30",
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["mom"],
+      "nicknames": ["mom", "maxwell alt"],
       "skills": {
         "skill1": "■ Activates when performing a Full Charge attack. Affects all allies.\nMax HP ▲ 1% of the skill user's max HP continuously. Stacks up to 30 times.\n■ Activates when entering Burst Stage 3. Affects all allies.\nAttack Damage ▲ 10% for 5 sec.",
         "skill2": "■ Activates when using Burst Skill. Affects all allies.\nATK ▲ 1% of the skill user's final max HP for 15 sec.\n■ Activates when using Burst Skill. Affects self.\nOvercurrent: ATK ▲ 30% continuously. Up to 5 stages in total.\n■ Activates when performing a Full Charge attack. Affects all allies.\nFills Burst Gauge by 7.15%.",
         "burst": "■ Affects self.\nChanges the weapon in use: Matis UberBuster\nCharge Time is fixed. Effect varies according to the stage of Overcurrent. Only one effect is triggered at a time.\nCharge Time: 3sec.\nStage 1 or below: Fixed at 3 sec.\nStage 2: Fixed at 2.5 sec.\nStage 3: Fixed at 2 sec.\nStage 4: Fixed at 1.5 sec.\nStage 5 or above: Fixed at 0.4 sec.\nDamage: 350% of final ATK\nFull Charge Damage: 300%\nMax Ammunition Capacity: 1\nAdditional Effect: Gains Pierce.\n■ Affects all allies.\nAttack Damage ▲ 25% for 10 sec."
+      },
+      "skillCooldownsSec": {
+        "skill1": null,
+        "skill2": null,
+        "burst": 20
       },
       "role": {
         "weapon": {
@@ -69593,6 +70036,7 @@
       "releaseDate": "2026-08-13",
       "burstGaugePerShot": 2,
       "treasure": false,
+      "nicknames": ["makoto", "queen", "persona (with yukiko)"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nPersona - Johanna: This effect is continuous and cannot be removed.\nFunction: Queen (Makoto) strengthens herself using her Persona.\nEffect 1: Nuke Boost: Elemental Advantage Attack Damage ▲ 13.59% continuously. This effect cannot be removed.\nEffect 2: Defense Master: DEF ▲ 14.78% continuously. This effect cannot be removed.\n■ Activates at the start of battle and when Full Burst ends. Affects self.\nATK ▲ 50.28% for 15 sec.\n■ Activates when 1 More takes effect. Affects all enemies.\nDeals 548.99% of final ATK as distributed damage.\n■ Activates when Follow Up takes effect. Affects all enemies.\nDeals 548.99% of final ATK as distributed damage.",
         "skill2": "■ Activates at the start of battle. Affects self.\nAttack Damage ▲ 30% continuously.\n■ Activates when using Burst Skill. Affects self.\nFist of Justice!: This effect is continuous and cannot be removed.\nFunction: Queen (Makoto) strengthens herself.\nEffect 1: Nuke Amp: Elemental Advantage Attack Damage ▲ 25.56% continuously. This effect cannot be removed.\nEffect 2: Rakukaja: DEF ▲ 17.95% continuously. This effect cannot be removed.\nDeactivation condition: When Full Burst ends.\n■ Activates when entering Burst Stage 3. Affects self.\nDistributed Damage ▲ 90.01% for 10 sec.\n■ Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state.\nBaton Pass: ATK ▲ 35.2% of the skill user's ATK continuously. Stacks up to 3 times.",
@@ -71096,11 +71540,11 @@
       "name": "Quiry",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/ok-70/tn-18/4f4fbf39ad1695f8e280ca80601ddde3.png",
       "weapon": "RL",
-      "burst": "II",
-      "burstCooldownSec": 60,
+      "burst": "III",
+      "burstCooldownSec": 40,
       "class": "Supporter",
       "element": "Wind",
-      "manufacturer": "Missilis",
+      "manufacturer": "Elysion",
       "normalAttackMultiplier": 61.3,
       "coreAttackMultiplier": 200,
       "ammo": 6,
@@ -71109,7 +71553,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
-      "releaseDate": "2022-12-15",
+      "releaseDate": "2023-10-19",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -95165,10 +95609,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": null,
+      "rl3": 3.55,
       "releaseDate": "2026-08-20",
       "burstGaugePerShot": 0.05,
       "treasure": false,
+      "nicknames": ["persona (with makoto)"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nPersona - Konohana Sakuya: This effect is continuous and cannot be removed. \nFunction: Yukiko heals her allies using her Persona.\nEffect 1: Activates every 3 sec. Affects all allies. Media: Restores HP equal to 5.7% of the skill user's final max HP.\n■ Activates at the start of battle and when Full Burst ends. Affects self.\nATK ▲ 65.37% for 15 sec.\n■ Activates when 1 More takes effect. Affects all enemies.\nDeals 400.31% of final ATK as distributed damage.",
         "skill2": "■ Activates at the start of battle. Affects self.\nAttack Damage ▲ 55.31% continuously.\n■ Activates when using Burst Skill. \nScarlet Flower: This effect is continuous and cannot be removed.\nFunction: Yukiko strengthens herself.\nEffect 1: Activates every 3 sec. Affects all allies. Mediarama: Restores HP equal to 5.7% of the skill user's final max HP.\nEffect 2: Affects self. Fire Amp: Distributed Damage ▲ 90.01% continuously. This effect cannot be removed.\nEffect 3: Affects self. Scarlet Protection: Damage taken from Water Code enemies ▼ 17.95% continuously. This effect cannot be removed.\nDeactivation condition: When Full Burst ends.\n■ Activates when entering Burst Stage 3. Affects self.\nElemental Advantage Attack Damage ▲ 48.15% for 10 sec.\n■ Activates when 1 More takes effect. Affects all standard Burst 3 allies (except the skill user) in the Persona state.\nFollow Up: ATK ▲ 80.25% of the skill user's ATK for 25 sec.",

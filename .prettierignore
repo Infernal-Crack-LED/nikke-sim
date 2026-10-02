@@ -21,3 +21,6 @@ docs/unmodeled-entries-review.md
 
 # blind-rebuild extracted engine snippets; not valid standalone TS
 scripts/blind-rebuild/code-bundle/*.ts
+
+# kit-autonomy blind-role artifacts are VERBATIM evidence (mechanical defects preserved on purpose)
+scripts/kit-autonomy/blind/
