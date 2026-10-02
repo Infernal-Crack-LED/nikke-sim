@@ -1,0 +1,142 @@
+{
+  "slug": "sin-swift-bunny",
+  "kitDescription": "Sin: Swift Bunny is a Water sniper-rifle Attacker who permanently buffs her own ATK by 15.35% and, on every full-charge shot with her base rifle, briefly doubles that shot's normal-attack damage and adds 52.12% charge damage for one round. She operates in one of two 'Bunny Mode' states: Stance gives her a large permanent critical rate and critical damage boost, while Engage instead converts her normal attacks (and her special weapon) to true damage; she starts the fight in Stance and can only switch by deliberately holding a full charge for a second, so in practice a fight is played in one mode. Her Burst Skill raises her own ATK by 110% for 5 seconds, hits all enemies for 516.6% of final ATK, and adds a mode-dependent follow-up nuke: 958.9% plain damage in Stance or 854.6% true damage in Engage. Casting her burst also swaps her to the 'Swift Piercing' weapon for 5 seconds — a fast 0.5-second fixed-charge rifle dealing 73.22% per shot with a 300% full-charge multiplier. Mode entry also drags any Bunny-Mode teammates into her mode, which only matters on teams with another Bunny unit.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "ATK ▲ 15.35%. This effect is continuous",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "battleStart → self buff atkPct 15.35, no expiry",
+        "blindSaid": "S6 used trigger passive instead of battleStart — same permanent frame-0 self grant; S5 asserts one self-only apply at 15.35, GREEN",
+        "formulaCheck": "Plain ATK ▲ dilutes into the (1+ΣATK%) sum on staticAtk per §1a — atkPct is the correct stat, not casterAtkPct",
+        "fireRateOk": true,
+        "explanation": "Driver test pins one grant at frame 0, targetSlug self, expiresFrame null. battleStart vs passive is cosmetic for a permanent frame-0 buff."
+      },
+      {
+        "kitLine": "Normal Attack Damage Multiplier ▲ 100%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullCharge trigger + swapGate 'unswapped' → normalAttackPct 100, durationShots 1 (theme-21 next-round convention; boundary residue ⚑-documented with footage recipe)",
+        "blindSaid": "Identical block in S6; both S2b reviewers demanded normalAttackPct (not attackDamagePct) and durationShots (not seconds) — met",
+        "formulaCheck": "Scales the rate% term (69.04→×2) rather than diluting in DamageUp §1e; round-scoped windows are durationShots per §11",
+        "fireRateOk": true,
+        "explanation": ">50 steady-state base shots verified at 69.04×2; grant cadence equals the unswapped charged-shot list exactly; zero grants inside swap windows. The one-round-phase boundary (first SP shot inherits, first post-window base shot misses) is pinned in tests and flagged as a documented ⚑, not silently absorbed."
+      },
+      {
+        "kitLine": "Charge Damage ▲ 52.12% for 1 round(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Same block: chargeDamagePct 52.12, durationShots 1",
+        "blindSaid": "Identical in S6; S2b's nearest-wrong (chargeDamageMultPct / durationSec / ungated into swap) all excluded by driver counterfactuals",
+        "formulaCheck": "Additive points in the charge bucket §1d — verified in-event as charge 2.5+0.5212 on base shots and exactly 3.0 (no +0.5212) on steady swap shots",
+        "fireRateOk": true,
+        "explanation": "Paired 1:1 with the normalAttackPct grant; the swapGate keeps it off the 300% Swift Piercing shots, which was the highest-risk leak."
+      },
+      {
+        "kitLine": "Initiates a new Bunny Mode based on mode",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Static modes ['Stance','Engage'], Stance first (battle-start branch: 'not in Stance' → Stance); hold-toggle verbatim in unmodeled + caveat (sim releases at full charge, never holds)",
+        "blindSaid": "Both S2b reviewers and both blind writers independently derived Stance-default static modes with the toggle unmodeled — full 4-way convergence",
+        "formulaCheck": "No engine primitive for a held-charge trigger or mid-fight mode flip; static mode gate is the established pattern",
+        "fireRateOk": true,
+        "explanation": "The decision is recorded verbatim with the rapunzel-pure-grace precedent cited. Default-run behavior === Stance is pinned by test. The 50/50-duty-cycle risk is in the caveat with a measurement recipe."
+      },
+      {
+        "kitLine": "Affects all allies in the Bunny Mode … state",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Both ally-sync lines verbatim in unmodeled; caveat instructs selecting the same mode for a guilty-mighty-bunny pairing",
+        "blindSaid": "All four blind artifacts: no cross-unit mode primitive, inert at scope (no Bunny-Mode carrier in the fixture)",
+        "formulaCheck": "No ally-targeted buffApply exists from her skill1/skill2 — inertness confirmed structurally",
+        "fireRateOk": true,
+        "explanation": "Inert in the control comp regardless of encoding; correctly documented rather than faked."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Engage: normal attacks deal true damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trueNormalsModes ['Engage'] covers base normals AND swap shots (engine fact 1, verified by run: swap path reads the unit's true-normal flavor)",
+        "blindSaid": "S6 identical flag; S5's structural assertion (mode-scoped encoding present, hasTrueNormals false) GREEN; one S2b reviewer wrongly thought a swap-level flag was needed — resolved by the verified engine fact",
+        "formulaCheck": "Flavor gate only — true-flavored hits read True Damage ▲ in DamageUp §1e and still crit (2026-07-25 ruling); no invented magnitude",
+        "fireRateOk": true,
+        "explanation": "Driver's S4 tests make the flavor observable via a synthetic trueDamagePct buff: +1.00 dmgUp delta on Engage base AND swap shots, zero delta in Stance. Covers both Noise Bullets effects with one flag."
+      },
+      {
+        "kitLine": "Stance: Crit Rate ▲35.14, Crit Dmg ▲75.12",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Passive, mode 'Stance', generic critRatePct/critDamagePct (unscoped — not critRateNormalPct), permanent",
+        "blindSaid": "Identical block in S6; S5 asserts exactly-one authored effect each, mode-gated, absent in the Engage run — GREEN",
+        "formulaCheck": "Generic crit feeds the Major bucket §1b on every crit-eligible instance including swap shots and burst riders, matching the unscoped prose",
+        "fireRateOk": true,
+        "explanation": "Frame-0 permanent in Stance, zero applications in Engage — the mutual-exclusion that both S2b reviewers ranked as the top over-credit risk is pinned both ways."
+      },
+      {
+        "kitLine": "Swift Piercing: Changes the weapon in use",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast (own cast, not fullBurstEnter) → weaponSwap damagePct 73.22, chargeTimeSec+Clamp 0.5, chargeMultPct 300, durationSec 5; real swap (magazine refill); no Pierce from the name; swap ammo ⚑ caveat with recipe",
+        "blindSaid": "S6 block-identical except maxAmmo 10 (its own ⚑ guess) and stage:3 (cosmetic on a Burst III); S5's fullBurstEnter counterfactual and 73.22/300/0.5/5 pins all GREEN",
+        "formulaCheck": "chargeTimeClamp encodes 'Fixed at 0.5 sec' (charge-speed-immune per the clamp semantics); 300% enters the Charge bucket §1d as the swap's own multiplier; 73.22≠69.04 confirms a real weapon change",
+        "fireRateOk": true,
+        "explanation": "Swap windows == her burstCast count (5+ in fixture), 30-frame pull spacing verified with the one boss-script pause documented, and the dual-B3 fixture makes the burstCast-vs-fullBurstEnter discrimination real. Shot economy (driver: engine refill to current max mag; blind: maxAmmo 10) is the one divergence and both sides flagged it measurement-gated — out of scope per VI."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "ATK ▲ 110% for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self atkPct 110 durationSec 5, block ordered before the damage blocks so the nukes snapshot it",
+        "blindSaid": "Identical in S6; S2b #2 flagged the rider-sees-buff ordering as an engine-convention ⚑ — the driver turned it into a pinned test (reordered, baseAtk drops >30%)",
+        "formulaCheck": "Kit lists the self-buff first; snapshot-at-cast matches the §1a application-time semantics",
+        "fireRateOk": true,
+        "explanation": "Application count equals cast count, expiry cast+300f, self-only."
+      },
+      {
+        "kitLine": "Deals 516.6% … as Burst Skill damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Ungated flatDamage 516.6, burstDesc 'allEnemies', fires in both modes, lands pre-FB (no +50%)",
+        "blindSaid": "Identical in S6; S5's per-cast ratio machinery uses it as the base and passes",
+        "formulaCheck": "Burst-cast direct damage is noFb/noRange/no-core per the boundary rule §1b — verified fbMajorApplied false on every burst hit",
+        "fireRateOk": true,
+        "explanation": "Exactly one 516.6 instance per cast in both mode runs."
+      },
+      {
+        "kitLine": "Stance: Deals 958.9% … additional damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage 958.9, mode 'Stance', plain flavor, burstDesc 'allEnemies' per the 2026-08-10 'same targets' inheritance ruling",
+        "blindSaid": "Identical in S6 (driver adopted the allEnemies tag from the blind/reviewer push); S5's R_STANCE 1.8562 ratio and exclusivity assertions GREEN",
+        "formulaCheck": "Same cast frame as the 516.6 base so the within-cast ratio is exact; mode-blind counterfactual fires all three riders and is excluded by test",
+        "fireRateOk": true,
+        "explanation": "Default run: exactly {516.6, 958.9} per cast, zero 854.6 instances."
+      },
+      {
+        "kitLine": "Engage: Deals 854.6% … as true damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage 854.6, flavor 'true', mode 'Engage', burstDesc 'allEnemies'",
+        "blindSaid": "Identical in S6; S5 pins the true flavor and R_ENGAGE 1.6543",
+        "formulaCheck": "True flavor = trueDamagePct eligibility in DamageUp §1e, nothing more — verified by the synthetic-buff delta landing only on the 854.6 instance, never the 516.6",
+        "fireRateOk": true,
+        "explanation": "Absent entirely in default (Stance) runs; present with true flavor in Engage runs."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas. The S6 blind override is block-equivalent to the shipped one (differences: passive vs battleStart on the frame-0 ATK, stage:3 on a Burst III burstCast, mode label strings, and the blind's maxAmmo 10 vs the driver's engine-refill reading of the kit-silent swap magazine — both ⚑-flagged with the same footage recipe). The mechanical convergence check is GREEN: the verbatim S5 file wires onEvent at the CompOptions top level where runComp never reads it (cfg.onEvent is the harness path, as the driver's own passing test demonstrates), so verbatim it captures zero events — a blind-harness RECON error, not a model divergence; with only that one-line wiring routed through cfg, all 20 runnable blind assertions pass against the shipped override with its 5 declared GAP skips. Every shared-prior trap both S2b reviewers pre-registered is closed by a discriminating counterfactual in the driver's 21-green test file: durationShots-not-seconds, normalAttackPct-not-attackDamagePct, swapGate off during Swift Piercing, burstCast-not-fullBurstEnter (real in the dual-B3 fixture), Stance-default mutual exclusion of the mode packages and burst riders, no Pierce from the name. Discrimination holds — each load-bearing assertion has a named nearest-wrong patch that flips it. Same-model residuals for the owner to spot-check: (1) all five agents share the static-Stance-default convention, so real play's mode duty cycle (and the ~1s Engage opening-hold cost) is untested — grade both modes as a pair per the caveat; (2) the swap shot economy (driver ≈9 rounds via engine refill vs blind's 10) directly scales the whole swap contribution and awaits the footage count; (3) the theme-21 one-round boundary phase is pinned to the convention, not to a popup read.",
+  "model": "claude-fable-5"
+}

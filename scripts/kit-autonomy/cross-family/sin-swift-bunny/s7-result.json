@@ -1,0 +1,193 @@
+{
+  "slug": "sin-swift-bunny",
+  "kitDescription": "Sin: Swift Bunny is a Water sniper-rifle Attacker who permanently gains 15.35% ATK and, on every full-charge shot fired with her normal rifle, doubles that shot's normal-attack multiplier and adds 52.12% charge damage for one round. She fights in one of two Bunny Modes: she starts in Stance, which gives her a large permanent crit rate and crit damage package, and can switch to Engage (by holding a full charge for a second) which instead turns her normal attacks into true damage. Her Burst III raises her own ATK by 110% for 5 seconds, hits all enemies for 516.6% of ATK, and adds a second hit that depends on mode: 958.9% in Stance or 854.6% true damage in Engage. Using the burst also swaps her rifle for 5 seconds into Swift Piercing, a 0.5-second fixed-charge weapon dealing 73.22% per shot at a 300% full-charge multiplier, during which her normal-rifle charge buffs do not activate. If she entered a mode, any ally that carries Bunny Modes is pulled into the same mode.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": [
+      "VERBATIM file: every event-reading assertion (S1-a apply, S1-b durationShots/gate count, S2 crit applies + rider ratios, burst atkPct-110 count, burst bucket/fbMajor) sees 0 events because the blind fixture sets onEvent on the CompOptions top level while runComp reads cfg.onEvent — a harness-wiring RECON_ERROR, not a model divergence. With only that one line rerouted, a mental trace of all 20 live assertions against the driver's shipped override finds no failing assertion (driver-reported adapted run: 20 passed / 0 failed / 5 self-declared skips). Two event-shape dependencies of the blind file (an amount-like numeric field and a `bucket` field on damage events) could not be inspected by this judge and are listed as an owner spot-check."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "ATK ▲ 15.35%. This effect is continuous.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "battleStart → self buff atkPct 15.35, no duration (driver test: one grant at frame 0, expiresFrame null, targetSlug self).",
+        "blindSaid": "S6: passive self atkPct 15.35 (semantically identical to battleStart-permanent). S5: apply exists, self-only, zeroing lowers her total and leaves teammates byte-identical. Both S2b: FAITHFUL, generic unscoped ATK.",
+        "formulaCheck": "§1a: plain ATK ▲ % sums into (1 + Σ ATK%) on staticAtk, self-targeted; not casterAtkPct (flat). Correct bucket and scope.",
+        "fireRateOk": true,
+        "explanation": "Single permanent application at frame 0; present in both modes (no mode gate). Driver/blind differ only in trigger spelling."
+      },
+      {
+        "kitLine": "Normal Attack Damage Multiplier ▲ 100% for 1 round",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullCharge trigger + swapGate 'unswapped' → self normalAttackPct 100, durationShots 1; steady-state base shots fire at 138.08; first SP shot of each window inherits the last base grant, first base shot after the window lacks it (documented ⚑ caveat, theme-21 next-round convention).",
+        "blindSaid": "S6: byte-identical block (per the 6c diff). S5: durationShots===1 pinned on the apply, fullCharge trigger, gate proven by apply COUNT (ungated → strictly more applies), window non-vacuous (10 rounds raises damage). Both S2b: normalAttackPct not attackDamagePct, durationShots not durationSec, swapGate load-bearing.",
+        "formulaCheck": "Scales the rate% term (the 69.04 normal multiplier, same construct as Jill's 1.3× in §5a) — NOT the DamageUp bucket, so no dilution and no leak into burst/swap buckets. 'for N round(s)' is round-scoped per §11 (durationShots). Driver test pins atkPct 138.08 on >50 base shots with charge 2.5+0.5212.",
+        "fireRateOk": true,
+        "explanation": "Grants coincide 1:1 with every unswapped charged pull over 180s. The only deviation from the literal 'during Full Charge' reading is the one-round phase offset of the repo-settled per-pull convention (see gotcha 1), which the driver documents with a recipe."
+      },
+      {
+        "kitLine": "Charge Damage ▲ 52.12% for 1 round(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Same block: self chargeDamagePct 52.12, durationShots 1.",
+        "blindSaid": "S6 identical. S5 pins stat chargeDamagePct 52.12 durationShots 1 self. Both S2b: additive points, not chargeDamageMultPct.",
+        "formulaCheck": "§1d: Charge = chargeMult/100 + Charge Damage ▲%/100 → 2.5 + 0.5212 on base shots; swap shots read exactly 3.0 (gate holds). Driver test pins both values.",
+        "fireRateOk": true,
+        "explanation": "Paired 1:1 with the normalAttackPct grant; correct bucket; blocked inside the swap window."
+      },
+      {
+        "kitLine": "Initiates a new Bunny Mode based on the current",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Static kit modes ['Stance','Engage'], Stance first (frame-0 branch: not-in-Stance → Stance). Hold-to-toggle unmodeled (sim releases at full charge); verbatim in unmodeled.skill1 + caveat; Engage = one opening player toggle.",
+        "blindSaid": "S6: identical static-mode encoding, Stance default, ⚑ 'real play ≈50/50' (speculation, not formula-derived). S5: it.skip (no primitive). Both S2b: Stance default, static selection, toggle to unmodeled.",
+        "formulaCheck": "No engine trigger for 'Full Charge maintained ≥1s'; §4 auto always releases at full charge, so under scope-lock auto the toggle never fires and Stance-all-fight is the faithful auto reading. Mutual exclusion of mode payloads verified by both test files (exactly 2 burst instances per cast, never 3).",
+        "fireRateOk": true,
+        "explanation": "Decision recorded with reason and recipe. The S6 '50/50' uptime estimate is not supported by the auto-play model and should not be read as a correction."
+      },
+      {
+        "kitLine": "Affects all allies in the Bunny Mode: Stance state",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim; caveat names guilty-mighty-bunny and instructs selecting the same mode for both.",
+        "blindSaid": "S6 unmodeled verbatim; S5 it.skip; both S2b UNMODELED (inert without another Bunny Mode carrier).",
+        "formulaCheck": "No cross-unit mode primitive; zero events, zero damage delta in the control fixture (no ally carries Bunny Modes).",
+        "fireRateOk": true,
+        "explanation": "Inert at scope; documented."
+      },
+      {
+        "kitLine": "Affects all allies in the Bunny Mode: Engage state",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim (mirror line).",
+        "blindSaid": "Same as above across S6/S5/S2b.",
+        "formulaCheck": "Same as above.",
+        "fireRateOk": true,
+        "explanation": "Inert at scope; documented."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Effect 1: Normal attacks deal true damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Top-level trueNormalsModes ['Engage']; S4 test adds a synthetic self trueDamagePct 100 and shows dmgUp +1.00 on every Engage base shot vs the no-mode-flag counterfactual, 0 delta in Stance.",
+        "blindSaid": "S6: trueNormalsModes ['Bunny Mode: Engage'], hasTrueNormals unset. S5: structural (mode-scoped flag present, static hasTrueNormals false); payload it.skip. Both S2b: trueNormalsModes, flavor only, no magnitude.",
+        "formulaCheck": "§1e: True Damage ▲ joins DamageUp only on true-flavored instances, including 'normal attacks while the unit is … in a trueNormalsModes mode'. Flavor carries no magnitude by itself (the −140 DEF term is the only defence in the formula and is not flavor-gated — a documented SSOT convention).",
+        "fireRateOk": true,
+        "explanation": "The driver's fixture isolates the consumer correctly (the control comp has no other True Damage ▲ source; the synthetic buff is the only signal)."
+      },
+      {
+        "kitLine": "Effect 2: Swift Piercing deals true damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Covered by the same trueNormalsModes flag — 'the engine applies the unit's static true-normal flavor to swap shots too'; S4 pins dmgUp +1.00 on Engage Swift Piercing shots.",
+        "blindSaid": "S6 caveat: same reading (normal-fire path reads swap.trueNormals || hasTrueNormals). S5 it.skip (unobservable in fixture). One S2b reviewer initially doubted the swap coverage; the other agreed with the driver.",
+        "formulaCheck": "§1e states it explicitly: 'the first two [hasTrueNormals, trueNormalsModes] also cover the unit's own swap shots'. The SSOT is an independent method confirming the driver's engine fact; the bar is met.",
+        "fireRateOk": true,
+        "explanation": "Mode-scoped on the swap for free (a swap-level trueNormals would have leaked into Stance). Driver and SSOT agree; the doubting S2b read is a RECON_ERROR of engine routing, not a finding."
+      },
+      {
+        "kitLine": "Effect 1: Critical Rate ▲ 35.14%.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive, mode 'Stance', self critRatePct 35.14, permanent; Engage run emits none.",
+        "blindSaid": "S6 identical. S5: exactly one authored 35.14 on a mode-gated self block; present only in the run whose burst fires the 958.9 rider. Both S2b: generic critRatePct (no 'of normal attacks' wording), never critRateNormalPct.",
+        "formulaCheck": "§1b: unscoped Crit Rate ▲ joins critRate for every crit-eligible instance (normals, swap shots, burst riders). Correct stat and scope.",
+        "fireRateOk": true,
+        "explanation": "Permanent passive from frame 0. Residual (not a gotcha): neither test pins a damage-side crit term in `mult`; both pin the buffApply only. Standard engine passive path."
+      },
+      {
+        "kitLine": "Effect 2: Critical Damage ▲ 75.12%.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Same block: critDamagePct 75.12, permanent, Stance only.",
+        "blindSaid": "S6 identical; S5 same pair test; both S2b FAITHFUL.",
+        "formulaCheck": "§1b critBonus = (critDamage − 100)/100 + Crit Damage ▲%/100. Correct.",
+        "fireRateOk": true,
+        "explanation": "As above."
+      },
+      {
+        "kitLine": "Swift Piercing: Changes the weapon in use",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast (skill2 slot) → self weaponSwap damagePct 73.22, chargeTimeSec 0.5 + chargeTimeClamp 0.5, chargeMultPct 300, durationSec 5; no pierce; swap ammo ⚑ caveat (one full magazine per window). S5 test: ≥5 casts, ≥6 charged SP shots per window at 30-frame spacing, base fire resumes; fullBurstEnter counterfactual fires on helm rotations (>1.5× swapped shots); 1.0s charge counterfactual spaces 60f.",
+        "blindSaid": "S6: identical block plus maxAmmo 10 (kit-silent guess, ⚑) and stage:3 (cosmetic). S5: burstCast not fullBurstEnter, kit numbers, sameWeapon falsy, monotone counterfactuals (2× damagePct ↑, 2s charge ↓, 600% ↑), no pierce anywhere. Both S2b: burstCast, clamp for 'Fixed at', 300 is the swap's charge multiplier not an additive buff, no hasPierce from the name.",
+        "formulaCheck": "Real swap (73.22 ≠ 69.04) → magazine refill on entry/exit per §2b. §1d Charge = 3.0 for its full-charge shots (driver pins). Shots land inside the FB window opened by her own cast → +0.5 by timing (§1b rule). §4: swap states are exempt from the 22f bolt cycle → 30f cadence is the engine's settled convention, not a kit number.",
+        "fireRateOk": true,
+        "explanation": "Opens exactly once per HER cast in the dual-B3 fixture and is discriminated against fullBurstEnter. Magazine and cadence are kit-silent ⚑ (see gotcha 2); magnitudes are kit-exact."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "ATK ▲ 110% for 5 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self atkPct 110 durationSec 5, listed FIRST so the same-cast nukes snapshot it; test pins apply at each cast with expiresFrame cast+300 and >1.3× baseAtk on the nukes vs the reordered counterfactual.",
+        "blindSaid": "S6 identical (stage:3 cosmetic). S5: apply count == casts (derived as burst instances / 2), self, finite expiry. Both S2b: durationSec not rounds, self-only, ordered before the riders.",
+        "formulaCheck": "§1a plain ATK ▲ sums with the 15.35 and ally ATK buffs; §1b/§5b: buffs granted by the same cast before the damage resolve apply to the cast's own damage (Cinderella precedent). Correct.",
+        "fireRateOk": true,
+        "explanation": "Fires once per her cast, 5 s, coextensive with the swap window; ordering pinned."
+      },
+      {
+        "kitLine": "Deals 516.6% of final ATK as Burst Skill damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 516.6, burstDesc allEnemies, ungated (both modes); fbMajorApplied false on every cast.",
+        "blindSaid": "S6 identical. S5: authored once, ungated, burst bucket, fbMajorApplied false, core false, allEnemies. Both S2b: no FB major, no range, fires in both modes.",
+        "formulaCheck": "§2b/§1b: burst-slot cast damage → forced noFb (lands 22f before FB), noRange, never core, crits at caster rate (in Stance that includes the +35.14/+75.12). Correct.",
+        "fireRateOk": true,
+        "explanation": "One instance per cast in both modes."
+      },
+      {
+        "kitLine": "Deals 958.9% of final ATK as additional damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "mode 'Stance' → enemy flatDamage 958.9, plain flavor, burstDesc allEnemies ('Affects the same targets' inherits the clause — owner ruling 2026-08-10, census --check clean).",
+        "blindSaid": "S6 identical (tagged allEnemies). S5: within-cast ratio 958.9/516.6 = 1.8562 in the Stance run, zero in Engage; stripping mode gates → 3 instances carrying both ratios. S2b: exclusive with 854.6, Stance-gated.",
+        "formulaCheck": "Same instance class as the 516.6 (same frame, same crit/element/DamageUp) so the exact ratio is the right discriminator; exclusivity holds (2 instances per cast, never 3).",
+        "fireRateOk": true,
+        "explanation": "Fires once per cast in the default (Stance) run only. The allEnemies tag on an 'additional damage' rider rests on the settled owner ruling, not on this kit's wording alone."
+      },
+      {
+        "kitLine": "Deals 854.6% of final ATK as true damage.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "mode 'Engage' → enemy flatDamage 854.6, flavor 'true', burstDesc allEnemies; test shows a synthetic trueDamagePct moves only this rider's dmgUp (+1.00), never the 516.6's.",
+        "blindSaid": "S6 identical. S5: flavor === 'true', ratio 854.6/516.6 = 1.6543 in the Engage run, absent in Stance. S2b: true flavor is a DamageUp-feed eligibility, not a defence-ignore bonus.",
+        "formulaCheck": "§1e True Damage ▲ gates on flavor:'true' skill hits; §2c/§9 true damage crits at caster rate (owner ruling 2026-07-25). Correct.",
+        "fireRateOk": true,
+        "explanation": "Fires once per cast in Engage only; never co-occurs with the 958.9."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "Per-pull round convention (theme 21) shifts the 'during Full Charge … for 1 round' pair one round late: the fight's very first charged shot and the first base shot after each Swift Piercing window fire unbuffed (69.04 / charge 2.5), while the first Swift Piercing shot of each window inherits the last base grant (146.44 / charge 3.5212) despite the 'if not in Swift Piercing' clause.",
+      "evidence": "Kit: 'Activates during Full Charge if this unit is not in the Swift Piercing state … for 1 round(s)'. Driver test 'documented boundary residue' pins firstSp.atkPct = 146.44 and firstBack.atkPct = 69.04 per cast; driver caveat 3 documents the swap boundaries + recipe but does not name the fight-opening shot. S2b reviewer 2 flagged the carry-over as 'kit-plausible, leave as documented ⚑'; S6 flag 4 raised the same-shot-vs-next-shot ordering as unresolved by the prose. §11 confirms rounds are spent 'right after the shot so the Nth shot still benefits' — the grant-then-spend order is the engine convention.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Keep the settled convention (no same-shot primitive invented). Extend caveat 3 to name the opening shot. Measurement recipe: in a focus recording compare the first two base-rifle full-charge popups of the fight (equal → the kit buffs the charged shot itself and a same-shot grant primitive is warranted; first ≈ 0.41× second → the convention is right). Net effect is about ±1 shot-equivalent per burst cycle plus one opening shot; do not tune a value to compensate."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "Swift Piercing shot economy is kit-silent beyond the 0.5s fixed charge: the shipped 9 shots per window rest on (a) the engine's swap-state exemption from the 22f bolt cycle (30f spacing, no release latency) and (b) a magazine refill to her current max ammo; the driver documents (b) but not (a).",
+      "evidence": "Kit: 'Charge Time: Fixed at 0.5 sec … Duration: 5 sec' — no round count, no magazine, no release animation stated. §4: 'Weapon-swap states … are exempt' from the bolt cycle (engine convention; measured on other units). Driver note 3: '30 frames between pulls … 9 shots fit a 5 s window from a 9-round magazine'; driver caveat 4 flags ammo only. S2b reviewer 2 lists swap cadence and ammo as ALWAYS-⚑; S6 guessed maxAmmo 10 (not adopted — correctly, since it is a guess).",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Needs measurement, not a value: count Swift Piercing shots and inter-shot frame gaps inside one focus-recorded burst window (and watch for an in-window reload). The shot count is the entire swap calibration (shots × 73.22% × 3.0 × ATK). Add the cadence to caveat 4 so the owner knows 30f/shot is an engine convention, not a kit number. Not a prose contradiction — measurement-gated ⚑."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All 15 kit lines are FAITHFUL (11) or DOCUMENTED_GAP (4: the mode toggle and the two ally-sync lines, plus the static-mode machinery itself); no SILENT_DROP, no ENGINE routing error, no ENCODING error. The two blind re-derivations converged mechanically: the S6 override is block-equivalent to the driver's (differences are trigger spelling, stage:3, mode label text, and a kit-silent maxAmmo guess the driver rightly left as ⚑), and the S5 blind test traces GREEN against the shipped override once its one harness-wiring defect (onEvent placed outside cfg) is corrected — that red is a RECON_ERROR, not a model divergence. Every load-bearing assertion has a named counterfactual that flips it (swapGate removal, mode-blind riders, trueNormalsModes removal, fullBurstEnter swap, reordered ATK buff, 1.0s swap charge), so discrimination holds. The two gotchas are low and measurement-gated, not board-moving: the theme-21 one-round phase offset (documented at the swap boundaries, unnamed for the opening shot) and the kit-silent Swift Piercing cadence/magazine (ammo documented, the 30f no-bolt cadence not). Nothing must change for GO; extending caveats 3 and 4 is housekeeping. Same-model residual for the owner to spot-check: (1) the S5 file's reliance on `bucket` and an amount-like field on damage events — I could not inspect the event shape and relied on the trace plus the driver's adapted-run report; (2) the default-mode reading — under full auto the ≥1s hold never occurs, so Stance-all-fight is the auto-play truth and 'Engage' models a deliberate manual toggle; the S6 '≈50/50' uptime claim is speculation, not a correction; (3) no damage-side pin that the Stance crit package reaches `mult` (both tests pin the buffApply only); (4) Pierce is absent from this prose — if the live in-game text carries an 'Additional Effect: Pierce' line on Swift Piercing, the faithful fix is weaponSwap.hasPierce (swap-scoped), never the whole-fight flag; (5) hygiene: unmodeled.skill2 lists the 'Noise Bullets'/'Enhanced Bullets' wrapper sentences whose effects ARE modeled — the note says so, but a census tool reading unmodeled verbatim may miscount them.",
+  "model": "claude-fable-5-1"
+}

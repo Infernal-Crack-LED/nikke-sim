@@ -1,0 +1,200 @@
+{
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle. self",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill1[0] trigger passive, target self (continuous → passive, not battleStart, so no duration semantics are implied)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 15.35%. This effect is continuous.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill1[0].effects[0] buff atkPct 15.35, no durationSec (permanent self buff; scales own ATK, not casterAtkPct — the line is self-targeted)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates during Full Charge if not in",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill1[1] trigger {kind:'fullCharge'} (charge-release pull, kit-faithful vs a shotFired proxy) + swapGate:'unswapped' for '…not in the Swift Piercing state'"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Normal Attack Damage Multiplier ▲ 100%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill1[1].effects[0] buff normalAttackPct 100, durationShots 1 ('for 1 round(s)' = ROUND count, never seconds)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage ▲ 52.12% for 1 round(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill1[1].effects[1] buff chargeDamagePct 52.12 (additive points in the charge bucket, NOT chargeDamageMultPct — no 'multiplier' wording), durationShots 1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "start of battle … Initiates a new Bunny",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Battle-start half only: 'not in Bunny Mode: Stance' holds at frame 0 → initiates Stance, so modes[0]='Bunny Mode: Stance' is the declared default; all mode gates read it"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when Full Charge is maintained for 1 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "No TriggerDef expresses 'full charge HELD ≥1 sec', and no primitive flips a self mode mid-fight (selfStatus has no removal/toggle). The in-fight Stance↔Engage alternation is unmodeled → unmodeled.skill1[0] + ⚑ flag 1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "if in Stance → Initiates Engage",
+      "status": "SKIPPED",
+      "effectOrReason": "Toggle branch — same reason as above; folded into the static `modes` declaration"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "if not in Stance → Initiates Stance",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Only its frame-0 evaluation is modeled, as modes[0] = 'Bunny Mode: Stance' (the default)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "enters Engage → allies in Stance → Engage",
+      "status": "SKIPPED",
+      "effectOrReason": "Cross-unit mode propagation; `mode` is a per-unit static gate chosen at setup and no other unit carries a Bunny Mode state. Recorded verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "enters Stance → allies in Engage → Stance",
+      "status": "SKIPPED",
+      "effectOrReason": "Same as above; recorded verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "only if in Bunny Mode: Engage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Expressed as the mode scope on trueNormalsModes:['Bunny Mode: Engage'] (a flag, so no block is needed)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 1: Normal attacks deal true damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trueNormalsModes:['Bunny Mode: Engage'] — mode-scoped sibling of hasTrueNormals; makes ally True Damage ▲ feed her normals only in Engage"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 2: Swift Piercing deals true dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Same flag: the normal-fire path reads swap.trueNormals || hasTrueNormals, so the mode flag already true-flavors the swapped weapon's shots. No swap-level trueNormals (it would ignore the Engage gate)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "only if in Bunny Mode: Stance",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill2[0] mode:'Bunny Mode: Stance' gate"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 1: Critical Rate ▲ 35.14%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill2[0].effects[0] buff critRatePct 35.14, permanent. UNSCOPED crit (the line carries no 'of normal attacks' qualifier), so critRateNormalPct is deliberately NOT used"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 2: Critical Damage ▲ 75.12%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill2[0].effects[1] buff critDamagePct 75.12, permanent"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill. self",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill2[1] trigger burstCast stage 3 ('when using Burst Skill' = OWN cast, not fullBurstEnter — keying it to FB entry would over-credit in multi-B3 comps)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Swift Piercing: Changes the weapon",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill2[1].effects[0] weaponSwap — a REAL weapon change (sameWeapon NOT set: damagePct 73.22 ≠ normalAttackMultiplier 69.04), so it takes a fresh magazine on entry and returns the base weapon full"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Charge Time: Fixed at 0.5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "chargeTimeSec 0.5 + chargeTimeClamp 0.5 ('Fixed at' = clamp, so charge-speed buffs cannot shorten it)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage: 73.22% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.damagePct 73.22 (per-shot multiplier while swapped — a weapon-state modifier, i.e. damage, never skippable)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge Damage: 300%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeMultPct 300"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Duration: 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.durationSec 5 (time-bounded, no maxShots — the kit states no shot cap)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self. ATK ▲ 110% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst[0] burstCast stage 3 → buff atkPct 110 durationSec 5 (matches the 5s swap window)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "516.6% of final ATK as Burst Skill dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst[1] flatDamage atkPct 516.6, target enemy, burstDesc 'allEnemies' (line sits under 'Affects all enemies')"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "if in Stance: 958.9% additional damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst[2] flatDamage atkPct 958.9, mode:'Bunny Mode: Stance', burstDesc 'allEnemies' ('the same targets' = the all-enemies set above). Kept as a SEPARATE instance, not folded into 516.6 — the branches are mutually exclusive and level-scale independently"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "if in Engage: 854.6% as true damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst[3] flatDamage atkPct 854.6, flavor 'true', mode:'Bunny Mode: Engage', burstDesc 'allEnemies'"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.modes / every `mode` gate (skill2[0], burst[2], burst[3]) + trueNormalsModes",
+      "estimate": "Static default 'Bunny Mode: Stance'; true in-fight uptime ≈ 50/50 Stance/Engage (toggles once per full charge held ≥1 sec, i.e. roughly once per charge cycle under normal fire).",
+      "reasoning": "The kit alternates modes on a trigger with no engine primitive ('Full Charge maintained for 1 or more seconds') and via a mid-fight self-mode flip that `mode` (static, set at setup) and `selfStatus` (no removal) both cannot express. Stance is the correct FRAME-0 value — the battle-start branch reads 'not in Bunny Mode: Stance', which holds before any mode exists — so Stance is the honest default, but freezing it over-credits whichever mode is selected and zeroes the other's burst rider and S2 payload entirely.",
+      "recipe": "Focus recording: count mode-swap VFX/banner transitions over a 60–90s fight at the unit's normal cadence to get the real duty cycle, and read whether a toggle needs a deliberate 1s hold past full charge (release-at-full-charge fire would then NEVER toggle, pinning her in Stance). Then either (a) grade both modes and weight by the measured duty cycle, or (b) propose an engine primitive (an alternating self-mode toggle on a held-charge trigger) and pin it with a vitest on buffApply of critRatePct 35.14 appearing/lapsing."
+    },
+    {
+      "field": "override.skill2[1].effects[0].maxAmmo",
+      "estimate": "10 rounds (optimistic: enough that the 5s window is cadence-bound, not reload-bound)",
+      "reasoning": "KIT-SILENT swap shot economy — the ALWAYS-⚑ weapon-swap case. The swap states only charge time (0.5s fixed), per-shot damage, full-charge multiplier and duration. At a 0.5s fixed charge a 5s window admits ~10 shots; the base magazine is 6 with reloadFrames 141 (~2.35s at 60fps), so if the swap inherited ammo 6 a reload would consume nearly half the window and the shot count would drop to ~7. maxAmmo 10 encodes the optimistic no-reload reading per the prior; it is a GUESS and directly scales every swapped shot.",
+      "recipe": "Count the actual Swift Piercing shots in a focus recording of one burst window (and watch for a reload animation inside it). Shots × (73.22% × 300% full-charge) is the whole swap contribution, so the count IS the calibration. Pin with a vitest counting `shot` events between burstCast and burstCast+5s."
+    },
+    {
+      "field": "cadence tuple (base reloadFrames 141 / chargeFrames 60 / fire rate) — not authored in the override; inherited from the datamine",
+      "estimate": "Use the datamined values as-is: chargeFrames 60 (1.0s full charge), reloadFrames 141 (~2.35s), ammo 6, hitsPerShot 1.",
+      "reasoning": "rate_of_fire and reloadFrames are known-unreliable datamine fields, and this unit's entire S1 payload is per-full-charge (the 1-round normalAttackPct 100 / chargeDamagePct 52.12 pair re-arms once per charge), so an error in the charge/reload tuple moves total damage roughly proportionally. The mode-toggle trigger also keys off charge timing, compounding the sensitivity.",
+      "recipe": "Frame-count a focus recording: full-charge release-to-release interval out of Full Burst, and reload-start to first-shot. Compare shots-per-30s against the sim's `shot` event count on controlComp."
+    },
+    {
+      "field": "override.skill1[1] — whether the GRANTING full-charge shot receives its own 1-round buffs",
+      "estimate": "Assumed YES (the triggering shot benefits), per the durationShots contract 'decremented right after the shot's blocks dispatch, so the Nth shot still benefits'.",
+      "reasoning": "A `fullCharge` trigger that grants a 1-ROUND buff is self-referential: if the engine applies the buff before the pull's damage resolves, the +100% normal-attack multiplier and +52.12% charge damage land on the very shot that armed them (effectively a permanent per-charge buff out of swap); if it applies after, the buff lands on the NEXT round. The two readings differ by roughly the whole S1 contribution out-of-swap. The prose ('Activates during Full Charge … for 1 round(s)') does not resolve the ordering, and I cannot inspect the dispatch order blind.",
+      "recipe": "Single-unit sim read: filter `damage` events with bucket normal/charge on the first two pulls and check whether pull #1's mult already carries the +100%/+52.12%, then confirm against footage by comparing the first unswapped full-charge popup against the second. If the engine applies post-damage, keep the block as-is (the buff is still live every round after the first) and note the one-round phase offset rather than inventing a compensating value."
+    },
+    {
+      "field": "override.hasPierce / skill2[1].effects[0].hasPierce (NOT set)",
+      "estimate": "No pierce tagging anywhere.",
+      "reasoning": "The swap is NAMED 'Swift Piercing', which is suggestive, but no line in this packet says 'Pierce' or 'Additional Effect: Pierce'. Faithful > fit: inferring pierce from a skill name would silently switch on every ally Pierce Damage ▲ buff's eligibility for her swap shots.",
+      "recipe": "Watch a Swift Piercing shot against a multi-part/multi-enemy boss for pierce behaviour, or check the full in-game skill description for an 'Additional Effect: Pierce' line this packet may have truncated. If confirmed, add weaponSwap.hasPierce:true (swap-scoped) — never the whole-fight hasPierce flag, since her base SR shots show no such line."
+    }
+  ],
+  "model": "claude-opus-5",
+  "leakDetected": null
+}
