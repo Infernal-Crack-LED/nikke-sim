@@ -1,0 +1,116 @@
+{
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 20.1%. continuous",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply stat==='atkPct' value 20.1 on self, no durationShots; zeroing it lowers ONLY the carry (all teammate totals byte-identical). Fails under casterAtkPct (re-emits a flat ATK number, never 20.1), under attackDamagePct (asserted absent at 20.1), and under an ally-scoped target (teammate totals would move)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Initiates a new Bunny Mode (toggle)",
+      "disposition": "GAP",
+      "assertion": "it.skip — no primitive flips a binary state per sustained Full Charge: `mode` is a static user choice, `selfStatus` max-extends a timed window. The sim also releases at full charge, so \"maintained for 1+ sec\" is unobservable."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "not in Stance → Initiates Stance",
+      "disposition": "FAITHFUL",
+      "assertion": "At frame 0 she is in neither mode, so the battle-start branch resolves to STANCE: the base run must show attackDamagePct 20.45 AND chargeDamagePct 40 on self. Fails under an Engage-default encoding (neither buff is ever applied)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies in the other mode",
+      "disposition": "UNMODELED",
+      "assertion": "it.skip (no ally carries a Bunny Mode; the mode has no stat payload). Testable residue: no buffApply of 20.1 / 20.45 / 77.35 / 1400 ever lands on a non-carry target — fails if a mode-propagation block was mis-scoped to allies with a payload attached."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Engage ⟂ Stance (branch gating)",
+      "disposition": "FAITHFUL",
+      "assertion": "Both branches present in the committed file (370.08 rider; 450.89/20.45 payload) and each block carries a gate key. Plus the behavioral exclusivity bound below. Fails under 'drop a branch' and under 'both branches ungated'."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "landing a Full Charge attack (rider)",
+      "disposition": "FAITHFUL",
+      "assertion": "skill2-srcSlot damage count ∈ [carryShots − bursts − 2, carryShots]. Upper bound fails if BOTH branches fire (~2× shots, the mode double-credit); lower bound fails under a burstCast / fullBurstEnter / every-N keying (count collapses to ~burst count). NOTE: fullCharge vs shotFired is NOT discriminated — for an unswapped SR they are byte-identical, as the schema itself states."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "370.08% of final ATK, true dmg",
+      "disposition": "FAITHFUL (⚑ magnitude pinned structurally only)",
+      "assertion": "Magnitude must appear as a flatDamage atkPct in the file; whichever rider is live is load-bearing (base − zeroed > 0) and exactly linear in atkPct (2× patch ⇒ 2.00 ± 0.04 × delta). Fails under a zero/stub rider or a payload actually sourced elsewhere. True-flavor itself is not asserted (no flavor on damage events)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Normal attacks deal true damage",
+      "disposition": "GAP",
+      "assertion": "it.skip — damage events carry no flavor field and the control comp has no trueDamagePct consumer, so the flag is damage-neutral and unobservable."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Mighty Stomp deals true damage",
+      "disposition": "GAP",
+      "assertion": "it.skip — same unobservability; it would ride weaponSwap.trueNormals, which emits no event."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack Damage ▲ 20.45%",
+      "disposition": "FAITHFUL",
+      "assertion": "Stat key is exactly attackDamagePct at 20.45 (Damage Up bucket). A totals counterfactual cannot separate bucket choices, so the key itself is the discriminator."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Charge Damage ▲ 40%",
+      "disposition": "FAITHFUL",
+      "assertion": "Stat key chargeDamagePct at 40, and explicitly NOT attackDamagePct at 40. Fails under the common fold of a charge-scoped line into the generic Damage-Up bucket, which over-credits every non-charge instance."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Changes the weapon in use",
+      "disposition": "FAITHFUL",
+      "assertion": "A weaponSwap effect exists in the burst slot (≥1; a second mode-gated true-flavored variant is tolerated, but every swap must carry identical kit numbers)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Time: Fixed at 1.5 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "chargeTimeSec OR chargeTimeClamp === 1.5 on each swap (either field expresses the fixed charge)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage 101.3% / Full Charge 250%",
+      "disposition": "FAITHFUL",
+      "assertion": "swap.damagePct === 101.3 and swap.chargeMultPct === 250. Pins the swap's per-shot economy against a base-weapon carry-over."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Duration: 1 rounds",
+      "disposition": "FIX (round-count, not seconds)",
+      "assertion": "swap.maxShots === 1 — one stomp per burst. Corroborated independently by Add.1's own \"for 1 rounds\". Fails under the default 10s weapon-change window, which fires several stomps."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Damage ▲1400% for 1 rounds",
+      "disposition": "FAITHFUL",
+      "assertion": "Every buffApply of chargeDamagePct 1400 has durationShots === 1 (≥2 applications over the fight ⇒ non-vacuous). Counterfactual: re-authored as durationSec 10 the buff outlives the swap and lands on her ordinary SR charge shots, so that run's total must be STRICTLY HIGHER than faithful — the duration-semantics trap made numeric."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲77.35% for 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Mirror of the above: durationShots must be ABSENT, expiresFrame must be a finite number (bounded, not continuous), and the application count must equal the ▲1400% count (both ride the same cast, so once per burst). Shortening durationSec to 1 must lower the total, proving the window is load-bearing. Fails if seconds were encoded as rounds, or if the buff was made continuous."
+    }
+  ],
+  "fixtures": "controlComp('guilty-mighty-bunny', true) for all 6 runs — B1 (liter) + B2 (crown) are mandatory because a lone Burst III carry produces ZERO Full Bursts, which would make every burst-slot assertion vacuous. The fixed B3 slot is deliberately KEPT rather than passing false: no assertion reads an absolute damage number, so a teammate's buffs cannot confound anything here — each magnitude claim is either a structural read of the committed override (captured non-destructively through withPatchedOverride's clone) or a self-referential counterfactual delta. Six hoisted runs: base; S1 atkPct 20.1→0; live Full-Charge rider ×0; rider ×2; burst ▲1400% re-authored as durationSec 10; burst ▲77.35% durationSec→1. All patches are VALUE patches, never block removals, so event counts and burst-gauge timing are identical across every run and the deltas are attributable. Note on the supplied methodology packet: it names the base unit `guilty` (highestAllyAtkPct, \"Mind If I Borrow This?\") — a DIFFERENT slug from guilty-mighty-bunny, carrying no information about this unit's answer, so this is not recorded as a leak.",
+  "gaps": [
+    "it.skip — S1-b toggle: Stance<->Engage flipping on a Full Charge maintained >=1s (while not in Mighty Stomp) has no engine primitive; `mode` is a static user-selected choice and `selfStatus` is a max-extending timed window, neither of which toggles. The sim also releases charge shots at full charge, so the \">=1 second maintained\" condition is itself unobservable. Consequence: whichever mode is selected is live for the entire fight, which over-credits that branch relative to real play where the player alternates.",
+    "it.skip — S1-c/S1-d: converting allies in the opposite Bunny Mode. No roster ally carries a Bunny Mode and the mode has no stat payload, so the line is inert; only the no-leak assertion is testable.",
+    "it.skip — S2 Engage Effect 1 (normal attacks deal true damage) and Effect 2 (Mighty Stomp deals true damage): damage events expose no flavor field and the control comp contains no trueDamagePct consumer, so true-flavor is damage-neutral and unobservable. Recipe: re-run with a True Damage ▲ buffer in the comp and read the totals delta.",
+    "NOT asserted (acknowledged, not skipped): fullCharge vs shotFired trigger identity for the S2 riders — the schema states they are byte-identical for an unswapped SR, so no in-sim assertion can separate them.",
+    "⚑ outside the input domain, intentionally left unasserted: the swap weapon's class/cadence (kit-silent — 'Mighty Stomp' names no weapon type), the swap's wall-clock durationSec alongside maxShots 1, and per-rider noFb/noRange/crit flags (measured-only; the kit text gives none of them)."
+  ],
+  "model": "claude-opus-5",
+  "leakDetected": null
+}

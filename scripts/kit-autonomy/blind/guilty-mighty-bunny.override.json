@@ -1,0 +1,161 @@
+{
+  "slug": "guilty-mighty-bunny",
+  "modes": [
+    "stance",
+    "engage"
+  ],
+  "trueNormalsModes": [
+    "engage"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 20.1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "mode": "stance",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 20.45
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 40
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "mode": "stance",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 450.89,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "mode": "engage",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 370.08,
+          "flavor": "true",
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 101.3,
+          "chargeTimeSec": 1.5,
+          "chargeTimeClamp": 1.5,
+          "chargeMultPct": 250,
+          "durationSec": 10,
+          "maxShots": 1,
+          "levelConst": [
+            "chargeTimeSec",
+            "chargeTimeClamp",
+            "maxShots"
+          ]
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 1400,
+          "durationShots": 1,
+          "levelConst": [
+            "durationShots"
+          ]
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 77.35,
+          "durationSec": 10,
+          "levelConst": [
+            "durationSec"
+          ]
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds while this unit is not in the Mighty Stomp state. Affects self.",
+      "Initiates a new Bunny Mode based on the current mode.",
+      "Activates if this unit is in the Bunny Mode: Stance state.",
+      "Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed.",
+      "Activates if this unit is not in the Bunny Mode: Stance state.",
+      "Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
+      "■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state.",
+      "Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed.",
+      "■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state.",
+      "Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed."
+    ],
+    "skill2": [
+      "Function: Changes some attacks' damage into true damage.",
+      "Function: Enhances this unit's offensive capabilities."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ MODE TOGGLE IS THE WHOLE KIT. S1's second block alternates Stance ⇄ Engage on each full charge HELD ≥1s (start of battle = not in Stance ⇒ Stance). The engine has no alternating-mode primitive, so this is encoded as a static top-level `modes: [stance, engage]` selection with `mode` gates on the S2 branches. This is defensible because the toggle requires a deliberate 1s HOLD — an SR firing at full charge without holding never toggles, so parking in one mode is a real play pattern — but a player who alternates gets a blend of BOTH branches that no single mode selection reproduces. Default is `stance` (the kit-stated t=0 state).",
+    "⚑ Reaching `engage` costs one ≥1s full-charge hold (and one more to return), i.e. a real opening-DPS tax, plus a toggle risk on every subsequent full charge. The static mode gate models neither — `engage` is credited from frame 0.",
+    "⚑ S2 Effect 3 (both branches) is keyed `fullCharge`, so it ALSO fires on the burst Mighty Stomp shot (the stomp is a fixed-1.5s full-charge attack with its own Full Charge Damage line). Left ungated (no `swapGate`) as the kit gives no exclusion — if footage shows the riders do not proc off the stomp, add `swapGate: 'unswapped'`.",
+    "Both riders are \"when LANDING a Full Charge attack\" — landing/range residue is not modeled; they are instant flatDamage (engine force-sets no-range), take Full Burst by timing (`noFb` left OFF, unmeasured), crit at the caster's sheet rate, and never core.",
+    "S1's two ally-side blocks (pull all allies in the opposite Bunny Mode into this unit's mode) are inert at scope: no other roster unit carries a Bunny Mode status, so there is no consumer. They are recorded in `unmodeled`, not dropped, and would need real modeling only if a second Bunny-Mode carrier ships.",
+    "Mighty Stomp is a REAL weapon change (damagePct 101.3 ≠ normalAttackMultiplier 69.04, so `sameWeapon` is correctly unset) ⇒ the engine grants a fresh magazine on entry and hands the base SR back FULL on exit. That free reload is a genuine damage gain riding on the swap and is engine-automatic, not authored here.",
+    "`weapon` is deliberately unset on the swap: the kit never names Mighty Stomp's weapon class, so the swap inherits the base SR class (range band + auto-core rate). If the stomp is in fact a different class, core rate and band eligibility are both wrong."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (no driver test/override/reasoning consulted). Structure: S1 = one continuous self ATK buff + the Stance⇄Engage toggle, which is approximated by a static top-level `modes` selection because the engine has no alternating-mode primitive — the single largest modeling liberty in this file. S2 is two mutually exclusive mode branches: `stance` = Attack Damage ▲20.45 + Charge Damage ▲40 + a 450.89% additional-damage full-charge rider; `engage` = true-flavored normals AND true-flavored Mighty Stomp (both carried by the single top-level `trueNormalsModes: ['engage']`, which the schema states also covers swap shots) + a 370.08% TRUE full-charge rider. Burst = a real weapon change (damagePct 101.3, charge fixed 1.5s, Full Charge Damage 250%) bounded by `maxShots: 1` for the kit's \"Duration: 1 rounds\", with a ⚑ 10s `durationSec` stand-in since the kit gives no wall-clock bound; the ▲1400% Charge Damage is round-scoped (`durationShots: 1`, so the one stomp shot still benefits) and the ▲77.35% Attack Damage is the stated 10 sec. No `ignored` blocks; all SKIPPED kit lines appear verbatim in `unmodeled`."
+}

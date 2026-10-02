@@ -1,0 +1,379 @@
+{
+  "slug": "guilty-mighty-bunny",
+  "leakDetected": null,
+  "override": {
+    "slug": "guilty-mighty-bunny",
+    "modes": ["stance", "engage"],
+    "trueNormalsModes": ["engage"],
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 20.1
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "mode": "stance",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 20.45
+          },
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 40
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "mode": "stance",
+        "trigger": {
+          "kind": "fullCharge"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 450.89,
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "mode": "engage",
+        "trigger": {
+          "kind": "fullCharge"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 370.08,
+            "flavor": "true",
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "weaponSwap",
+            "damagePct": 101.3,
+            "chargeTimeSec": 1.5,
+            "chargeTimeClamp": 1.5,
+            "chargeMultPct": 250,
+            "durationSec": 10,
+            "maxShots": 1,
+            "levelConst": ["chargeTimeSec", "chargeTimeClamp", "maxShots"]
+          },
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 1400,
+            "durationShots": 1,
+            "levelConst": ["durationShots"]
+          },
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 77.35,
+            "durationSec": 10,
+            "levelConst": ["durationSec"]
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds while this unit is not in the Mighty Stomp state. Affects self.",
+        "Initiates a new Bunny Mode based on the current mode.",
+        "Activates if this unit is in the Bunny Mode: Stance state.",
+        "Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed.",
+        "Activates if this unit is not in the Bunny Mode: Stance state.",
+        "Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
+        "■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state.",
+        "Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed.",
+        "■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state.",
+        "Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed."
+      ],
+      "skill2": [
+        "Function: Changes some attacks' damage into true damage.",
+        "Function: Enhances this unit's offensive capabilities."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ MODE TOGGLE IS THE WHOLE KIT. S1's second block alternates Stance ⇄ Engage on each full charge HELD ≥1s (start of battle = not in Stance ⇒ Stance). The engine has no alternating-mode primitive, so this is encoded as a static top-level `modes: [stance, engage]` selection with `mode` gates on the S2 branches. This is defensible because the toggle requires a deliberate 1s HOLD — an SR firing at full charge without holding never toggles, so parking in one mode is a real play pattern — but a player who alternates gets a blend of BOTH branches that no single mode selection reproduces. Default is `stance` (the kit-stated t=0 state).",
+      "⚑ Reaching `engage` costs one ≥1s full-charge hold (and one more to return), i.e. a real opening-DPS tax, plus a toggle risk on every subsequent full charge. The static mode gate models neither — `engage` is credited from frame 0.",
+      "⚑ S2 Effect 3 (both branches) is keyed `fullCharge`, so it ALSO fires on the burst Mighty Stomp shot (the stomp is a fixed-1.5s full-charge attack with its own Full Charge Damage line). Left ungated (no `swapGate`) as the kit gives no exclusion — if footage shows the riders do not proc off the stomp, add `swapGate: 'unswapped'`.",
+      "Both riders are \"when LANDING a Full Charge attack\" — landing/range residue is not modeled; they are instant flatDamage (engine force-sets no-range), take Full Burst by timing (`noFb` left OFF, unmeasured), crit at the caster's sheet rate, and never core.",
+      "S1's two ally-side blocks (pull all allies in the opposite Bunny Mode into this unit's mode) are inert at scope: no other roster unit carries a Bunny Mode status, so there is no consumer. They are recorded in `unmodeled`, not dropped, and would need real modeling only if a second Bunny-Mode carrier ships.",
+      "Mighty Stomp is a REAL weapon change (damagePct 101.3 ≠ normalAttackMultiplier 69.04, so `sameWeapon` is correctly unset) ⇒ the engine grants a fresh magazine on entry and hands the base SR back FULL on exit. That free reload is a genuine damage gain riding on the swap and is engine-automatic, not authored here.",
+      "`weapon` is deliberately unset on the swap: the kit never names Mighty Stomp's weapon class, so the swap inherits the base SR class (range band + auto-core rate). If the stomp is in fact a different class, core rate and band eligibility are both wrong."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (no driver test/override/reasoning consulted). Structure: S1 = one continuous self ATK buff + the Stance⇄Engage toggle, which is approximated by a static top-level `modes` selection because the engine has no alternating-mode primitive — the single largest modeling liberty in this file. S2 is two mutually exclusive mode branches: `stance` = Attack Damage ▲20.45 + Charge Damage ▲40 + a 450.89% additional-damage full-charge rider; `engage` = true-flavored normals AND true-flavored Mighty Stomp (both carried by the single top-level `trueNormalsModes: ['engage']`, which the schema states also covers swap shots) + a 370.08% TRUE full-charge rider. Burst = a real weapon change (damagePct 101.3, charge fixed 1.5s, Full Charge Damage 250%) bounded by `maxShots: 1` for the kit's \"Duration: 1 rounds\", with a ⚑ 10s `durationSec` stand-in since the kit gives no wall-clock bound; the ▲1400% Charge Damage is round-scoped (`durationShots: 1`, so the one stomp shot still benefits) and the ▲77.35% Attack Damage is the stated 10 sec. No `ignored` blocks; all SKIPPED kit lines appear verbatim in `unmodeled`."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates at the start of battle. Af",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill1[0] trigger `passive` + target `self`. Encoded as passive rather than `battleStart` because the payload is continuous with no durationSec — the two are uptime-identical here and passive carries no duration semantics to get wrong."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 20.1%. This effect is continuous",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 20.1, no durationSec (continuous)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates at the start of battle and",
+      "status": "SKIPPED",
+      "effectOrReason": "Toggle activation clause (battle start OR full charge maintained ≥1s while NOT in Mighty Stomp). No engine trigger expresses \"full charge HELD for 1s\" (the `fullCharge` primitive fires on RELEASE of any charged pull, which is NOT the same event), and no primitive alternates a self mode. Approximated by the static top-level `modes` selection; the \"not in Mighty Stomp\" sub-gate is moot once the toggle is static."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Initiates a new Bunny Mode based on th",
+      "status": "SKIPPED",
+      "effectOrReason": "The alternation itself. `modes` is a static user selection, not a runtime toggle."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates if this unit is in the Bunny",
+      "status": "SKIPPED",
+      "effectOrReason": "Toggle branch condition (in Stance ⇒ go Engage). Subsumed by the static mode selection."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Initiates Bunny Mode: Engage. This eff",
+      "status": "SKIPPED",
+      "effectOrReason": "Self mode entry (Engage). Represented as `mode: 'engage'` on the S2 branch + `trueNormalsModes: ['engage']`, not as a runtime state change."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates if this unit is not in the B",
+      "status": "SKIPPED",
+      "effectOrReason": "Toggle branch condition (not in Stance ⇒ go Stance). This is the branch that fires at battle start, which is why `stance` is the default mode."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Initiates Bunny Mode: Stance. This eff",
+      "status": "SKIPPED",
+      "effectOrReason": "Self mode entry (Stance). Represented as `mode: 'stance'` on the S2 branches."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when this unit enters the",
+      "status": "SKIPPED",
+      "effectOrReason": "Ally-side mode sync (on entering Engage, affects all allies in Stance). No other roster unit carries a Bunny Mode status, so there is no consumer and nothing to grant — inert at scope, recorded not dropped."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Initiates Bunny Mode: Engage. (ally)",
+      "status": "SKIPPED",
+      "effectOrReason": "Payload of the ally mode-sync block above. Cross-unit mode state has no engine channel (selfStatus is keyed per-unit by design and cannot be written to another unit)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when this unit enters the",
+      "status": "SKIPPED",
+      "effectOrReason": "Ally-side mode sync (on entering Stance, affects all allies in Engage). Same reason: no second Bunny-Mode carrier exists."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Initiates Bunny Mode: Stance. (ally)",
+      "status": "SKIPPED",
+      "effectOrReason": "Payload of the ally mode-sync block above."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates only if this unit is in th",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "`mode: 'engage'` gate on skill2[2] (and on the top-level `trueNormalsModes` entry)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Chain Release",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Branch name, no mechanic of its own; realized by the `mode: 'engage'` encoding."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Function: Changes some attacks' damage",
+      "status": "SKIPPED",
+      "effectOrReason": "Descriptive summary line restating Effects 1–3; no independent mechanic. Verbatim in `unmodeled.skill2`."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 1: ... Normal attacks deal true",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Top-level `trueNormalsModes: ['engage']` — the mode-scoped sibling of hasTrueNormals, resolved once at setup from the selected mode. Makes ally True Damage ▲ feed her normals in Engage only."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 2: ... Mighty Stomp deals true",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Covered by the SAME `trueNormalsModes` entry — the schema states the normal-fire path reads `swap.trueNormals || hasTrueNormals`, so a swap weapon that is also true in that mode needs no swap-level flag. Deliberately NOT also set as `weaponSwap.trueNormals`, which would double-book one kit line."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 3: ... 370.08% ... true damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill2[2]: trigger `fullCharge`, target `enemy`, flatDamage atkPct 370.08, flavor 'true', crit true (rider crit convention), core omitted (kit says no core strike), noRange engine-automatic, noFb left OFF (FB by landing timing)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates only when this unit is in",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "`mode: 'stance'` gate on skill2[0] and skill2[1]."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Chain Enhance",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Branch name, no mechanic; realized by the `mode: 'stance'` encoding."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Function: Enhances this unit's offensi",
+      "status": "SKIPPED",
+      "effectOrReason": "Descriptive summary line; no independent mechanic. Verbatim in `unmodeled.skill2`."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 1: ... Attack Damage ▲ 20.45%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 20.45, passive, self, no duration (continuous). Generic Damage-Up bucket — the kit scopes it to nothing narrower."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 2: ... Charge Damage ▲ 40%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 40 (additive percentage points in the charge bucket, not chargeDamageMultPct — the kit says plain \"Charge Damage ▲\"), passive, self, continuous. Also lifts the burst stomp shot, which the kit's \"continuous\" wording supports."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 3: ... 450.89% ... additional d",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill2[1]: trigger `fullCharge`, target `enemy`, flatDamage atkPct 450.89, crit true, no flavor (\"additional damage\" = plain function damage, NOT true), core omitted, noFb OFF."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst[0] target `self`, trigger `burstCast` (a self weapon-mode line in the unit's OWN burst block ⇒ burst-cast, never fullBurstEnter)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Mighty Stomp: Changes the weapon in us",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap. `sameWeapon` deliberately UNSET: damagePct 101.3 ≠ normalAttackMultiplier 69.04, the stated same-weapon diagnostic, so this is a real weapon change (fresh magazine in, base SR returned full on exit)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Time: Fixed at 1.5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "chargeTimeSec 1.5 (the swap weapon's charge time) AND chargeTimeClamp 1.5 (the literal \"Fixed at\" wording ⇒ immune to charge-speed buffs). Set equal so the clamp cannot disagree with the base value."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage: 101.3% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.damagePct 101.3 — per-shot full-shot total while swapped."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Full Charge Damage: 250%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeMultPct 250."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Duration: 1 rounds",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "maxShots 1 — a ROUND count, read as the uses-based end (swap terminates right after the 1st swapped shot); hitsPerShot 1 makes rounds and shots identical here. durationSec 10 is a ⚑ stand-in because weaponSwap.durationSec is a required field and the kit states no wall-clock bound."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Additional Effect 1: Charge Damage ▲ 1",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 1400 with durationShots 1 — \"for 1 rounds\" is a round count, never seconds. Decremented after the shot's blocks dispatch, so the single stomp shot does benefit."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Additional Effect 2: Attack Damage ▲ 7",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 77.35, durationSec 10 (kit-stated wall-clock, distinct from Effect 1's round count)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.modes / skill2[*].mode / trueNormalsModes",
+      "estimate": "Static two-mode selection, default 'stance'; whichever mode is selected is credited for the entire fight from frame 0.",
+      "reasoning": "S1's toggle alternates Stance ⇄ Engage on each full charge HELD ≥1s while not in Mighty Stomp. The engine has no alternating-self-mode primitive and no \"charge held for N sec\" trigger, so the only expressible encoding is the static `modes` gate. It is not purely a fudge — the hold is deliberate, so an SR that fires on release never toggles and camping one mode is a real pattern — but it cannot represent (a) the opening-Stance ramp before a player switches to Engage, (b) the ≥1s hold cost per switch, or (c) a player who intentionally alternates to collect both branches. A judge diff that disagrees here most likely disagrees about WHICH branch to treat as canonical, not about the magnitudes.",
+      "recipe": "Focus recording of her solo: count full-charge releases vs mode-swap VFX over 60s to get the real duty cycle, and time the hold (release-to-release delta on a toggling charge vs a non-toggling one) to price the switch. If alternation turns out to be the real play, replace the mode gate with a `chargeCounter`-driven pair of blocks (or two authored comps, one per mode, graded separately) and weight by the measured duty cycle."
+    },
+    {
+      "field": "burst[0].effects[0].durationSec",
+      "estimate": "10 (seconds)",
+      "reasoning": "The kit bounds Mighty Stomp ONLY by \"Duration: 1 rounds\" — there is no wall-clock figure anywhere in the burst block, but weaponSwap.durationSec is a required field. 10s is chosen as the Full Burst window length so the time bound never cuts the swap short before its single shot: with charge fixed at 1.5s the stomp fires ~1.5s into the window, so maxShots:1 is what actually ends the swap and durationSec is inert as written. It is still ⚑ because any value below ~1.5s would silently delete the whole burst and any value is unverified. Left out of `levelConst` on purpose so the level scaler keeps warning about it.",
+      "recipe": "Recording of her burst: timestamp the cast banner → the stomp impact → the frame the base SR reappears in hand. If the weapon is handed back immediately after the single shot, durationSec is confirmed inert and can be pinned to ~2s; if she holds the stomp weapon for a fixed window after firing, author the measured value and drop maxShots."
+    },
+    {
+      "field": "burst[0].effects[0] (shot economy: maxShots / chargeTimeClamp / weapon / pelletCount)",
+      "estimate": "Exactly ONE stomp shot per burst: 1.5s fixed charge, 1 round, single damage instance of 101.3% × 250% full-charge, swap weapon class inherited from the base SR.",
+      "reasoning": "Weapon-swap shot economy is kit-silent by the ALWAYS-⚑ taxonomy and this swap is unusually tight — a 1-round budget means the entire burst payload rides one hit, so every swap-economy assumption is load-bearing rather than marginal. Unknowns: (1) whether the engine's cast→swap→charge sequencing actually lands the shot inside Full Burst (if the 1.5s charge pushes impact past the FB window the ▲1400% charge buff and the +50% FB major could land on different sides of the boundary); (2) the swap weapon's CLASS, unstated, which sets range band and auto-core rate — a stomp is plausibly not SR-cored at all; (3) split-vs-merge — \"Damage: 101.3%\" is read as one merged instance (hitsPerShot inherited 1), which is also the burst-gauge assumption. Estimated optimistically per the taxonomy (shot lands in-window, inherits SR core).",
+      "recipe": "Burst recording: count damage popups on the stomp (one vs several ⇒ merge vs split), check popup color/size for core vs body to infer the swap's core rate, and read the FB banner timer against the impact frame to confirm the shot is inside the window. If the stomp is core-ineligible, add `weapon` to the swap or model it as a non-coring flatDamage instead."
+    },
+    {
+      "field": "base cadence tuple (ammo 6 / reloadFrames 141 / chargeFrames 60 / hitsPerShot 1)",
+      "estimate": "Taken as given from the datamine.",
+      "reasoning": "Mandatory ⚑ — the cadence fields are a known-unreliable datamine source, and this unit is unusually cadence-sensitive in two directions at once: BOTH S2 riders (370.08% / 450.89%) are keyed to `fullCharge`, so rider throughput is exactly her charged-pull rate, and the mode toggle is itself driven by charge behaviour. A 10% error in chargeFrames or reloadFrames moves her entire skill-slot output proportionally, with no offsetting term anywhere in the kit.",
+      "recipe": "Count her charged pulls and reload cycles over a fixed 30s window on a focus recording and back out pulls/s and reload time; compare against chargeFrames 60 (1.0s) + reloadFrames 141 (2.35s) + ammo 6."
+    },
+    {
+      "field": "skill2[1].effects[0].crit / skill2[2].effects[0].crit (and both riders' noFb)",
+      "estimate": "crit: true on both riders; noFb left OFF (riders take the +50% Full Burst major by landing timing); core omitted.",
+      "reasoning": "Convention, not measurement. The hard rules state function-damage riders crit at the caster's sheet rate, get NO core unless the text says \"core strike damage\" (it does not), are force-set no-range by the engine, and take Full Burst by timing with noFb measured-only and defaulted OFF. All three choices are therefore the documented defaults rather than anything this kit asserts — and because the riders are 370.08%/450.89% per full charge, they are the dominant non-burst term, so a wrong crit or FB ruling misses by a large margin in exactly the place it matters most.",
+      "recipe": "Popup read on a focus recording: orange/large popups on the rider ⇒ crit-eligible (confirm ratio ≈ ×1.5 against non-crit instances); compare in-FB vs out-of-FB rider popups for the ×1.5 FB step to settle noFb; check for core-flavored popups to confirm core stays off."
+    }
+  ],
+  "model": "claude-opus-5"
+}

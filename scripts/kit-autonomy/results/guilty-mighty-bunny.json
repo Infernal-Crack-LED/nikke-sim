@@ -1,0 +1,174 @@
+{
+  "slug": "guilty-mighty-bunny",
+  "kitDescription": "Guilty: Mighty Bunny is a Water sniper who permanently gains 20.1% ATK and fights in one of two Bunny Modes. She opens the battle in Stance, which gives her +20.45% attack damage, +40% charge damage, and a 450.89% extra hit every time one of her full-charge shots lands. Holding a full charge for a second (outside her burst) flips her to Engage, where her normal shots and her burst attack become true damage and the per-shot extra hit becomes a 370.08% true-damage hit instead; flipping again returns her to Stance, and any teammate who also has a Bunny Mode is pulled into the same mode. Her Burst III swaps her to the Mighty Stomp weapon for exactly one round: a fixed 1.5-second charge, 101.3% damage with a 250% full-charge multiplier, boosted by +1400% charge damage for that single round, and she keeps +77.35% attack damage for 10 seconds afterwards.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "VERBATIM RED, all one RECON_ERROR: the blind file assigns onEvent on the CompOptions top level (cfg.onEvent = ... where cfg is controlComp's return) but runComp only reads it under the nested cfg key (the driver's file uses cfg:{onEvent}), so the verbatim run captures ZERO events. The five event-reading assertions fail for that reason only: 'S1-a: ATK ▲20.1% is a plain self atkPct buff' (ap.length>0 on an empty log), 'S1-b: battle-start resolution is Stance' (no 20.45/40 buffApply seen), 'S2: exactly ONE Full-Charge rider fires' (shots.length>20 on an empty log), 'burst Add.1: ▲1400% is ROUND-scoped' (a.length>=2), 'burst Add.2: ▲77.35% TIME-scoped' (a.length>=2). The six totals-/structure-based assertions pass verbatim; three are the blind's own it.skip GAPs.",
+      "ADAPTED (one-line wiring fix only): 11 passed / 0 failed / 3 skipped — independently traced here against the driver's override: atkPct 20.1 self at frame 0 with no durationShots; 20.45 attackDamagePct + 40 chargeDamagePct on self by default (Stance); riders == charged shots (so > 5×bursts and within [shots−bursts−2, shots]); 1400 buffApplies each durationShots 1 and the durationSec-10 counterfactual strictly higher; 77.35 count == 1400 count, finite expiresFrame, no durationShots, durationSec-1 counterfactual lower. ZERO model divergences — the blind caught nothing against the shipped override."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "start of battle, self: ATK ▲ 20.1%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "battleStart → self buff atkPct 20.1, no duration (continuous)",
+        "blindSaid": "S6: passive → self atkPct 20.1 (uptime-identical); both S2b: battleStart/passive, self, no expiry, plain atkPct (not casterAtkPct)",
+        "formulaCheck": "§1a plain ATK ▲ % sums into the (1+ΣATK%) multiplier on staticAtk — correct bucket; self-only so no dilution with ally grants",
+        "fireRateOk": true,
+        "explanation": "One self grant at frame 0, expiresFrame null, targetSlug self (driver G1 pins frame/value/target/expiry). battleStart vs passive is cosmetic for a continuous self buff."
+      },
+      {
+        "kitLine": "Full Charge held ≥1s → new Bunny Mode",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "static modes ['Stance','Engage'], Stance default (battle-start branch puts a unit not in Stance INTO Stance); toggle verbatim in unmodeled.skill1 + caveat (1s hold cost and mid-fight re-toggling uncharged)",
+        "blindSaid": "S6: identical static modes, stance default, ⚑ flag with duty-cycle recipe; both S2b: static modes, Stance first, a fullCharge-keyed flip is the nearest-wrong; S5: it.skip GAP",
+        "formulaCheck": "Mode machinery carries no stat; the sim releases at full charge so a 'maintained for ≥1s' trigger is unobservable in-engine — no primitive exists",
+        "fireRateOk": true,
+        "explanation": "Four-way convergence on static modes with Stance as the battle-start state. Driver G2 pins default==Stance and mutual exclusion of the two S2 branches (mode-blind counterfactual fires both riders). Decision recorded; ⚑ residual is the opening-hold cost if Engage is selected."
+      },
+      {
+        "kitLine": "enters Engage → allies in Stance follow",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill1 + caveat naming sin-swift-bunny as the only other carrier (select the same mode for both)",
+        "blindSaid": "S6: SKIPPED, no cross-unit mode channel; both S2b: UNMODELED, inert in controlComp; S5: it.skip + no-leak assertion (passes)",
+        "formulaCheck": "No stat payload; inert on liter/crown/helm; nothing to route",
+        "fireRateOk": true,
+        "explanation": "No second Bunny Mode carrier in the graded comp; S5's leak assertion confirms no self-only magnitude lands on a teammate."
+      },
+      {
+        "kitLine": "enters Stance → allies in Engage follow",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill1 (mirror line)",
+        "blindSaid": "S6/S2b/S5: same disposition as the sibling line",
+        "formulaCheck": "No payload; inert at scope",
+        "fireRateOk": true,
+        "explanation": "Mirror of the Engage-sync line; documented, inert."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "[Engage] Normal attacks deal true damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "top-level trueNormalsModes ['Engage'] — flavor only, no magnitude",
+        "blindSaid": "S6: trueNormalsModes ['engage'], identical; both S2b: mode-gated flavor tag, NOT a trueDamagePct buff; S5: it.skip (unobservable without a consumer)",
+        "formulaCheck": "§1e True Damage ▲ joins DamageUp only on true-flavored instances; the flavor alone adds nothing (true damage's DEF bypass is ≈0.1% here since bossDef is a flat 140 — below noise)",
+        "fireRateOk": true,
+        "explanation": "Driver G5 observes the flavor via a synthetic self True Damage ▲ buff: every Engage base-weapon normal gains +1.00 dmgUp, Stance normals do not, and removing trueNormalsModes removes it."
+      },
+      {
+        "kitLine": "[Engage] Mighty Stomp deals true damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "no swap-level flag — the normal-fire path reads swap.trueNormals || hasTrueNormals, and trueNormalsModes sets hasTrueNormals, so the Stomp is true exactly in Engage (verified by run)",
+        "blindSaid": "S6: same single-field encoding, explicitly declined weaponSwap.trueNormals to avoid double-booking; both S2b: same read; S5: it.skip",
+        "formulaCheck": "Flavor routing only; Stomp in Stance must NOT be true (E2 is Engage-only) — driver G5 'the Stance Stomp is not true' pins it",
+        "fireRateOk": true,
+        "explanation": "Engine fact confirmed by the driver's G5 pin ('the Engage Stomp is true; without the field it is not'). Both S2b reviewers' proposed mode-gated swap copy would be behaviour-identical; collapsing to one swap block is correct."
+      },
+      {
+        "kitLine": "[Engage] Full Charge lands → 370.08% true",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullCharge → enemy flatDamage 370.08 flavor true, mode Engage; crit at her rate (default), never cores; fires on the Stomp pull too (it is a full-charge attack)",
+        "blindSaid": "S6: identical block plus explicit crit:true, no swapGate (⚑ Stomp-pull proc unmeasured); S2b-1 and S2b-2: fullCharge, Engage-gated, true, noRange, no core, FB by timing, fires on the Stomp per literal reading",
+        "formulaCheck": "§2b skill damage: crits at caster rate (default on, so the blind's explicit crit:true is redundant), never core, noRange forced, FB by landing time, no charge bucket; §1e the true flavor opens the True Damage ▲ term",
+        "fireRateOk": true,
+        "explanation": "Driver G3 pins one rider per charged shot frame-locked (>50/fight) including the Stomp (swapGate:'unswapped' counterfactual drops exactly the Stomp riders); G4 pins true-flavor via dmgUp delta and coreEligible false. The driver's tests do not pin crit on the rider (SSOT default covers it) — a test-coverage residual, not a divergence."
+      },
+      {
+        "kitLine": "[Stance] Attack Damage ▲ 20.45%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive self attackDamagePct 20.45, mode Stance, continuous",
+        "blindSaid": "S6: identical; both S2b: attackDamagePct (not atkPct), Stance-only; S5: stat-key assertion passes",
+        "formulaCheck": "§1e Attack Damage ▲ is additive inside DamageUp with the burst 77.35 and ally terms — correct bucket",
+        "fireRateOk": true,
+        "explanation": "Driver G2 pins frame 0, no expiry, self, absent in Engage."
+      },
+      {
+        "kitLine": "[Stance] Charge Damage ▲ 40%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive self chargeDamagePct 40, mode Stance",
+        "blindSaid": "S6: identical (chargeDamagePct, not chargeDamageMultPct); both S2b: additive points in the charge bucket, also lifts the Stomp; S5: key assertion passes",
+        "formulaCheck": "§1d plain Charge Damage ▲ adds flat points: base shot 2.5+0.4, Stomp 2.5+14+0.4 — driver G7 reads exactly those multipliers",
+        "fireRateOk": true,
+        "explanation": "Charge-bucket placement verified numerically by G7 (Stance 16.9 vs Engage 16.5 on the Stomp; 2.9 vs 2.5 on base shots)."
+      },
+      {
+        "kitLine": "[Stance] Full Charge lands → 450.89% addl",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullCharge → enemy flatDamage 450.89 (no flavor), mode Stance; fires on the Stomp too",
+        "blindSaid": "S6: identical plus explicit crit:true; both S2b: non-true function damage, Stance-only, never co-fires with 370.08",
+        "formulaCheck": "§2b function damage conventions; not a charge hit so the +40/+1400 chargeDamagePct do not touch it",
+        "fireRateOk": true,
+        "explanation": "Driver G2 pins uniqAtk(riders) == [450.89] in Stance and [370.08] in Engage; G3 pins cadence."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Mighty Stomp: weapon change, 1.5s, 1 round",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast self weaponSwap damagePct 101.3, chargeTimeSec 1.5 + chargeTimeClamp 1.5, chargeMultPct 250, maxShots 1, durationSec 180 (fight-length bound, documented caveat)",
+        "blindSaid": "S6: identical except durationSec 10 (⚑ non-binding stand-in) and levelConst; both S2b: burstCast-keyed (not fullBurstEnter — helm is a second B3), maxShots 1, 1.5s clamp, 250",
+        "formulaCheck": "§1d Charge = 2.5 + 14 (+0.4 Stance) on rate 101.3; the Stomp is a swap-weapon normal landing ~90f after the cast, inside the window (FB countdown starts 22f after B3) so it takes the +0.5 — driver G6 pins inFullBurst && fbMajorApplied; §2b maxShots uses-based end",
+        "fireRateOk": true,
+        "explanation": "G6 pins exactly one charged Stomp per OWN cast (≥5 casts), ≥89f after the cast, with no-maxShots and 1.0s-charge counterfactuals diverging; a fullBurstEnter misread would fail stomps.length == casts.length since helm's rotations add windows. durationSec 180 vs 10 never binds. Undocumented residuals (not prose contradictions): the Stomp inherits the SR flat 0.95 core rate and SR range eligibility (blind S6 ⚑-flagged; driver silent) — see gotchas."
+      },
+      {
+        "kitLine": "Charge Damage ▲ 1400% for 1 rounds",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast self chargeDamagePct 1400 durationShots 1 — the one round is the Stomp",
+        "blindSaid": "S6: identical; both S2b: durationShots 1, the durationSec:1 trap would zero it (1.5s charge > 1s) and durationSec:10 would feed post-swap shots; S5: durationShots==1 and durationSec-10 counterfactual higher (pass)",
+        "formulaCheck": "§11 round-scoped windows spend after the shot so the Nth shot benefits; the cast is not a pull, so the next round (the Stomp) carries it — G7 reads 16.9 on the Stomp and 2.9 on the following base shot",
+        "fireRateOk": true,
+        "explanation": "G7 pins grant at each own cast with durationShots 1 and the exact charge multipliers; a 2-round counterfactual lifts the post-Stomp shot."
+      },
+      {
+        "kitLine": "Attack Damage ▲ 77.35% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast self attackDamagePct 77.35 durationSec 10",
+        "blindSaid": "S6: identical; both S2b: wall-clock 10s, self, burstCast (count < fullBurstStart with helm present); S5: count == 1400 count, finite expiry, shortening lowers total (pass)",
+        "formulaCheck": "§1e DamageUp additive with the Stance 20.45 (two distinct keys, no merge)",
+        "fireRateOk": true,
+        "explanation": "G8 pins [frame, frame+600, self] per own cast; all-allies counterfactual lands on four targets."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "burst",
+      "summary": "Uses-based swap exit (maxShots 1) hands the base SR back with the swap-entry magazine minus the Stomp round, not the full magazine the 2026-08-12 real-weapon-change ruling describes for a swap exit; entry refills to her CURRENT max (9 with control-comp ammo buffs).",
+      "evidence": "Kit: 'Mighty Stomp: Changes the weapon in use … Duration: 1 rounds'. Driver caveat 3 documents it (⚑ estimate = full magazine less one per Stomp, footage recipe, MEASUREMENT-GATED). S6 caveat and S2b-2 note 4 independently flag swap shot economy as an always-⚑ item. Engine behaviour, not a prose divergence.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Needs measurement: in a focus recording read the ammo counter immediately before the burst cast, at the Stomp, and until the next reload; author the observed hand-back count (full / pre-cast / max−1) and, if the engine's uses-exit behaviour disagrees with the ruling, raise it as an engine item rather than patching this override."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "The Stomp shot is routed as an ordinary SR normal attack: it cores at the flat 0.95 SR rate, takes the +30% range bonus in SR bands, and inherits SR burst-gauge value — none of which the kit states, and the driver's note does not record the convention.",
+      "evidence": "Kit names no weapon class for Mighty Stomp. §1b MG/SR/RL core = flat 0.95; swap inherits the base class. S6 flagged '⚑ Stomp core rate (default)' and 'weapon deliberately unset'; S2b-2 inertness line 'the Stomp never cores at a rate above the SR auto-core path (⚑ default)'. Driver: silent. At ~1712% × up to 6 casts the core term (+0.95 inside a Major of ~2.75) is a material share of one burst's payload.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Document the inherited-SR convention in the override note as ⚑, with the recipe: popup read of the Stomp on a focus recording (core-flavored vs body popups, and the ×1.3 range step across bands). If the Stomp proves core-ineligible, encode it as a non-coring hit (coreOverride 0 or a flatDamage delivery) — never tune the rate to a number."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.00",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA survives: all 13 kit lines are FAITHFUL (9) or DOCUMENTED_GAP (4: the mode toggle and the two ally-sync lines, verbatim in unmodeled with caveats). The two listed items are low: a documented ⚑ engine quirk on the uses-based swap exit magazine, and an undocumented but kit-silent convention that the Stomp cores/ranges as an SR shot (needs a popup read, not a value change). Every modeled block fires at prose cadence by the driver's event-log pins (ATK once at frame 0; ~100+ riders frame-locked to charged shots including the Stomp; one Stomp, one 1400-for-1-round and one 77.35-for-600f per own cast with helm's rotations correctly excluded), and every load-bearing assertion has a named counterfactual that diverges (mode-blind, unswapped-only rider, plain rider, no trueNormalsModes, no maxShots, 1.0s charge, 2-round 1400, all-allies 77.35; the durationSec misreads on 1400 are caught by G7's exact multiplier read). The blind re-derivations converged fully: S6's override is block-equivalent (passive vs battleStart, redundant crit:true under the SSOT default, non-binding durationSec 10, levelConst cosmetics), both S2b specs match the driver line-for-line, and the S5 test file is verbatim RED only because it wires onEvent where runComp never reads it (a harness RECON_ERROR); with that one line fixed it is 11/0/3 against the shipped override, independently traced here. Same-model residuals the owner should spot-check: (1) every agent read 'when landing a Full Charge attack' as also firing on the Stomp pull — literal but unmeasured, ~6 extra riders per fight; (2) rider crit relies on the engine default and is not pinned by the driver's tests; (3) selecting Engage is strictly worse in-engine than Stance unless an ally grants True Damage ▲ (true damage's DEF bypass is ≈0.1% here), so the chart number is a Stance number — say so when reading it; (4) the Stomp core/range convention above.",
+  "model": "claude-fable-5-1"
+}
