@@ -747,9 +747,9 @@ export interface CharacterSkills {
   burstSnapshotsPreFb?: boolean; // burst damage resolves pre-FB/pre-stage (per-unit cast timing)
   pierceModes?: string[]; // pierce only while in one of these kit modes (CCW: SR only)
   // normal attacks are True-flavored only while in one of these kit modes — the mode-scoped
-  // sibling of hasTrueNormals, exactly as pierceModes is to hasPierce. For a self-mode kit line
-  // "Normal attacks deal true damage. This effect is continuous" gated on the unit's own mode
-  // (guilty-mighty-bunny / sin-swift-bunny Bunny Mode: Engage). Like pierceModes it resolves
+  // sibling of hasTrueNormals, exactly as pierceModes is to hasPierce, for a true-damage flavor
+  // that belongs to one of the unit's own kit modes rather than to the whole fight (carriers:
+  // docs/STATE.md §5). Like pierceModes it resolves
   // once at setup from the selected mode. It covers swap shots too — the normal-fire path reads
   // `swap.trueNormals || hasTrueNormals` — so a kit whose burst weapon is ALSO true in that mode
   // needs no swap-level flag.

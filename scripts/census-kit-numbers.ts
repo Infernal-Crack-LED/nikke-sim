@@ -286,7 +286,7 @@ export function auditUnit(
   // The structured side is EVERYTHING EXCEPT the prose fields — a deny-list, not an allow-list.
   // An allow-list of `skill1/skill2/burst/unmodeled` was the first cut and it is a latent
   // false-positive source: overrides also encode values in `charFixes` (6 units), `resources`
-  // (24), `modes` (8), `consolidation`, `pierceModes`, `hasPierce`, `burstSnapshotsPreFb`, and the
+  // (24), `modes` (8), `consolidation`, `pierceModes`, `trueNormalsModes`, `hasPierce`, `burstSnapshotsPreFb`, and the
   // schema has plainly been growing faster than any enumeration here would be maintained. A
   // magnitude encoded ONLY in one of those would have been reported as missing. Deny-listing means
   // a newly-added encoded field is in scope the day it appears.

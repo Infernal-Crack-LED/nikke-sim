@@ -1,0 +1,31 @@
+{
+  "role": "code-review",
+  "verdict": "CLEAN",
+  "findings": [
+    {
+      "severity": "NOTE",
+      "where": "src/skills/types.ts:749-752",
+      "issue": "The schema comment quotes the carriers' own kit line (\"Normal attacks deal true damage. This effect is continuous\") and names both carriers. prepare-cross-family-packet.ts builds the blind roles' types-redacted.ts by dropping only lines that name the target slug/name/tokens, so for a future blind run on either bunny the slug-naming line 752 is stripped but the quoted kit prose on 749-751 survives and tells the blind role exactly which field encodes that line — the same leak shape the cinderella-crystal-wave review flagged for the `pierceModes` \"(CCW: SR only)\" comment.",
+      "suggestedFix": "Keep the types.ts comment generic (\"true-flavored normals only while in one of these kit modes; resolves once at setup like pierceModes; also flavors swap shots\") and leave carrier names + the kit quote to the override notes / DECISIONS, which already carry them."
+    },
+    {
+      "severity": "NOTE",
+      "where": "src/skills/validate-structural.ts:887-895",
+      "issue": "The new undeclared-mode check exists for trueNormalsModes only; its stated twin `pierceModes` has no equivalent check (grep: validate-structural.ts never mentions pierceModes), so the two siblings are no longer wired identically. Not a defect in this diff — the extra guard is correct — but the asymmetry is the kind of drift the next author will copy.",
+      "suggestedFix": "Separable follow-up: loop the same check over `override.pierceModes` (cinderella-crystal-wave declares Snipe in modes, so it stays green)."
+    },
+    {
+      "severity": "NOTE",
+      "where": "scripts/census-kit-numbers.ts:289",
+      "issue": "The comment enumerating structured fields (\"`modes` (8), `consolidation`, `pierceModes`, `hasPierce`, `burstSnapshotsPreFb`\") was not extended while the KNOWN_STRUCTURED set above it was; harmless because the census is deny-list based, as the same comment explains.",
+      "suggestedFix": "Optional: append `trueNormalsModes` to the enumeration, or leave it — the comment's point is that the list is not maintained."
+    }
+  ],
+  "unexercisedScope": "(1) The only engine consumer of the resolved flag is `trueFlavor` on the two firePull dealDamage calls (sim.ts:4525, 4558); the second is the PIERCE_CORE_DOUBLE body hit, which neither carrier reaches (no hasPierce/pierceModes on either bunny) — behaviour there is by inspection identical to the existing hasTrueNormals path, not by test. (2) Inertness for non-setters rests on `skills.trueNormalsModes` being undefined → `?? false`; the full regression suite passing unchanged is the evidence, plus resolveSkills only copies the field from the override. (3) The web client runs the same engine via `prepared[idx].mode`; `rg hasPierce|pierceModes|hasTrueNormals|trueNormalsModes web/src` returns nothing, so no web registry enumerates these top-level keys and nothing there needs a sibling entry. (4) `scripts/blind-rebuild/code-bundle/*` is a hand-copied engine snapshot with no generator in the tree (rg for `code-bundle` finds only SKILL.md and a manual-review doc) — it is stale by design and not a registry for this field. (5) `scripts/kit-autonomy/blind/types-redacted.ts` is regenerated per gauntlet run from types.ts, so the committed copy is not a missed registry (see NOTE 1 for the comment-leak angle). (6) Docs: STATE.md:327, engine-modeling-gaps.md:133, damage-calculation.md:223 and damage-bucket-matrix.md already carry the field in the uncommitted doc edits; game-mechanics.md never names hasTrueNormals so has no sibling line to update.",
+  "whatIRan": [
+    "npx vitest run scripts/tests/engine/true-normals-modes.test.ts scripts/tests/units/guilty-mighty-bunny.test.ts scripts/tests/units/sin-swift-bunny.test.ts scripts/tests/engine/mode-gate.test.ts  → 4 files, 53 tests passed",
+    "npx tsx scripts/regression.ts → 'regression: all checks passed'",
+    "rg/grep sweeps for pierceModes / hasTrueNormals / trueNormalsModes across src, scripts, web/src, docs; read sim.ts setup (805, 829, 882-887) and firePull (4500-4560); read materialize-overrides KEY_ORDER, census-kit-numbers KNOWN_STRUCTURED + deny-list logic, prepare-cross-family-packet redaction (136-139, 160-184); read both carrier overrides' headers + swap blocks and the G5 spec block of guilty-mighty-bunny.test.ts; git status / git diff --stat"
+  ],
+  "model": "claude-fable-5-1"
+}
