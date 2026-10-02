@@ -218,7 +218,11 @@ Charge Damage ▲ buffs add flat percentage points; "multiplies base charge dama
 DamageUp = 1 + ( Attack Damage ▲ %
                + Sustained Damage ▲ %      [only on sustained-flavored instances (dots)]
                + Sequential Damage ▲ %     [only on sequential-flavored instances]
-               + True Damage ▲ %           [only on true-flavored instances]
+               + True Damage ▲ %           [only on true-flavored instances: flavor:"true"
+                                            skill hits, and normal attacks while the unit is
+                                            static hasTrueNormals, in a trueNormalsModes mode,
+                                            or firing a weaponSwap.trueNormals swap — the first
+                                            two also cover the unit's own swap shots]
                + Pierce Damage ▲ %         [only for Pierce-tagged shots: static hasPierce,
                                             a live gainPierce window (seconds) or unspent round
                                             budget (gainPierce.durationShots), or a swap-scoped

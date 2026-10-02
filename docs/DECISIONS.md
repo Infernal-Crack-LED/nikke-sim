@@ -6677,3 +6677,56 @@ red-by-design 2026-09-01, "the evidence favours landing"; the call was made 2026
 - **Evidence:** the 2026-09-01 audit's two-agent independent convergence on the defect class, the
   cross-family (kimi-code/k3) CLEAN review that reproduced the exact 6-failure blast radius, and
   the post-landing `verify.sh` green (including regenerated board artifacts).
+
+## Guilty: Mighty Bunny + Sin: Swift Bunny enter the sim; Bunny Mode is a selectable kit mode; `trueNormalsModes`; Claude-only gauntlet routing (2026-10-02)
+
+- **Roster.** `npm run sync` (after bakery-bot's own daily sync had seeded both from the blablalink
+  roster) added Guilty: Mighty Bunny (`guilty-mighty-bunny`) and Sin: Swift Bunny (`sin-swift-bunny`),
+  both SR/Attacker/Water/Missilis Burst III — VARIANTS of the base units `guilty` (SG/Wind) and `sin`
+  (AR/Electric). The same sync dated anne-miracle-fairy (2022-12-15), emptying the release-date
+  test's undated list.
+- **Bunny Mode is a static, user-selected kit mode — `modes: ['Stance','Engage']`, Stance default.**
+  Both kits switch Stance ⇄ Engage when Full Charge is "maintained for 1 or more seconds", and every
+  Skill 2 line plus Sin's burst rider branches on the mode. The sim releases at full charge and never
+  holds (the rapunzel-pure-grace precedent for the same clause), so an in-sim toggle can never fire.
+  The battle-start line resolves to Stance ("not in Stance → initiates Stance"), hence the default;
+  Engage models a player who toggles once at the opening and stays. In-fight re-toggling and the
+  ally sync ("allies in the opposite Bunny Mode follow") are recorded `unmodeled` verbatim; the sync
+  means the two units always share a mode in-game, which nothing enforces yet — select the same mode
+  for both. Without a True Damage ▲ ally, Stance out-damages Engage on both units in the control comp
+  (`controlComp` in `scripts/tests/lib/harness.ts`, `runComp` with `modes` set, deterministic:
+  Guilty: Mighty Bunny 874M vs 702M; Sin: Swift Bunny 829M vs 650M).
+- **New engine primitive `trueNormalsModes`** (owner-approved engine edit, 2026-10-02): normal attacks
+  True-flavored only in the named modes — the mode-scoped sibling of `hasTrueNormals`, wired exactly
+  like `pierceModes` (resolved once at setup). Needed because Engage reads "Normal attacks deal true
+  damage. This effect is continuous" and six roster units grant allies True Damage ▲ (clay,
+  emma-tactical-upgrade, eunhwa-tactical-upgrade, flora, frima, takina), so the flavor is
+  damage-relevant; `hasTrueNormals` is whole-fight and `weaponSwap.trueNormals` swap-scoped, neither
+  expresses it. Like `hasTrueNormals` it also flavors the unit's swap shots (the fire path reads
+  `swap.trueNormals || hasTrueNormals`), which is exactly both kits' second Engage line (Mighty Stomp
+  / Swift Piercing deal true damage) — so each kit carries ONE swap block, not a mode-gated pair.
+  Inert by mechanism for every other override (only an override that sets the field reads it).
+  Pinned by `scripts/tests/engine/true-normals-modes.test.ts`; validate-structural rejects an
+  undeclared mode.
+- **Sin: Swift Bunny's "during Full Charge … for 1 round(s)" follows the per-pull round convention**
+  (engine-modeling-gaps theme 21: a per-pull grant's round is the NEXT round), not a new
+  same-shot primitive. In steady fire every base shot carries the ×2 normal multiplier and +52.12%
+  Charge Damage; at the swap boundaries the first Swift Piercing shot inherits the last base grant and
+  the first base shot after the window misses it — a ⚑ caveat with a footage recipe, pinned in her
+  spec so a change to it is visible.
+- **Claude-only routing.** The owner no longer has Qwen or Kimi access, so every gauntlet role routes
+  to a Claude model via `dispatch-claude.sh` (`CROSS-FAMILY-PROTOCOL.md` "Current availability"): S2b
+  `claude-fable-5` (+`claude-fable-5-1` at tier 2), S5/S6 `claude-opus-5`, S7 `claude-fable-5-1`
+  (+`claude-fable-5`). Results are same-family evidence and are labeled so.
+- **Blind-dispatch context leak, fixed.** `claude -p` attaches the working directory's git status
+  (recent commit subjects), project CLAUDE.md and auto-memory; launched from the repo, every blind
+  Claude role saw the driver's commit messages. A guilty-mighty-bunny S6 writer flagged it (a subject
+  named the primitive just added for that unit). `dispatch-claude.sh` now runs blind roles from an
+  empty temp dir (probe-verified clean); all eight blind results of this gauntlet were discarded and
+  re-dispatched. Earlier Claude-dispatched blind results (aigis, drake-great-villain S5/S6 and second
+  reviewers, 2026-09-03) ran with the channel open.
+- **Daily new-unit watch** (`scripts/autopilot/new-unit-watch/`, owner-requested): a launchd job
+  that syncs, gauntlets any new unit on an isolated branch, gates on `verify.sh`, and opens a PR as
+  Infernal-Crack-LED with a Discord notice. CLAUDE.md's protected-paths section records it as the
+  standing exception for those edits, with its engine changes bounded to small opt-in primitives
+  proven board-inert.

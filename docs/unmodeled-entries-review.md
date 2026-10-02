@@ -11,16 +11,16 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 213 | 44.9% |
-| Missing engine primitive / trigger | 102 | 21.5% |
-| Other / see caveats | 92 | 19.4% |
-| Out-of-domain / parser unsupported | 30 | 6.3% |
-| Weapon-state / shot-count approximation | 12 | 2.5% |
+| Defensive / HP / shield / aggro | 213 | 44.0% |
+| Missing engine primitive / trigger | 102 | 21.1% |
+| Other / see caveats | 93 | 19.2% |
+| Out-of-domain / parser unsupported | 38 | 7.9% |
+| Weapon-state / shot-count approximation | 13 | 2.7% |
 | Partless boss | 10 | 2.1% |
-| RNG / probabilistic | 6 | 1.3% |
-| Self-status / stack gate | 5 | 1.1% |
+| RNG / probabilistic | 6 | 1.2% |
+| Self-status / stack gate | 5 | 1.0% |
 | Measurement-gated / unverified cadence | 4 | 0.8% |
-| **Total** | **474** | 100.0% |
+| **Total** | **484** | 100.0% |
 
 ## Entries by reason
 
@@ -1196,7 +1196,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Other / see caveats (92)
+### Other / see caveats (93)
 
 **A2** (a2)
 
@@ -1281,6 +1281,11 @@ Explosion Radius ▲ 15.01% for 10 sec.
   - *Why:* skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst
 - **skill2:** Removed upon reloading to max ammunition.
   - *Why:* See unit note / caveats
+
+**Guilty: Mighty Bunny** (guilty-mighty-bunny)
+
+- **skill2:** Chain Release Function: Changes some attacks' damage into true damage. — named state wrapper; its three effects ARE modeled (trueNormalsModes ['Engage'] for normals and the Mighty Stomp, the Engage fullCharge 370.08% true rider).
+  - *Why:* SKILL2 'Chain Release' (mode Engage): trueNormalsModes ['Engage'] makes her normal attacks True-flavored — the base weapon (Effect 1) and the Mighty Stomp swap shot (Effect 2) — so ally True Damage ▲ buffs feed them; fullCharge → enemy flatDamage 370.08% flavor true (Effect 3, a skill hit: crits at her rate, never cores — the 2026-08-13 true-damage ruling)
 
 **Laplace: Ultimate Hero** (laplace-ultimate-hero)
 
@@ -1530,7 +1535,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Out-of-domain / parser unsupported (30)
+### Out-of-domain / parser unsupported (38)
 
 **Anchor** (anchor)
 
@@ -1597,6 +1602,17 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 - **skill1:** Ability: Find and capture ghosts possessing the enemy.
   - *Why:* skill1: ghost accrual is interval:6 (the 'Recurring interval: 6 sec' capture CAP; <=1 ghost/6s, pool peaks ~7 while bursting); the 100-cumulative-team-hit gate is folded as clearing inside 6s for a full team (⚑1). The ALTERNATIVE teamAmmo:100 accrual (no cap) over-credits ~1.7x HOT and is rejected here
 
+**Guilty: Mighty Bunny** (guilty-mighty-bunny)
+
+- **skill1:** ■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds while this unit is not in the Mighty Stomp state. Affects self. Initiates a new Bunny Mode based on the current mode. Activates if this unit is in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed. Activates if this unit is not in the Bunny Mode: Stance state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.
+  - *Why:* skill1 Bunny Mode TOGGLE (unmodeled as a live mechanic): the mode is a static per-fight selection (modes, Stance default). The in-game switch needs Full Charge held for 1 or more seconds outside Mighty Stomp, which the sim never does (it releases at full charge). Engage is the player-choice mode; the cost of the one opening hold (about 1 second of delayed fire) is not charged. Repeated toggling mid-fight is not modeled.
+- **skill1:** ■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed.
+  - *Why:* skill1 Bunny Mode TOGGLE (unmodeled as a live mechanic): the mode is a static per-fight selection (modes, Stance default). The in-game switch needs Full Charge held for 1 or more seconds outside Mighty Stomp, which the sim never does (it releases at full charge). Engage is the player-choice mode; the cost of the one opening hold (about 1 second of delayed fire) is not charged. Repeated toggling mid-fight is not modeled.
+- **skill1:** ■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.
+  - *Why:* skill1 Bunny Mode TOGGLE (unmodeled as a live mechanic): the mode is a static per-fight selection (modes, Stance default). The in-game switch needs Full Charge held for 1 or more seconds outside Mighty Stomp, which the sim never does (it releases at full charge). Engage is the player-choice mode; the cost of the one opening hold (about 1 second of delayed fire) is not charged. Repeated toggling mid-fight is not modeled.
+- **skill2:** Chain Enhance Function: Enhances this unit's offensive capabilities. — named state wrapper; its three effects ARE modeled (Stance Attack Damage ▲ 20.45%, Charge Damage ▲ 40%, the Stance fullCharge 450.89% rider).
+  - *Why:* SKILL2 'Chain Enhance' (mode Stance): self Attack Damage ▲ 20.45% and Charge Damage ▲ 40% (both continuous, passive), and fullCharge → enemy flatDamage 450.89% plain additional damage
+
 **Harran** (harran)
 
 - **skill1:** ■ Activates when an enemy afflicted with Virus Transfer is neutralized. Affects 2 nearest enemy unit(s). Virus Transfer: Constantly deals 17.28% of final ATK as damage every 1 sec for 5 sec. (no kill/neutralize trigger primitive and no add/multi-enemy model — the v1 boss is immortal and alone, so the spread can never fire at scope lock; see ⚑3)
@@ -1647,13 +1663,24 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 - **skill1:** ATK ▼ 5.94% for 5 sec.
   - *Why:* ⚑ LIST: [⚑1] (OUT-OF-DOMAIN) the S1 'ATK ▼ 5.94% for 5 sec' half: estimate = damage-ZERO in v1 (the boss never attacks — a survivability lever only in real fights)
 
+**Sin: Swift Bunny** (sin-swift-bunny)
+
+- **skill1:** ■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds. Affects self. Initiates a new Bunny Mode based on the current mode. Activates if this unit is in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed. Activates if this unit is not in the Bunny Mode: Stance state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.
+  - *Why:* skill1 Bunny Mode TOGGLE (unmodeled as a live mechanic): the mode is a static per-fight selection (modes, Stance default). The in-game switch needs Full Charge held for 1 or more seconds, which the sim never does (it releases at full charge). Engage is the player-choice mode; the cost of the one opening hold (about 1 second of delayed fire) is not charged. Repeated toggling mid-fight is not modeled.
+- **skill1:** ■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed.
+  - *Why:* skill1 Bunny Mode TOGGLE (unmodeled as a live mechanic): the mode is a static per-fight selection (modes, Stance default). The in-game switch needs Full Charge held for 1 or more seconds, which the sim never does (it releases at full charge). Engage is the player-choice mode; the cost of the one opening hold (about 1 second of delayed fire) is not charged. Repeated toggling mid-fight is not modeled.
+- **skill1:** ■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.
+  - *Why:* skill1 Bunny Mode TOGGLE (unmodeled as a live mechanic): the mode is a static per-fight selection (modes, Stance default). The in-game switch needs Full Charge held for 1 or more seconds, which the sim never does (it releases at full charge). Engage is the player-choice mode; the cost of the one opening hold (about 1 second of delayed fire) is not charged. Repeated toggling mid-fight is not modeled.
+- **skill2:** Enhanced Bullets Function: Enhances this unit's offensive capabilities. — named state wrapper; its two effects ARE modeled (Stance Critical Rate ▲ 35.14%, Critical Damage ▲ 75.12%).
+  - *Why:* SKILL2 'Bullet Switch': Noise Bullets (mode Engage) = trueNormalsModes ['Engage'], which makes her normal attacks True-flavored — the base weapon (Effect 1) and the Swift Piercing swap shots (Effect 2; the engine applies the unit's static true-normal flavor to swap shots too, so the swap needs no flag of its own); Enhanced Bullets (mode Stance) = self Critical Rate ▲ 35.14% + Critical Damage ▲ 75.12% (continuous, passive)
+
 **Sora** (sora)
 
 - **skill1:** ■ Activates at the start of battle. Affects self.
 Outgoing healing ▲ 35.2% continuously.
   - *Why:* skill1/skill2 are EMPTY BY CONSTRUCTION, not by omission — every line there is out-of-domain for cause: (K1) S1 'Outgoing healing ▲ 35.2%' modifies heal AMOUNTS, which do not exist in the sim — no stat, no channel, and no recovery-consumer reads an amount
 
-### Weapon-state / shot-count approximation (12)
+### Weapon-state / shot-count approximation (13)
 
 **Ade: Agent Bunny** (ade-agent-bunny)
 
@@ -1700,6 +1727,11 @@ Outgoing healing ▲ 35.2% continuously.
 
 - **skill1:** Piercing Radius ▲ 50% for 1 round(s).
   - *Why:* skill1: Piercing Radius ▲50% and the 2+-enemies-concurrent 50.33% bonus are UNMODELED verbatim — out-of-domain for v1's single partless boss (no geometry, no second enemy); ⚑3/⚑4
+
+**Sin: Swift Bunny** (sin-swift-bunny)
+
+- **skill2:** Noise Bullets Function: Changes some attacks' damage into true damage. — named state wrapper; its two effects ARE modeled (trueNormalsModes ['Engage'] for normals and the Swift Piercing shots).
+  - *Why:* skill2 Swift Piercing shot economy: the kit states only the 0.5 sec fixed charge. The engine fires a weapon-swap state without the SR release delay (swap states are exempt from the bolt cycle), so pulls land every 30 frames, and the kit gives the swap no magazine; the engine's real-weapon swap entry refills to her current maximum magazine and hands the base weapon back full at the 5 sec timed end. ⚑ estimate = one full magazine per Swift Piercing window; recipe = count her Swift Piercing shots and any in-window reload in a focus video; tier = MEASUREMENT-GATED.
 
 **Takina** (takina)
 
