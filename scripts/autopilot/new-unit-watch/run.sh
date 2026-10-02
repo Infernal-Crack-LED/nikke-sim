@@ -29,6 +29,7 @@ REPO="$HOME/nikke-sim"
 WT="$HOME/nikke-sim-wt-newunit-watch"
 CLAUDE_BIN="$HOME/.local/bin/claude"
 DRIVER_MODEL="claude-opus-5-5"
+GH_ACCOUNT="Infernal-Crack-LED"                   # every GitHub action is this account
 WATCHDOG="$HOME_DIR/token-watchdog.py"
 HANDLED="$HOME_DIR/handled.txt"
 ROSTER_MAX_MIN=45;  ROSTER_MAX_TOK=150000
@@ -124,6 +125,9 @@ run_session() {
 for s in d["pending"]:
   u=d["units"][s]; print(f"  - **{u[\"name\"]}** (`{s}`) — {u[\"weapon\"]} / {u[\"class\"]} / {u[\"element\"]} / Burst {u[\"burst\"]}, released {u[\"releaseDate\"]}")' "$RUNDIR/detect.json")"
   for s in $PENDING; do echo "$s  # dispatched $STAMP → $BRANCH" >> "$HANDLED"; done
+  if [ "$(git config user.name)" != "$GH_ACCOUNT" ]; then
+    mark "FAILED: git user.name is not $GH_ACCOUNT"; notify "⚠️ nikke new-unit watch: refusing to commit — git user.name in $REPO is not $GH_ACCOUNT."; exit 1
+  fi
   git add data/ scripts/blind-rebuild/char-extracts/
   if ! git commit -q -m "roster: $NAMES enter the sim (sync)
 
@@ -192,7 +196,15 @@ PY
     mark "FAILED: push"; notify "⚠️ nikke new-unit watch: $NAMES — gauntlet finished but \`git push\` failed (branch \`$BRANCH\` is local in $WT). $VERDICTS"; exit 1
   fi
   DRAFT=""; [ "$VERIFY" = "RED" ] && DRAFT="--draft"
-  PR_URL="$(gh pr create --base main --head "$BRANCH" $DRAFT \
+  # The PR must be opened as Infernal-Crack-LED (owner, 2026-10-02). gh's ACTIVE account on this Mac is a
+  # different one, so pin this one command to the right account's token instead of switching it globally.
+  # (Commits + the push are already Infernal-Crack-LED: repo-local user.name + the PAT credential helper.)
+  GH_TOKEN="$(gh auth token --user "$GH_ACCOUNT" 2>/dev/null)"
+  if [ -z "$GH_TOKEN" ] || [ "$(GH_TOKEN="$GH_TOKEN" gh api user -q .login 2>/dev/null)" != "$GH_ACCOUNT" ]; then
+    mark "FAILED: no gh token for $GH_ACCOUNT"
+    notify "⚠️ nikke new-unit watch: branch \`$BRANCH\` pushed but gh has no working login for $GH_ACCOUNT — open the PR by hand. $VERDICTS"; exit 1
+  fi
+  PR_URL="$(GH_TOKEN="$GH_TOKEN" gh pr create --base main --head "$BRANCH" $DRAFT \
       --title "New units: $NAMES — kit-autonomy gauntlet" --body-file "$RUNDIR/pr-body.md" 2>"$RUNDIR/pr.log" | tail -1)"
   if [ -z "$PR_URL" ]; then
     mark "FAILED: gh pr create"; notify "⚠️ nikke new-unit watch: branch \`$BRANCH\` pushed but PR creation failed — open it by hand. $VERDICTS"; exit 1
