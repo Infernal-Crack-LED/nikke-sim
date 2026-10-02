@@ -32,7 +32,24 @@ override-writer · **S7** reconciling judge (NOT blind — grades artifacts).
   (e.g. driver Sonnet → S2b/S7 on Opus/Fable) for within-family diversity on top of the cross-family check.
 - The driver decides the tier up front (from the S1 line inventory) and records it.
 
-## Canonical model names (authoritative)
+## ⚠ Current availability — CLAUDE ONLY (owner, 2026-10-02)
+
+The owner no longer has Qwen or Kimi access, so **no cross-family reviewer exists right now**: every role
+runs on a Claude model via `dispatch-claude.sh`, and `dispatch-kimi.sh` / `dispatch-qwen.sh` must not be
+called. Diversity comes from pinning each role to a DIFFERENT Claude model than the driver and the writers:
+
+| Role                                         | Model (Claude-only routing)                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------------------- |
+| S2b adversarial reviewer                     | `claude-fable-5` (tier 2: also `claude-fable-5-1`)                              |
+| S5 / S6 blind writers                        | `claude-opus-5`                                                                 |
+| S7 reconciling judge (binding)               | `claude-fable-5-1` (tier 2: also `claude-fable-5`)                              |
+| logic-gate / code-review for a Claude author | a different Claude model than the author (`claude-fable-5-1` / `claude-opus-5`) |
+
+Every such result is **same-family evidence**: record it as "same-family only (Claude)" in `kit-status.ts
+--evidence` and never call it cross-family. The Kimi/Qwen names below stay as the routing to restore if
+that access returns.
+
+## Canonical model names (authoritative when cross-family access exists)
 
 The dispatch bridges pass the model string straight to the CLI (`claude -p --model <name>` /
 `kimi -p`) — they do NOT map aliases, so the name must resolve in the target CLI, and
