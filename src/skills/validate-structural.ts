@@ -884,6 +884,16 @@ export function structuralCheck(
     }
   }
 
+  // trueNormalsModes names kit modes the unit can be in; an undeclared one can never be selected,
+  // so the true-flavor grant would be silently dead (the same rule as a block-level `mode`).
+  for (const m of override.trueNormalsModes ?? []) {
+    if (!override.modes?.includes(m)) {
+      errors.push(
+        `trueNormalsModes: mode "${m}" not declared in top-level modes[]`
+      );
+    }
+  }
+
   for (const slot of SLOTS) {
     const blocks = override[slot];
     if (blocks === undefined) {

@@ -45,6 +45,7 @@ export interface OverrideFile {
   // this unit's normal attacks are ALWAYS True-flavored (no swap gate), so ally True Damage ▲
   // buffs feed them — see CharacterSkills.hasTrueNormals for the swap-scoped alternative
   hasTrueNormals?: boolean;
+  trueNormalsModes?: string[]; // true-flavored normals only in these modes (Bunny Mode: Engage)
   // hand-measured corrections to DB weapon data (e.g. real SR fire cycle =
   // charge + bolt recovery, where the DB only records the charge time)
   charFixes?: {
@@ -135,6 +136,7 @@ export function resolveSkills(
     hasTrueNormals: override.hasTrueNormals,
     burstSnapshotsPreFb: override.burstSnapshotsPreFb,
     pierceModes: override.pierceModes,
+    trueNormalsModes: override.trueNormalsModes,
     consolidation: override.consolidation,
     resources: override.resources,
   };

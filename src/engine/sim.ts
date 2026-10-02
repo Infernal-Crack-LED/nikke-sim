@@ -536,8 +536,9 @@ interface UnitState {
   blocks: Block[];
   warnings: string[];
   hasPierce: boolean; // kit's attacks are Pierce-tagged (Q10) — STATIC (whole-fight or mode-gated)
-  hasTrueNormals: boolean; // kit's normal attacks are ALWAYS True-flavored — STATIC, unlike
-  // swap.trueNormals (a temporary swap-scoped flavor change)
+  hasTrueNormals: boolean; // kit's normal attacks are True-flavored — STATIC (whole-fight, or
+  // resolved at setup from the selected mode via trueNormalsModes), unlike swap.trueNormals (a
+  // temporary swap-scoped flavor change)
   pierceUntilFrame: number; // timed "Gain Pierce for N sec" window end (0 = none); pierce active when > frame
   // "Convert excess over X% of stat A into stat B at R%" — DERIVED stats, recomputed on every read
   // of B from A's LIVE value, so B tracks A's stacks up and down. Installed by a `convertExcess`
@@ -881,7 +882,9 @@ export function runSim(
       hasPierce:
         skills.hasPierce === true ||
         (skills.pierceModes?.includes(selectedMode ?? '') ?? false),
-      hasTrueNormals: skills.hasTrueNormals === true,
+      hasTrueNormals:
+        skills.hasTrueNormals === true ||
+        (skills.trueNormalsModes?.includes(selectedMode ?? '') ?? false),
       statConversions: [],
       pierceUntilFrame: 0,
       pierceShotsLeft: 0,

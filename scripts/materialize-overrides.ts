@@ -89,6 +89,7 @@ const KEY_ORDER = [
   'modes',
   'hasPierce',
   'pierceModes',
+  'trueNormalsModes',
   'charFixes',
   'consolidation',
   'burstSnapshotsPreFb',

@@ -217,6 +217,7 @@ const KNOWN_STRUCTURED = new Set([
   'charFixes',
   'hasPierce',
   'pierceModes',
+  'trueNormalsModes',
   'burstSnapshotsPreFb',
   'consolidation',
 ]);

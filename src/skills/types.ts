@@ -746,6 +746,13 @@ export interface CharacterSkills {
   // normals are true-flavored outside a swap window.
   burstSnapshotsPreFb?: boolean; // burst damage resolves pre-FB/pre-stage (per-unit cast timing)
   pierceModes?: string[]; // pierce only while in one of these kit modes (CCW: SR only)
+  // normal attacks are True-flavored only while in one of these kit modes — the mode-scoped
+  // sibling of hasTrueNormals, exactly as pierceModes is to hasPierce. For a self-mode kit line
+  // "Normal attacks deal true damage. This effect is continuous" gated on the unit's own mode
+  // (guilty-mighty-bunny / sin-swift-bunny Bunny Mode: Engage). Like pierceModes it resolves
+  // once at setup from the selected mode, so it covers the BASE weapon; a burst weaponSwap
+  // carries its own `trueNormals` on a mode-gated block.
+  trueNormalsModes?: string[];
   consolidation?: ConsolidationConfig; // pellet-consolidation mode (dorothy-S) — see OverrideFile / A26
   // named resource pools tracked live per unit (soda-twinkling-bunny's Golden Chip): initialized
   // at setup, adjusted by `resource` effects, read by `perResource` buffs + `resourceGate` blocks.
