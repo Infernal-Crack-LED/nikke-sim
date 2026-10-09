@@ -1544,7 +1544,49 @@
       "status": {
         "tier": "MODEL_ONLY",
         "tuned": false
-      }
+      },
+      "ol": [
+        {
+          "label": "4× Hit Rate",
+          "gainPct": 21.83
+        },
+        {
+          "label": "3× Hit Rate + 1× Max Ammo",
+          "gainPct": 20.91
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 16.38
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 15.56
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 15.26
+        },
+        {
+          "label": "3× Hit Rate + 1× Crit Rate",
+          "gainPct": 14.72
+        },
+        {
+          "label": "3× Max Ammo + 1× Hit Rate",
+          "gainPct": 14.69
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
+          "gainPct": 14.66
+        },
+        {
+          "label": "3× Hit Rate + 1× Crit DMG",
+          "gainPct": 14.43
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
+          "gainPct": 14.36
+        }
+      ]
     },
     "drake-great-villain": {
       "status": {
@@ -2392,7 +2434,49 @@
           ],
           "burst": ["(Note: Unable to take cover.)"]
         }
-      }
+      },
+      "ol": [
+        {
+          "label": "3× Charge DMG + 1× Max Ammo",
+          "gainPct": 15.46
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge DMG",
+          "gainPct": 15.11
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 14.62
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 13.94
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 13.94
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 13.7
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 13.66
+        },
+        {
+          "label": "3× Max Ammo + 1× Charge Speed",
+          "gainPct": 13.44
+        },
+        {
+          "label": "3× Max Ammo + 1× Crit Rate",
+          "gainPct": 13.42
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 13.39
+        }
+      ]
     },
     "laplace-ultimate-hero": {
       "status": {

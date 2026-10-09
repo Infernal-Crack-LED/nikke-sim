@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-10-09T13:00:14.003Z",
+  "syncedAt": "2026-10-09T16:36:33.846Z",
   "characters": {
     "2b": {
       "slug": "2b",
@@ -24623,7 +24623,7 @@
     },
     "drake": {
       "slug": "drake",
-      "name": "Drake (Favorite Item) (Treasure)",
+      "name": "Drake (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/hh-89/qf-36/b733ab6690f46366f9d661f66f2e3a38.png",
       "weapon": "SG",
       "burst": "III",
@@ -24642,7 +24642,6 @@
       "releaseDate": "2025-01-16",
       "burstGaugePerShot": 4.5,
       "treasure": true,
-      "nicknames": ["drake"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects all allies.\nHit Rate ▲ 20.09% for 10 sec.\nATK ▲ 11.85% for 10 sec.\n■ Activates when entering Full Burst. Affects all allies with a Shotgun.\nATK ▲ 63.88% for 10 sec.\nMax Ammunition Capacity ▲ 50.14% for 10 sec.",
         "skill2": "■ Activates after 10 normal attack(s). Affects 3 enemy unit(s) with the lowest remaining HP.\nDeals 98.55% of final ATK as damage.\n■ Activates after 5 normal attack(s). Affects 1 enemy unit(s) with the lowest remaining HP.\nDeals 201.6% of final ATK as damage.",
@@ -25046,7 +25045,7 @@
           "eff_category_value": 0
         }
       },
-      "generatorSupported": false,
+      "generatorSupported": true,
       "simSupported": true,
       "baseStats": {
         "hp": 13500,
@@ -42460,7 +42459,7 @@
     },
     "laplace": {
       "slug": "laplace",
-      "name": "Laplace (Favorite Item) (Treasure)",
+      "name": "Laplace (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/ez-78/su-56/c79fb8dc9be0331b2e1cffd309ac928f.png",
       "weapon": "RL",
       "burst": "III",
@@ -42479,7 +42478,7 @@
       "releaseDate": "2024-05-30",
       "burstGaugePerShot": 1.45,
       "treasure": true,
-      "nicknames": ["tlaplace", "laplace"],
+      "nicknames": ["tlaplace"],
       "skills": {
         "skill1": "■ Activates when attacking with Full Charge. Affects self.\nHero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 15 sec.",
         "skill2": "■ Activates when hitting a target with Full Charge. Affects the target.\nDeals 132.45% of final ATK as additional damage. \n■ Activates when hitting the target's Parts. Affects the target's body.\nDeals 14.78% of final ATK as additional damage.",
@@ -42866,7 +42865,7 @@
           "eff_category_value": 0
         }
       },
-      "generatorSupported": false,
+      "generatorSupported": true,
       "simSupported": true,
       "baseStats": {
         "hp": 13500,
@@ -90975,7 +90974,7 @@
     },
     "sugar": {
       "slug": "sugar",
-      "name": "Sugar (Favorite Item) (Treasure)",
+      "name": "Sugar (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/dw-50/ep-89/2d46168e088d0f8fa53fd98f58d22011.png",
       "weapon": "SG",
       "burst": "III",
@@ -90994,7 +90993,7 @@
       "releaseDate": "2026-07-23",
       "burstGaugePerShot": 4.5,
       "treasure": true,
-      "nicknames": ["sugar", "tsugar"],
+      "nicknames": ["tsugar"],
       "skills": {
         "skill1": "■ Activates when cover is attacked. Affects self.\nCritical Damage ▲ 16.39% for 10 sec.\nReload Speed ▲ 12.12% for 10 sec.\nRestores Cover HP an amount equal to 1.5% of the skill user's final Max HP.\n■ Activates if this unit's cover is still intact. Affects self.\nAttack Damage ▲ 19.98% continuously.\n■ Activates at the start of battle. Affects self.\nConverts damage to Elemental Advantage damage against Fire Code enemies. This effect is continuous and cannot be removed.",
         "skill2": "■ Activates when entering Full Burst. Affects self.\nCritical Rate ▲ 13.02% for 10 sec.\nATK ▲ 25.01% for 10 sec.\n■ Activates when entering Full Burst. Affects all allies with shotguns.\nMax Ammunition Capacity ▲ 83.8% for 15 sec.\n■ Activates when entering Full Burst. Affects all Water Code and Iron Code allies with shotguns.\nElemental Advantage Attack Damage ▲ 40.02% for 15 sec.",

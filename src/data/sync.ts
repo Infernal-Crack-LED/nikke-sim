@@ -9,7 +9,7 @@ import type { CharacterData, DataFile, TsareenaBuild } from '../types.js';
 import { writeJsonArtifact } from './json-artifact.js';
 import type { OverrideFile } from '../skills/index.js';
 import { countsAsElements } from '../elements.js';
-import { deriveNicknames } from './nicknames.js';
+import { deriveNicknames, normName } from './nicknames.js';
 import { deriveWeaponFields, type WeaponShotDetail } from './weapon-fields.js';
 import { buildGaugePerShot } from './gauge-per-shot-gen.js';
 
@@ -58,7 +58,9 @@ const OVERSPEC_SLUGS = new Set<string>([
 // override backlog grows independent of the enikk audit — the web app gates DPS chart/generator
 // tabs on generatorSupported, Team Sim/Roster Sim/Overload tools on simSupported, and shows
 // EVERY character (including unsupported) on the Team Builder page.
-const normalizeName = (n: string) => n.replace(' (Treasure)', '').trim();
+// Strips the favorite-item markers (" (Treasure)", " (Favorite Item)") so names match the enikk
+// list's bare names.
+const normalizeName = normName;
 
 // role_burst_meta.use_burst_skill -> the sim's BurstType. Confirmed byte-identical to
 // attributes.burst across every unit sampled where both exist (2026-07-27).
@@ -256,10 +258,7 @@ async function main() {
         : undefined;
     const char: CharacterData & { baseStats: any } = {
       slug: row.id,
-      name:
-        isTreasure && !row.name.endsWith(' (Treasure)')
-          ? `${row.name} (Treasure)`
-          : row.name,
+      name: isTreasure ? `${normalizeName(row.name)} (Treasure)` : row.name,
       imageUrl: a.imageUrl ?? row.image_url ?? api?.image_public_url ?? null,
       weapon: a.weapon ?? roleWeapon,
       burst: a.burst ?? roleBurst,

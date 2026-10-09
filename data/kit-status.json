@@ -14,8 +14,7 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 190,
-      "pending": 1,
+      "unit-tested": 191,
       "authored": 1
     },
     "tier": {
@@ -1148,6 +1147,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-10-09; GO faithfulness 1.0 / 1.0; same-family only (Claude: S2b fable-5 + fable-5-1 / S5,S6 opus-5 / S7 fable-5-1 + fable-5) — S6 blind override block-identical; S5 blind test 11/11 non-burst green after its one-line onEvent wiring fix, burst group RED only from the contested-Burst-II controlComp fixture (its burstFirst probe green); new engine target adjacentAlly (code review CLEAN)",
+      "date": "2026-10-09",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "owner spot-check: (1) trigger identity — S1 lines on EVERY Full Burst entry vs the burst lines on HER cast only; (2) scope — 'the ally to the right' = the next slot, and NOBODY from the rightmost slot (no wrap); (3) duration — Ghost Costume always runs its full 10s (direct-hit removal out of domain), so Ghostly Prank's window is an upper bound",
       "unmodeled": {
         "skill1": [
           "Ghost Costume: Prevents being targeted by single-target attacks for 10 sec. — the targeting immunity is defensive: the v1 sim has no boss targeting or incoming damage, so it moves no damage. The status itself IS modeled (selfStatus 'Ghost Costume' 10s) because Skill 2's Ghostly Prank gates on it.",
@@ -1161,14 +1167,7 @@
         "all ally-facing lines: 'the ally to the right of this unit' resolves to the next slot; from the rightmost slot the lines apply to nobody (⚑2)."
       ],
       "note": "Belorta: Pumpkin Witch (`belorta-pumpkin-witch`, aka bpw — the VARIANT; the base unit `belorta` is an RL/Electric Attacker with an unrelated kit). RL / Supporter / Water / Tetra, Burst II (cd 40s), ammo 6, chargeFrames 60, chargeMult 250, normalMult 61.3 — weapon cycle carried by characters.json, no charFixes. Kit-autonomy gauntlet 2026-10-09 — test-first, pinned by scripts/tests/units/belorta-pumpkin-witch.test.ts (P1–P6 + the rightmost-slot edge). A positional single-ally buffer: every ally-facing line targets 'the ally to the right of this unit' = target adjacentAlly{side:'right'} (the ONE slot to her right, never self; nobody when she sits rightmost). SKILL1 'Playful Little Witch' (two ■ headers, both 'Activates when entering Full Burst' = fullBurstEnter, so they fire on EVERY Full Burst, including ones where another Burst II unit cast stage 2): (a) self — Ghost Costume = selfStatus 'Ghost Costume' 10s (the state S2's first line gates on) + Prank Preparation 'Max HP ▲ 15.84% for 10 sec' = targetMaxHpPct 15.84 / 10s (damage-INERT: she has no HP-scaling ATK line; kept as its exact stat); (b) the ally to the right — 'ATK ▲ 44.88% of the skill user's ATK for 10 sec' = casterAtkPct 44.88 / 10s (a flat add of her ATK, uniform for any holder). SKILL2 'Trick or Treat!': (a) 'landing a Full Charge attack while in the Ghost Costume state' → the target (the boss): Ghostly Prank 'Damage Taken ▲ 10.56% for 10 sec' = fullCharge trigger + requiresSelfStatus 'Ghost Costume', enemy damageTakenPct 10.56 / 10s (same-caster-slot refresh, no stacking clause) — live only on her full charges inside the 10s after each Full Burst entry; (b) 'performing a Full Charge attack' (NO costume gate — a separate ■ header) → the ally to the right: sustainedDamagePct 19.97 / 5s on every full-charge pull. BURST 'Happy Halloween!' (burstCast — HER OWN cast, on the cast frame before Full Burst opens; not fullBurstEnter) → the ally to the right: casterAtkPct 47.52 / 10s + sustainedDamagePct 27.23 / 10s. Sustained Damage ▲ reaches only sustained-flavored damage of the holder (DoTs / sustained riders); on a holder with none it is applied and moves nothing. EVIDENCE TIER: every magnitude and duration is SL10 kit-text literal (DATAMINED). ⚑ LIST: [⚑1] Ghost Costume's 'removed upon taking a direct hit' — the v1 sim has no incoming damage, so the status always runs its full 10s and Ghostly Prank's gate stays open for the whole window. ESTIMATE: the modeled window is the UPPER bound; she is untargetable by single-target attacks while it lasts, so only area/direct boss hits can end it early. RECIPE: a fight recording with her in Full Burst against a boss area attack — check whether Ghostly Prank stops refreshing after the hit. TIER: out-of-domain for v1 (incoming-damage theme). [⚑2] Rightmost slot — 'the ally to the right' resolves to NOBODY when she is in the last slot (literal reading; no wrap-around). ESTIMATE: her three ally-facing lines contribute nothing from slot 5. RECIPE: one recording with her in slot 5 — check slot 1/slot 4 buff icons after her burst. TIER: kit-literal, unmeasured. [⚑3] 'Landing' a Full Charge — the RL rocket is credited as landing on its full-charge pull frame (engine fullCharge convention; flight time and misses are not modeled). TIER: engine convention.",
-      "board": null,
-      "date": "2026-10-09",
-      "evidence": "kit-autonomy gauntlet 2026-10-09; GO faithfulness 1.0 / 1.0; same-family only (Claude: S2b fable-5 + fable-5-1 / S5,S6 opus-5 / S7 fable-5-1 + fable-5) — S6 blind override block-identical; S5 blind test 11/11 non-burst green after its one-line onEvent wiring fix, burst group RED only from the contested-Burst-II controlComp fixture (its burstFirst probe green); new engine target adjacentAlly (code review CLEAN)",
-      "residual": "owner spot-check: (1) trigger identity — S1 lines on EVERY Full Burst entry vs the burst lines on HER cast only; (2) scope — 'the ally to the right' = the next slot, and NOBODY from the rightmost slot (no wrap); (3) duration — Ghost Costume always runs its full 10s (direct-hit removal out of domain), so Ghostly Prank's window is an upper bound",
-      "graded": {
-        "teams": 0,
-        "within3pct": 0
-      }
+      "board": null
     },
     "biscuit": {
       "name": "Biscuit",
@@ -2399,7 +2398,7 @@
       }
     },
     "drake": {
-      "name": "Drake (Favorite Item) (Treasure)",
+      "name": "Drake (Treasure)",
       "burst": "III",
       "weapon": "SG",
       "class": "Attacker",
@@ -3976,7 +3975,7 @@
       "board": null
     },
     "laplace": {
-      "name": "Laplace (Favorite Item) (Treasure)",
+      "name": "Laplace (Treasure)",
       "burst": "III",
       "weapon": "RL",
       "class": "Attacker",
@@ -8254,7 +8253,7 @@
       "board": null
     },
     "sugar": {
-      "name": "Sugar (Favorite Item) (Treasure)",
+      "name": "Sugar (Treasure)",
       "burst": "III",
       "weapon": "SG",
       "class": "Attacker",
