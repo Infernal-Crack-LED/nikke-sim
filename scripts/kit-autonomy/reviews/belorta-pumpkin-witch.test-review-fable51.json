@@ -1,0 +1,123 @@
+{
+  "slug": "belorta-pumpkin-witch",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ entering Full Burst. Affects self / Ghost Costume",
+      "disposition": "FAITHFUL",
+      "scope": "Named self status window; the targeting-immunity payload is defensive and unmodeled, but the WINDOW is load-bearing because skill2's Ghostly Prank is gated on it.",
+      "durationSemantics": "durationSec 10 from each FB entry; 'removed upon taking a direct hit' never fires in v1 (boss deals no damage), so the window always runs the full 10s — optimistic vs live play.",
+      "triggerIdentity": "fullBurstEnter (any team Full Burst, NOT burstCast — she is B2 and may not be the caster). No gate.",
+      "targetSet": "self (selfStatus keyed per (belorta, 'Ghost Costume')).",
+      "nearestWrongModel": "Omitting the status entirely and gating skill2 on fbGate:'inFb' (byte-identical in a fixture with no FB extender), or keying it to burstCast so it opens only on rotations she bursts.",
+      "distinguishingAssertion": "A selfStatus named 'Ghost Costume' opens on EVERY fullBurstStart event (including rotations where crown, not belorta, casts B2); skill2's damageTakenPct 10.56 buffApply events occur only at frames within [fbStart, fbStart+600f] of some fullBurstStart. Under burstCast-keying, a crown-cast rotation would show zero damageTakenPct applies — must be non-zero.",
+      "inertness": "The status itself emits no stat buffApply and moves no unit's totals; removing it must change belorta's/allies' damage ONLY via the loss of the skill2 debuff.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Prank Preparation: Max HP ▲ 15.84% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Self Max HP % (targetMaxHpPct 15.84). Belorta has no atkOfMaxHpPct scaler, so offensively inert; keep as a stat per taxonomy #7.",
+      "durationSemantics": "durationSec 10.",
+      "triggerIdentity": "fullBurstEnter, no gate.",
+      "targetSet": "self.",
+      "nearestWrongModel": "casterMaxHpPct or granting it to the right ally (copy of the neighbouring ■ block's target); or maxHpPct (the cube-style key).",
+      "distinguishingAssertion": "Per fullBurstStart exactly one buffApply with stat 'maxHpFlat', casterIdx===targetIdx===belorta's index, value === 0.1584 × belorta.staticMaxHp, expiresFrame − applyFrame === 600. No maxHpFlat apply on any other targetIdx from belorta's skill1.",
+      "inertness": "totals(res) for every slug identical with and without this effect (withPatchedOverride stripping it) — ally-granted/self Max HP feeds no ATK conversion in this comp.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ entering Full Burst. Affects ally to the right / ATK ▲ 44.88% of user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Generic flat ATK add to ONE ally (casterAtkPct 44.88, resolved to a flat ATK number at apply time).",
+      "durationSemantics": "durationSec 10.",
+      "triggerIdentity": "fullBurstEnter (fires on any team FB, including crown-cast rotations). No gate.",
+      "targetSet": "adjacentAlly side:'right' — exactly slot idx+1; nobody if belorta is rightmost. Never self.",
+      "nearestWrongModel": "target 'allies' (whole team) or alliesTopAtk count:1; or atkPct 44.88 (scales the ally's OWN ATK instead of a flat add of belorta's).",
+      "distinguishingAssertion": "Per fullBurstStart exactly ONE buffApply with stat 'casterAtkPct' from belorta's skill1, targetIdx === belortaIdx+1, value === 0.4488 × belorta.staticAtk (a flat number, not 44.88). Zero such applies to any other targetIdx. With controlComp(belorta, false) (belorta rightmost) → zero casterAtkPct applies from skill1 and belorta's own totals unchanged.",
+      "inertness": "Belorta's own damage must not move (self excluded); liter/crown totals unchanged.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ landing Full Charge while in Ghost Costume. Affects target / Damage Taken ▲ 10.56%",
+      "disposition": "FAITHFUL",
+      "scope": "Boss DEBUFF (damageTakenPct 10.56) — benefits the whole team's damage (taxonomy #4), not a self buff.",
+      "durationSemantics": "durationSec 10, refreshed on every qualifying full charge; uptime ≈ (last in-window full charge + 10s), so it outlives the Ghost Costume window by up to ~10s.",
+      "triggerIdentity": "fullCharge (every RL pull in-sim) + requiresSelfStatus:'Ghost Costume'. 'Landing' residue (RL flight time) is a per-unit caveat, not a different trigger.",
+      "targetSet": "enemy (boss) — buffApply carries casterIdx===null && targetIdx===null; filter by stat+value.",
+      "nearestWrongModel": "UNGATED fullCharge (debuff refreshed on every pull all fight → ~100% uptime); second-nearest: fbGate:'inFb' proxy (identical in this fixture, diverges under FB extension or if the status is stripped).",
+      "distinguishingAssertion": "Zero damageTakenPct 10.56 buffApply events before the first fullBurstStart (belorta fires full charges from ~t=1s, well before the first FB). Every such apply's frame lies within [fbStart, fbStart+600f] of a fullBurstStart. Count per FB window ≈ belorta's shot events in that window (~6 + post-reload shots), NOT her total shot count. Removing the line lowers liter/crown/helm totals (team-wide), proving boss-debuff scope.",
+      "inertness": "Must not emit any buffApply with a non-null targetIdx; must not alter belorta's shot cadence.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ performing Full Charge. Affects ally to the right / Sustained Damage ▲ 19.97% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "sustainedDamagePct — flavor-SCOPED Damage-Up term that only feeds the target's 'sustained'-flavored damage instances. NOT generic Damage Up.",
+      "durationSemantics": "durationSec 5 (300f), refreshed every pull → near-continuous while she fires, lapses across her ~2.35s reload only if the gap exceeds 5s (it does not).",
+      "triggerIdentity": "fullCharge, NO status gate (this ■ block has no 'while in Ghost Costume' clause — do not inherit the gate from the sibling block). No fbGate.",
+      "targetSet": "adjacentAlly right (slot idx+1).",
+      "nearestWrongModel": "attackDamagePct 19.97 (generic Damage Up → over-credits any neighbour); durationSec 10 (copied from the burst line); gating it on Ghost Costume like its sibling; trigger fullBurstEnter.",
+      "distinguishingAssertion": "buffApply count with stat 'sustainedDamagePct' value 19.97 from belorta's skill2 === belorta's shot-event count (every pull, in and out of FB, from t≈1s), each with targetIdx === belortaIdx+1 and expiresFrame − applyFrame === 300. With helm as the right ally (no sustained-flavored damage) totals(res)['helm'] is bit-identical with the effect stripped via withPatchedOverride. Positive side: patch the right ally with a flavor:'sustained' flatDamage rider → that rider's damage-event mult rises by the additive Damage-Up contribution of 19.97 pts while other buckets are unchanged.",
+      "inertness": "Helm's (non-sustained) damage and belorta's own damage must not move.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects ally to the right / ATK ▲ 47.52% of user's ATK for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Flat ATK add (casterAtkPct 47.52) to one ally; a DISTINCT buff key from skill1's 44.88 (different slot) so both stack when concurrent.",
+      "durationSemantics": "durationSec 10 from the cast frame (cast precedes FB entry by the chain gap, so it lapses ~0.5s before FB end).",
+      "triggerIdentity": "burstCast (belorta's OWN B2 cast, cd 40s) — NOT fullBurstEnter. Fires only on rotations she is the B2 caster.",
+      "targetSet": "adjacentAlly right.",
+      "nearestWrongModel": "fullBurstEnter (fires on every team FB even when crown casts B2 — over-credits in any comp with another B2); or merging with skill1's casterAtkPct so only one applies.",
+      "distinguishingAssertion": "In controlComp (crown B2 at slot 1 ahead of belorta) belorta never casts → ZERO burst-slot buffApply events from her, while fullBurstStart events are non-zero. In a fixture where she is the sole/first B2, each of her burstCast events (spaced ≥40s) is followed on that frame by one buffApply stat 'casterAtkPct' value === 0.4752 × belorta.staticAtk, targetIdx === belortaIdx+1, duration 600f; and during the overlap with skill1's FB-enter buff the right ally carries BOTH flat adds (0.4488+0.4752)×staticAtk.",
+      "inertness": "No apply on crown-cast rotations; no apply to self or to any non-adjacent ally.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Sustained Damage ▲ 27.23% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "sustainedDamagePct 27.23 — flavor-scoped, same bucket as skill2's 19.97 (additive with it in Damage Up, so a sustained neighbour sees 47.20 pts during overlap, diluted by other Damage-Up buffs).",
+      "durationSemantics": "durationSec 10 from cast.",
+      "triggerIdentity": "burstCast, no gate.",
+      "targetSet": "adjacentAlly right.",
+      "nearestWrongModel": "attackDamagePct (generic); fullBurstEnter trigger; target 'allies'.",
+      "distinguishingAssertion": "Zero burst-slot sustainedDamagePct applies in controlComp (crown bursts); in a sole-B2 fixture one apply per belorta burstCast with value 27.23, targetIdx belortaIdx+1, 600f. Helm's totals unchanged when stripped (helm has no sustained flavor).",
+      "inertness": "Helm/liter/crown/self damage unchanged in the default fixture.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:ghost-costume-selfStatus",
+    "skill1:prank-preparation-maxHp",
+    "skill1:right-ally-casterAtk-44.88",
+    "skill2:ghostly-prank-damageTaken-10.56",
+    "skill2:right-ally-sustained-19.97",
+    "burst:right-ally-casterAtk-47.52",
+    "burst:right-ally-sustained-27.23"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Prevents being targeted by single-target attacks for 10 sec.",
+      "This effect is removed upon taking a direct hit."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "1) FIXTURE HAZARD: belorta is Burst II with a 40s cd. controlComp puts crown (B2, slot 1) ahead of her, so she likely NEVER casts there — the burst slot's positive assertions need a fixture where she is the sole or first-eligible B2 (and expect casts spaced ≥40s, i.e. not every rotation). The default fixture is still the sharp NEGATIVE test: burstCast-keyed lines must emit nothing while fullBurstEnter-keyed skill1 lines fire every FB. 2) controlComp(belorta, true) gives helm at slot idx+1 — the right ally; with helm=false she is rightmost and every 'ally to the right' line must be inert (good target discriminator). 3) Expected shared-prior misread: skill2 Ghostly Prank gated with fbGate:'inFb' instead of selfStatus/requiresSelfStatus. Byte-identical in this fixture (no FB extender, no boss damage), so if the driver chose the proxy it must be documented in the note; the selfStatus primitive exists and is the faithful shape. 4) The 'removed upon direct hit' clause makes live uptime of the Damage Taken debuff SHORTER than modeled (⚑ measurement-gated; recipe: count Ghost Costume lapses in boss footage with AoE attacks). 5) Sustained Damage lines are flavor-scoped: do not accept attackDamagePct; with helm as neighbour they must be provably inert. 6) Only the skill2-a block carries the Ghost Costume gate; skill2-b (Sustained 19.97%) is ungated and fires every full charge all fight. 7) All magnitudes are literal kit text (DATAMINED); cadence (chargeFrames 60 / reloadFrames 141) is base-stat ⚑ but not a kit line.",
+  "model": "claude-fable-5-1"
+}

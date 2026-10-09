@@ -83,8 +83,12 @@ function run(slugs: string[], ov?: any) {
   const charged = events
     .filter((e): e is Shot => e.kind === 'shot' && e.slug === SLUG && e.charged)
     .map((e) => e.frame);
+  // boss debuffs carry no casterIdx — attribute them by the `<ownerIdx>:<slot>:…` key prefix
   const mine = events.filter(
-    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === idx
+    (e): e is BuffApply =>
+      e.kind === 'buffApply' &&
+      (e.casterIdx === idx ||
+        (e.targetIdx === null && e.key.startsWith(`${idx}:`)))
   );
   return {
     events,

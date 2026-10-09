@@ -1,0 +1,32 @@
+S2d INDEPENDENT VERIFICATION MATRIX — belorta-pumpkin-witch — kit-autonomy gauntlet 2026-10-09
+Arm 1 (pre-S3, NO override on disk — the new unit's starting state; commit c879c521): RED as required:
+    Error: no skill override for "belorta-pumpkin-witch" — the engine does not parse skill prose at runtime
+          Tests  no tests
+Arm 2 (shipped override): npx vitest run scripts/tests/units/belorta-pumpkin-witch.test.ts --reporter=verbose — every DISCRIMINATING case runs the named nearest-wrong encoding via withPatchedOverride in the same file and asserts it diverges, so GREEN-vs-shipped and RED-vs-counterfactual are both inside the listed assertions.
+
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > belorta-pumpkin-witch — fixture > she is slot 1, scarlet is the ally to her right, crown backs up stage 2
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > belorta-pumpkin-witch — fixture > she casts her burst, and some Full Bursts happen without her cast
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P1/P4 — Ghost Costume (FB entry, 10s) gates Ghostly Prank: Damage Taken ▲ 10.56% 10s > the Ghost Costume self-status block is FB-entry keyed, self, 10s
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P1/P4 — Ghost Costume (FB entry, 10s) gates Ghostly Prank: Damage Taken ▲ 10.56% 10s > Ghostly Prank lands on the BOSS, value 10.56, 10s, on full-charge frames only
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P1/P4 — Ghost Costume (FB entry, 10s) gates Ghostly Prank: Damage Taken ▲ 10.56% 10s > applies ONLY while Ghost Costume is up (inside 10s of an FB entry), on EVERY such charge
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P1/P4 — Ghost Costume (FB entry, 10s) gates Ghostly Prank: Damage Taken ▲ 10.56% 10s > DISCRIMINATING: dropping the gate applies it on full charges OUTSIDE Ghost Costume
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P1/P4 — Ghost Costume (FB entry, 10s) gates Ghostly Prank: Damage Taken ▲ 10.56% 10s > DISCRIMINATING: without the Ghost Costume producer the gate never opens
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P1/P4 — Ghost Costume (FB entry, 10s) gates Ghostly Prank: Damage Taken ▲ 10.56% 10s > IS LOAD-BEARING: the team deals more with Ghostly Prank than without it
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P2 — Prank Preparation: self Max HP ▲ 15.84% for 10s on FB entry (damage-inert) > applies on every FB entry, to herself only, 10s
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P2 — Prank Preparation: self Max HP ▲ 15.84% for 10s on FB entry (damage-inert) > is inert: every total byte-identical without it
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P3 — FB entry: the ally to the right gets ATK ▲ 44.88% of her ATK for 10s > fires on EVERY Full Burst entry (crown-cast ones too), to exactly the right ally
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P3 — FB entry: the ally to the right gets ATK ▲ 44.88% of her ATK for 10s > is a flat 44.88% of HER static ATK, 10s
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P3 — FB entry: the ally to the right gets ATK ▲ 44.88% of her ATK for 10s > DISCRIMINATING: a burstCast keying misses the Full Bursts she did not cast
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P3 — FB entry: the ally to the right gets ATK ▲ 44.88% of her ATK for 10s > DISCRIMINATING: an all-allies scope grants five holders, not one
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P3 — FB entry: the ally to the right gets ATK ▲ 44.88% of her ATK for 10s > IS LOAD-BEARING for the right ally: scarlet deals more with it
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P5 — full charge: the ally to the right gets Sustained Damage ▲ 19.97% for 5s > one application per full-charge pull, to the right ally only, 19.97, 5s
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P5 — full charge: the ally to the right gets Sustained Damage ▲ 19.97% for 5s > DISCRIMINATING: a self-target reading changes the holder
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P5 — full charge: the ally to the right gets Sustained Damage ▲ 19.97% for 5s > is NOT gated on Ghost Costume (applies outside FB windows too)
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P6 — burst: the ally to the right gets ATK ▲ 47.52% of her ATK + Sustained Damage ▲ 27.23%, 10s > both effects land on HER cast frames only, right ally only, 10s
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P6 — burst: the ally to the right gets ATK ▲ 47.52% of her ATK + Sustained Damage ▲ 27.23%, 10s > DISCRIMINATING: a fullBurstEnter keying fires on the Full Bursts she did not cast
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > P6 — burst: the ally to the right gets ATK ▲ 47.52% of her ATK + Sustained Damage ▲ 27.23%, 10s > IS LOAD-BEARING for the right ally: scarlet deals more with the burst ATK grant
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > EDGE — rightmost slot: no ally to her right > no ally-side grant from her reaches anyone but herself
+ ✓ scripts/tests/units/belorta-pumpkin-witch.test.ts > EDGE — rightmost slot: no ally to her right > the self-side lines still work (Ghost Costume gate + Max HP)
+      Tests  23 passed (23)
+
+Coverage note: the fbGate:'inFb' proxy for the Ghost Costume gate (flagged by the claude-fable-5-1 S2b reviewer) is byte-identical to the selfStatus gate on any fixture without a Full Burst extender (both windows = 600f from FB entry); it is discriminated by the STRUCTURE pin 'the Ghost Costume self-status block is FB-entry keyed, self, 10s' + the producer-removal counterfactual, not by a damage observable.

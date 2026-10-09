@@ -1,0 +1,123 @@
+{
+  "slug": "belorta-pumpkin-witch",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Ghost Costume: Prevents being targeted",
+      "disposition": "FAITHFUL",
+      "scope": "Self-only named status window; the untargetability payload is defensive (UNMODELED), but the window itself is load-bearing because skill2's Ghostly Prank is gated on 'while in the Ghost Costume state' — model as selfStatus {name:'Ghost Costume', durationSec:10} so requiresSelfStatus can read it.",
+      "durationSemantics": "10 wall-clock seconds ('for 10 sec'); the 'removed upon taking a direct hit' early-termination clause is inert in v1 (boss deals no damage, nobody is hit), so in-sim the window always runs the full 10s — a sim-vs-game optimism to note, not to fudge.",
+      "triggerIdentity": "'Activates when entering Full Burst' = fullBurstEnter (ANY team Full Burst), NOT burstCast — she is Burst II with a 40s cd, so on rotations where another B2 completes the chain (or her cd isn't up) a burstCast keying would wrongly skip the window.",
+      "targetSet": "self",
+      "nearestWrongModel": "Dropping the line entirely as 'defensive/unmodeled' (no selfStatus opened), which silently kills skill2's Ghostly Prank gate — the boss debuff then never fires; or keying it to burstCast so the costume only exists on her own burst rotations.",
+      "distinguishingAssertion": "With the committed override, buffApply events for damageTakenPct value 10.56 exist (the gate is satisfiable) and every one of them falls within 10s of a fullBurstStart event; under the dropped-status misread there are ZERO damageTakenPct 10.56 buffApply events in the whole run.",
+      "inertness": "The untargetability itself must move no damage: patching the selfStatus name (breaking only the status, with skill2's gate also renamed to match) vs removing both must differ only via the skill2 debuff — no direct damage or stat from this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Prank Preparation: Max HP ▲ 15.84%",
+      "disposition": "FAITHFUL",
+      "scope": "Plain self Max HP buff — taxonomy rule 7: keep the stat even though it is offensively inert here (her kit has no atkOfMaxHpPct / HP-scaling consumer, and ally-granted HP never feeds a teammate's conversion anyway — self-grant, so it WOULD feed a future self consumer).",
+      "durationSemantics": "10 wall-clock seconds.",
+      "triggerIdentity": "fullBurstEnter (same '■ Activates when entering Full Burst. Affects self.' header as Ghost Costume).",
+      "targetSet": "self (targetMaxHpPct — '% of the target's OWN Max HP' wording 'Max HP ▲ 15.84%', not casterMaxHpPct phrasing).",
+      "nearestWrongModel": "Silently dropping it as inert (no buffApply at all), or encoding as casterMaxHpPct — numerically identical for a self-grant but the wrong primitive, which diverges the day a consumer reads the distinction.",
+      "distinguishingAssertion": "On each fullBurstStart, a buffApply with stat 'maxHpFlat' lands on belorta's own index (casterIdx === targetIdx === belorta) with value ≈ 0.1584 × her static maxHp; under the drop-misread no such event exists.",
+      "inertness": "totals(res) for every unit must be IDENTICAL with this effect removed via withPatchedOverride — it is a pure bookkeeping buff; any damage delta means it leaked into an ATK conversion it shouldn't feed.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 44.88% of the skill user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Caster-scaled flat ATK grant (casterAtkPct), unscoped by attack type.",
+      "durationSemantics": "10 wall-clock seconds.",
+      "triggerIdentity": "fullBurstEnter — second '■ Activates when entering Full Burst' header; fires on EVERY team Full Burst regardless of whether belorta cast her own burst that rotation (contrast with her burst block below).",
+      "targetSet": "adjacentAlly side:'right' — exactly the ONE unit in slot index belorta+1; nobody if she is rightmost; never self, never all allies.",
+      "nearestWrongModel": "stat atkPct 44.88 (scales the TARGET's own ATK instead of granting 44.88% of BELORTA's ATK — wrong whenever the right ally's ATK ≠ hers, i.e. always for a supporter buffing a carry), or target 'allies' instead of the single right-neighbour slot.",
+      "distinguishingAssertion": "On each fullBurstStart, exactly ONE buffApply with stat 'casterAtkPct' value ≈ 0.4488 × belorta.staticAtk (a FLAT ATK number, not 44.88), casterIdx = belorta, targetIdx = belorta+1; under atkPct-misread the stat key differs and the value is the raw 44.88; under allies-misread the event count per FB exceeds 1.",
+      "inertness": "Units at index ≠ belorta+1 (including belorta herself) receive no skill1 casterAtkPct buffApply; with belorta placed in the rightmost slot the effect applies to nobody and moves zero damage.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Ghostly Prank: Damage Taken ▲ 10.56%",
+      "disposition": "FAITHFUL",
+      "scope": "Boss DEBUFF ('Affects the target' = the enemy her full-charge shot hits) — damageTakenPct benefits the WHOLE team's damage into the boss, not a self/ally buff (taxonomy rule 4).",
+      "durationSemantics": "10 wall-clock seconds, refreshed per qualifying full-charge landing.",
+      "triggerIdentity": "fullCharge trigger ('when landing a Full Charge attack') GATED on requiresSelfStatus:'Ghost Costume' — only live during the 10s post-FB-enter costume window. 'Landing' (vs 'performing') carries the usual landing-residue caveat; in-sim RL full charges land, so fullCharge is the faithful primitive.",
+      "targetSet": "enemy (block authored target 'enemy'; harness emits the buffApply with casterIdx === null AND targetIdx === null — filter by stat+value).",
+      "nearestWrongModel": "Dropping the Ghost Costume gate so the debuff fires on EVERY full charge all fight — massive over-credit, since ungated she fires full charges continuously (chargeFrames 60, ammo 6) but the costume is only ~10s per FB; second-nearest: encoding Damage Taken ▲ as a self or ally buff.",
+      "distinguishingAssertion": "Filter buffApply events with stat 'damageTakenPct' value 10.56 (casterIdx null): every one occurs within 10s after a fullBurstStart, and NONE occur before the first fullBurstStart (she fires full charges pre-FB, so the ungated misread produces an event before the first FB — RED); team totals drop when the effect is removed (it is team-wide, GREEN that it's a boss debuff not a self stat).",
+      "inertness": "Full-charge pulls OUTSIDE the costume window (between FBs, after the 10s lapse) must emit no damageTakenPct buffApply; belorta's own listed stats are unchanged by this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Sustained Damage ▲ 19.97% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "sustainedDamagePct buff — additive Damage-Up read only by sustained-FLAVORED damage on the holder; inert on a right-ally with no sustained-flavor hits, which is a comp-dependence the test fixture must handle (assert on buffApply, and/or choose assertions that don't require the carry to carry sustained damage).",
+      "durationSemantics": "5 wall-clock seconds — note reloadFrames 141 ≈ 2.35s < 5s, so the buff persists across her reload and has near-continuous uptime while she keeps firing; that is kit-faithful, not a bug.",
+      "triggerIdentity": "fullCharge trigger ('when performing a Full Charge attack') with NO status gate — this is a SEPARATE ■ header from Ghostly Prank; it fires on every full-charge pull all fight, in and out of the costume window. For an unswapped RL, fullCharge ≡ every trigger pull.",
+      "targetSet": "adjacentAlly side:'right' (the double space in 'right  of this unit' is a prose typo, same target as the other right-ally lines).",
+      "nearestWrongModel": "Inheriting the previous header's gate — requiresSelfStatus:'Ghost Costume' on this block too, so it only fires during FB windows (under-credits all out-of-FB uptime); second-nearest: target 'enemy' by contamination from the line above.",
+      "distinguishingAssertion": "buffApply events with stat 'sustainedDamagePct' value 19.97 onto targetIdx = belorta+1 occur BEFORE the first fullBurstStart (her pre-FB full charges trigger it) — GREEN faithful, RED under the gate-contamination misread which produces none until the first FB.",
+      "inertness": "No damageTakenPct and no enemy-targeted event from this block; belorta herself never holds the 19.97 buff.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 47.52% of the skill user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Caster-scaled flat ATK grant, unscoped by attack type.",
+      "durationSemantics": "10 wall-clock seconds.",
+      "triggerIdentity": "burstCast — this sits in her OWN burst block with no activation clause, so it fires only on rotations SHE casts Burst II (cd 40s means roughly every other FB rotation), never on FBs completed by a different B2. burstCast ≠ fullBurstEnter is THE divergence to pin.",
+      "targetSet": "adjacentAlly side:'right'.",
+      "nearestWrongModel": "fullBurstEnter keying — over-credits by firing on every team FB including rotations her 40s cd sat out; distinguishable in any comp with a second Burst-II-capable unit (the control fixture has crown at B2).",
+      "distinguishingAssertion": "Count belorta's burstCast events and buffApply events with stat 'casterAtkPct' value ≈ 0.4752 × belorta.staticAtk: the counts match 1:1 and each buffApply frame coincides with HER burstCast, not with fullBurstStart events she didn't cast into — RED under fullBurstEnter whenever #fullBursts > #her-bursts. (Value 0.4752×staticAtk also distinguishes this from the skill1 0.4488×staticAtk grant on the same target.)",
+      "inertness": "Full Bursts entered via another B2's cast produce NO 47.52-sourced buffApply; no unit other than slot belorta+1 ever receives it.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Sustained Damage ▲ 27.23% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "sustainedDamagePct — same consumer caveat as the skill2 line; the 27.23 (burst) and 19.97 (skill2) instances are distinct keys that can co-stack on the right ally and must both be visible in the event log.",
+      "durationSemantics": "10 wall-clock seconds.",
+      "triggerIdentity": "burstCast (same own-burst block as the ATK line — both effects on one trigger).",
+      "targetSet": "adjacentAlly side:'right'.",
+      "nearestWrongModel": "fullBurstEnter keying (same over-credit as the ATK line), or merging with the skill2 19.97 into one value because both are 'Sustained Damage on the right ally'.",
+      "distinguishingAssertion": "buffApply events with stat 'sustainedDamagePct' value 27.23 appear ONLY on her burstCast frames, 1:1 with her casts, onto targetIdx = belorta+1 — while value-19.97 events keep appearing on non-burst full-charge pulls, proving the two lines were NOT folded.",
+      "inertness": "The 27.23 value never applies outside her own burst rotations; belorta never self-holds it.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Ghost Costume selfStatus (gate for skill2 Ghostly Prank)",
+    "skill1:Prank Preparation Max HP ▲ 15.84% self (inert bookkeeping, still asserted)",
+    "skill1:ATK ▲ 44.88% casterAtkPct → right ally on fullBurstEnter",
+    "skill2:Ghostly Prank Damage Taken ▲ 10.56% boss debuff, fullCharge + Ghost Costume gate",
+    "skill2:Sustained Damage ▲ 19.97% → right ally on fullCharge, UNGATED",
+    "burst:ATK ▲ 47.52% casterAtkPct → right ally on burstCast",
+    "burst:Sustained Damage ▲ 27.23% → right ally on burstCast"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Ghost Costume: Prevents being targeted by single-target attacks for 10 sec.",
+      "This effect is removed upon taking a direct hit."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in order of likelihood: (1) TRIGGER SPLIT — her two right-ally ATK grants look symmetric but are NOT: skill1's 44.88% keys to fullBurstEnter (any team FB) while the burst's 47.52% keys to burstCast (her own 40s-cd casts only); a driver that keys both the same way over- or under-credits every rotation she sits out, and the control fixture's crown-at-B2 makes the divergence live. (2) GATE CONTAMINATION in skill2 — the two ■ headers differ ('landing a Full Charge attack WHILE IN THE GHOST COSTUME STATE' vs plain 'performing a Full Charge attack'); only the Ghostly Prank boss debuff is costume-gated, the 19.97 sustained buff is not. (3) Ghostly Prank is a BOSS DEBUFF (damageTakenPct, team-wide benefit, buffApply with null caster/target indices), not a self buff. (4) The costume gate requires the driver to have modeled Ghost Costume as a selfStatus at all — dropping it as 'defensive flavor' silently zeroes the debuff; tests must assert the debuff fires, and ONLY inside 10s post-FB-enter windows. (5) 'Removed upon taking a direct hit' is inert in v1 (immortal boss, no incoming damage), so in-sim costume uptime is the full 10s — an optimism vs live play worth a note line, not a fudge. (6) adjacentAlly 'right' = slot index + 1, exactly one unit, nobody if she's rightmost — tests should pin targetIdx, and sustainedDamagePct assertions should be event-level (buffApply) since the buff is damage-inert unless the right ally deals sustained-flavored damage. (7) All seven magnitudes are literal kit text (DATAMINED); nothing here is MEASUREMENT-GATED and none of the ALWAYS-⚑ fields apply — her cadence comes from base stats (chargeFrames 60, ammo 6, reloadFrames 141) and no kit line needs an invented trigger. Verified: dispositions and assertions derived from prose + schema only; no driver artifacts were consulted.",
+  "model": "claude-fable-5"
+}

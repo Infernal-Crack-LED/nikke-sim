@@ -1,0 +1,33 @@
+{
+  "role": "code-review",
+  "verdict": "CLEAN",
+  "findings": [
+    {
+      "severity": "NOTE",
+      "where": "docs/STATE.md:248",
+      "issue": "The 'Targeting selectors' registry table lists every target kind through selfAndAdjacent but has no row for the new adjacentAlly kind; docs/engine-modeling-gaps.md:116 is a generated census and will pick it up once a carrier exists, but STATE.md is hand-maintained and is authority slot 1 for 'what does the sim do now'.",
+      "suggestedFix": "Add an `adjacentAlly` row (Meaning: the one ally on the named side, positional, nobody at the edge; Users: belorta-pumpkin-witch once landed) — can ride the unit-landing commit via /mechanics-doc-upkeep rather than this one."
+    },
+    {
+      "severity": "NOTE",
+      "where": "src/ranks/buffer.ts:348",
+      "issue": "Enabler detection classifies an ally-facing burstCdr block by `String(block.target.kind).startsWith('allies')`; `adjacentAlly` (like the pre-existing `selfAndAdjacent`) does not match, so a burstCdr authored on this target would not make its carrier a ranks-page enabler. The stated belorta-pumpkin-witch lines (ATK / Sustained Damage) carry no burstCdr, so this is inert for the intended carrier — flagged so the unit landing doesn't trip on it.",
+      "suggestedFix": "No change needed for this diff. If a positional burstCdr ever lands, widen the predicate to an explicit ally-facing set (allies*, selfAndAdjacent, adjacentAlly, burstCasters, nonBurstCasters)."
+    },
+    {
+      "severity": "NOTE",
+      "where": "src/skills/types.ts:186",
+      "issue": "The union-member comment names the carrier slug `belorta-pumpkin-witch`. scripts/kit-autonomy/prepare-cross-family-packet.ts strips types.ts lines naming the gauntlet target, so when the belorta gauntlet runs the comment lines drop but the type line itself survives — behaviour is correct, just confirming the redaction path was checked.",
+      "suggestedFix": "None."
+    }
+  ],
+  "unexercisedScope": "(1) web/src/App.tsx targetLabel: the new `ally to the ${t.side}` string is only typechecked, never rendered — no ui-shot; it is a one-line label in a switch with a 'allies' default so a mis-render is cosmetic only. (2) src/ranks/buffer.ts ally-facing-burstCdr classification and alliesOfWeapon/alliesOfElement carry-shaping ignore the new kind (see NOTE) — not exercised and not needed for the stated belorta lines. (3) scripts/census-synergy-events.ts:116 reads target kind as an opaque string — unaffected. (4) scripts/blind-rebuild/code-bundle/*.ts are frozen snapshots of sim.ts/types.ts, not live code — intentionally stale. (5) I did NOT run scripts/regression.ts (long); inertness follows structurally: no override authors `adjacentAlly` (grep over src/skills/overrides is empty), the resolver change is a new switch case only, and the validator branch is gated on kind === 'adjacentAlly'. (6) Compacted-slot teams (<5 units): idx = position in the chars array (sim.ts:776 `chars.map((rawChar, idx)`), so 'right' = next seated unit, same semantics selfAndAdjacent already has — matches the stated intent. (7) Validator pin for the new side check lives in the new engine test file, not in scripts/tests/validate-structural.test.ts as the CONTEXT line suggested; that file still passes unchanged.",
+  "whatIRan": [
+    "npx vitest run scripts/tests/engine/adjacent-ally.test.ts scripts/tests/validate-structural.test.ts  → 2 files, 57 tests passed",
+    "npm run typecheck (web + root tsconfig) → clean",
+    "grep for selfAndAdjacent / alliesLowestHp / target.kind consumers across src, web/src, scripts, docs",
+    "sed/Read of sim.ts resolveTargets (2262–2369), units construction (776), validate-structural.ts 930–960, ranks/buffer.ts 340–425, STATE.md 240–252, engine-modeling-gaps.md 110–120, prepare-cross-family-packet.ts redaction comments",
+    "git status / git log -3 (tree matches the reviewed commit cb191d32; only untracked portrait webps)"
+  ],
+  "model": "claude-fable-5-1"
+}
