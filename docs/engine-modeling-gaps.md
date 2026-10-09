@@ -27,6 +27,7 @@
 
 | Primitive | Users | Enacted on |
 | --- | --- | --- |
+| `adjacentAlly` | 1 | belorta-pumpkin-witch |
 | `advantageVs` | 2 | rapi-red-hood, sugar |
 | `alliesLowestAtk` | 1 | liberalio |
 | `alliesLowestHp` | 10 | blanc, ether, mary, misato, naga, pascal, pepper, poli, … |
@@ -68,7 +69,7 @@
 | `flatDamage` | 104 | 2b, a2, aigis, anchor, anis, anis-sparkling-summer, anis-star, arcana, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
-| `fullCharge` | 33 | a2, ade-agent-bunny, anis-star, bready, cinderella, delta, diesel-winter-sweets, emilia, … |
+| `fullCharge` | 34 | a2, ade-agent-bunny, anis-star, belorta-pumpkin-witch, bready, cinderella, delta, diesel-winter-sweets, … |
 | `gainPierce` | 15 | ade-agent-bunny, asuka, d-killer-wife, dorothy, grave, harran, makima, mari, … |
 | `gaugeHits` | 4 | eve, liberalio, little-mermaid, snow-white-heavy-arms |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
@@ -108,7 +109,7 @@
 | `removeOnReload` | 1 | vesti-tactical-upgrade |
 | `requiresCore` | 3 | liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
-| `requiresSelfStatus` | 3 | asuka-wille, rei-ayanami-tentative-name, rem |
+| `requiresSelfStatus` | 4 | asuka-wille, belorta-pumpkin-witch, rei-ayanami-tentative-name, rem |
 | `requiresShielded` | 5 | asuka, kilo, mori, naga, rapunzel-pure-grace |
 | `requiresTargetStatus` | 11 | d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, privaty, … |
 | `resourceGate` | 25 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace, … |
@@ -125,7 +126,7 @@
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 10 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, sin-swift-bunny, snow-white-heavy-arms, takina, … |
 | `swapped` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
-| `targetMaxHpPct` | 17 | 2b, blanc, delta, diesel, folkwang, label, laplace-ultimate-hero, maiden-ice-rose, … |
+| `targetMaxHpPct` | 18 | 2b, belorta-pumpkin-witch, blanc, delta, diesel, folkwang, label, laplace-ultimate-hero, … |
 | `targetStatus` | 9 | d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, privaty, … |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 4 | anchor-innocent-maid, blanc, eunhwa-tactical-upgrade, noir |
