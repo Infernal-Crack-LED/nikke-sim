@@ -1,0 +1,97 @@
+{
+  "slug": "belorta-pumpkin-witch",
+  "kitDescription": "Belorta: Pumpkin Witch is a water-element rocket-launcher supporter whose entire kit buffs one specific teammate — the ally standing immediately to her right — plus one enemy debuff. Whenever the team enters Full Burst she puts on a 'Ghost Costume' (making her untargetable by single-target attacks for 10 seconds), gains a small Max HP boost, and grants the right-hand ally a flat ATK increase worth 44.88% of her own ATK. While the costume is on, each fully charged rocket she lands makes the boss take 10.56% more damage from everyone for 10 seconds; independently, every full-charge shot she fires (costumed or not) gives the right-hand ally 19.97% stronger damage-over-time effects for 5 seconds. Her own Burst II cast gives that same ally a bigger ATK grant (47.52% of her ATK) and 27.23% stronger damage-over-time for 10 seconds. She deals almost no damage herself; her value is concentrated into whoever is seated to her right, so her slot position matters enormously.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "UNMODIFIED: 8 assertions RED from one mechanical defect in the blind file itself — it assigns opts.onEvent at the CompOptions top level while runComp reads onEvent only from opts.cfg, so the event log is empty (blind harness-wiring bug, not an override divergence; same one-line defect as the sin-swift-bunny run)",
+      "ADAPTED (onEvent moved into opts.cfg, no assertion touched — 11 green / 3 RED / 4 skipped): 'NON-VACUITY: the owner actually wins Burst Stage 2 in the control fixture' — RED because controlComp seats crown (Burst II, cd 20s) at slot 1 ahead of her (cd 40s, slot 2), so crown wins every stage-2 cast and she casts zero bursts; the blind file's own header pre-declares this RED as a FIXTURE finding, not an override defect",
+      "ADAPTED: 'burst grants ATK 47.52%... and Sustained 27.23% to the right ally for 10 sec' — vacuous-empty-set consequence of the same fixture contest",
+      "ADAPTED: 'burst grants move ONLY the right-hand ally' — same fixture-contest consequence; the blind file's own burstFirst FIXTURE PROBE is GREEN and non-vacuous (casts=1, both grants land on the right ally with the correct stats), localizing the RED to the fixture exactly as the blind writer designed"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Ghost Costume: Prevents being targeted",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Untargetability payload + 'removed upon taking a direct hit' unmodeled (verbatim in unmodeled.skill1, ⚑1 in note + caveat): the v1 sim has no incoming damage, so the immunity moves nothing and the removal never fires; the status WINDOW is modeled as selfStatus 'Ghost Costume' 10s on fullBurstEnter because skill2 gates on it.",
+        "blindSaid": "Both S2b reviewers, S5 and S6 all converge: model the named status window (load-bearing gate for Ghostly Prank), leave the defensive payload unmodeled, flag the full-10s window as an optimistic upper bound vs live play.",
+        "formulaCheck": "No damage term touched; selfStatus + requiresSelfStatus is the schema's faithful shape for 'while in the Ghost Costume state'. fullBurstEnter (not burstCast) is correct — the header reads 'when entering Full Burst' and she is a contested Burst II.",
+        "fireRateOk": true,
+        "explanation": "The window opens on every FB entry (driver P1 pins trigger/target/name/duration structurally; the producer-removal counterfactual proves it is load-bearing). The unmodeled payload is a recorded out-of-domain decision with estimate + recipe, exactly what DOCUMENTED_GAP requires."
+      },
+      {
+        "kitLine": "Prank Preparation: Max HP ▲ 15.84%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "targetMaxHpPct 15.84 / 10s on self at fullBurstEnter; damage-inert (no HP→ATK scaler in kit), kept as its exact stat.",
+        "blindSaid": "S6 block-identical (targetMaxHpPct 15.84). S2b-1 noted targetMaxHpPct vs casterMaxHpPct is numerically identical for a self-grant; S5 skips the discrimination as unobservable but confirms the target-own wording family.",
+        "formulaCheck": "Plain 'Max HP ▲ X%' with no caster qualifier = target-own Max HP per §1a conventions; self-grant feeds no conversion (she has no atkOfMaxHpPct), so inertness is formula-correct. Driver P2 proves totals byte-identical without it.",
+        "fireRateOk": true,
+        "explanation": "Applies once per FB entry (P2: event frames equal the fullBurstStart set). Correct primitive, correct inertness, asserted rather than dropped."
+      },
+      {
+        "kitLine": "ATK ▲ 44.88% of the skill user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 44.88 / 10s, adjacentAlly{right}, fullBurstEnter — fires on EVERY Full Burst including crown-cast ones; flat add of her ATK.",
+        "blindSaid": "All four blind artifacts identical on trigger (fullBurstEnter, the designated divergence to pin vs burstCast), target (exactly slot+1), and primitive (casterAtkPct flat, not atkPct).",
+        "formulaCheck": "'of the skill user's ATK' is the caster-scaled flat-add path (§1a), non-diluting — driver P3 pins value ≈ 0.4488 × her staticAtk and the burstCast/allies/drop counterfactuals all diverge.",
+        "fireRateOk": true,
+        "explanation": "P3 asserts apply-count === fullBurstStart count with crown-cast FBs included — the exact over/under-credit both S2b reviewers ranked as misread #1 is discriminated in-file. New adjacentAlly engine primitive is pinned by its own engine test and board-inert per regression."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Ghostly Prank: Damage Taken ▲ 10.56%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullCharge trigger + requiresSelfStatus 'Ghost Costume', enemy damageTakenPct 10.56 / 10s — live only on her full charges inside the 10s post-FB-entry costume window; 'landing' ≈ release is ⚑3 (engine convention).",
+        "blindSaid": "S6 block-identical. S2b-1 flagged the fbGate:'inFb' proxy as the byte-identical nearest-wrong on this fixture — the driver shipped the faithful selfStatus shape and pins it structurally plus via the producer-removal counterfactual (verify.txt coverage note addresses the flag explicitly).",
+        "formulaCheck": "Boss-side Taken bucket (§1g), team-wide benefit — driver's load-bearing test shows a non-right-neighbour teammate (helm) loses damage when stripped, proving enemy-debuff scope over the self-buff misread.",
+        "fireRateOk": true,
+        "explanation": "Fires on every gated charge: the driver asserts the prank frame-set EQUALS the set of in-window charged frames (both gate-active and gate-inactive cases exercised; the gate-drop counterfactual produces out-of-window applies). The 'landing vs performing' residue and the direct-hit-removal upper bound are both documented."
+      },
+      {
+        "kitLine": "Sustained Damage ▲ 19.97% for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Separate UNGATED block: fullCharge → adjacentAlly{right}, sustainedDamagePct 19.97 / 5s, one apply per pull all fight.",
+        "blindSaid": "All blind artifacts identical and all three reviewers independently named gate-contamination (inheriting the Ghost Costume clause from the sibling header) as the nearest-wrong — the driver's P5 'is NOT gated' test asserts applies outside FB windows, killing it.",
+        "formulaCheck": "sustainedDamagePct is the flavor-scoped DamageUp member (§1e) — inert on a holder with no sustained-flavored hits, which the driver states in the note; event-level assertions are the right instrument for a possibly-damage-inert buff.",
+        "fireRateOk": true,
+        "explanation": "P5 pins one apply per full-charge pull (frame-set equality with her charged shots, >20 per fight per the fixture sanity test), value and 5s duration exact. The 5s-vs-10s and gated-vs-ungated distinctions the spec demanded are both asserted."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "ATK ▲ 47.52% of the skill user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast (HER OWN cast, cast frame before FB opens) → adjacentAlly{right}, casterAtkPct 47.52 / 10s.",
+        "blindSaid": "S6 identical; both S2b reviewers made burstCast-vs-fullBurstEnter THE divergence to pin, and S2b-1 warned the control fixture can never exercise it (contested stage 2) — which is exactly where the S5 adapted run went RED.",
+        "formulaCheck": "A burst-slot block with no activation clause keys to the cast (§8 scope note); cast-frame application with 10s duration covering the FB window matches the SSOT's burst-cast timing rules. Flat caster-scaled value per §1a.",
+        "fireRateOk": true,
+        "explanation": "The driver's OWN fixture seats her ahead of crown so she casts ≥2 bursts AND some FBs happen without her cast — P6 pins grants 1:1 with her cast frames and the fullBurstEnter counterfactual fires on the crown-cast FBs she sat out. The S5 blind could not observe this slot in controlComp (she never casts there), but its burstFirst probe corroborates the block shape (both grants, right ally, correct stats)."
+      },
+      {
+        "kitLine": "Sustained Damage ▲ 27.23% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Same burstCast block: sustainedDamagePct 27.23 / 10s on the right ally; distinct key from the skill2 19.97 so the two co-stack additively in DamageUp.",
+        "blindSaid": "S6 identical; S5's partition check (19.97 vs 27.23 never folded) is satisfied by construction in the shipped override and asserted via the driver's per-slot value pins.",
+        "formulaCheck": "Flavor-scoped additive DamageUp member; co-stacking with the skill2 line is correct per §11 (different slot ⇒ different key).",
+        "fireRateOk": true,
+        "explanation": "P6 pins count = her cast count, value 27.23, 10s, right ally only. No folding, no trigger drift."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All seven kit lines are FAITHFUL or DOCUMENTED_GAP and the four blind artifacts converge on every load-bearing choice: the S6 blind override is block-identical to the driver's (five blocks — same triggers, targets, gates, stats, values, durations), and both S2b reviewers' specs match the shipped encoding including the three ranked misread traps (fullBurstEnter-vs-burstCast split between skill1 and burst, no gate contamination onto the ungated 19.97 sustained line, Ghostly Prank as an enemy debuff gated on a real selfStatus rather than an fbGate proxy). The S5 convergence is mechanically RED but both red clusters classify away from the override: 8 failures are the blind file's own harness-wiring bug (onEvent at the wrong options level — empty event log), and the 3 adapted-run failures are the contested-Burst-II fixture vacuity the blind writer pre-declared as a fixture finding, with its own burstFirst probe GREEN and corroborating the burst block's shape. Discrimination holds: every load-bearing assertion runs its named nearest-wrong counterfactual in-file (S2d Arm 1 is RED with no override; Arm 2 is 23/23 green), and the fbGate-proxy blind spot flagged by S2b-1 is closed by the structure pin plus the producer-removal counterfactual. Nothing is required for GO. Same-model residuals for the owner to spot-check: (1) the S5 adapted-run numbers (11 green / 3 RED) come from the driver's notes — re-run scripts/kit-autonomy/blind/belorta-pumpkin-witch.adapted.test.ts against the shipped override to confirm; (2) every agent in the gauntlet read 'ally to the right' as slot index + 1 with no wrap-around — a shared-prior positional assumption worth one in-game screenshot (right-ally buff icon with her in slot 5 would falsify the no-wrap reading, already ⚑2 in the override); (3) the targetMaxHpPct-vs-casterMaxHpPct choice is unobservable for a self-grant and matters only if a future consumer reads the distinction.",
+  "model": "claude-fable-5"
+}
