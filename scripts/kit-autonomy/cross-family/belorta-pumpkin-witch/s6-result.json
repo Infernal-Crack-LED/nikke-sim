@@ -1,0 +1,249 @@
+{
+  "slug": "belorta-pumpkin-witch",
+  "leakDetected": null,
+  "override": {
+    "slug": "belorta-pumpkin-witch",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "selfStatus",
+            "name": "Ghost Costume",
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 15.84,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "adjacentAlly",
+          "side": "right"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 44.88,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullCharge"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "requiresSelfStatus": "Ghost Costume",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 10.56,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullCharge"
+        },
+        "target": {
+          "kind": "adjacentAlly",
+          "side": "right"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "sustainedDamagePct",
+            "value": 19.97,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "adjacentAlly",
+          "side": "right"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 47.52,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "sustainedDamagePct",
+            "value": 27.23,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ CADENCE: chargeFrames 60 / reloadFrames 141 / ammo 6 are datamine fields taken as-is. Her whole skill2 output (boss Damage Taken ▲ + the right-hand ally's Sustained Damage ▲) is per-full-charge, so proc count and uptime scale directly with this unmeasured tuple.",
+      "⚑ GHOST COSTUME UPTIME: the status is modeled as a full 10 sec window per Full Burst entry. The kit's 'removed upon taking a direct hit' early-removal is unmodeled (the v1 boss deals no damage), so skill2's status gate passes for the whole window — an OPTIMISTIC assumption; real uptime in a fight that targets her is shorter and would cut Ghostly Prank procs.",
+      "⚑ 'LANDING' vs 'PERFORMING': skill2's Damage Taken line says 'landing a Full Charge attack'; the fullCharge trigger fires at release. For an unswapped RL with 100% landing this is treated as equivalent, but projectile flight time / a miss would delay or drop the debuff application.",
+      "TARGET SET: both ally blocks use adjacentAlly side 'right' per the literal kit text. If she occupies the rightmost slot, every ally block applies to NOBODY and her only live effect is the boss Damage Taken ▲ — her value is slot-position-dependent by design, not a modeling choice.",
+      "Prank Preparation (self Max HP ▲ 15.84%) is offensively INERT here: the kit carries no HP→ATK scaler, and a self Max HP grant only feeds the holder's own atkOfMaxHpPct. Kept per the never-skip-HP-lines rule as a future consumer/scaler feed.",
+      "No function-damage effects exist anywhere in this kit (no flatDamage / dot / storedHit / hitRepeat), so per-kit noFb, noRange and core-eligibility are NOT APPLICABLE and are deliberately unset rather than flagged.",
+      "Burst trigger is burstCast (a burst-slot block with no activation clause), so the two 10 sec ally buffs are applied PRE-Full-Burst at cast and cover the subsequent FB window by duration, not by FB-enter keying."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only. Belorta: Pumpkin Witch is a pure positional supporter: every offensive line targets the single ally to her RIGHT (casterAtkPct 44.88 at FB enter, 47.52 on burst; sustainedDamagePct 19.97 per full charge, 27.23 on burst) plus one boss debuff (damageTakenPct 10.56 per full charge). Ghost Costume is modeled as a selfStatus window purely because skill2's own activation clause gates on it ('while in the Ghost Costume state'); its defensive single-target-untargetability and its taking-a-hit removal are unmodeled and recorded verbatim in unmodeled.skill1."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger { kind: 'fullBurstEnter' } — literal 'entering Full Burst' wording, so it fires on ANY team Full Burst, not only rotations she bursts. No ownBurstGate (the text carries no 'after this unit uses her own Burst' clause)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind: 'self' } on block 1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Ghost Costume: ... for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "selfStatus { name: 'Ghost Costume', durationSec: 10 } — the named status WINDOW only, which exists so skill2's requiresSelfStatus gate can read it. Keyed per (unit,name), so no cross-unit status leakage."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Prevents being targeted by single-tar",
+      "status": "SKIPPED",
+      "effectOrReason": "Defensive targeting-avoidance + the 'removed upon taking a direct hit' early-removal clause. The v1 boss deals no damage and no unit is targeted, so both are mechanically inert; recorded verbatim in unmodeled.skill1. The status window itself IS modeled (row above)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Prank Preparation: Max HP ▲ 15.84%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff { stat: 'targetMaxHpPct', value: 15.84, durationSec: 10 } on self. 'Max HP ▲ X%' with no 'of the skill user's' qualifier = target's OWN Max HP → targetMaxHpPct, not casterMaxHpPct. Offensively inert (no HP scaler in kit) but never skipped per the HP/DEF/heal/shield rule."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects the ally to the right of this",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind: 'adjacentAlly', side: 'right' } on block 2 — the ONE neighbouring slot, never self; empty target set if she is rightmost."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 44.88% of the skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff { stat: 'casterAtkPct', value: 44.88, durationSec: 10 } — 'of the skill user's ATK' is the casterAtkPct flat-add path, NOT atkPct."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "landing a Full Charge attack while in",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger { kind: 'fullCharge' } + requiresSelfStatus 'Ghost Costume' — the kit's own self-status gate, satisfied only inside the 10 sec window skill1 opens at each Full Burst entry."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects the target.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind: 'enemy' } — the boss."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Ghostly Prank: Damage Taken ▲ 10.56%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff { stat: 'damageTakenPct', value: 10.56, durationSec: 10 } on the enemy — a boss DEBUFF benefiting the whole team, not a self buff. Re-applied (refreshed) every gated full charge."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "performing a Full Charge attack",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger { kind: 'fullCharge' } on block 2, UNGATED — this line has no Ghost Costume clause, so it fires on every full charge for the whole fight (deliberately a separate block from the gated one)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Sustained Damage ▲ 19.97% for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff { stat: 'sustainedDamagePct', value: 19.97, durationSec: 5 } on adjacentAlly right. 5 sec on a per-charge trigger ⇒ near-continuous while she fires, lapsing across reloads."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects the ally to the right of this",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind: 'adjacentAlly', side: 'right' }; trigger burstCast (burst slot, no activation clause)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 47.52% of the skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff { stat: 'casterAtkPct', value: 47.52, durationSec: 10 }. Stacks additively in the flat-ATK path with the skill1 44.88% grant to the same ally when both windows overlap (different slot ⇒ different buff key)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Sustained Damage ▲ 27.23% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff { stat: 'sustainedDamagePct', value: 27.23, durationSec: 10 } — separate key from the skill2 19.97% line, so the two are additive in the Damage Up bucket while co-active."
+    }
+  ],
+  "flags": [
+    {
+      "field": "base stats (chargeFrames 60 / reloadFrames 141 / ammo 6) — cadence tuple",
+      "estimate": "Use the datamined values as given: ~60f charge + ~141f reload on a 6-round RL magazine ⇒ roughly 6 full charges per ~8 sec of firing before a ~2.35 sec reload.",
+      "reasoning": "ALWAYS-⚑: rate_of_fire / reloadFrames are known-unreliable datamine fields, and this unit is unusually cadence-sensitive — BOTH skill2 lines are per-full-charge, so her Damage Taken ▲ uptime on the boss and the Sustained Damage ▲ uptime on her right-hand ally are a direct function of charges landed per 10 sec window. A 15% cadence error moves her whole support contribution.",
+      "recipe": "Frame-count a focus recording of her solo-firing: mark each charge-release frame over a 20 sec stretch, count releases per magazine and the release→next-release gap across a reload, then solve for actual chargeFrames and reloadFrames and compare against 60/141."
+    },
+    {
+      "field": "override.skill1[0].effects[0].durationSec (Ghost Costume window) → gates override.skill2[0]",
+      "estimate": "Full 10 sec per Full Burst entry (no early removal).",
+      "reasoning": "The kit removes Ghost Costume 'upon taking a direct hit', a condition the v1 immortal-boss scope cannot express (nobody is attacked). Modeling the full 10 sec is the optimistic bound and is what makes Ghostly Prank's Damage Taken ▲ 10.56% effectively cover every charge inside the FB window. In a real fight where the boss hits her, some charges fall outside the status and the debuff's uptime drops.",
+      "recipe": "Record a stage where she is actively targeted; time the Ghost Costume icon from FB entry to its disappearance across several rotations, and count how many of her full charges land while it is up vs down. The ratio is the haircut to apply to the gated block."
+    },
+    {
+      "field": "override.skill2[0].trigger ('landing' vs 'performing' a Full Charge attack)",
+      "estimate": "Treat landing as equivalent to release: trigger { kind: 'fullCharge' }, no landing/flight delay, 100% landing fraction.",
+      "reasoning": "The Damage Taken line says 'landing', the Sustained line says 'performing' — the kit distinguishes them, but the schema's fullCharge primitive fires at charge release. For an unswapped RL every pull is a full charge and the projectile is assumed to connect, so the two wordings collapse; if her rocket has meaningful flight time the boss debuff is applied slightly early each proc, and a genuine miss would apply it with no hit at all.",
+      "recipe": "Frame-compare the Ghostly Prank debuff popup/icon appearance against her charge-release frame in a focus recording; a consistent non-zero offset is the flight time and should become a block-level delaySec."
+    },
+    {
+      "field": "override.burst[0].trigger (burstCast vs fullBurstEnter)",
+      "estimate": "burstCast — the burst block carries no activation clause, so it resolves at her own cast, ~pre-Full-Burst, with both 10 sec buffs carrying through the FB window by duration.",
+      "reasoning": "Default per the trigger-identity rule for an effect-clause-free burst slot. It is load-bearing only for the first ~fraction of a second of each window (a buff applied at cast is live slightly before FB opens vs one keyed to FB entry), and for Burst II she always casts before the FB window regardless — but it is kit-silent, so it is declared rather than asserted.",
+      "recipe": "Read a buffApply event trace for the casterAtkPct 47.52 grant and compare its frame against the fullBurstStart frame in the same rotation; a cast-frame application confirms burstCast."
+    }
+  ],
+  "model": "claude-opus-5"
+}

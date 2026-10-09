@@ -1,0 +1,68 @@
+{
+  "slug": "belorta-pumpkin-witch",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Ghost Costume: untargetable 10 sec",
+      "disposition": "FAITHFUL (state) + UNMODELED (payload)",
+      "assertion": "The untargetable payload is unobservable (boss deals no damage) BUT the named state is load-bearing: skill2's debuff block gates on it. Proof is indirect and two-sided - deleting the selfStatus effect must take the Damage Taken debuff count to exactly 0, while deleting the gates must make it fire on every full charge. RED under the nearest-wrong models: an omitted state (base count would already equal the full-charge count) or an fbGate/requiresTargetStatus proxy (deleting the selfStatus would change nothing)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "removed upon taking a direct hit",
+      "disposition": "GAP (scope-trivial, over-credits)",
+      "assertion": "it.skip. Nothing damages the team at scope, so the Ghost window never breaks early and Ghostly Prank uptime is an UPPER BOUND. Flagged rather than silently accepted."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Prank Preparation: Max HP 15.84%",
+      "disposition": "FAITHFUL (offensively inert)",
+      "assertion": "One self grant per fullBurstStart, emitted FLAT under stat maxHpFlat (value > 100, not the raw 15.84), targetSlug === the owner, and sharing an expiresFrame with the co-frame ally ATK grant (10s == 10s, frame-rate free). Fails if authored as a raw percentage stat, at a 5s/15s duration, keyed to a different trigger, or targeted at anyone else. Separately: removing it must leave ALL totals byte-identical - RED would mean the grant leaked into an ATK path (she carries no atkOfMaxHpPct, and ally-granted Max HP feeds nothing)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK 44.88% of user ATK, right ally",
+      "disposition": "FAITHFUL",
+      "assertion": "Trigger: apply count === fullBurstStart count (any team Full Burst). Re-keyed to burstCast it can only drop in count or land strictly earlier than the window it opens - a burst-cast-keyed model is therefore RED either way, which matters because she is a contested Burst II. Target: the slug set is exactly size 1, excludes the owner and both left-hand allies, and is the right-hand neighbour; patched to `allies` the set widens and includes the owner. Magnitude: flat (not 44.88), and ratio-pinned against the burst line at 47.52/44.88. Inertness: removing it drops only the right ally; owner and both left allies byte-identical."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Ghostly Prank: Dmg Taken 10.56%",
+      "disposition": "FAITHFUL",
+      "assertion": "Boss-held debuff (casterIdx === null AND targetIdx === null), value 10.56. Non-vacuity is two-sided: applies > 0 (gate active) AND strictly fewer than the ungated ally-sustained applies on the same trigger (gate inactive on out-of-window pulls). Gate-removed counterfactual makes the count equal the sustained count WITHIN THE SAME RUN - a comparison immune to how the engine emits refreshes. Team-wide effect proven at totals level: removing it drops the left allies and the right ally too, so it cannot have been modeled as a self buff (taxonomy #4)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Sustained Damage 19.97% for 5 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Event-level, because the right-hand ally may have no sustained-flavored damage to move. Trigger: count > 2x the Full Burst count (per-pull, not per-FB); re-keyed to fullBurstEnter the count collapses to exactly the Full Burst count. Scope: it fires on pulls the Ghost-gated debuff does not, proving the Ghost gate did not leak onto this second line. Target set exactly the right-hand neighbour. Duration: an INERT 10s partsDamagePct buff is co-applied by the same block, so the pairwise expiresFrame DIFFERENCE must be 300 frames - and the probe is verified damage-neutral (totals byte-identical to base)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK 47.52% of user ATK, right ally",
+      "disposition": "FAITHFUL (fixture-gated)",
+      "assertion": "Fires on her own burst cast, target the right-hand neighbour, flat caster-scaled value ratio-pinned at 47.52/44.88 against the skill1 line (exact, ATK-sheet free - fails if the two magnitudes were swapped or if the line were authored as a plain atkPct). Removing the burst blocks drops only the right ally. Preceded by an explicit non-vacuity test: she is Burst II in a comp whose fixed B2 is also Burst II."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Sustained Damage 27.23% for 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Raw percentage 27.23 (plain stat, not flat-resolved), same count and same target as the burst ATK line, and identical expiresFrame to it - both are 10s on the same cast frame, so a 5s authoring on either is RED, frame-rate free. The clean 19.97/27.23 partition of all owner sustained applies additionally proves the skill2 and burst magnitudes did not drift into each other."
+    },
+    {
+      "slot": "fixture",
+      "kitLine": "(fixture, not a kit line)",
+      "disposition": "MEASUREMENT-GATED",
+      "assertion": "controlComp(slug, true) puts her at slot 2 with the fixed B3 to her right, which is mandatory - with the B3 slot empty she is rightmost and all five adjacentAlly{right} lines target nobody, making the file vacuous. The residual risk (contested Burst Stage 2 against the fixed B2) is asserted, not assumed, and a burstFirst probe localizes a RED to the fixture rather than the override."
+    }
+  ],
+  "fixtures": "Single fixture, controlComp('belorta-pumpkin-witch', true) - liter(0)/crown(1)/owner(2)/helm(3), boss Fire, deterministic, 12 hoisted runs (1 base + 11 counterfactuals). The fixed B3 slot is kept ON for two independent reasons: (a) a Full Burst needs the B1+B2+B3 chain at all, and (b) only with that slot filled does the owner at index 2 HAVE a right-hand neighbour - five of her six kit lines target `the ally to the right`, so with the slot empty they would all target nobody and every assertion would pass vacuously. Owner index is DERIVED from her self Max HP grant (the only buff with casterIdx === targetIdx on her slug) instead of hardcoded. Known residual fixture risk, asserted explicitly rather than assumed: she is Burst II and so is the fixed B2, so Burst Stage 2 is contested and she may never cast - a RED on the burst non-vacuity test is a fixture finding, and the burstFirst probe run distinguishes that from an override defect.",
+  "gaps": [
+    "it.skip - Ghost Costume untargetable payload: the v1 boss deals no damage, so single-target immunity has no observable consequence. Only the named STATE is modeled, because skill2's debuff gates on it.",
+    "it.skip - 'removed upon taking a direct hit': nothing damages the team at scope, so the 10 sec Ghost window never breaks early. Ghostly Prank uptime in-sim is an UPPER BOUND vs live play (over-credit flag for the driver).",
+    "it.skip - targetMaxHpPct vs casterMaxHpPct is unobservable for a self-only Max HP line (caster === target; both re-emit the same maxHpFlat). The plain 'Max HP 15.84%' wording matches the target-own-Max-HP family, but this fixture cannot discriminate.",
+    "it.skip - 'LANDING a Full Charge attack' vs 'performing' one: the engine fires fullCharge at RELEASE, so RL projectile flight time before the Ghost-gated debuff applies is unmodeled (debuff lands a few frames early, and a shot that would miss still procs).",
+    "Not asserted (outside the kit text): burst cooldown 40s, burst-gauge contribution, and the datamine-unreliable cadence tuple (reloadFrames 141 / chargeFrames 60) - the file never pins an absolute apply frame, and the single frame-rate assumption (FPS 60) is used only on a difference between two buffs applied on the same frame."
+  ],
+  "model": "claude-opus-5"
+}

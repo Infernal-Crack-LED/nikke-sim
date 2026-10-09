@@ -1,0 +1,126 @@
+{
+  "slug": "belorta-pumpkin-witch",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "selfStatus",
+          "name": "Ghost Costume",
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 15.84,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "adjacentAlly",
+        "side": "right"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 44.88,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "requiresSelfStatus": "Ghost Costume",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 10.56,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "adjacentAlly",
+        "side": "right"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 19.97,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "adjacentAlly",
+        "side": "right"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 47.52,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 27.23,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ CADENCE: chargeFrames 60 / reloadFrames 141 / ammo 6 are datamine fields taken as-is. Her whole skill2 output (boss Damage Taken ▲ + the right-hand ally's Sustained Damage ▲) is per-full-charge, so proc count and uptime scale directly with this unmeasured tuple.",
+    "⚑ GHOST COSTUME UPTIME: the status is modeled as a full 10 sec window per Full Burst entry. The kit's 'removed upon taking a direct hit' early-removal is unmodeled (the v1 boss deals no damage), so skill2's status gate passes for the whole window — an OPTIMISTIC assumption; real uptime in a fight that targets her is shorter and would cut Ghostly Prank procs.",
+    "⚑ 'LANDING' vs 'PERFORMING': skill2's Damage Taken line says 'landing a Full Charge attack'; the fullCharge trigger fires at release. For an unswapped RL with 100% landing this is treated as equivalent, but projectile flight time / a miss would delay or drop the debuff application.",
+    "TARGET SET: both ally blocks use adjacentAlly side 'right' per the literal kit text. If she occupies the rightmost slot, every ally block applies to NOBODY and her only live effect is the boss Damage Taken ▲ — her value is slot-position-dependent by design, not a modeling choice.",
+    "Prank Preparation (self Max HP ▲ 15.84%) is offensively INERT here: the kit carries no HP→ATK scaler, and a self Max HP grant only feeds the holder's own atkOfMaxHpPct. Kept per the never-skip-HP-lines rule as a future consumer/scaler feed.",
+    "No function-damage effects exist anywhere in this kit (no flatDamage / dot / storedHit / hitRepeat), so per-kit noFb, noRange and core-eligibility are NOT APPLICABLE and are deliberately unset rather than flagged.",
+    "Burst trigger is burstCast (a burst-slot block with no activation clause), so the two 10 sec ally buffs are applied PRE-Full-Burst at cast and cover the subsequent FB window by duration, not by FB-enter keying."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only. Belorta: Pumpkin Witch is a pure positional supporter: every offensive line targets the single ally to her RIGHT (casterAtkPct 44.88 at FB enter, 47.52 on burst; sustainedDamagePct 19.97 per full charge, 27.23 on burst) plus one boss debuff (damageTakenPct 10.56 per full charge). Ghost Costume is modeled as a selfStatus window purely because skill2's own activation clause gates on it ('while in the Ghost Costume state'); its defensive single-target-untargetability and its taking-a-hit removal are unmodeled and recorded verbatim in unmodeled.skill1."
+}
