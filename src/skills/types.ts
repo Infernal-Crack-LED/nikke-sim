@@ -183,6 +183,11 @@ export type TargetDef =
     }
   // "self and N ally unit(s) on both sides" (Rouge's coin coverage — positional)
   | { kind: 'selfAndAdjacent'; sides: number }
+  // "the ally to the right/left of this unit" — the ONE neighbouring slot on that side, never self
+  // (belorta-pumpkin-witch). Positional like selfAndAdjacent; units[] is slot order, leftmost
+  // first, so 'right' = slot index + 1. An owner at the matching edge (rightmost for 'right') has
+  // no such ally and the block applies to nobody — the literal reading of the kit text.
+  | { kind: 'adjacentAlly'; side: 'left' | 'right' }
   // "the N ally unit(s) with the lowest remaining HP [(except self)]" (blanc/moran survival grants).
   // v1 has no HP pool (immortal boss, nobody takes damage) so "lowest remaining HP" is indeterminate —
   // resolved deterministically to the leftmost `count` allies as a documented stand-in. The Max-HP grants

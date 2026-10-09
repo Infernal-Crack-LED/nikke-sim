@@ -1279,6 +1279,8 @@ function targetLabel(t: any): string {
       return `${t.weapon} allies${t.excludeSelf ? ' (not self)' : ''}`;
     case 'alliesLowestHp':
       return `${t.count} lowest-HP all${t.count === 1 ? 'y' : 'ies'}${t.excludeSelf ? ' (not self)' : ''}`;
+    case 'adjacentAlly':
+      return `ally to the ${t.side}`;
     default:
       return 'allies';
   }

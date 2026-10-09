@@ -110,6 +110,7 @@ export const TARGETS = new Set([
   'alliesOfWeapon',
   'alliesOfElementWeapon',
   'selfAndAdjacent',
+  'adjacentAlly',
   'alliesLowestHp',
 ]);
 export const EFFECTS = new Set([
@@ -947,6 +948,13 @@ export function structuralCheck(
       // trigger like any other and authoring them is no longer an error. Audit F2.1, closed.
       if (!b.target?.kind || !TARGETS.has(b.target.kind)) {
         errors.push(`${p}: bad target`);
+      }
+      // a missing/typo'd side would silently resolve to the LEFT neighbour in sim.ts
+      if (
+        b.target?.kind === 'adjacentAlly' &&
+        !['left', 'right'].includes(b.target.side)
+      ) {
+        errors.push(`${p}: adjacentAlly needs side "left" or "right"`);
       }
       if (b.formation && !['noB1', 'hasB1'].includes(b.formation)) {
         errors.push(`${p}: bad formation`);
