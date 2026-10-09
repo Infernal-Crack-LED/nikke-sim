@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 213 | 44.0% |
-| Missing engine primitive / trigger | 102 | 21.1% |
-| Other / see caveats | 93 | 19.2% |
-| Out-of-domain / parser unsupported | 38 | 7.9% |
+| Defensive / HP / shield / aggro | 214 | 44.0% |
+| Missing engine primitive / trigger | 102 | 21.0% |
+| Other / see caveats | 93 | 19.1% |
+| Out-of-domain / parser unsupported | 39 | 8.0% |
 | Weapon-state / shot-count approximation | 13 | 2.7% |
 | Partless boss | 10 | 2.1% |
 | RNG / probabilistic | 6 | 1.2% |
 | Self-status / stack gate | 5 | 1.0% |
 | Measurement-gated / unverified cadence | 4 | 0.8% |
-| **Total** | **484** | 100.0% |
+| **Total** | **486** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (213)
+### Defensive / HP / shield / aggro (214)
 
 **A2** (a2)
 
@@ -137,6 +137,11 @@ Incoming Healing ▼ 78.93% for 10 sec. — unrepresentable: the self-HP gate ha
 DEF ▼ 3.52% for 5 sec. 
 Deals 14.96% of final ATK as additional damage.
   - *Why:* skill2: the >4-enemies-hit gate is unsatisfiable vs one boss, so the DEF ▼ 3.52% and the 14.96% rider are unmodeled — ⚑ out-of-domain; shipping either ungated would be a ~14.96%-per-shot over-credit
+
+**Belorta: Pumpkin Witch** (belorta-pumpkin-witch)
+
+- **skill1:** This effect is removed upon taking a direct hit. — the v1 sim has no incoming damage, so the removal never fires and the status runs its full 10s (⚑1 in the note).
+  - *Why:* ⚑ LIST: [⚑1] Ghost Costume's 'removed upon taking a direct hit' — the v1 sim has no incoming damage, so the status always runs its full 10s and Ghostly Prank's gate stays open for the whole window
 
 **Biscuit** (biscuit)
 
@@ -368,7 +373,7 @@ Max HP ▲ 48% for 20 sec.
 - **burst:** Shared Delusion: The Shield created by Label becomes invulnerable for 10 sec.
   - *Why:* skill2: the self ATK ▲93.39% / burst-gauge ▲70.4% are 'only while in Delusion'; Delusion is permanent in the no-incoming-damage sim, so they are encoded passive (frame 0, no expiry). Real shield-break downtime is sub-second and unmodeled (⚑)
 
-**Laplace (Treasure)** (laplace)
+**Laplace (Favorite Item) (Treasure)** (laplace)
 
 - **burst:** (Note: Unable to take cover.)
   - *Why:* See unit note / caveats
@@ -720,7 +725,7 @@ Incoming healing ▲ 15.18% for 10 sec.
 - **burst:** Recovers 52.27% of the skill user's final Max HP as HP. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
   - *Why:* burst: the heal is event-only — the 52.27%-of-final-Max-HP magnitude is unrecordable in v1 (no HP amounts), and 'final Max HP' scaling has no carrier; the block's observable is the recovery events it emits to allies on her cast frame
 
-**Sugar (Treasure)** (sugar)
+**Sugar (Favorite Item) (Treasure)** (sugar)
 
 - **skill1:** Activates when cover is attacked (20% chance). Affects self. Critical Damage ▲ 16.39% for 10 sec. (no cover-attacked trigger primitive; the v1 boss never attacks so cover is never hit)
   - *Why:* skill1: the cover-attacked Critical Damage ▲16.39% / Reload Speed ▲12.12% procs and the Cover HP restore are UNMODELED (no cover-attacked trigger; defensive line inert) — see unmodeled.skill1.
@@ -954,7 +959,7 @@ Deals 23.9% of final ATK as additional damage.
 Removes Fulfillment of Righteousness.
   - *Why:* skill2: S2c 'removes Fulfillment of Righteousness on FB end' — no FB-end removal primitive; moot (10s duration self-expires ≈ the FB window, re-applied on the next last bullet).
 
-**Laplace (Treasure)** (laplace)
+**Laplace (Favorite Item) (Treasure)** (laplace)
 
 - **skill1:** Activates when attacking with Full Charge. Affects self. Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5, 15s.
   - *Why:* skill1: the Explosion Radius ▲3.57% magnitude is inert vs the partless boss and stays unmodeled; the STACK COUNT it comes with is now modeled as the heroVision resource pool, because that count is what gates the burst's two true-damage clauses
@@ -1535,7 +1540,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Out-of-domain / parser unsupported (38)
+### Out-of-domain / parser unsupported (39)
 
 **Anchor** (anchor)
 
@@ -1553,6 +1558,11 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 
 - **burst:** Activates while in Transformation status: Battery ▲ 50%. (never fires in scope-lock — burst CD 40s > Transformation duration 10s; the burst always fires outside Transformation)
   - *Why:* The burst CD is 40s and Transformation lasts 10s, so the 'while in Transformation: Battery ▲50%' burst branch NEVER fires in scope-lock (the burst always fires outside Transformation)
+
+**Belorta: Pumpkin Witch** (belorta-pumpkin-witch)
+
+- **skill1:** Ghost Costume: Prevents being targeted by single-target attacks for 10 sec. — the targeting immunity is defensive: the v1 sim has no boss targeting or incoming damage, so it moves no damage. The status itself IS modeled (selfStatus 'Ghost Costume' 10s) because Skill 2's Ghostly Prank gates on it.
+  - *Why:* SKILL1 'Playful Little Witch' (two ■ headers, both 'Activates when entering Full Burst' = fullBurstEnter, so they fire on EVERY Full Burst, including ones where another Burst II unit cast stage 2): (a) self — Ghost Costume = selfStatus 'Ghost Costume' 10s (the state S2's first line gates on) + Prank Preparation 'Max HP ▲ 15.84% for 10 sec' = targetMaxHpPct 15.84 / 10s (damage-INERT: she has no HP-scaling ATK line; kept as its exact stat); (b) the ally to the right — 'ATK ▲ 44.88% of the skill user's ATK for 10 sec' = casterAtkPct 44.88 / 10s (a flat add of her ATK, uniform for any holder)
 
 **Bready** (bready)
 
@@ -1836,7 +1846,7 @@ Deals 50.33% of final ATK as additional damage.
 - **skill1:** Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec.
   - *Why:* skill1: the team ATK grant (15.2% of caster ATK) is keyed to the fullCharge trigger; the 'landing … within effective range' half still assumes every charged pull lands in range (⚑ unmeasured)
 
-**Laplace (Treasure)** (laplace)
+**Laplace (Favorite Item) (Treasure)** (laplace)
 
 - **skill2:** Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage.
   - *Why:* skill2: the 132.45% full-charge additional hit is fullCharge + swapGate:'unswapped' — the fullCharge trigger fires only on charged pulls; for an RL, every pull (the engine's charge path releases exclusively at full charge) — it fires on base full-charge pulls only, NOT the swap beam (gauntlet 2026-07-26 S7 ruling: the burst labels beam damage 'Normal Damage', and both blind derivations read exclusion; the prior every-shot reading was a circular cite of the kit-silent chargeTimeSec ⚑). OWNER-CONFIRMED 2026-08-12: the 132.45% additional hit fires on her BASE full-charge shots only, not on the swap beam. The gauntlet ruling stands and needs no footage
