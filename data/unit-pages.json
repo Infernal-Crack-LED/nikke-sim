@@ -794,6 +794,18 @@
         }
       }
     },
+    "belorta-pumpkin-witch": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Ghost Costume: Prevents being targeted by single-target attacks for 10 sec. — the targeting immunity is defensive: the v1 sim has no boss targeting or incoming damage, so it moves no damage. The status itself IS modeled (selfStatus 'Ghost Costume' 10s) because Skill 2's Ghostly Prank gates on it.",
+            "This effect is removed upon taking a direct hit. — the v1 sim has no incoming damage, so the removal never fires and the status runs its full 10s (⚑1 in the note)."
+          ]
+        }
+      }
+    },
     "biscuit": {
       "status": {
         "tier": "MODEL_ONLY",

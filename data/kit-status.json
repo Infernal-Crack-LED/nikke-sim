@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02",
+  "generatedAt": "2026-10-09",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -14,12 +14,11 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 188,
-      "authored": 1,
-      "pending": 2
+      "unit-tested": 191,
+      "authored": 1
     },
     "tier": {
-      "MODEL_ONLY": 157,
+      "MODEL_ONLY": 158,
       "VALIDATED": 10,
       "MEASURED": 14,
       "CALIBRATED": 10
@@ -1131,6 +1130,43 @@
         "skill2: the >4-enemies-hit gate is unsatisfiable vs one boss, so the DEF ▼ 3.52% and the 14.96% rider are unmodeled — ⚑ out-of-domain; shipping either ungated would be a ~14.96%-per-shot over-credit"
       ],
       "note": "belorta (Belorta, SR/Electric/Attacker/B2, RL cd 20s). Kit-autonomy gauntlet 2026-08-05 (test-first; cross-family S2b claude-fable-5 converged on every line). MODEL: BURST 'Tricky Bomber' = burstCast flatDamage 192 UNTAGGED for burstDesc (owner ruling 2026-08-10 — the Burst-Skill-Damage amps are LITERAL-ONLY: trina's Spread Roots amplifies 'skills with \"Affects all enemies\"' and jackal's names '\"Affects 1 enemy unit(s)\" in the description', so a clause that paraphrases the meaning does not qualify; her clause is 'Affects enemies within attack range', not that string, so no amp reaches this nuke — the earlier same-day scope-string ruling settled that such clauses TARGET THE BOSS, a different question) (enemies within attack range → one hit vs the single scope-lock boss; engine rider convention U1: crits at caster rate, never cores, never range; U10 auto-exempt from the +50% FB major — the cast lands before the Full Burst window opens) + burstCast chargeSpeedPct 2.82 / durationSec 10 / target ALL allies incl. self (the kit grants it inside the burst skill, NOT 'entering Full Burst' — burstCast-vs-fullBurstEnter is pinned by scripts/tests/units/belorta.test.ts; consumption is live: sim.ts shortens the charge cycle by (1 - cs/100), chargeFrames 90). SKIPS → unmodeled, both OUT OF DOMAIN for the single-enemy scope-lock sim: (S1) Full-Charge self 'Explosion Radius ▲ 9.55% 5s' — radius is AoE GEOMETRY (how many enemies one rocket splash covers), not damage to any enemy hit; the engine has no spatial AoE and the fight has one partless boss, so it moves nothing in domain. Nearest-wrong counterfactual: laundering it into projectileExplosionPct (the Explosion DAMAGE bucket — a different mechanic) or any Damage-Up stat would fabricate per-shot damage the kit never grants. (S2) 'an attack hits more than 4 enemy unit(s)' → DEF ▼ 3.52% 5s + 14.96% of final ATK additional damage — the gate needs ONE attack hitting 5+ distinct enemies, which the single-boss fight can never produce, so both sentences inherit the unsatisfiable gate. Nearest-wrong counterfactuals: dropping the gate (a permanent ~14.96% per-shot rider + phantom burst gauge) or re-reading it as a hit-COUNT trigger; the spec test pins zero skill-bucket damage from her slot against both. ⚑ LIST (out-of-domain, damage contribution in sim domain is exactly 0 for both): (1) Explosion Radius — ESTIMATE: 0 in domain; on multi-enemy wave content it would raise splash COVERAGE, not per-enemy damage; RECIPE: needs a multi-enemy/spatial-AoE encounter model before any radius stat can be load-bearing; TIER: out-of-domain (no single-boss observable). (2) S2 multi-enemy gate + DEF-shred + rider — ESTIMATE: 0 in domain; on 5+-enemy waves it would be a small team lift (3.52% DEF-down is a minor multiplicative vs boss DEF, rider is 14.96% of a 61.3 normal mult on qualifying splashes only); RECIPE: needs a multi-enemy encounter model + a target-DEF-down debuff primitive; TIER: out-of-domain. Weapon cycle (6 ammo, 141f reload, 90f charge, 61.3/350 mults) is carried by characters.json; no charFixes needed. | Kit-autonomy gauntlet 2026-08-05",
+      "board": null
+    },
+    "belorta-pumpkin-witch": {
+      "name": "Belorta: Pumpkin Witch",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-10-09",
+        "findings": [
+          "kit-autonomy gauntlet 2026-10-09: GO, faithfulness 1.0 (judge claude-fable-5-1). Artifacts: scripts/kit-autonomy/results/belorta-pumpkin-witch.json + scripts/kit-autonomy/manual-review/belorta-pumpkin-witch.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-10-09; GO faithfulness 1.0 / 1.0; same-family only (Claude: S2b fable-5 + fable-5-1 / S5,S6 opus-5 / S7 fable-5-1 + fable-5) — S6 blind override block-identical; S5 blind test 11/11 non-burst green after its one-line onEvent wiring fix, burst group RED only from the contested-Burst-II controlComp fixture (its burstFirst probe green); new engine target adjacentAlly (code review CLEAN)",
+      "date": "2026-10-09",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "owner spot-check: (1) trigger identity — S1 lines on EVERY Full Burst entry vs the burst lines on HER cast only; (2) scope — 'the ally to the right' = the next slot, and NOBODY from the rightmost slot (no wrap); (3) duration — Ghost Costume always runs its full 10s (direct-hit removal out of domain), so Ghostly Prank's window is an upper bound",
+      "unmodeled": {
+        "skill1": [
+          "Ghost Costume: Prevents being targeted by single-target attacks for 10 sec. — the targeting immunity is defensive: the v1 sim has no boss targeting or incoming damage, so it moves no damage. The status itself IS modeled (selfStatus 'Ghost Costume' 10s) because Skill 2's Ghostly Prank gates on it.",
+          "This effect is removed upon taking a direct hit. — the v1 sim has no incoming damage, so the removal never fires and the status runs its full 10s (⚑1 in the note)."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: Ghostly Prank's gate window is the full 10s Ghost Costume status from each Full Burst entry — an upper bound, since the direct-hit removal is out of domain (⚑1).",
+        "all ally-facing lines: 'the ally to the right of this unit' resolves to the next slot; from the rightmost slot the lines apply to nobody (⚑2)."
+      ],
+      "note": "Belorta: Pumpkin Witch (`belorta-pumpkin-witch`, aka bpw — the VARIANT; the base unit `belorta` is an RL/Electric Attacker with an unrelated kit). RL / Supporter / Water / Tetra, Burst II (cd 40s), ammo 6, chargeFrames 60, chargeMult 250, normalMult 61.3 — weapon cycle carried by characters.json, no charFixes. Kit-autonomy gauntlet 2026-10-09 — test-first, pinned by scripts/tests/units/belorta-pumpkin-witch.test.ts (P1–P6 + the rightmost-slot edge). A positional single-ally buffer: every ally-facing line targets 'the ally to the right of this unit' = target adjacentAlly{side:'right'} (the ONE slot to her right, never self; nobody when she sits rightmost). SKILL1 'Playful Little Witch' (two ■ headers, both 'Activates when entering Full Burst' = fullBurstEnter, so they fire on EVERY Full Burst, including ones where another Burst II unit cast stage 2): (a) self — Ghost Costume = selfStatus 'Ghost Costume' 10s (the state S2's first line gates on) + Prank Preparation 'Max HP ▲ 15.84% for 10 sec' = targetMaxHpPct 15.84 / 10s (damage-INERT: she has no HP-scaling ATK line; kept as its exact stat); (b) the ally to the right — 'ATK ▲ 44.88% of the skill user's ATK for 10 sec' = casterAtkPct 44.88 / 10s (a flat add of her ATK, uniform for any holder). SKILL2 'Trick or Treat!': (a) 'landing a Full Charge attack while in the Ghost Costume state' → the target (the boss): Ghostly Prank 'Damage Taken ▲ 10.56% for 10 sec' = fullCharge trigger + requiresSelfStatus 'Ghost Costume', enemy damageTakenPct 10.56 / 10s (same-caster-slot refresh, no stacking clause) — live only on her full charges inside the 10s after each Full Burst entry; (b) 'performing a Full Charge attack' (NO costume gate — a separate ■ header) → the ally to the right: sustainedDamagePct 19.97 / 5s on every full-charge pull. BURST 'Happy Halloween!' (burstCast — HER OWN cast, on the cast frame before Full Burst opens; not fullBurstEnter) → the ally to the right: casterAtkPct 47.52 / 10s + sustainedDamagePct 27.23 / 10s. Sustained Damage ▲ reaches only sustained-flavored damage of the holder (DoTs / sustained riders); on a holder with none it is applied and moves nothing. EVIDENCE TIER: every magnitude and duration is SL10 kit-text literal (DATAMINED). ⚑ LIST: [⚑1] Ghost Costume's 'removed upon taking a direct hit' — the v1 sim has no incoming damage, so the status always runs its full 10s and Ghostly Prank's gate stays open for the whole window. ESTIMATE: the modeled window is the UPPER bound; she is untargetable by single-target attacks while it lasts, so only area/direct boss hits can end it early. RECIPE: a fight recording with her in Full Burst against a boss area attack — check whether Ghostly Prank stops refreshing after the hit. TIER: out-of-domain for v1 (incoming-damage theme). [⚑2] Rightmost slot — 'the ally to the right' resolves to NOBODY when she is in the last slot (literal reading; no wrap-around). ESTIMATE: her three ally-facing lines contribute nothing from slot 5. RECIPE: one recording with her in slot 5 — check slot 1/slot 4 buff icons after her burst. TIER: kit-literal, unmeasured. [⚑3] 'Landing' a Full Charge — the RL rocket is credited as landing on its full-charge pull frame (engine fullCharge convention; flight time and misses are not modeled). TIER: engine convention.",
       "board": null
     },
     "biscuit": {
@@ -3362,6 +3398,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-10-02; GO faithfulness 1.0 (binding S7 claude-fable-5-1) / 1.0 (second judge claude-fable-5); same-family only (Claude: S2b fable-5 + fable-5-1 / S5,S6 opus-5 / S7 fable-5-1 + fable-5) — no cross-family reviewer available; blind S5 GREEN vs the shipped override after a one-line harness-wiring adaptation; S6 block-equivalent",
+      "date": "2026-10-02",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "owner spot-check: Bunny Mode as a static selection (Stance default; Engage = one opening hold) — scope; both full-charge riders firing on the Mighty Stomp shot — trigger identity; 'Duration: 1 rounds' = one Stomp and the 1400% on that round only — duration; Stomp magazine handback and SR core/range routing are measurement-gated ⚑",
       "unmodeled": {
         "skill1": [
           "■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds while this unit is not in the Mighty Stomp state. Affects self. Initiates a new Bunny Mode based on the current mode. Activates if this unit is in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed. Activates if this unit is not in the Bunny Mode: Stance state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
@@ -3382,14 +3425,7 @@
         "burst Mighty Stomp is routed as an ordinary SR shot (the swap declares no weapon class, so it inherits the base SR's): it cores at the flat SR rate, takes the +30% range bonus in SR range bands, and generates SR burst gauge. The kit names no class for the Stomp. ⚑ estimate = SR treatment; recipe = read the Stomp popup in a focus video (CORE HIT label frequency and size against her base charged shots at the same range); tier = MEASUREMENT-GATED."
       ],
       "note": "Guilty: Mighty Bunny (slug guilty-mighty-bunny) — SR/Attacker/Water/Missilis, Burst III cd 40s, ammo 6, charge 1s, full charge 250%. VARIANT of the base unit `guilty` (SG/Wind) — a different unit and kit. Kit-autonomy gauntlet 2026-10-02. BUNNY MODE is modeled as a user-selectable kit mode: modes ['Stance','Engage'], Stance first because the kit's battle-start line puts a unit that is not in Stance INTO Stance, so a fight opens in Stance and stays there unless the player deliberately holds Full Charge for 1 second (the sim releases at full charge, so it never holds — the rapunzel-pure-grace precedent for the 'Full Charge maintained for 1 or more seconds' clause). Selecting Engage models a player who toggled once at the opening and stayed there; in-fight re-toggling is unmodeled. SKILL1: battleStart self ATK ▲ 20.1% (continuous). SKILL2 'Chain Release' (mode Engage): trueNormalsModes ['Engage'] makes her normal attacks True-flavored — the base weapon (Effect 1) and the Mighty Stomp swap shot (Effect 2) — so ally True Damage ▲ buffs feed them; fullCharge → enemy flatDamage 370.08% flavor true (Effect 3, a skill hit: crits at her rate, never cores — the 2026-08-13 true-damage ruling). SKILL2 'Chain Enhance' (mode Stance): self Attack Damage ▲ 20.45% and Charge Damage ▲ 40% (both continuous, passive), and fullCharge → enemy flatDamage 450.89% plain additional damage. Both fullCharge riders also fire on the Mighty Stomp shot (it is a full-charge attack). BURST 'I'm Finally Free...!' (burstCast, self): weaponSwap Mighty Stomp — damagePct 101.3 ('Damage: 101.3% of final ATK'), chargeTimeSec 1.5 + chargeTimeClamp 1.5 ('Charge Time: Fixed at 1.5 sec'; the engine charges a swap only when it declares its own charge frames), chargeMultPct 250, maxShots 1 ('Duration: 1 rounds' — the swap ends right after its one shot), durationSec 180 as a fight-length bound only. Chain Release Effect 2 (Mighty Stomp deals true damage in Engage) needs no swap-level flag: the engine applies the unit's static true-normal flavor (trueNormalsModes) to swap shots as well, so the Stomp is True exactly in Engage. Additional Effect 1 = self chargeDamagePct 1400 durationShots 1 granted at the cast, so its one round is the Stomp shot. Additional Effect 2 = self attackDamagePct 77.35 for 10 sec.",
-      "board": null,
-      "date": "2026-10-02",
-      "evidence": "kit-autonomy gauntlet 2026-10-02; GO faithfulness 1.0 (binding S7 claude-fable-5-1) / 1.0 (second judge claude-fable-5); same-family only (Claude: S2b fable-5 + fable-5-1 / S5,S6 opus-5 / S7 fable-5-1 + fable-5) — no cross-family reviewer available; blind S5 GREEN vs the shipped override after a one-line harness-wiring adaptation; S6 block-equivalent",
-      "residual": "owner spot-check: Bunny Mode as a static selection (Stance default; Engage = one opening hold) — scope; both full-charge riders firing on the Mighty Stomp shot — trigger identity; 'Duration: 1 rounds' = one Stomp and the 1400% on that round only — duration; Stomp magazine handback and SR core/range routing are measurement-gated ⚑",
-      "graded": {
-        "teams": 0,
-        "within3pct": 0
-      }
+      "board": null
     },
     "harran": {
       "name": "Harran",
@@ -7744,6 +7780,13 @@
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-10-02; GO faithfulness 1.0 (binding S7 claude-fable-5-1) / 1.0 (second judge claude-fable-5); same-family only (Claude: S2b fable-5 + fable-5-1 / S5,S6 opus-5 / S7 fable-5-1 + fable-5) — no cross-family reviewer available; blind S5 GREEN vs the shipped override after a one-line harness-wiring adaptation; S6 block-equivalent",
+      "date": "2026-10-02",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "owner spot-check: Bunny Mode as a static selection (Stance default) — scope; 'during Full Charge … for 1 round(s)' on the theme-21 next-round convention (boundary shots shift across the Swift Piercing edge) — duration; Swift Piercing keyed to her own burst cast, not Full Burst entry — trigger identity; swap shot economy and the allEnemies tag on the mode riders are measurement-gated ⚑",
       "unmodeled": {
         "skill1": [
           "■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds. Affects self. Initiates a new Bunny Mode based on the current mode. Activates if this unit is in the Bunny Mode: Stance state. Initiates Bunny Mode: Engage. This effect is continuous and cannot be removed. Activates if this unit is not in the Bunny Mode: Stance state. Initiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
@@ -7763,14 +7806,7 @@
         "skill2 Swift Piercing shot economy: the kit states only the 0.5 sec fixed charge. The engine fires a weapon-swap state without the SR release delay (swap states are exempt from the bolt cycle), so pulls land every 30 frames, and the kit gives the swap no magazine; the engine's real-weapon swap entry refills to her current maximum magazine and hands the base weapon back full at the 5 sec timed end. ⚑ estimate = one full magazine per Swift Piercing window; recipe = count her Swift Piercing shots and any in-window reload in a focus video; tier = MEASUREMENT-GATED."
       ],
       "note": "Sin: Swift Bunny (slug sin-swift-bunny) — SR/Attacker/Water/Missilis, Burst III cd 40s, ammo 6, charge 1s, full charge 250%. VARIANT of the base unit `sin` (AR/Electric) — a different unit and kit. Kit-autonomy gauntlet 2026-10-02. BUNNY MODE is modeled as a user-selectable kit mode: modes ['Stance','Engage'], Stance first because the kit's battle-start line puts a unit that is not in Stance INTO Stance, so a fight opens in Stance and stays there unless the player deliberately holds Full Charge for 1 second (the sim releases at full charge, so it never holds — the rapunzel-pure-grace precedent for the 'Full Charge maintained for 1 or more seconds' clause). Selecting Engage models a player who toggled once at the opening and stayed there; in-fight re-toggling is unmodeled. SKILL1 'Bunny Shift': battleStart self ATK ▲ 15.35% (continuous); 'during Full Charge if not in Swift Piercing' = fullCharge with swapGate 'unswapped' → self Normal Attack Damage Multiplier ▲ 100% (normalAttackPct) and Charge Damage ▲ 52.12%, each durationShots 1 — the repo's per-pull round convention (engine-modeling-gaps theme 21: a per-pull grant's '1 round(s)' is the NEXT round), so in steady fire every base full-charge shot carries both. SKILL2 'Bullet Switch': Noise Bullets (mode Engage) = trueNormalsModes ['Engage'], which makes her normal attacks True-flavored — the base weapon (Effect 1) and the Swift Piercing swap shots (Effect 2; the engine applies the unit's static true-normal flavor to swap shots too, so the swap needs no flag of its own); Enhanced Bullets (mode Stance) = self Critical Rate ▲ 35.14% + Critical Damage ▲ 75.12% (continuous, passive). 'Activates when using Burst Skill' = burstCast (skill2 slot) → self weaponSwap Swift Piercing: damagePct 73.22 ('Damage: 73.22% of final ATK'), chargeTimeSec 0.5 + chargeTimeClamp 0.5 ('Charge Time: Fixed at 0.5 sec'), chargeMultPct 300, durationSec 5 (one block serves both modes). BURST 'Swift Piercing': self ATK ▲ 110% for 5 sec, then all enemies 516.6% of final ATK as Burst Skill damage (burstDesc allEnemies); Stance adds 958.9% as plain additional damage, Engage adds 854.6% as true damage; both read 'Affects the same targets', which inherits the preceding block's 'Affects all enemies' clause (owner ruling 2026-08-10, scripts/census-burst-amp-scope.ts), so both carry burstDesc allEnemies like the 516.6% line.",
-      "board": null,
-      "date": "2026-10-02",
-      "evidence": "kit-autonomy gauntlet 2026-10-02; GO faithfulness 1.0 (binding S7 claude-fable-5-1) / 1.0 (second judge claude-fable-5); same-family only (Claude: S2b fable-5 + fable-5-1 / S5,S6 opus-5 / S7 fable-5-1 + fable-5) — no cross-family reviewer available; blind S5 GREEN vs the shipped override after a one-line harness-wiring adaptation; S6 block-equivalent",
-      "residual": "owner spot-check: Bunny Mode as a static selection (Stance default) — scope; 'during Full Charge … for 1 round(s)' on the theme-21 next-round convention (boundary shots shift across the Swift Piercing edge) — duration; Swift Piercing keyed to her own burst cast, not Full Burst entry — trigger identity; swap shot economy and the allEnemies tag on the mode riders are measurement-gated ⚑",
-      "graded": {
-        "teams": 0,
-        "within3pct": 0
-      }
+      "board": null
     },
     "snow-crane": {
       "name": "Snow Crane",

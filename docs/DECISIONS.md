@@ -6730,3 +6730,28 @@ red-by-design 2026-09-01, "the evidence favours landing"; the call was made 2026
   Infernal-Crack-LED with a Discord notice. CLAUDE.md's protected-paths section records it as the
   standing exception for those edits, with its engine changes bounded to small opt-in primitives
   proven board-inert.
+
+## Belorta: Pumpkin Witch enters the sim; `adjacentAlly` target for "the ally to the right of this unit" (2026-10-09)
+
+- **Roster.** The daily new-unit watch synced Belorta: Pumpkin Witch (`belorta-pumpkin-witch`, aka
+  bpw — RL / Supporter / Water / Tetra, Burst II, cd 40s), a VARIANT of the base unit `belorta`
+  (RL / Electric Attacker) with an unrelated kit.
+- **New engine target `adjacentAlly`** (owner-approved engine edit under the new-unit watch standing
+  exception, 2026-10-02): `{kind:'adjacentAlly', side:'left'|'right'}` resolves to the ONE ally in the
+  neighbouring slot on that side, never the owner. Needed because four of her lines (Skill 1 Full Burst
+  entry ATK, Skill 2 full-charge Sustained Damage, both burst lines) read "Affects the ally to the right
+  of this unit", the first such wording in the roster. `selfAndAdjacent` always includes the owner and
+  both sides, so it over-scopes by three units; no other target is positional. Mirrors
+  `selfAndAdjacent`'s slot-order resolution (units[] leftmost first, so right = slot + 1). Inert by
+  mechanism for every other override; `scripts/regression.ts` passed unchanged before her override
+  landed. Pinned by `scripts/tests/engine/adjacent-ally.test.ts`; code review on `claude-fable-5-1`
+  CLEAN.
+- **Rightmost slot = nobody.** With no ally to her right, the three right-ally lines apply to no one —
+  the literal reading. A wrap-around (or nearest-ally) reading is unverified; it is a ⚑ in her override
+  with a one-recording recipe (her in slot 5, read slot 4/slot 1 buff icons after her burst).
+- **Ghost Costume is modeled as the self-status that gates Ghostly Prank, nothing more.** Its targeting
+  immunity is defensive (no boss targeting in v1) and its "removed upon taking a direct hit" can never
+  fire (no incoming damage), so the status always runs its full 10s — the Ghostly Prank (boss Damage
+  Taken ▲ 10.56%) window is an upper bound, ⚑ in the override. Encoded with the existing `selfStatus` /
+  `requiresSelfStatus` pair rather than an `fbGate:'inFb'` proxy, which is byte-identical only while no
+  Full Burst extender is on the team.

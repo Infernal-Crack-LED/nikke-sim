@@ -24,10 +24,13 @@ export interface NicknameDerivation {
 }
 
 // " (Treasure)" is a favorite-item marker, not part of the unit's name — strip it
-// before name/base comparisons (same normalization as sync.ts), else e.g.
+// before name/base comparisons (sync.ts uses the same helper), else e.g.
 // "Helm (Treasure)" and "Helm: Aquamarine" don't share the base "Helm" and the
-// ambiguous alias "helm" slips through.
-const normName = (n: string) => n.replace(' (Treasure)', '').trim();
+// ambiguous alias "helm" slips through. bakery-bot also names some Treasure rows
+// "<Name> (Favorite Item) (Treasure)" (slugs drake/laplace/sugar, 2026-10-09), so
+// that marker is stripped too.
+export const normName = (n: string) =>
+  n.replace(' (Favorite Item)', '').replace(' (Treasure)', '').trim();
 
 export function deriveNicknames(rows: AliasRow[]): NicknameDerivation {
   const fullNames = new Map<string, string>(); // lowercased full name -> id

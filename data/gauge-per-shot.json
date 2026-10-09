@@ -144,6 +144,12 @@
     "fullChargeBonus": 350,
     "source": "datamined"
   },
+  "belorta-pumpkin-witch": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
   "biscuit": {
     "basePerTrigger": 140,
     "targetPerTrigger": 280,

@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 213 | 44.0% |
-| Missing engine primitive / trigger | 102 | 21.1% |
-| Other / see caveats | 93 | 19.2% |
-| Out-of-domain / parser unsupported | 38 | 7.9% |
+| Defensive / HP / shield / aggro | 214 | 44.0% |
+| Missing engine primitive / trigger | 102 | 21.0% |
+| Other / see caveats | 93 | 19.1% |
+| Out-of-domain / parser unsupported | 39 | 8.0% |
 | Weapon-state / shot-count approximation | 13 | 2.7% |
 | Partless boss | 10 | 2.1% |
 | RNG / probabilistic | 6 | 1.2% |
 | Self-status / stack gate | 5 | 1.0% |
 | Measurement-gated / unverified cadence | 4 | 0.8% |
-| **Total** | **484** | 100.0% |
+| **Total** | **486** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (213)
+### Defensive / HP / shield / aggro (214)
 
 **A2** (a2)
 
@@ -137,6 +137,11 @@ Incoming Healing ▼ 78.93% for 10 sec. — unrepresentable: the self-HP gate ha
 DEF ▼ 3.52% for 5 sec. 
 Deals 14.96% of final ATK as additional damage.
   - *Why:* skill2: the >4-enemies-hit gate is unsatisfiable vs one boss, so the DEF ▼ 3.52% and the 14.96% rider are unmodeled — ⚑ out-of-domain; shipping either ungated would be a ~14.96%-per-shot over-credit
+
+**Belorta: Pumpkin Witch** (belorta-pumpkin-witch)
+
+- **skill1:** This effect is removed upon taking a direct hit. — the v1 sim has no incoming damage, so the removal never fires and the status runs its full 10s (⚑1 in the note).
+  - *Why:* ⚑ LIST: [⚑1] Ghost Costume's 'removed upon taking a direct hit' — the v1 sim has no incoming damage, so the status always runs its full 10s and Ghostly Prank's gate stays open for the whole window
 
 **Biscuit** (biscuit)
 
@@ -1535,7 +1540,7 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 - **burst:** Cooldown: 20 s
   - *Why:* See unit note / caveats
 
-### Out-of-domain / parser unsupported (38)
+### Out-of-domain / parser unsupported (39)
 
 **Anchor** (anchor)
 
@@ -1553,6 +1558,11 @@ ATK ▼ 7.95% for 5 sec. — enemy ATK debuff: the engine models no enemy ATK be
 
 - **burst:** Activates while in Transformation status: Battery ▲ 50%. (never fires in scope-lock — burst CD 40s > Transformation duration 10s; the burst always fires outside Transformation)
   - *Why:* The burst CD is 40s and Transformation lasts 10s, so the 'while in Transformation: Battery ▲50%' burst branch NEVER fires in scope-lock (the burst always fires outside Transformation)
+
+**Belorta: Pumpkin Witch** (belorta-pumpkin-witch)
+
+- **skill1:** Ghost Costume: Prevents being targeted by single-target attacks for 10 sec. — the targeting immunity is defensive: the v1 sim has no boss targeting or incoming damage, so it moves no damage. The status itself IS modeled (selfStatus 'Ghost Costume' 10s) because Skill 2's Ghostly Prank gates on it.
+  - *Why:* SKILL1 'Playful Little Witch' (two ■ headers, both 'Activates when entering Full Burst' = fullBurstEnter, so they fire on EVERY Full Burst, including ones where another Burst II unit cast stage 2): (a) self — Ghost Costume = selfStatus 'Ghost Costume' 10s (the state S2's first line gates on) + Prank Preparation 'Max HP ▲ 15.84% for 10 sec' = targetMaxHpPct 15.84 / 10s (damage-INERT: she has no HP-scaling ATK line; kept as its exact stat); (b) the ally to the right — 'ATK ▲ 44.88% of the skill user's ATK for 10 sec' = casterAtkPct 44.88 / 10s (a flat add of her ATK, uniform for any holder)
 
 **Bready** (bready)
 

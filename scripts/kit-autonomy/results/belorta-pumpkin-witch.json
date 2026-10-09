@@ -1,0 +1,118 @@
+{
+  "slug": "belorta-pumpkin-witch",
+  "kitDescription": "Belorta: Pumpkin Witch is a rocket-launcher Water supporter with a Burst II on a 40-second cooldown whose whole kit buffs exactly one teammate: the ally standing directly to her right. Every time the team enters Full Burst she puts on a Ghost Costume (untargetable by single-target attacks for 10 seconds, lost if she takes a direct hit), gains a small Max HP bonus, and hands the right-hand ally a flat ATK bonus worth 44.88% of her own ATK for 10 seconds. While the costume is on, each full-charge rocket she lands marks the boss so it takes 10.56% more damage from everyone for 10 seconds; costume or not, every full-charge shot also gives the right-hand ally a 5-second Sustained Damage boost. Her own Burst gives that same right-hand ally another 10-second flat ATK bonus (47.52% of her ATK) plus a stronger 10-second Sustained Damage boost. She deals no skill damage of her own; her value is positional and is strongest next to a damage-over-time carry.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "UNMODIFIED run (traced + matches driver's report): 8 RED / 6 green / 4 skipped, ALL from one mechanical defect in the blind file — it sets `opts.onEvent` on CompOptions while runComp reads `cfg.onEvent`, so the event log is empty (OWNER_IDX=-1, fbStarts=0). Not an override divergence.",
+      "ADAPTED (onEvent moved into cfg, no assertion touched): 3 RED / 11 green / 4 skipped — `burst > NON-VACUITY: the owner actually wins Burst Stage 2 in the control fixture` (atkVals.length 1, not 2: in controlComp crown (B2, slot 1, cd 20s) wins every stage-2 cast, she casts zero bursts — a FIXTURE contest the blind writer predicted in its own header).",
+      "ADAPTED: `burst > burst grants ATK 47.52% ... to the right ally for 10 sec` (compares an empty burst-grant set to {helm}; same fixture cause).",
+      "ADAPTED: `burst > burst grants move ONLY the right-hand ally` (removing never-fired burst blocks leaves helm unchanged; same fixture cause).",
+      "The blind file's own FIXTURE PROBE (burstFirst opener) is GREEN and non-vacuous: casts=1, grants=2 (casterAtkPct + sustainedDamagePct) on the cast frame to helm — the burst BLOCKS converge. The S6 blind override is BLOCK-IDENTICAL to the driver's (5/5 blocks: same triggers, gates, targets, stats, values, durations)."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Ghost Costume: ... for 10 sec (status window)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "selfStatus 'Ghost Costume' durationSec 10, trigger fullBurstEnter, target self — exists so skill2's Ghostly Prank gate can read it.",
+        "blindSaid": "S6 identical block; both S2b reviewers: fullBurstEnter (any team FB, not burstCast), selfStatus is the faithful shape vs an fbGate:'inFb' proxy; S5 asserts producer removal silences the debuff (GREEN vs driver).",
+        "formulaCheck": "Mechanics §8/§2b: 'when entering Full Burst' = FB-entry trigger on every team FB. The selfStatus window (600f from entry) stays correct under FB extenders where an inFb proxy would not.",
+        "fireRateOk": true,
+        "explanation": "Opens on every fullBurstStart including crown-cast rotations (driver P1/P4 pins prank frames == every full charge inside [fbStart, fbStart+600f) across all FBs; producer-removal counterfactual → zero prank events)."
+      },
+      {
+        "kitLine": "Prevents being targeted by single-target",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim — v1 sim has no boss targeting/incoming damage.",
+        "blindSaid": "S6 unmodeled verbatim; S5 it.skip; both S2b: defensive payload, unmodeled.",
+        "formulaCheck": "No damage-formula term; out of v1 domain (immortal boss deals no damage).",
+        "fireRateOk": true,
+        "explanation": "Deliberately skipped with the reason recorded; the status window itself IS modeled (row above)."
+      },
+      {
+        "kitLine": "removed upon taking a direct hit",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "⚑1 in note + caveats: status always runs the full 10s — modeled window is the UPPER bound; recipe: FB recording vs a boss area attack, check whether Ghostly Prank stops refreshing.",
+        "blindSaid": "S6 ⚑ (same estimate + recipe); S5 it.skip 'uptime is an UPPER BOUND'; both S2b flag as optimistic vs live play.",
+        "formulaCheck": "No incoming-damage path in v1; the gate therefore passes for the whole window. Over-credits Ghostly Prank uptime only in fights where she is hit — out of scope at scope lock.",
+        "fireRateOk": true,
+        "explanation": "Estimate + recipe + tier recorded; all four independent agents converge on the same disposition."
+      },
+      {
+        "kitLine": "Prank Preparation: Max HP ▲ 15.84%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "targetMaxHpPct 15.84 / 10s, self, fullBurstEnter; damage-inert (no HP→ATK scaler); P2 pins one maxHpFlat self-apply per FB entry and totals byte-identical without it.",
+        "blindSaid": "S6 identical block; both S2b: targetMaxHpPct, inert, keep per taxonomy; S5 GREEN (flat-resolved, same expiresFrame as the ally ATK grant, totals identical when removed).",
+        "formulaCheck": "§1a: own-kit Max HP feeds only an own atkOfMaxHpPct conversion; she has none → no damage term. Correct primitive for 'Max HP ▲ X%' without a caster qualifier.",
+        "fireRateOk": true,
+        "explanation": "Fires on every fullBurstStart (P2 frames == fbStarts, 600f duration, targetIdx == her own index). targetMaxHpPct vs casterMaxHpPct is numerically indistinguishable for a self-grant (S5 GAP note) — not a finding."
+      },
+      {
+        "kitLine": "ATK ▲ 44.88% of the skill user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 44.88 / 10s, target adjacentAlly{right}, fullBurstEnter; new engine target kind adjacentAlly = ownerIdx±1, nobody at the edge.",
+        "blindSaid": "S6 identical block; both S2b: fullBurstEnter (NOT burstCast — the trigger-split divergence), casterAtkPct flat add, exactly slot idx+1; S5 GREEN (count == fbStarts, set == {helm}, value > 100 and ≠ 44.88, burstCast rekey ≤ count, allies patch widens to include owner).",
+        "formulaCheck": "§1a: 'ATK ▲ X% of caster's ATK' → flat add of caster ATK × X, non-diluting; different slot key from the burst 47.52 so both stack (§11 different-scope rule).",
+        "fireRateOk": true,
+        "explanation": "P3: fires on EVERY FB including the crown-cast ones (fbWithoutHerCast ≥ 1 in the driver fixture), targetIdx == [RIGHT] only, value ≈ 0.4488 × staticAtk, 600f. Counterfactuals (burstCast rekey, allies scope) diverge; scarlet rises with it while helm is byte-identical."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Ghostly Prank: Damage Taken ▲ 10.56% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullCharge + requiresSelfStatus 'Ghost Costume', target enemy, damageTakenPct 10.56 / 10s (same-caster-slot refresh). ⚑3: 'landing' credited on the full-charge pull frame (engine convention).",
+        "blindSaid": "S6 identical block (+ 'landing vs performing' ⚑ with a delaySec recipe); both S2b: boss debuff, gated, nearest-wrong = ungated (~100% uptime); S5 GREEN (gate active AND inactive cases, status removal → 0, gate removal → count == ungated sustained count, team-wide totals drop).",
+        "formulaCheck": "§1g Taken bucket: boss-side Damage Taken ▲ multiplies every unit's damage. Gauge side is moot: every gated application lands inside the FB window where generation is locked (§6), so the applicationGauge question never arises for this line.",
+        "fireRateOk": true,
+        "explanation": "P1/P4: prank frames == EVERY full-charge frame inside [fbStart, fbStart+600f) and none outside; targetIdx null, value 10.56, 600f. Gate-drop counterfactual produces out-of-window applies and lifts scarlet; removing the line lowers helm (team-wide, not self). Uptime extends up to ~10s past FB end from the last in-window charge — kit-faithful."
+      },
+      {
+        "kitLine": "Sustained Damage ▲ 19.97% for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Separate ■ header, NO costume gate: fullCharge → adjacentAlly{right} sustainedDamagePct 19.97 / 5s on every pull; note records it reaches only sustained-flavored damage of the holder.",
+        "blindSaid": "S6 identical block; both S2b: ungated, flavor-scoped, 300f, nearest-wrong = gate contamination / attackDamagePct / 10s; S5 GREEN (count > 2×FBs, fires on pulls the debuff does not, fullBurstEnter rekey collapses to fbStarts, 300f window via the co-applied 10s probe).",
+        "formulaCheck": "§1e: Sustained Damage ▲ is an additive DamageUp member read only by sustained-flavored instances; inert on scarlet/helm (no DoT) by design, not by error. Duration 5s ≈ 300f > her 141f reload, so uptime is near-continuous — faithful.",
+        "fireRateOk": true,
+        "explanation": "P5: sus frames == ALL charged frames (count equal), targetIdx RIGHT, value 19.97, 300f, some applies outside FB windows (gate not inherited). Self-target counterfactual changes the holder. Residual: no positive consumer test (no sustained-flavor carry in the fixture) — the routing is a pre-existing engine primitive shared by other carriers, so this is a spot-check, not a gotcha."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "ATK ▲ 47.52% of the skill user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast (her OWN cast frame, 22f before FB opens) → adjacentAlly{right} casterAtkPct 47.52 / 10s.",
+        "blindSaid": "S6 identical block (+ declared burstCast rationale); both S2b: burstCast ≠ fullBurstEnter is THE divergence to pin, fires only on rotations she casts (cd 40s); S5 burst group RED only because controlComp seats crown ahead of her (casts=0) — its burstFirst probe is GREEN with both grants on the cast frame to the right ally.",
+        "formulaCheck": "§8: a burst-slot block with no activation clause resolves at the cast; buffs it grants carry into the window by duration (expire ~22f before FB end). §1a flat caster-ATK add; stacks with the skill1 44.88 (different slot key).",
+        "fireRateOk": true,
+        "explanation": "Driver fixture seats her AHEAD of crown so she casts ≥2 bursts while ≥1 FB happens without her: P6 pins atk frames == her cast frames (1:1), targetIdx RIGHT, value ≈ 0.4752 × staticAtk, 600f; fullBurstEnter rekey fires on the crown-cast FBs (RED under counterfactual). Blind S5's RED here is a fixture-contest artefact, not a divergence."
+      },
+      {
+        "kitLine": "Sustained Damage ▲ 27.23% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Same burstCast block → adjacentAlly{right} sustainedDamagePct 27.23 / 10s, distinct key from the skill2 19.97.",
+        "blindSaid": "S6 identical; both S2b: burstCast, additive with 19.97 during overlap (47.20 pts), not merged; S5 (adapted probe) GREEN: sus count == atk count on the cast frame, value 27.23.",
+        "formulaCheck": "§1e additive flavor-gated DamageUp; §11 different-slot keys co-stack.",
+        "fireRateOk": true,
+        "explanation": "P6: sus frames == her cast frames, count == casts, value 27.23, 600f, RIGHT only; the 19.97 line keeps firing on non-burst pulls (P5), proving the two were not folded."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA survives: all seven modeled lines are FAITHFUL (trigger identity, target set, gate, stat bucket, duration all agree with the prose and the formula SSOT) and the two defensive clauses are DOCUMENTED_GAPs with estimate + recipe + tier. The blind re-derivations converged mechanically: the S6 blind override is block-for-block identical to the shipped one, and my own trace of the S5 blind file against the shipped override reproduces the driver's self-report exactly (unmodified 8 RED, all from the blind file's `opts.onEvent` wiring defect; adapted 3 RED, all in the burst group because controlComp seats crown (B2, cd 20s) ahead of her so she never casts there — the blind writer's own burstFirst probe is GREEN and non-vacuous). The driver's fixture fixes that contest (she sits ahead of crown, casts ≥2, ≥1 FB without her cast) so the burstCast-vs-fullBurstEnter split, the ungated-vs-gated skill2 headers, the single right-slot target, and the rightmost-slot edge are each pinned against a named nearest-wrong counterfactual that fails. The new `adjacentAlly` engine target kind is minimal (ownerIdx±1, nobody at the edge) and board-inert. Nothing must change for GO. Same-model residuals for the owner to spot-check: (1) no positive consumer test for sustainedDamagePct — the fixture's right ally has no sustained-flavor damage, so the routing into the DamageUp bucket is trusted from the shared engine primitive, not demonstrated here (recipe: patch scarlet with a flavor:'sustained' rider and confirm the multiplier rises by 19.97/27.23 pts); (2) casterAtkPct resolves against her STATIC ATK in the event value, which all agents assumed and the test pins — if the game's 'of the skill user's ATK' ever proves to include in-battle buffs, that is an engine-wide convention change, not this unit's; (3) ⚑1 remains the only live-play optimism (Ghost Costume never breaks early in v1).",
+  "model": "claude-fable-5-1"
+}

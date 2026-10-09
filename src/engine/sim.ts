@@ -2350,6 +2350,11 @@ export function runSim(
           .slice(0, t.count ?? 1); // units[] is slot order: leftmost first
       case 'selfAndAdjacent':
         return units.filter((u) => Math.abs(u.idx - ownerIdx) <= t.sides);
+      case 'adjacentAlly': {
+        // the single neighbouring slot on that side; none at the team's edge
+        const want = ownerIdx + (t.side === 'right' ? 1 : -1);
+        return units.filter((u) => u.idx === want);
+      }
       case 'alliesLowestHp':
         // No HP pool in v1 (immortal boss, nobody takes damage) → "lowest remaining HP" is
         // indeterminate; resolved deterministically to the leftmost `count` allies as a documented
