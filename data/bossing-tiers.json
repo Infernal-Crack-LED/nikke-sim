@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-02",
+  "updated": "2026-10-09",
   "source": "bakery-bot DB nikke_characters.prydwen_tiers.bossing",
   "tiers": {
     "2b": "B",
@@ -26,6 +26,7 @@
     "avistar": "C",
     "bay": "D",
     "belorta": "F",
+    "belorta-pumpkin-witch": "?",
     "biscuit": "C",
     "blanc": "A",
     "bready": "A",

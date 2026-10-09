@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-10-02T16:13:58.518Z",
+  "syncedAt": "2026-10-09T13:00:14.481Z",
   "source": "bakery-bot DB nikke_characters.sheet_data (community Tsareena build sheet)",
   "units": {
     "a2": {
@@ -427,6 +427,23 @@
         "notes": null
       }
     },
+    "drake-great-villain": {
+      "priority": "PvE Low Priority",
+      "annotations": [],
+      "build": {
+        "skillLevels": "10/10/10",
+        "cube": "Vigor · Destruction",
+        "overloadMinimum": "2x Element · 2x Attack",
+        "overloadIdeal": "4x Element · 4x Crit Damage · 4x Attack or 4x Crit Chance",
+        "overloadGear": "Yes",
+        "overloadLevelFive": "Yes",
+        "levelDoll": "Yes",
+        "endgameUses": "Solo Raid · Missilis Tower",
+        "burstGen": "Auto: Low Manual: Low",
+        "pairWith": null,
+        "notes": null
+      }
+    },
     "ein": {
       "priority": "Low Priority",
       "annotations": [],
@@ -563,6 +580,23 @@
         "notes": "It is ideal to manual use her and never let her reload any more than 15 shots"
       }
     },
+    "guilty-mighty-bunny": {
+      "priority": "PvE Low Priority",
+      "annotations": [],
+      "build": {
+        "skillLevels": "7+/10/10",
+        "cube": "Resilience · Bastion · Destruction",
+        "overloadMinimum": "2x Element · 2x Attack",
+        "overloadIdeal": "4x Element · 4x Attack · 1x Ammo · 3x Crit Damage",
+        "overloadGear": "Yes",
+        "overloadLevelFive": "Yes",
+        "levelDoll": "Yes",
+        "endgameUses": "Solo Raid · Missilis Tower",
+        "burstGen": "Auto: Medium Manual: High",
+        "pairWith": null,
+        "notes": null
+      }
+    },
     "helm": {
       "priority": "High Support Priority",
       "annotations": [],
@@ -607,7 +641,7 @@
         "overloadIdeal": "4x Element · 4x Attack · 4x Ammo",
         "overloadGear": "Yes",
         "overloadLevelFive": "Yes",
-        "levelDoll": "No",
+        "levelDoll": "Yes",
         "endgameUses": "Solo Raid · Union Raid",
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": "Arcana",
@@ -818,23 +852,6 @@
         "notes": "Does not scale well with atk or atk damage buffs. Prefers to be in crit damage comps"
       }
     },
-    "mari": {
-      "priority": "PvE Low Priority",
-      "annotations": ["C"],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Resilience · Bastion · Wingman",
-        "overloadMinimum": "2x Ammo",
-        "overloadIdeal": "4x Element · 4x Attack · 4x Ammo",
-        "overloadGear": "Yes (Low Prio)",
-        "overloadLevelFive": "No",
-        "levelDoll": "No",
-        "endgameUses": "Solo Raid",
-        "burstGen": "Auto: Low Manual: High",
-        "pairWith": null,
-        "notes": null
-      }
-    },
     "mast-romantic-maid": {
       "priority": "High Support Priority",
       "annotations": [],
@@ -884,23 +901,6 @@
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": null,
         "notes": "Can be used as a non burst damage dealer in element neutral situations"
-      }
-    },
-    "milk-blooming-bunny": {
-      "priority": "PvE Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Resilience · Bastion",
-        "overloadMinimum": "2x Ammo · 2x Element",
-        "overloadIdeal": "4x Element · 4x Attack · 4x Ammo",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Union raid · Tetra Tower",
-        "burstGen": "Auto: Low Manual: Medium",
-        "pairWith": null,
-        "notes": "Manual charge her till force reload after every time she bursts"
       }
     },
     "mint": {
@@ -1328,20 +1328,20 @@
         "notes": "Increasing her charge speed helps her damage"
       }
     },
-    "snow-white": {
+    "sin-swift-bunny": {
       "priority": "PvE Low Priority",
       "annotations": [],
       "build": {
-        "skillLevels": "4+/7+/10",
-        "cube": "Destruction · Resilience · Bastion",
+        "skillLevels": "10/10/7+",
+        "cube": "Resilience · Bastion · Destruction",
         "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 4x Crit Damage",
+        "overloadIdeal": "4x Element · 4x Attack · 1x Ammo · 3x Crit Damage",
         "overloadGear": "Yes",
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Union Raid",
-        "burstGen": "Auto: Low Manual: Low",
-        "pairWith": "Miranda or Zwei",
+        "endgameUses": "Solo Raid · Missilis Tower",
+        "burstGen": "Auto: Low Manual: Medium",
+        "pairWith": null,
         "notes": null
       }
     },
@@ -1493,23 +1493,6 @@
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes",
         "endgameUses": "Story · PvP",
-        "burstGen": "N/A",
-        "pairWith": null,
-        "notes": null
-      }
-    },
-    "viper": {
-      "priority": "PvP Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/4/10",
-        "cube": "Bastion · Resilience · Quantum",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 1x Hit Rate · 3x Ammo",
-        "overloadGear": "Yes (Low Prio)",
-        "overloadLevelFive": "Yes (Low Prio)",
-        "levelDoll": "Yes (Low Prio)",
-        "endgameUses": "PvP",
         "burstGen": "N/A",
         "pairWith": null,
         "notes": null

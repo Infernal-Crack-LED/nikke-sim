@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-10-02T16:13:58.046Z",
+  "syncedAt": "2026-10-09T13:00:14.003Z",
   "characters": {
     "2b": {
       "slug": "2b",
@@ -11721,6 +11721,491 @@
         "maxLevel": 1200,
         "critDamage": 150,
         "resourceId": 60
+      }
+    },
+    "belorta-pumpkin-witch": {
+      "slug": "belorta-pumpkin-witch",
+      "name": "Belorta: Pumpkin Witch",
+      "imageUrl": "https://sg-tools-cdn.blablalink.com/ib-14/eo-55/fbd4c5b6568bd5142c27de766acd120b.png",
+      "weapon": "RL",
+      "burst": "II",
+      "burstCooldownSec": 40,
+      "class": "Supporter",
+      "element": "Water",
+      "manufacturer": "Tetra",
+      "normalAttackMultiplier": 61.3,
+      "coreAttackMultiplier": 200,
+      "ammo": 6,
+      "reloadFrames": 141,
+      "chargeFrames": 60,
+      "chargeMultiplier": 250,
+      "hitsPerShot": 1,
+      "rl3": 16.8,
+      "releaseDate": "2026-10-08",
+      "burstGaugePerShot": 1.4,
+      "treasure": false,
+      "nicknames": ["bpw"],
+      "skills": {
+        "skill1": "■ Activates when entering Full Burst. Affects self.\nGhost Costume: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.\nPrank Preparation: Max HP ▲ 15.84% for 10 sec.\n■ Activates when entering Full Burst. Affects the ally to the right of this unit.\nATK ▲ 44.88% of the skill user's ATK for 10 sec.",
+        "skill2": "■ Activates when landing a Full Charge attack while in the Ghost Costume state. Affects the target.\nGhostly Prank: Damage Taken ▲ 10.56% for 10 sec.\n■ Activates when performing a Full Charge attack. Affects the ally to the right  of this unit.\nSustained Damage ▲ 19.97% for 5 sec.",
+        "burst": "■ Affects the ally to the right of this unit.\n ATK ▲ 47.52% of the skill user's ATK for 10 sec.\nSustained Damage ▲ 27.23% for 10 sec."
+      },
+      "role": {
+        "weapon": {
+          "shot_id": 1006301,
+          "shot_detail": {
+            "id": 1006301,
+            "damage": 6130,
+            "max_ammo": 6,
+            "shake_id": 2,
+            "ShakeType": "Fire_RL",
+            "fire_type": "HomingProjectile",
+            "zoom_rate": 0,
+            "input_type": "UP",
+            "shot_count": 1,
+            "ShakeWeight": 120,
+            "attack_type": "Metal",
+            "camera_work": "camera_work_01",
+            "charge_time": 100,
+            "penetration": 0,
+            "reload_time": 200,
+            "shot_timing": "Concurrence",
+            "spot_radius": 50,
+            "weapon_type": "RL",
+            "is_targeting": false,
+            "muzzle_count": 1,
+            "rate_of_fire": 60,
+            "homing_script": "lv1",
+            "name_localkey": "Rocket Launcher",
+            "prefer_target": "TargetGL",
+            "reload_bullet": 10000,
+            "counter_enermy": "Metal_Type",
+            "multi_aim_range": 0,
+            "spot_last_delay": 20,
+            "core_damage_rate": 20000,
+            "end_rate_of_fire": 60,
+            "spot_first_delay": 20,
+            "center_shot_count": 0,
+            "reload_start_ammo": 5,
+            "full_charge_damage": 25000,
+            "multi_target_count": 0,
+            "spot_radius_object": 2,
+            "uptype_fire_timing": 0,
+            "burst_energy_pershot": 14000,
+            "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+            "maintain_fire_stance": 0,
+            "spot_explosion_range": 500,
+            "use_function_id_list": [0],
+            "accuracy_change_speed": 0,
+            "hurt_function_id_list": [0],
+            "spot_projectile_speed": 100,
+            "accuracy_change_pershot": 0,
+            "prefer_target_condition": "None",
+            "rate_of_fire_reset_time": 0,
+            "full_charge_burst_energy": 25000,
+            "end_accuracy_circle_scale": 10,
+            "auto_accuracy_change_speed": 0,
+            "rate_of_fire_change_pershot": 0,
+            "start_accuracy_circle_scale": 10,
+            "target_burst_energy_pershot": 28000,
+            "auto_accuracy_change_pershot": 0,
+            "auto_end_accuracy_circle_scale": 10,
+            "auto_start_accuracy_circle_scale": 10
+          },
+          "bonusrange_max": 0,
+          "bonusrange_min": 0
+        },
+        "burstMeta": {
+          "burst_duration": 1000,
+          "use_burst_skill": "Step2",
+          "burst_apply_delay": 1,
+          "change_burst_step": "Step3"
+        },
+        "skillDetails": {
+          "skill1_id": 2063101,
+          "skill2_id": 2063201,
+          "skill1_table": "StateEffect",
+          "skill2_table": "StateEffect",
+          "skill1_detail": {
+            "id": 2063101,
+            "icon": "icn_skill_atkup_01",
+            "group_id": 20631,
+            "skill_level": 1,
+            "name_localkey": "Playful Little Witch",
+            "next_level_id": 2063102,
+            "level_up_cost_id": 20102,
+            "description_localkey": "■ Activates when entering Full Burst. Affects self.\n<color=#00AEFF>Ghost Costume: <word_group=10004>Prevents being targeted by single-target attacks</word_group> for {description_value_01} sec. This effect is removed upon taking a direct hit.\nPrank Preparation: Max HP ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ Activates when entering Full Burst. Affects the ally <word_group=10109>to the right</word_group> of this unit.\n<color=#00AEFF>ATK ▲ {description_value_04}% of the skill user's ATK for {description_value_05} sec.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "9.36",
+                  "10.08",
+                  "10.8",
+                  "11.52",
+                  "12.24",
+                  "12.96",
+                  "13.68",
+                  "14.4",
+                  "15.12",
+                  "15.84"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "26.52",
+                  "28.56",
+                  "30.6",
+                  "32.64",
+                  "34.68",
+                  "36.72",
+                  "38.76",
+                  "40.8",
+                  "42.84",
+                  "44.88"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 1"
+          },
+          "skill2_detail": {
+            "id": 2063201,
+            "icon": "icn_skill_damagereductionup_01",
+            "group_id": 20632,
+            "skill_level": 1,
+            "name_localkey": "Trick or Treat!",
+            "next_level_id": 2063202,
+            "level_up_cost_id": 20202,
+            "description_localkey": "■ Activates when landing a Full Charge attack while in the Ghost Costume state. Affects the target.\n<color=#00AEFF>Ghostly Prank: Damage Taken ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when performing a Full Charge attack. Affects the ally <word_group=10109>to the right </word_group> of this unit.\n<color=#00AEFF>Sustained Damage ▲ {description_value_03}% for {description_value_04} sec.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "6.24",
+                  "6.72",
+                  "7.2",
+                  "7.68",
+                  "8.16",
+                  "8.64",
+                  "9.12",
+                  "9.6",
+                  "10.08",
+                  "10.56"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "11.8",
+                  "12.71",
+                  "13.62",
+                  "14.52",
+                  "15.43",
+                  "16.34",
+                  "17.25",
+                  "18.16",
+                  "19.06",
+                  "19.97"
+                ]
+              },
+              {
+                "description_value": [
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5",
+                  "5"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 2"
+          },
+          "ulti_skill_id": 1063301,
+          "ulti_skill_detail": {
+            "id": 1063301,
+            "icon": "icn_skill_c063_ult",
+            "group_id": 10633,
+            "shake_id": 1,
+            "skill_type": "SetBuff",
+            "attack_type": "Water",
+            "skill_level": 1,
+            "counter_type": "Metal_Type",
+            "duration_type": "None",
+            "name_localkey": "Happy Halloween!",
+            "next_level_id": 1063302,
+            "prefer_target": "Random",
+            "resource_name": "c063_ulti",
+            "duration_value": 0,
+            "skill_cooltime": 4000,
+            "level_up_cost_id": 20302,
+            "skill_value_data": [
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 5,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 10000,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              }
+            ],
+            "skill_cooltime_list": [
+              4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
+            ],
+            "description_localkey": "■ Affects the ally <word_group=10109>to the right</word_group> of this unit.\n<color=#00AEFF> ATK ▲ {description_value_01}% of the skill user's ATK for {description_value_02} sec.\nSustained Damage ▲ {description_value_03}% for {description_value_04} sec.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "28.08",
+                  "30.24",
+                  "32.4",
+                  "34.56",
+                  "36.72",
+                  "38.88",
+                  "41.04",
+                  "43.2",
+                  "45.36",
+                  "47.52"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "16.09",
+                  "17.32",
+                  "18.56",
+                  "19.8",
+                  "21.04",
+                  "22.28",
+                  "23.51",
+                  "24.75",
+                  "25.99",
+                  "27.23"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "prefer_target_condition": "None",
+            "info_description_localkey": "Burst Skill",
+            "after_use_function_id_list": [
+              106330101, 106330102, 106330103, 106330104
+            ],
+            "after_hurt_function_id_list": [0],
+            "before_use_function_id_list": [0],
+            "before_hurt_function_id_list": [0]
+          }
+        },
+        "statScaling": {
+          "grow_grade": 306302,
+          "grade_core_id": 1,
+          "stat_enhance_id": 5305,
+          "stat_enhance_detail": {
+            "id": 5305,
+            "core_hp": 200,
+            "grade_hp": 3000,
+            "core_attack": 200,
+            "grade_ratio": 200,
+            "core_defence": 200,
+            "grade_attack": 20,
+            "grade_defence": 100,
+            "core_bio_resist": 0,
+            "grade_bio_resist": 0,
+            "core_metal_resist": 0,
+            "core_energy_resist": 0,
+            "grade_metal_resist": 0,
+            "grade_energy_resist": 0
+          }
+        },
+        "element": {
+          "element_id": [200001],
+          "element_details": [
+            {
+              "id": 200001,
+              "element": "Water",
+              "group_id": 5000002,
+              "element_icon": "icn_element_water",
+              "weak_element_id": 400001,
+              "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+              "element_name_localekey": "Water",
+              "element_code_name_localekey": "Code: P.S.I.D."
+            }
+          ]
+        },
+        "piece": {
+          "piece_id": 5100063,
+          "piece_detail": {
+            "id": 5100063,
+            "class": "Attacker",
+            "order": 6300,
+            "use_id": 0,
+            "use_type": "None",
+            "item_rare": "SSR",
+            "item_type": "Piece",
+            "stack_max": 9999999,
+            "use_value": 0,
+            "corporation": "TETRA",
+            "resource_id": 63,
+            "item_sub_type": "CharacterPiece",
+            "name_localkey": "Belorta: Pumpkin Witch's Spare Body",
+            "use_limit_count": false,
+            "inventory_filter": ["etc"],
+            "description_localkey": "Used for a Nikke's Limit Break.\nSpare Bodies for a fully enhanced Nikke will be converted into Body Labels."
+          }
+        },
+        "meta": {
+          "id": 306301,
+          "class": "Supporter",
+          "order": 10143,
+          "name_code": 5184,
+          "corporation": "TETRA",
+          "resource_id": 63,
+          "name_localkey": "Belorta: Pumpkin Witch",
+          "original_rare": "SSR",
+          "critical_ratio": 1500,
+          "category_type_1": "None",
+          "category_type_2": "None",
+          "category_type_3": "None",
+          "critical_damage": 15000,
+          "eff_category_type": "Walk",
+          "eff_category_value": 0
+        }
+      },
+      "generatorSupported": false,
+      "simSupported": false,
+      "baseStats": {
+        "hp": 15000,
+        "atk": 500,
+        "def": 98,
+        "core": {
+          "hp": 200,
+          "atk": 200,
+          "def": 200
+        },
+        "grade": {
+          "hp": 3000,
+          "atk": 20,
+          "def": 100,
+          "ratio": 200
+        },
+        "critRate": 15,
+        "maxLevel": 1400,
+        "critDamage": 150,
+        "resourceId": 63
       }
     },
     "biscuit": {
@@ -24138,7 +24623,7 @@
     },
     "drake": {
       "slug": "drake",
-      "name": "Drake (Treasure)",
+      "name": "Drake (Favorite Item) (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/hh-89/qf-36/b733ab6690f46366f9d661f66f2e3a38.png",
       "weapon": "SG",
       "burst": "III",
@@ -24157,6 +24642,7 @@
       "releaseDate": "2025-01-16",
       "burstGaugePerShot": 4.5,
       "treasure": true,
+      "nicknames": ["drake"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects all allies.\nHit Rate ▲ 20.09% for 10 sec.\nATK ▲ 11.85% for 10 sec.\n■ Activates when entering Full Burst. Affects all allies with a Shotgun.\nATK ▲ 63.88% for 10 sec.\nMax Ammunition Capacity ▲ 50.14% for 10 sec.",
         "skill2": "■ Activates after 10 normal attack(s). Affects 3 enemy unit(s) with the lowest remaining HP.\nDeals 98.55% of final ATK as damage.\n■ Activates after 5 normal attack(s). Affects 1 enemy unit(s) with the lowest remaining HP.\nDeals 201.6% of final ATK as damage.",
@@ -24560,7 +25046,7 @@
           "eff_category_value": 0
         }
       },
-      "generatorSupported": true,
+      "generatorSupported": false,
       "simSupported": true,
       "baseStats": {
         "hp": 13500,
@@ -24604,7 +25090,7 @@
       "releaseDate": "2026-09-03",
       "burstGaugePerShot": 2,
       "treasure": false,
-      "nicknames": ["dgv"],
+      "nicknames": ["dgv", "drakegv", "vdrake"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects self.\nChanges the weapon in use: Super Duper Overdrive\nCharge Time: Fixed at 1.5 sec\nDamage: 243.75% of final ATK\nPellet Count: 15\nFull Charge Damage: 300%\nMax Ammunition Capacity: 6\n■ Activates when Super Duper Overdrive ends. Affects self.\nRemoves 100% of ammo.",
         "skill2": "■ Activates when Full Burst ends. Affects all allies.\nMax HP ▲ 10.5% of the skill user's max HP (without restoring HP) continuously. Stacks up to 4 times.\n■ Activates at the start of battle. Affects self.\nFashionably Late: ATK ▲ 6.23% of the skill user's final max HP continuously.",
@@ -34701,7 +35187,7 @@
       "releaseDate": "2026-09-17",
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["gmb"],
+      "nicknames": ["gmb", "bguilty"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nATK ▲ 20.1%. This effect is continuous.\n■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds while this unit is not in the Mighty Stomp state. Affects self.\nInitiates a new Bunny Mode based on the current mode.\nActivates if this unit is in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\nActivates if this unit is not in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. \nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
         "skill2": "■ Activates only if this unit is in the Bunny Mode: Engage state.\nChain Release\nFunction: Changes some attacks' damage into true damage.\nEffect 1: Affects self. Normal attacks deal true damage. This effect is continuous and cannot be removed.\nEffect 2: Affects self. Mighty Stomp deals true damage. This effect is continuous and cannot be removed.\nEffect 3: Activates when landing a Full Charge attack. Affects the target. Deals 370.08% of final ATK as true damage.\n■ Activates only when this unit is in the Bunny Mode: Stance state.\nChain Enhance\nFunction: Enhances this unit's offensive capabilities.\nEffect 1: Affects self. Attack Damage ▲ 20.45%. This effect is continuous and cannot be removed.\nEffect 2: Affects self. Charge Damage ▲ 40%. This effect is continuous and cannot be removed.\nEffect 3: Activates when landing a Full Charge attack. Affects the target. Deals 450.89% of final ATK as additional damage.",
@@ -41974,7 +42460,7 @@
     },
     "laplace": {
       "slug": "laplace",
-      "name": "Laplace (Treasure)",
+      "name": "Laplace (Favorite Item) (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/ez-78/su-56/c79fb8dc9be0331b2e1cffd309ac928f.png",
       "weapon": "RL",
       "burst": "III",
@@ -41993,7 +42479,7 @@
       "releaseDate": "2024-05-30",
       "burstGaugePerShot": 1.45,
       "treasure": true,
-      "nicknames": ["tlaplace"],
+      "nicknames": ["tlaplace", "laplace"],
       "skills": {
         "skill1": "■ Activates when attacking with Full Charge. Affects self.\nHero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 15 sec.",
         "skill2": "■ Activates when hitting a target with Full Charge. Affects the target.\nDeals 132.45% of final ATK as additional damage. \n■ Activates when hitting the target's Parts. Affects the target's body.\nDeals 14.78% of final ATK as additional damage.",
@@ -42380,7 +42866,7 @@
           "eff_category_value": 0
         }
       },
-      "generatorSupported": true,
+      "generatorSupported": false,
       "simSupported": true,
       "baseStats": {
         "hp": 13500,
@@ -55274,7 +55760,7 @@
       "releaseDate": "2025-09-11",
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["mbb", "bmilk"],
+      "nicknames": ["mbb"],
       "skills": {
         "skill1": "■ Activates when performing a Full Charge attack. Affects self.\nGain Pierce for 6 sec.\n■ Activates when not in the Embarrassment state and when Full Charge lasts for 0.5 sec or more. Affects self.\nEmbarrassment\nFunction: Forcefully reloads at reduced reload speed, but increases attack capabilities and deals Distributed Damage.\nEffect 1: Affects all enemies. Deals 290% of final ATK as Distributed Damage.\nEffect 2: Affects self. Removes 100% of ammo.\nEffect 3: Affects self. Reload speed is fixed at a 50% reduction for 1 reload(s).\nEffect 4: Affects self. Forced Reload.\nEffect 5: Affects self. ATK ▲ 118.7% for 40 sec.",
         "skill2": "■ Activates only when in Embarrassment status. Affects self.\nPierce Damage ▲ 64.7% continuously.\n■ Activates only when in Overconfident, Huh?! status. Affects all enemies every 2 sec. \nDeals 447.7% of final ATK as Distributed Damage.",
@@ -84458,7 +84944,7 @@
       "releaseDate": "2026-09-24",
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["ssb"],
+      "nicknames": ["ssb", "bsin"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nATK ▲ 15.35%. This effect is continuous.\n■ Activates during Full Charge if this unit is not in the Swift Piercing state. Affects self.\nNormal Attack Damage Multiplier ▲ 100% for 1 round(s).\nCharge Damage ▲ 52.12% for 1 round(s).\n■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds. Affects self.\nInitiates a new Bunny Mode based on the current mode.\nActivates if this unit is in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\nActivates if this unit is not in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. \nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
         "skill2": "■ Activates only if this unit is in the Bunny Mode: Engage state.\nNoise Bullets\nFunction: Changes some attacks' damage into true damage.\nEffect 1: Normal attacks deal true damage. This effect is continuous and cannot be removed.\nEffect 2: Swift Piercing deals true damage. This effect is continuous and cannot be removed.\n■ Activates only if this unit is in the Bunny Mode: Stance state.\nEnhanced Bullets\nFunction: Enhances this unit's offensive capabilities.\nEffect 1: Critical Rate ▲ 35.14%. This effect is continuous and cannot be removed.\nEffect 2: Critical Damage ▲ 75.12%. This effect is continuous and cannot be removed.\n■ Activates when using Burst Skill. Affects self.\nSwift Piercing: Changes the weapon in use\nCharge Time: Fixed at 0.5 sec\nDamage: 73.22% of final ATK\nFull Charge Damage: 300%\nDuration: 5 sec",
@@ -90489,7 +90975,7 @@
     },
     "sugar": {
       "slug": "sugar",
-      "name": "Sugar (Treasure)",
+      "name": "Sugar (Favorite Item) (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/dw-50/ep-89/2d46168e088d0f8fa53fd98f58d22011.png",
       "weapon": "SG",
       "burst": "III",
@@ -90508,7 +90994,7 @@
       "releaseDate": "2026-07-23",
       "burstGaugePerShot": 4.5,
       "treasure": true,
-      "nicknames": ["tsugar"],
+      "nicknames": ["sugar", "tsugar"],
       "skills": {
         "skill1": "■ Activates when cover is attacked. Affects self.\nCritical Damage ▲ 16.39% for 10 sec.\nReload Speed ▲ 12.12% for 10 sec.\nRestores Cover HP an amount equal to 1.5% of the skill user's final Max HP.\n■ Activates if this unit's cover is still intact. Affects self.\nAttack Damage ▲ 19.98% continuously.\n■ Activates at the start of battle. Affects self.\nConverts damage to Elemental Advantage damage against Fire Code enemies. This effect is continuous and cannot be removed.",
         "skill2": "■ Activates when entering Full Burst. Affects self.\nCritical Rate ▲ 13.02% for 10 sec.\nATK ▲ 25.01% for 10 sec.\n■ Activates when entering Full Burst. Affects all allies with shotguns.\nMax Ammunition Capacity ▲ 83.8% for 15 sec.\n■ Activates when entering Full Burst. Affects all Water Code and Iron Code allies with shotguns.\nElemental Advantage Attack Damage ▲ 40.02% for 15 sec.",
