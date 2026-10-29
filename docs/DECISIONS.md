@@ -6755,3 +6755,25 @@ red-by-design 2026-09-01, "the evidence favours landing"; the call was made 2026
   Taken ▲ 10.56%) window is an upper bound, ⚑ in the override. Encoded with the existing `selfStatus` /
   `requiresSelfStatus` pair rather than an `fbGate:'inFb'` proxy, which is byte-identical only while no
   Full Burst extender is on the team.
+
+## Marian: Queen enters the sim — no engine change; three encoding choices (2026-10-29)
+
+- **Roster.** The daily new-unit watch synced Marian: Queen (`marian-queen` — MG / Attacker / Fire /
+  Pilgrim, Burst III, cd 40s; no base `marian` in the roster). Kit-autonomy gauntlet GO 1.0 / 1.0
+  (same-family Claude reviewers). Every line except MG Ramp-Up Speed maps onto existing primitives.
+- **"While NOT in the Penetrant Wish state" = `ownBurstGate: 'notCast'`.** There is no negated
+  `requiresSelfStatus`. Penetrant Wish opens only on her own burst cast (22 frames before that rotation's
+  Full Burst) and lasts 10s against a 40s cooldown, so at Full Burst entry she is in the state exactly when
+  she cast in that rotation. The IN branch keeps the literal `requiresSelfStatus: 'Penetrant Wish'`. The
+  two differ only on a chain that stalls more than 10s between her cast and Full Burst entry, which the
+  scope-lock rotation never produces (second judge's note; pinned complementary on the fixture).
+- **The 2-normal-attack count belongs to Penetrant Wish (`countScope: 'gated'`).** The line is Effect 1 of
+  the state, so only rounds fired while in it count. Both S2b reviewers and the S6 writer read it this way
+  independently; the driver's first override had the ungated default and was changed before landing.
+- **"Core strike damage" stays core-eligible at the weapon's core rate** (`flatDamage core:true`, the
+  `cinderella-crystal-wave` precedent and docs/modeling-priors.md #2), not a guaranteed core hit — one S2b
+  reviewer read it as guaranteed. `flatDamage` has no guaranteed-core field; the gap is about 5% of the
+  strikes' damage at her MG core rate 0.95. ⚑ in her override with a popup-colour recipe.
+- **MG Ramp-Up Speed ▲ 100% is a GAP** (docs/engine-modeling-gaps.md §23): a wind-up speed modifier
+  changes how the measured MG ladder is consumed and its wording is unsettled, so it is outside the
+  new-unit job's engine bound. Proposed as an opt-in `mgRampSpeedPct` after a focus recording.

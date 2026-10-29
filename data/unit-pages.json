@@ -3031,6 +3031,17 @@
         }
       ]
     },
+    "marian-queen": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "burst": [
+            "Machine Gun Ramp-Up Speed ▲ 100% for 10 sec. — no MG wind-up-speed modifier exists in the engine (the measured wind-up ladder is fixed); see ⚑1 in the note and docs/engine-modeling-gaps.md."
+          ]
+        }
+      }
+    },
     "mary": {
       "status": {
         "tier": "MODEL_ONLY",

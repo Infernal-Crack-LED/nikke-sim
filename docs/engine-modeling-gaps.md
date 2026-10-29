@@ -66,7 +66,7 @@
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 20 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 11 | clay, ether, eunhwa-tactical-upgrade, kurumi, mihara-bonding-chain, modernia, privaty-unkind-maid, soda-twinkling-bunny, … |
-| `flatDamage` | 104 | 2b, a2, aigis, anchor, anis, anis-sparkling-summer, anis-star, arcana, … |
+| `flatDamage` | 105 | 2b, a2, aigis, anchor, anis, anis-sparkling-summer, anis-star, arcana, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
 | `fullCharge` | 34 | a2, ade-agent-bunny, anis-star, belorta-pumpkin-witch, bready, cinderella, delta, diesel-winter-sweets, … |
@@ -77,13 +77,13 @@
 | `hasTrueNormals` | 0 | _none_ |
 | `highestAllyAtkPct` | 1 | guilty |
 | `highestAllyMaxHpPct` | 2 | quency, sin |
-| `hitCount` | 67 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, anne-miracle-fairy, ark-ranger-black, asuka-wille, blanc, … |
+| `hitCount` | 68 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, anne-miracle-fairy, ark-ranger-black, asuka-wille, blanc, … |
 | `hitRatePct` | 20 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
 | `hitsPerShot` | 36 _(char-data)_ | aigis, anis-sparkling-summer, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, drake-great-villain, … |
 | `inFb` | 11 | clay, ether, eunhwa-tactical-upgrade, kurumi, mihara-bonding-chain, modernia, privaty-unkind-maid, soda-twinkling-bunny, … |
 | `instantInFb` | 1 | rapi-red-hood |
-| `instantReload` | 14 | alice-wonderland-bunny, arcana-fortune-mate, asuka-wille, diesel, drake-great-villain, eve, guillotine-winter-slayer, little-mermaid, … |
-| `interval` | 39 | ade, anis, brid, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, … |
+| `instantReload` | 15 | alice-wonderland-bunny, arcana-fortune-mate, asuka-wille, diesel, drake-great-villain, eve, guillotine-winter-slayer, little-mermaid, … |
+| `interval` | 40 | ade, anis, brid, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, … |
 | `lastBullet` | 19 | anchor, anis-sparkling-summer, aria, cinderella-crystal-wave, crow, dorothy, epinel, eunhwa, … |
 | `levelConst` | 7 | ada, arcana-fortune-mate, eve, prika, rapi-red-hood, red-hood, snow-white-heavy-arms |
 | `levelScale` | 18 | arcana-fortune-mate, asuka-wille, cinderella, ein, emilia, eve, guillotine-winter-slayer, liberalio, … |
@@ -96,9 +96,9 @@
 | `noRetriggerWhileActive` | 1 | vesti-tactical-upgrade |
 | `nonBurstCasters` | 1 | crown |
 | `normalAttackPct` | 7 | arcana-fortune-mate, asuka-wille, chime, jill, mast-romantic-maid, rumani, sin-swift-bunny |
-| `notCast` | 1 | diesel-winter-sweets |
+| `notCast` | 2 | diesel-winter-sweets, marian-queen |
 | `outFb` | 1 | velvet |
-| `ownBurstGate` | 7 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study, mihara-bonding-chain |
+| `ownBurstGate` | 8 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study, marian-queen, mihara-bonding-chain |
 | `pelletCountFlat` | 3 | arcana-fortune-mate, dorothy-serendipity, leona |
 | `perResource` | 8 | e-h, exia, guillotine, mana, marciana-marine-study, mihara-bonding-chain, phantom, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
@@ -109,9 +109,9 @@
 | `removeOnReload` | 1 | vesti-tactical-upgrade |
 | `requiresCore` | 3 | liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
-| `requiresSelfStatus` | 4 | asuka-wille, belorta-pumpkin-witch, rei-ayanami-tentative-name, rem |
+| `requiresSelfStatus` | 5 | asuka-wille, belorta-pumpkin-witch, marian-queen, rei-ayanami-tentative-name, rem |
 | `requiresShielded` | 5 | asuka, kilo, mori, naga, rapunzel-pure-grace |
-| `requiresTargetStatus` | 11 | d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, privaty, … |
+| `requiresTargetStatus` | 12 | d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, marian-queen, mast, phantom, … |
 | `resourceGate` | 25 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace, … |
 | `sameWeapon` | 6 | ada, chisato, clay, frima, jill, snow-white-heavy-arms |
 | `selfAndAdjacent` | 2 | flora, rouge |
@@ -127,7 +127,7 @@
 | `swapGate` | 10 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, sin-swift-bunny, snow-white-heavy-arms, takina, … |
 | `swapped` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
 | `targetMaxHpPct` | 18 | 2b, belorta-pumpkin-witch, blanc, delta, diesel, folkwang, label, laplace-ultimate-hero, … |
-| `targetStatus` | 9 | d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, privaty, … |
+| `targetStatus` | 10 | d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, marian-queen, mast, phantom, … |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 4 | anchor-innocent-maid, blanc, eunhwa-tactical-upgrade, noir |
 | `trueNormals` | 7 | chisato, clay, eunhwa-tactical-upgrade, frima, jill, laplace, takina |

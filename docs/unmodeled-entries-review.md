@@ -11,16 +11,16 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 214 | 44.0% |
-| Missing engine primitive / trigger | 102 | 21.0% |
-| Other / see caveats | 93 | 19.1% |
+| Defensive / HP / shield / aggro | 214 | 43.9% |
+| Missing engine primitive / trigger | 102 | 20.9% |
+| Other / see caveats | 94 | 19.3% |
 | Out-of-domain / parser unsupported | 39 | 8.0% |
 | Weapon-state / shot-count approximation | 13 | 2.7% |
 | Partless boss | 10 | 2.1% |
 | RNG / probabilistic | 6 | 1.2% |
 | Self-status / stack gate | 5 | 1.0% |
 | Measurement-gated / unverified cadence | 4 | 0.8% |
-| **Total** | **486** | 100.0% |
+| **Total** | **487** | 100.0% |
 
 ## Entries by reason
 
@@ -1201,7 +1201,7 @@ Explosion Radius ▲ 15.01% for 10 sec.
 - **burst:** Immobilizes the target(s) for 5 sec.
   - *Why:* The burst's second line 'Immobilizes the target(s) for 5 sec.' is UNMODELED (verbatim in unmodeled.burst) — there is NO boss-CC channel: the v1 boss never acts (no enemy-action model), so a boss-targeted immobilize moves nothing; the schema's stun primitive describes a NIKKE unable to fire/charge/reload, not a boss freeze
 
-### Other / see caveats (93)
+### Other / see caveats (94)
 
 **A2** (a2)
 
@@ -1324,6 +1324,11 @@ Explosion Radius ▲ 15.01% for 10 sec.
   - *Why:* See unit note / caveats
 - **skill1:** Removes Metal γ.
   - *Why:* See unit note / caveats
+
+**Marian: Queen** (marian-queen)
+
+- **burst:** Machine Gun Ramp-Up Speed ▲ 100% for 10 sec. — no MG wind-up-speed modifier exists in the engine (the measured wind-up ladder is fixed); see ⚑1 in the note and docs/engine-modeling-gaps.md.
+  - *Why:* burst: MG Ramp-Up Speed ▲ 100% is unmodeled (⚑1) — her post-reload spin-up inside the 10s burst window runs at the normal ladder.
 
 **Milk: Blooming Bunny** (milk-blooming-bunny)
 
