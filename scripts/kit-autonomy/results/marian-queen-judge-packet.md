@@ -3446,7 +3446,7 @@ claude-fable-5 + claude-fable-5-1, S5/S6 claude-opus-5, S7 claude-fable-5-1 (bin
 ## Engine change
 
 None. Every line except MG Ramp-Up Speed maps onto an existing primitive:
-`interval` + `skillCooldownReductionSec` (dorothy's Manifestation precedent — the reduction applies to
+`interval` + `skillCooldownReductionSec` (the `dorothy` (AR/Water base unit) Manifestation precedent — the reduction applies to
 all of the owner's interval blocks; she has exactly one), `targetStatus` + `requiresTargetStatus`,
 `selfStatus` + `requiresSelfStatus`, `hitCount` with `countScope: 'gated'`, `ownBurstGate: 'notCast'`,
 `instantReload`, `flatDamage core:true` (the cinderella-crystal-wave "core strike damage" precedent).
@@ -3489,7 +3489,7 @@ reviews/marian-queen.verify.txt.
 
 ## Fire-rate / modeled≠working observations (control comp liter / crown / marian-queen / helm, boss Fire)
 
-- 6 own casts (frames 322, 2374, 4367, 6277, 8157, 10068); helm completes the other 5 Full Bursts.
+- 6 own casts (frames 322, 2374, 4367, 6277, 8157, 10068); `helm` (the SR/Water Helm, not helm-aquamarine) completes the other 5 Full Bursts.
 - Spear volleys: first at frame 240, every 240f outside Penetrant Wish, every 120f inside it (P1/P5).
 - Core strikes: 1317 over the fight, ~220 per window = ⌊in-window rounds/2⌋ (P4), coreRate 0.95.
 - Damage split: normals ≈ 500M, spears ≈ 443M, core strikes ≈ 431M, burst nuke ≈ 67M; unit total
