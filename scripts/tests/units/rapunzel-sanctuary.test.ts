@@ -429,6 +429,15 @@ describe('L8 — Full Charge attack → enemy: 220.7% of final ATK as additional
     expect(hits.map((h) => h.frame)).toEqual(r.shots.map((s) => s.frame));
   });
 
+  it('engine rider defaults: crit-eligible at her rate; inside Full Burst it takes the +50%', () => {
+    const r = base();
+    const hits = r.dmg.filter((d) => d.srcSlot === 'skill2');
+    expect(hits.every((h) => h.critEligible)).toBe(true);
+    const inFb = hits.filter((h) => h.inFullBurst);
+    expect(inFb.length).toBeGreaterThan(0);
+    expect(inFb.every((h) => h.fbMajorApplied)).toBe(true);
+  });
+
   it('COUNTERFACTUAL core-strike reading (core:true) → the rider becomes core-eligible', () => {
     const cf = run(
       patch((ov) => {
