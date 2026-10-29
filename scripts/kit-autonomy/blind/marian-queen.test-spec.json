@@ -1,0 +1,95 @@
+{
+  "slug": "marian-queen",
+  "model": "claude-opus-5",
+  "note": "No tools were available in this invocation, so the two files could NOT be written to disk. Save `testSource` verbatim to scripts/kit-autonomy/blind/marian-queen.test.ts and this JSON to scripts/kit-autonomy/blind/marian-queen.test-spec.json. Dispositions below are 'what a faithful model REQUIRES' — blind, I never saw the driver's override, so they are not a diff against it.",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Recurring interval: 4 sec (battleStart)",
+      "disposition": "FAITHFUL (interval trigger; first-fire phase is a FLAG)",
+      "assertion": "skill1-slot damage events recur 40..500 times over 180s, and the CDR counterfactual proves the cadence is a live timer. Nearest-wrong {kind:'passive'} / a one-shot battleStart yields 1 volley; the t=0-vs-t=4s phase is NOT pinned (blind convention)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "125.51% ATK, 7x sequential",
+      "disposition": "FAITHFUL + FLAG (fold vs 7 instances, gaugeHits)",
+      "assertion": "Volley existence is asserted by bounds only; the flavor is proved INDIRECTLY and much more strongly by the S2-b test (ungating the 85.17% Sequential buff must raise damage, which is only possible if these spears carry flavor:'sequential'). Riders take noRange:true and crit at her rate, no core (text says no core here)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Open Wounds: Damage Taken 5.05%",
+      "disposition": "FAITHFUL on scope / MEASUREMENT-GATED on stacking",
+      "assertion": "Proves it is a BOSS debuff (casterIdx===null && targetIdx===null) and never a self buff: deleting it drops BOTH her damage and teamSum. Nearest-wrong (self/allies target) leaves teammates byte-identical. The stack ceiling is deliberately NOT asserted — kit states no cap (it.skip + recipe)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when using Burst Skill -> all enemies",
+      "disposition": "FAITHFUL (burstCast, not fullBurstEnter)",
+      "assertion": "Order-based: a burst-cast application is logged before the first fullBurstStart, so countBeforeFirstFb(faithful) > countBeforeFirstFb(re-keyed-to-fullBurstEnter). The nearest-wrong also over-fires on helm's Full Bursts in any 2xB3 comp."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Duration: 10 sec (Penetrant Wish)",
+      "disposition": "FIX — needs selfStatus + requiresSelfStatus (no 'within 10s of own cast' gate otherwise)",
+      "assertion": "Opening every gate on the rider block must multiply its proc count by >1.8x (whole fight vs <=~50s of windows). Non-vacuity: the faithful run must ALSO have procs (>=20), so both the active and inactive case are exercised."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after 2 normal attacks -> 14.06% core",
+      "disposition": "FAITHFUL (hitCount count:2; core:true)",
+      "assertion": "Recurrence: procs >= 20 (a once-per-window model gives ~4) and procs <= shots/2 + 12 (counts ROUNDS, not frames). Core-ness: setting core:false lowers her damage while leaving teammates byte-identical (coreAttackMultiplier 200 makes this unmissable)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recurring interval of ITSR -2 sec",
+      "disposition": "FAITHFUL (skillCooldownReductionSec, self, 10s)",
+      "assertion": "Deleting the buff must cost at least 3 spear volleys (4s->2s over a 10s window is +2.5 fires per burst, 3+ bursts in 180s) and lower her total. Nearest-wrong is omitting the line entirely (a very easy miss) or encoding it as a burst-cooldown reduction, which moves no volleys."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter while NOT in state -> Seq +85.17%",
+      "disposition": "FIX — ownBurstGate:'notCast' stands in for the missing negated self-status gate",
+      "assertion": "In base (2xB3) #seq + #core === #fullBurstStart exactly; in solo (sole B3, always in state) #seq === 0. Nearest-wrong (no gate) doubles the sum; both-on-burstCast drops it below fbs. Ungating it must RAISE damage, proving the buff is not inert, and must leave teammates byte-identical (self scope)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter while IN state -> Core +24.64%",
+      "disposition": "FIX — ownBurstGate:'cast' (same reason)",
+      "assertion": "solo: #core === #fullBurstStart exactly (she bursts every rotation, so the state is always open at FB entry). Deleting the buff lowers her damage and nothing else — proves it is live (she has core damage from MG core hits plus the core rider) and self-scoped."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reloads 100% of ammo",
+      "disposition": "FAITHFUL (instantReload) — weapon-state = damage",
+      "assertion": "Removing it reduces total shots fired (300-round belt, 171-frame reload: a mid-belt refill deletes reload downtime). Flagged in-file as the most cadence-sensitive assertion (ties if every burst lands on a full belt)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "MG Ramp-Up Speed 100% for 10 sec",
+      "disposition": "GAP (no schema primitive for MG spin-up)",
+      "assertion": "it.skip with a measurement recipe, PLUS an active anti-fudge pin: no self fireRatePct/attackSpeedPct buffApply with value exactly 100. A literal 1:1 transcription doubles her cadence for 10s; a measured haircut proxy still passes."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK 78.4% / Attack Dmg 78.14% 10s",
+      "disposition": "FAITHFUL (atkPct + attackDamagePct, self, burstCast)",
+      "assertion": "Self-granted application count === fullBurstStart count (+1 horizon slack) and the two stats agree; value < 1000 proves atkPct kept its RAW percentage rather than being emitted flat-resolved as casterAtkPct (the documented harness trap)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "1346.4% ATK as Burst Skill damage",
+      "disposition": "FAITHFUL (+ FLAG: burstDesc tag untestable)",
+      "assertion": "burst-srcSlot damage instances number <= her cast count (one per cast) and every one has fbMajorApplied falsy — the burst cast resolves before the FB window opens, so the +50% FB major must not apply. Nearest-wrong (FB-major credited) is the classic burst over-credit."
+    }
+  ],
+  "fixtures": "TWO comps, 10 hoisted 180s runs total. (1) controlComp('marian-queen', true) = liter/crown/marian-queen/helm — kept BECAUSE the fixed helm slot is a second Burst III, the only way a Full Burst can be completed on a rotation she did not burst, which is what makes the S2-b 'not in state' branch reachable; used for the (#sequential + #core) === #fullBurstStart invariant. (2) controlComp('marian-queen', false) = liter/crown/marian-queen — she is the SOLE B3, so she casts every rotation and is therefore always in Penetrant Wish at FB entry: the branch split becomes deterministic (#core === #fbStarts, #sequential === 0) and her own burst count === #fbStarts. All eight counterfactuals run on (2) for that determinism. Both fixtures include B1+B2 so bursts actually cast. No seed (deterministic). Every patch is built with withPatchedOverride and located by BLOCK SHAPE (trigger.kind / effect.kind / effect.stat), never by index, and each test asserts its patch actually touched something so no counterfactual can be a vacuous no-op.",
+  "gaps": [
+    "it.skip — FLAG: volley fold (one 878.57% instance vs seven 125.51%), Open-Wounds stacks-per-volley, and the stack CEILING are unobservable blind; the kit states no cap and uncapped (5.05% x 7 x ~55 volleys) is ~+1900% Damage Taken, which cannot be right. Recipe: popup-read a focus recording for per-volley stack gain and watch the debuff icon for a cap.",
+    "it.skip — FLAG: interval first-fire phase (t=4s vs t=0) is an authoring convention, so volley counts are asserted as bounds and relative comparisons only, never exact.",
+    "it.skip — 'all enemies in the Open Wounds state' is scope-trivial in every fixture (the boss carries Open Wounds from t~4s and from her own cast), so a requiresTargetStatus:'Open Wounds' gate on the core rider is unobservable; authoring it is more faithful but its absence cannot be detected here.",
+    "it.skip — GAP: 'Machine Gun Ramp-Up Speed 100%' has no schema primitive (no MG spin-up stat; fireRatePct/attackSpeedPct are a different mechanic). Belongs in unmodeled. Recipe: MG focus recording, time-to-max-RPM with and without her burst window.",
+    "it.skip — FLAG: burstDesc:'allEnemies' on the 1346.4% nuke is untestable without a burstSkillAoeDamagePct carrier (jackal/trina) in the comp.",
+    "NOT TESTED (documented here, no assertion): gaugeHits on the folded 7-spear volley (7 gauge impacts vs 1). A patch from 7->1 only weakly perturbs full-burst count, so any assertion would be near-vacuous; recommended as an authoring FIX, not a pin.",
+    "NOT TESTED: countScope ('always' vs 'gated') on the every-2-normal-attacks counter. With MG cadence the difference is a proc or two per window — below the resolution of any bound I can derive blind."
+  ]
+}

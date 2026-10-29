@@ -1,0 +1,209 @@
+{
+  "slug": "marian-queen",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 4
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 878.57,
+          "flavor": "sequential",
+          "crit": true,
+          "gaugeHits": 7,
+          "levelScale": {
+            "atkPct": [
+              125.51
+            ]
+          }
+        },
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 5.05
+        },
+        {
+          "kind": "targetStatus",
+          "name": "Open Wounds",
+          "durationSec": 999
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 5.05
+        },
+        {
+          "kind": "targetStatus",
+          "name": "Open Wounds",
+          "durationSec": 999
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "selfStatus",
+          "name": "Into the Fray: Penetrant Wish",
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "skillCooldownReductionSec",
+          "value": 2,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 2,
+        "perPull": true,
+        "countScope": "gated"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "requiresSelfStatus": "Into the Fray: Penetrant Wish",
+      "requiresTargetStatus": "Open Wounds",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 14.06,
+          "core": true,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "ownBurstGate": "notCast",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sequentialDamagePct",
+          "value": 85.17,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "ownBurstGate": "cast",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 24.64,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "instantReload",
+          "fraction": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 78.4,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 78.14,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1346.4,
+          "crit": true,
+          "burstDesc": "allEnemies"
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Function: Launches Dark Matter spears at random enemies."
+    ],
+    "skill2": [
+      "Function: Deals core damage to all enemies in the Open Wounds state."
+    ],
+    "burst": [
+      "Machine Gun Ramp-Up Speed ▲ 100% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ SPEAR SPLIT-VS-MERGE: the 7 sequential 125.51% spears are MERGED into one 878.57% instance with gaugeHits:7 (kit-silent on split; popup-read required). If the engine's sequential/Damage-Up interaction or any per-hit gate ever needs per-hit granularity, split into 7 effects of 125.51%.",
+    "⚑ INTERVAL PHASE: 'Activates at the start of battle' + 'Recurring interval: 4 sec' is encoded as interval{sec:4}, which first fires at t=4. If the opening volley actually launches at t=0 the model loses one volley per fight (~1 of ~N volleys).",
+    "⚑ OPEN WOUNDS IS A STATE, NOT A STACK: Damage Taken ▲5.05% is modeled as ONE continuous instance (no maxStacks), because skill2 refers to 'the Open Wounds state' (a named status) and the kit gives no stack count. If it stacks per spear hit (up to 7 per volley, permanent, 'cannot be removed'), the team-wide debuff is grossly under-credited — this is the single largest value risk in the file.",
+    "DOUBLE-BOOK WATCH: both skill1 blocks grant damageTakenPct 5.05 (interval volley + burst-cast AoE). They are the SAME in-game status and must refresh, not sum to 10.1 — the shared caster+slot+stat+value buff key should handle it; verify with a buffApply filter on stat damageTakenPct.",
+    "FB-ENTER PAIR IS A PROXY: 'entering Full Burst while [not] in Into the Fray: Penetrant Wish' is encoded as ownBurstGate notCast/cast rather than a self-status gate, because the schema has no NEGATED requiresSelfStatus. Exact while her own burst cast is what opens the 10s window (she is Burst III, so her cast immediately precedes FB entry); it diverges only if a Full Burst begins within 10s of her cast without her casting.",
+    "'Affects random enemies' is scope-trivial at v1 (single boss) — all 7 spears land on the one target. On a multi-enemy scope the merge and the Open Wounds application would both need re-reading.",
+    "The skill2 14.06% core rider is a DIRECT core strike (core:true), not an auto-core-rate hit — the kit says 'core strike damage'. Its proc count is purely cadence-driven (see the cadence ⚑)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read from kit prose only. Shape: S1 = a battle-start 4s recurring sequential spear volley (7×125.51%, merged) that paints a permanent team-wide Open Wounds Damage Taken ▲5.05% debuff, plus a burst-cast AoE re-application of the same status. S2 = her own burst opens a 10s 'Into the Fray: Penetrant Wish' self-status that (a) adds an every-2-normal-attacks 14.06% direct CORE strike gated on Open Wounds and (b) cuts the S1 volley interval by 2s (4s → 2s) via skillCooldownReductionSec; the FB-enter pair is an either/or duty cycle — Sequential Attack Damage ▲85.17% on a Full Burst she did NOT burst into, Core Damage ▲24.64% on one she did. Burst = self ATK ▲78.4 / Attack Damage ▲78.14 / full reload + a 1346.4% AoE nuke. MG Ramp-Up Speed ▲100% is a REAL shot-count gain with no StatKey to express it and is flagged, not silently dropped."
+}

@@ -342,6 +342,30 @@ describe('P4 — Penetrant Wish (10s after her burst): every 2 normal attacks �
     }
   });
 
+  // countScope 'gated': only rounds fired WHILE in Penetrant Wish advance the count, so after
+  // every window the cumulative strikes are exactly half the cumulative in-window rounds.
+  const cumulativeExact = (r: Run) => {
+    let n = 0;
+    return r.casts.every((c) => {
+      n += r.shots.filter((s) => s.frame >= c && s.frame < c + WIN).length;
+      const k = r.strikes.filter((s) => s.frame < c + WIN).length;
+      return k === Math.floor(n / 2);
+    });
+  };
+
+  it('only rounds fired inside Penetrant Wish count toward the 2 (cumulative strikes = ⌊in-window rounds / 2⌋)', () => {
+    expect(cumulativeExact(main)).toBe(true);
+  });
+
+  it('DISCRIMINATING: an ungated counter is pre-charged by rounds fired outside the window', () => {
+    const cf = run(
+      patch((ov) => {
+        delete findBlock(ov, 'skill2', isStrike).trigger.countScope;
+      })
+    );
+    expect(cumulativeExact(cf)).toBe(false);
+  });
+
   it('the Penetrant Wish status is opened by her burst, self, 10s', () => {
     const ov: any = withPatchedOverride(SLUG, () => {});
     const b = ov.skill2.find((x: any) =>
