@@ -111,6 +111,7 @@ export const TARGETS = new Set([
   'alliesOfElementWeapon',
   'selfAndAdjacent',
   'adjacentAlly',
+  'alliesInStatus',
   'alliesLowestHp',
 ]);
 export const EFFECTS = new Set([
@@ -955,6 +956,14 @@ export function structuralCheck(
         !['left', 'right'].includes(b.target.side)
       ) {
         errors.push(`${p}: adjacentAlly needs side "left" or "right"`);
+      }
+      // an empty/missing prefix would match EVERY open self-status (or crash on startsWith)
+      if (
+        b.target?.kind === 'alliesInStatus' &&
+        (typeof b.target.statusPrefix !== 'string' ||
+          b.target.statusPrefix.trim() === '')
+      ) {
+        errors.push(`${p}: alliesInStatus needs a non-empty statusPrefix`);
       }
       if (b.formation && !['noB1', 'hasB1'].includes(b.formation)) {
         errors.push(`${p}: bad formation`);
