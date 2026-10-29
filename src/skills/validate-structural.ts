@@ -1337,14 +1337,53 @@ export function targetStatusCensus(
     }
   }
 
-  // selfStatus is per-unit, so its producer/consumer match is SAME-UNIT, not cross-slug: a
-  // requiresSelfStatus gate can only ever be opened by a selfStatus effect in the SAME override
+  // selfStatus is per-unit, so a requiresSelfStatus gate's producer/consumer match is SAME-UNIT,
+  // not cross-slug: the gate can only ever be opened by a selfStatus effect in the SAME override
   // (targeting the owner). A gate with no same-unit producer of the exact name is dead — and no
   // shipped kit grants a self status to ANOTHER unit today, so a missing producer is an ERROR,
   // not a future-gated warning. If a cross-unit grant ever ships ("allies enter <Mode>" — legal
   // at runtime, since selfStatus routes through resolveTargets and an allies-targeted grant
   // writes into each target's own map), downgrade this to the boss-channel census's two-tier
   // ERROR/WARN split keyed on a cross-slug producer scan.
+  //
+  // The ONE cross-unit READER of self statuses is the `alliesInStatus` target ("all allies in the
+  // <Name> state"): it selects any ally whose open status name starts with its statusPrefix, so
+  // its producers are roster-wide (below). A prefix no override produces selects nobody but
+  // `includeSelf` — a WARNING, not an error: the family's members may simply be unmodeled yet.
+  const allSelfProducers = new Set<string>();
+  const prefixConsumers = new Map<string, string[]>(); // prefix -> "slug: slot[i]"
+  for (const [slug, o] of overrides) {
+    for (const slot of SLOTS) {
+      const blocks = o?.[slot];
+      if (!Array.isArray(blocks)) {
+        continue;
+      }
+      blocks.forEach((b: any, bi: number) => {
+        for (const e of collectEffects(b?.effects, 'selfStatus')) {
+          if (typeof e.name === 'string') {
+            allSelfProducers.add(e.name);
+          }
+        }
+        if (
+          b?.target?.kind === 'alliesInStatus' &&
+          typeof b.target.statusPrefix === 'string'
+        ) {
+          prefixConsumers.set(b.target.statusPrefix, [
+            ...(prefixConsumers.get(b.target.statusPrefix) ?? []),
+            `${slug}: ${slot}[${bi}]`,
+          ]);
+        }
+      });
+    }
+  }
+  for (const [prefix, paths] of prefixConsumers) {
+    if (![...allSelfProducers].some((n) => n.startsWith(prefix))) {
+      warnings.push(
+        `alliesInStatus "${prefix}" (${paths.join(', ')}) — no override emits a selfStatus whose name starts with this prefix, so the target selects no ally (only includeSelf); fine ONLY while the family's members are unmodeled (record that in the unit's note)`
+      );
+    }
+  }
+
   for (const [slug, o] of overrides) {
     const selfProducers = new Set<string>();
     const selfConsumers = new Map<string, string[]>(); // name -> block paths
