@@ -1,0 +1,157 @@
+{
+  "slug": "rapunzel-sanctuary",
+  "kitDescription": "Rapunzel: Sanctuary is a Fire rocket-launcher Supporter who casts in the second burst stage. Every full-charge shot heals the whole team for a small slice of her own max HP and adds an extra 220.7%-of-ATK hit on the boss. Whenever Full Burst begins she buffs herself, plus any ally currently in an 'Into the Fray' mode (Marian: Queen and Scarlet: Goddeath carry those modes), with Attack Damage up and a flat ATK boost scaled from her own ATK, both for 10 seconds. Her burst skill hands the entire team a flat ATK boost scaled from her ATK for 10 seconds; if three or more allies are down it instead revives them once per battle with much larger buffs, after which her burst cooldown is permanently 40 seconds longer. Holding a full charge for a second raises a shared shield and grants the team DEF, and she ignores any charge-speed increases or decreases from other sources.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "VERBATIM file: every non-skipped test fails at 'fixture sanity' because the S5 harness wiring sets opts.onEvent while the harness reads opts.cfg.onEvent — zero events collected, SELF_EV/ATK_BASIS undefined. Mechanical blind defect, not a model divergence; the adapted file (wiring only) is the usable convergence run.",
+      "S2-a 'shared shield is damage-inert': shieldStripHits > 0 fails — the driver ships NO shield effect (line UNMODELED: 'Full Charge maintained for 1 or more seconds' has no hold primitive; auto releases at full charge). Blind proxied the hold trigger onto fullCharge — classified RECON_ERROR on the trigger clause; driver's reading matches both S2b reviewers, the SSOT auto-release rule and three precedent overrides.",
+      "S2-b 'Goddess Blessing DEF on a ~10s duty cycle': def.length > 0 fails — same unmodeled hold trigger, and defPct is damage-inert. Same classification as S2-a.",
+      "S2-d noFb:true counterfactual arm: expects dmgOf(RIDER_NOFB) < base, but an override-level noFb is inert under the default engine (validator rejects it), so the arm reads equal and fails. Blind-test defect; the premise it probes (rider takes the Full Burst +50% by landing time) is pinned directly by the driver's L8 'engine rider defaults' test (fbMajorApplied on every in-window rider hit). Not a divergence.",
+      "All other adapted S5 assertions (fixture sanity, S1-a heal→recovery probe, S1-b 27.45 self-only + allies counterfactual, S1-d immunity, S2-c 29.17 flat/self-only, B-b/B-c burstCast-vs-FB-enter inequality, single-branch magnitude) are GREEN against the driver's shipped override."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Full Charge attack → allies: HP 3.9%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullCharge → allies → heal (recovery event per shot); HP magnitude listed unmodeled (no HP pool)",
+        "blindSaid": "S5: planted crown recovery consumer must fire ≫20 times and collapse when heal stripped (GREEN). S6: identical block.",
+        "formulaCheck": "Heal is a tandem channel only (no damage term); 'all allies' target; per-pull cadence correct for an unswapped RL (every release is a full charge).",
+        "fireRateOk": true,
+        "explanation": "Driver L1 pins a recovery on every one of her shot frames (~1 per 1s charge cycle, ~125/fight) and discriminates self-target and dropped-heal counterfactuals. Magnitude is a documented gap, not a drop."
+      },
+      {
+        "kitLine": "FB enter: Attack Damage ▲ 27.45% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → alliesInStatus{statusPrefix 'Into the Fray', includeSelf} → attackDamagePct 27.45 / 10s (new engine target primitive)",
+        "blindSaid": "S5: count == fullBurstStart, self-only in controlComp, TEAM× under allies counterfactual (GREEN). S6: identical block.",
+        "formulaCheck": "attackDamagePct is the generic Damage-Up bucket member (§1e); fires on ANY team Full Burst (not burstCast); duration literal seconds.",
+        "fireRateOk": true,
+        "explanation": "Driver L2 pins it at every FB start on exactly {self, Into-the-Fray ally} with 600f expiry, including FBs she sat out (two-B2 fixture), and discriminates allies / self / burstCast counterfactuals. Ally half dormant today (⚑1) — see gotchas."
+      },
+      {
+        "kitLine": "Nanoparticle Inj.: Burst CD ▲ 40 / DEF ▲ 10%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim — gated on the unreachable ≥3-incapacitated revive",
+        "blindSaid": "S5 it.skip + negative pins (no defPct 10); S6 unmodeled verbatim.",
+        "formulaCheck": "v1 has no HP pool; the gate can never open. A passive +40s encoding would halve her cast cadence — driver L3 pins casts <80s apart and a cast-count counterfactual.",
+        "fireRateOk": true,
+        "explanation": "All four agents converge on unreachable; the nearest-wrong (passive cooldown penalty) is explicitly discriminated."
+      },
+      {
+        "kitLine": "Immunity to charge speed ▲/▼ effects",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "charFixes.statImmunities ['chargeSpeedPct'] (whole-fight; ⚑2 notes the in-game arming at first full charge)",
+        "blindSaid": "S5: injected alliesOfWeapon:RL chargeSpeedPct 60 must be a no-op with immunity and raise her damage without it (GREEN). S6: identical charFix.",
+        "formulaCheck": "§11 receiving-side immunity primitive strips in-battle buff effects for her only, both directions; cube/OL unaffected. Whole-fight vs armed-at-~1s differs only for a first-second persistent grant.",
+        "fireRateOk": true,
+        "explanation": "Driver L4 pins the ally-wide charge-speed probe landing on liter and marian-queen but not her, and the counterfactual with charFixes removed. Scope residual (⚑2) is documented and immaterial."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Hold Full Charge 1s: shield 7.39% maxHP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2 verbatim (⚑3: sim auto-releases at full charge, never holds); L5 pins zero shielded-probe events plus a fullCharge-proxy counterfactual that would fire the probe",
+        "blindSaid": "S5 required a shield effect to exist (RED); S6 encoded shield 1s on fullCharge (target allies) and self-flagged it as over-firing shielded triggers by ~4–6×.",
+        "formulaCheck": "Prose trigger is 'maintained for 1 or more seconds', not 'performing a Full Charge attack'; SSOT §4/§7: auto always full-charges and releases. Both S2b reviewers named the fullCharge proxy as the nearest-wrong model; rapunzel-pure-grace / guilty-mighty-bunny / sin-swift-bunny carry the same clause unmodeled.",
+        "fireRateOk": true,
+        "explanation": "Blind divergence is a trigger misread (RECON_ERROR on the blind side); driver's decision is recorded with a measurement recipe. Tandem caveat (shielded-trigger consumers) is documented. Owner spot-check item — see gotchas."
+      },
+      {
+        "kitLine": "Goddess Blessing: DEF ▲ 42.24% 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2 verbatim — same unreachable hold trigger; DEF damage-inert; L6 pins no DEF grant from her",
+        "blindSaid": "S5 required defPct 42.24 with a 6–24/ally duty cycle (RED); S6 encoded defPct 42.24 + noRetriggerWhileActive + selfStatus, flagging no caster-DEF StatKey exists.",
+        "formulaCheck": "No damage consumer for DEF in v1; caster-scaled DEF has no StatKey, so even the blind encoding mis-states the basis. Trigger unreachable under auto-release.",
+        "fireRateOk": true,
+        "explanation": "Zero board consequence either way; driver documents it rather than shipping an inert proxy with the wrong basis."
+      },
+      {
+        "kitLine": "FB enter: ATK ▲ 29.17% of caster ATK 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → alliesInStatus{'Into the Fray', includeSelf} → casterAtkPct 29.17 / 10s",
+        "blindSaid": "S5: flat-resolved value (≫29.17), count == FB starts, self-only (GREEN). S6: identical block.",
+        "formulaCheck": "§1a 'ATK ▲ X% of caster's ATK' = flat add at application time, non-diluting — casterAtkPct is the correct stat; any team FB; literal seconds.",
+        "fireRateOk": true,
+        "explanation": "Driver L7 pins frames == FB starts, holders {self, Fray ally}, 600f expiry, no atkPct 29.17 key, plus allies / self / burstCast / atkPct counterfactuals."
+      },
+      {
+        "kitLine": "Full Charge atk: 220.7% ATK add'l dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullCharge → enemy → flatDamage 220.7 with engine rider defaults (skill bucket, crit at her rate, not core-eligible, noRange, FB by landing time)",
+        "blindSaid": "S5: strip share >15%, core:true adds, crit:false loses, hitCount:2 costs 30–70% (GREEN); noFb arm RED by defect. S6: identical block plus redundant crit:true.",
+        "formulaCheck": "§2b function-damage rules: crit yes, core never, range never, FB by timing, no charge bucket. Driver's encoding takes all defaults; no charge/core routing.",
+        "fireRateOk": true,
+        "explanation": "Driver L8 pins exactly one skill2 hit per shot on the shot frame, bucket 'skill', coreEligible false, critEligible true, fbMajorApplied inside FB, and core:true / dropped counterfactuals."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "≥3 incap: revive 96% / ATK 101.37 / DEF 221.76",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim — unreachable (no incapacitation); L10 pins no 101.37 key",
+        "blindSaid": "S5 it.skip + negative pin; S6 unmodeled verbatim.",
+        "formulaCheck": "Empty target set in v1; once-per-battle; nearest-wrong (101.37 as live payload) explicitly excluded by the driver's test.",
+        "fireRateOk": true,
+        "explanation": "Full convergence."
+      },
+      {
+        "kitLine": "≤2 incap: ATK ▲ 34.84% caster ATK 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → casterAtkPct 34.84 / 10s (her own cast; lands 52f before the FB it opens)",
+        "blindSaid": "S5: rekey-to-fullBurstEnter gives fbStarts×TEAM while control is strictly fewer (0 casts in controlComp) (GREEN). S6: identical block.",
+        "formulaCheck": "§8: buffs from earlier casts in the same rotation apply through FB; cast precedes FB start by 30f+22f, so the 10s window ends ~0.87s before FB ends — faithful timing, not an error. casterAtkPct is the flat-add stat.",
+        "fireRateOk": true,
+        "explanation": "Driver L9 pins grants on all four allies on each cast frame (≥3 casts in her sole-B2 fixture), cast < FB start, exactly 4×casts grants, with fullBurstEnter / self / double-branch counterfactuals."
+      },
+      {
+        "kitLine": "In Nanoparticle state: ATK ▲ 34.84%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim — identical payload to the live branch, so the single block is the burst in every reachable state",
+        "blindSaid": "S5: at most one distinct magnitude from her burst slot (GREEN); S6: collapse documented as exact.",
+        "formulaCheck": "'Only one set of effects is applied' + identical stat/value/target/duration ⇒ collapse is behaviourally exact.",
+        "fireRateOk": true,
+        "explanation": "Driver's double-branch counterfactual proves the shipped file applies exactly one grant per ally per cast."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1 / skill2 Full-Burst-entry targets",
+      "summary": "The 'Into the Fray' ally half of both FB-entry grants is dormant in every shipped comp: no override emits a selfStatus whose name starts with 'Into the Fray', so the grants land on her alone today and any comp with marian-queen / scarlet-goddeath under-credits those allies by Attack Damage ▲27.45% + a flat 29.17%-of-her-ATK add at every Full Burst.",
+      "evidence": "Kit: 'Affects self and all allies in the Into the Fray state' (both lines). Driver ⚑1 + caveats; driver's unit test proves the ally half works only by patching marian-queen with a fixture-local battle-start status. S6 flagged the same cross-unit dependency; S2b (both) agreed the gated target is correct and that plain 'allies' would be the worse error.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "No change in this override. Have marian-queen's and scarlet-goddeath's overrides emit a battle-start selfStatus named 'Into the Fray: <Mode>' (999s) and name their burst modes in full; the alliesInStatus prefix match then picks them up. Re-run the two-B2 fixture afterwards to confirm the holder set widens."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2 charge-hold lines (shield + Goddess Blessing)",
+      "summary": "Both 'Full Charge maintained for 1 or more seconds' lines are unmodeled on the premise that auto-play releases at full charge and never holds; if real auto-play does hold for this unit, the shared shield becomes a live tandem channel (shielded triggers / requiresShielded gates) and her per-shot cycle is ~1s longer than the sim's, scaling down her rider and heal cadence.",
+      "evidence": "Kit: 'maintained for 1 or more seconds … removed when charging ends'. SSOT §4/§7 auto always full-charges and releases; precedent overrides (rapunzel-pure-grace, guilty-mighty-bunny, sin-swift-bunny) unmodeled the same clause. S5/S6 proxied it onto fullCharge (RED vs driver); S6's own flag estimated the proxy over-fires 4–6×.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Needs measurement: a focus recording of rapunzel-sanctuary under auto with a shield-synergy ally, checking whether the shield icon / Goddess Blessing icon ever appears between shots and timing charge-start → muzzle flash. If she holds, add a charge-hold trigger primitive (time-at-full-charge) — never the fullCharge proxy — and pin the measured cycle; if she does not, close the ⚑3 with the recording."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA survives. The three RED S5 assertions against the shipped override are all attributable: S2-a/S2-b stem from the blind proxying the 'maintained for 1+ sec' hold trigger onto fullCharge, which the prose, the auto-release rule in the SSOT, both S2b reviewers and three precedent overrides all reject, and S2-d's noFb arm is a blind-test defect against an engine-inert flag whose premise the driver pins directly (L8 fbMajorApplied); the verbatim S5 file additionally mis-wires onEvent and collects no events at all. Every damage-bearing line (heal event, both status-scoped FB-entry grants, the 220.7% rider, the burstCast 34.84 team grant, the charge-speed immunity) is byte-identical between the driver and the S6 blind override and is pinned by driver tests that fire at the prose cadence and fail under each named nearest-wrong model (allies/self/burstCast retargets, atkPct basis, immunity removed, core:true, dropped, fullBurstEnter rekey, double branch, +40s passive cooldown) — the S2d vitest log is the independent artifact and is GREEN. Ranked residuals, both documented: (1) the Into-the-Fray ally half is dormant until marian-queen / scarlet-goddeath emit the named status — a cross-unit follow-up the owner should action, since it is where this kit's real support value sits; (2) the charge-hold premise (auto never holds) is a shared prior with a cheap footage check. Same-model residual to spot-check: all four agents accepted the whole-fight statImmunities scope and the auto-release assumption without footage; neither moves the board unless a recording shows her holding charge.",
+  "model": "claude-fable-5-1"
+}

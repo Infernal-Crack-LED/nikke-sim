@@ -3031,6 +3031,17 @@
         }
       ]
     },
+    "marian-queen": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "burst": [
+            "Machine Gun Ramp-Up Speed ▲ 100% for 10 sec. — no MG wind-up-speed modifier exists in the engine (the measured wind-up ladder is fixed); see ⚑1 in the note and docs/engine-modeling-gaps.md."
+          ]
+        }
+      }
+    },
     "mary": {
       "status": {
         "tier": "MODEL_ONLY",
@@ -4357,6 +4368,26 @@
         "unmodeled": {
           "skill2": [
             "■ Activates only when Full Charge is maintained for more than 1 sec while a Shield is set in front of this unit. Affects self.\nCurrent HP ▼ 2% every 1 sec continuously.\nRestores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec continuously."
+          ]
+        }
+      }
+    },
+    "rapunzel-sanctuary": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "Restores HP equal to 3.9% of the skill user's final max HP. — magnitude only: the HP amount has no engine consumer (no HP pool); the recovery EVENT is modeled (heal, skill1), which is the board-relevant half.",
+            "■ Activates when using Nanoparticle Injection. Affects self.\nCooldown of Burst Skill ▲ 40 sec. This effect cannot be removed.\nNanoparticle Consumption: DEF ▲ 10%. This effect is continuous and cannot be removed. Effect persists after revival. — unreachable: Nanoparticle Injection is the burst's ≥3-incapacitated branch, and v1 has no incapacitation (no HP pool)."
+          ],
+          "skill2": [
+            "■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Goddess Blessing state. Affects self.\nCreates a shared shield with HP equal to 7.39% of the skill user's final max HP that protects all allies from damage. This shield is removed when charging ends. — the sim releases at full charge and never holds it (⚑3); defensive.",
+            "■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Goddess Blessing state. Affects all allies.\nGoddess Blessing: DEF ▲ 42.24% of the skill user's DEF for 10 sec. — same unreachable charge-hold trigger (⚑3); DEF is damage-inert."
+          ],
+          "burst": [
+            "Activates if 3 or more allies are incapacitated. Affects all incapacitated allies.\nNanoparticle Injection: Revives with 96% HP. Activates once per battle.\nATK ▲ 101.37% of the skill user's ATK for 10 sec. Activates once per battle.\nDEF ▲ 221.76% of the skill user's DEF for 10 sec. Activates once per battle. — unreachable: v1 has no incapacitation (no HP pool), so the burst is always the '2 or fewer' branch.",
+            "■ Activates when this unit is in the Nanoparticle Consumption state. Affects all allies.\nATK ▲ 34.84% of the skill user's ATK for 10 sec. — the Consumption state is unreachable; the grant is identical to the encoded '2 or fewer incapacitated' branch, which is the burst's behaviour in every reachable state."
           ]
         }
       }

@@ -2355,6 +2355,17 @@ export function runSim(
         const want = ownerIdx + (t.side === 'right' ? 1 : -1);
         return units.filter((u) => u.idx === want);
       }
+      case 'alliesInStatus':
+        // allies holding an OPEN self-status window whose name starts with the prefix (same
+        // open test as the requiresSelfStatus gate: expiry > frame); + the owner if includeSelf
+        return units.filter(
+          (u) =>
+            (t.includeSelf === true && u.idx === ownerIdx) ||
+            [...u.selfStatuses].some(
+              ([name, until]) =>
+                name.startsWith(t.statusPrefix) && until > frame
+            )
+        );
       case 'alliesLowestHp':
         // No HP pool in v1 (immortal boss, nobody takes damage) → "lowest remaining HP" is
         // indeterminate; resolved deterministically to the leftmost `count` allies as a documented

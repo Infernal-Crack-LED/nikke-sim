@@ -1,0 +1,186 @@
+{
+  "slug": "rapunzel-sanctuary",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge attack → allies: HP 3.9%",
+      "disposition": "FAITHFUL",
+      "scope": "Fires on every full-charge pull (RL releases only at full charge in-sim, so every shot); heal amount is % of CASTER's final max HP, no HP pool modeled",
+      "durationSemantics": "Instant event per activation, no duration",
+      "triggerIdentity": "fullCharge (kit: 'when performing a Full Charge attack') — for an unswapped RL byte-identical to shotFired, but the block shape must be fullCharge",
+      "targetSet": "allies (all allies; kit says 'Affects all allies')",
+      "nearestWrongModel": "Dropping the heal as inert because no HP pool exists — missing that a heal effect emits recovery events that fire teammates' 'recovery' triggers (taxonomy #4 tandem rule)",
+      "distinguishingAssertion": "In a comp containing an on-recovery consumer, that consumer's recovery-keyed buffApply count tracks rapunzel-sanctuary's shot-event count (one recovery wave per pull); removing the heal effect via withPatchedOverride drops those buffApplies to the consumer's own-heal baseline",
+      "inertness": "Must produce zero damage events and zero stat buffApplies itself; teammates' totals move ONLY via their own recovery-triggered kit lines",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB enter: Attack Damage ▲ 27.45% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Attack Damage (Damage-Up bucket, attackDamagePct) on ALL the holder's damage — not normal-scoped, not atkPct",
+      "durationSemantics": "durationSec 10 (literal seconds; no 'round(s)' wording anywhere in this kit)",
+      "triggerIdentity": "fullBurstEnter — 'when entering Full Burst' = any team FB, NOT burstCast",
+      "targetSet": "alliesInStatus { statusPrefix: 'Into the Fray', includeSelf: true } — self unconditionally; allies ONLY while in the kit-named 'Into the Fray' state, which nothing in THIS kit opens, so in any comp without an external Fray-state carrier the target set is exactly {self}",
+      "nearestWrongModel": "Reading 'Affects self and all allies in the Into the Fray state' as plain self-and-all-allies, over-crediting the whole team's Damage-Up every rotation",
+      "distinguishingAssertion": "At each fullBurstStart, exactly ONE buffApply with stat 'attackDamagePct' value 27.45 whose targetIdx is rapunzel-sanctuary's own slot; zero such buffApplies land on carry/helm/liter in the standard fixture",
+      "inertness": "Teammates' totals(res) must be identical with this block present vs stripped (no Fray carrier in fixture)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Nanoparticle Inj.: Burst CD ▲ 40 sec",
+      "disposition": "UNMODELED",
+      "scope": "Self rider fired only 'when using Nanoparticle Injection' — the burst's ≥3-incapacitated revive, unreachable in v1 (nobody dies)",
+      "durationSemantics": "Permanent once applied ('cannot be removed'); never applied in-sim",
+      "triggerIdentity": "Gated on the once-per-battle Nanoparticle Injection activation, NOT a passive",
+      "targetSet": "self",
+      "nearestWrongModel": "Applying the +40s burst-cooldown penalty passively/unconditionally — her cd 40s becomes 80s, halving burst casts and every downstream 10s buff window",
+      "distinguishingAssertion": "Count her burstCast events over the sim: one per normal B2 rotation at the base 40s cooldown cadence; any encoding that stretches inter-cast gaps toward 80s is RED",
+      "inertness": "No cooldown modification and no defPct buffApply may ever appear; the companion 'Nanoparticle Consumption: DEF ▲ 10%' line is doubly inert (unreachable + self-DEF inert)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Immunity to charge speed ▲/▼ effects",
+      "disposition": "FIX",
+      "scope": "Receiving-side immunity to BOTH directions of charge-speed effects — exactly the charFixes.statImmunities: ['chargeSpeedPct'] primitive (in-battle buff effects only, cube/OL stats unaffected)",
+      "durationSemantics": "Continuous; kit arms it on first full-charge attack but 'continuous' from her first pull (~1s) ≈ whole-fight; whole-fight statImmunities is the faithful encoding",
+      "triggerIdentity": "Nominally fullCharge-armed, effectively permanent — a top-level charFix, not a block",
+      "targetSet": "self (strips incoming chargeSpeedPct applications to her only; other targets of the same cast unaffected)",
+      "nearestWrongModel": "Omitting the immunity — an ally's chargeSpeedPct grant shortens her 60-frame charge, inflating her pull count, her 220.7% rider count, and her per-pull heal cadence",
+      "distinguishingAssertion": "withPatchedOverride a teammate to grant allies chargeSpeedPct: rapunzel-sanctuary's shot-event count and totals(res)['rapunzel-sanctuary'] are unchanged vs baseline while other recipients' cadence shifts",
+      "inertness": "In the standard fixture with no charge-speed granter, encoding vs omitting must be a strict no-op",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Hold Full Charge 1s: shield 7.39% maxHP",
+      "disposition": "UNMODELED",
+      "scope": "Shared shield, % of CASTER final max HP, protecting all allies; gated on NOT being in Goddess Blessing (self-status duty cycle); removed when charging ends",
+      "durationSemantics": "While-charging window, ended by charge release — no durationSec",
+      "triggerIdentity": "'Full Charge MAINTAINED for 1+ sec' — a hold-past-full-charge mechanic; the engine's fullCharge trigger fires on RELEASE and the sim auto-releases at full charge, so this trigger has no primitive and never fires in-sim",
+      "targetSet": "self (shield entity) protecting all allies",
+      "nearestWrongModel": "Proxying it onto fullCharge or an interval trigger — fabricates shield events every pull, spuriously firing any teammate's 'shielded' trigger and requiresShielded gate every second",
+      "distinguishingAssertion": "Zero shield events from rapunzel-sanctuary in the event log; a shield-gated teammate (naga-style) shows identical totals with her present vs absent",
+      "inertness": "⚑ TANDEM FLAG: in a real comp with a shielded-trigger consumer this line is NOT nothing — document in unmodeled with the tandem caveat rather than silently dropping; recipe: footage of hold-charge uptime to decide if an interval approximation is ever warranted",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Goddess Blessing: DEF ▲ 42.24% 10s",
+      "disposition": "UNMODELED",
+      "scope": "DEF ▲ as % of CASTER's DEF to all allies — offensively inert in v1 (defPct has no damage consumer), and its trigger is the same unmodeled 1s-hold",
+      "durationSemantics": "durationSec 10; the Goddess Blessing STATUS is the self-gate that prevents re-proc of both skill2 hold lines (noRetriggerWhileActive-shaped duty cycle)",
+      "triggerIdentity": "Same hold-1s trigger as the shield line, gated 'while NOT in Goddess Blessing'",
+      "targetSet": "all allies",
+      "nearestWrongModel": "Encoding the DEF grant on a reachable trigger 'for completeness' — harmless today but it would misrepresent the duty cycle if a DEF consumer ever ships",
+      "distinguishingAssertion": "No defPct buffApply from her skill2 in the log; if ever modeled, consecutive applications must be ≥10s apart (the Blessing window blocks re-proc)",
+      "inertness": "Must move no damage total for any unit",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter: ATK ▲ 29.17% of caster ATK 10s",
+      "disposition": "FAITHFUL",
+      "scope": "casterAtkPct — flat ATK add resolved from the CASTER's staticAtk at apply time, NOT the target's own atkPct",
+      "durationSemantics": "durationSec 10",
+      "triggerIdentity": "fullBurstEnter (any team FB) — same clause shape as the skill1 FB line",
+      "targetSet": "alliesInStatus { statusPrefix: 'Into the Fray', includeSelf: true } — effectively self-only absent an external Fray carrier",
+      "nearestWrongModel": "Two-headed: (a) stat atkPct 29.17 (scales each target's own ATK — wrong basis), or (b) dropping the Fray gate and granting the flat add team-wide",
+      "distinguishingAssertion": "At each fullBurstStart, exactly one buffApply with stat 'casterAtkPct' whose emitted value ≈ 0.2917 × her staticAtk (a FLAT number, not 29.17), targetIdx = her slot only; carry's total is unchanged when the block is stripped",
+      "inertness": "No buffApply under stat 'atkPct' from this line; no application to non-Fray teammates",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge atk: 220.7% ATK add'l dmg",
+      "disposition": "FAITHFUL",
+      "scope": "Instant flatDamage rider per full-charge pull, % of HER final ATK, single enemy — her main personal damage line",
+      "durationSemantics": "Instant per activation",
+      "triggerIdentity": "fullCharge, target enemy — every pull for an unswapped RL (ammo 6 → 6 riders per magazine, continuing across reloads)",
+      "targetSet": "enemy ('the enemy nearest to the crosshair' = the single boss)",
+      "nearestWrongModel": "Granting the rider core eligibility (tempting next to her 200 coreAttackMultiplier) and/or the +30% range bonus — riders crit at caster rate but get NO core and are force-noRange; secondary misread: folding it into chargeDamagePct, which would wrongly core+range it",
+      "distinguishingAssertion": "One skill-bucket damage event (srcSlot skill2) per shot event, mult = 220.7% of final ATK with rangeApplied === false and zero core component, taking FB by landing timing; event count == her pull count",
+      "inertness": "Must not appear in the charge or burst buckets; must not scale with coreDamagePct buffs",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "≥3 incap: revive 96% / ATK ▲101.37%",
+      "disposition": "UNMODELED",
+      "scope": "Once-per-battle revive branch (Nanoparticle Injection) + casterAtkPct 101.37 + casterDefPct 221.76, all targeting INCAPACITATED allies only — unreachable in v1 (immortal roster, 0 incapacitated always)",
+      "durationSemantics": "10s buffs, once per battle",
+      "triggerIdentity": "burstCast branch selected by incapacitated-ally count, gated 'only one set of effects is applied'",
+      "targetSet": "all incapacitated allies (empty set in-sim)",
+      "nearestWrongModel": "Applying the 101.37% caster-ATK buff on every cast (or first cast) — a ~3× over-credit of her burst's ATK payload vs the live 34.84 branch",
+      "distinguishingAssertion": "No buffApply whose flat value ≈ 1.0137 × her staticAtk ever appears in the log; the only burst-sourced ATK buffApply value is ≈ 0.3484 × staticAtk",
+      "inertness": "Zero events from this branch, ever",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "≤2 incap: ATK ▲ 34.84% caster ATK 10s",
+      "disposition": "FAITHFUL",
+      "scope": "casterAtkPct flat add, team-wide — the always-live branch (0 incapacitated always ≤2) and her main support payload",
+      "durationSemantics": "durationSec 10 — only ~25% uptime on a 40s-cd burst; must expire by expiresFrame, not persist",
+      "triggerIdentity": "burstCast (stage 2) — HER OWN burst skill's body, NOT fullBurstEnter; diverges whenever another Burst-II unit shares the team, and applies pre-FB-window by cast timing",
+      "targetSet": "allies (all allies including self; no 'except self' clause)",
+      "nearestWrongModel": "Keying to fullBurstEnter (over-fires in multi-B2 comps and shifts apply timing to FB entry), or stat atkPct 34.84 scaling each target's own ATK instead of a uniform flat add from HER staticAtk",
+      "distinguishingAssertion": "One buffApply per unit slot (casterIdx = her idx) with stat 'casterAtkPct', value ≈ 0.3484 × HER staticAtk (identical across all targets), on the frame of her burstCast event — strictly BEFORE that rotation's fullBurstStart; expiresFrame ≈ cast + 10s",
+      "inertness": "No application on a rotation where she does not cast (single-B2 fixture: she casts every rotation, so pin the cast-frame coincidence instead)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "In Nanoparticle state: ATK ▲ 34.84%",
+      "disposition": "UNMODELED",
+      "scope": "Alternate burst body while IN Nanoparticle Consumption — state unreachable in v1, but its payload is IDENTICAL to the ≤2-incap branch (same stat, magnitude, targets, duration), so collapsing the burst to one unconditional 34.84 block is behaviorally exact",
+      "durationSemantics": "durationSec 10",
+      "triggerIdentity": "burstCast, gated on the Nanoparticle Consumption self-status",
+      "targetSet": "all allies",
+      "nearestWrongModel": "Encoding BOTH branches on reachable gates so both fire — double-applying (refresh makes this damage-neutral, but it pollutes event-count assertions) ",
+      "distinguishingAssertion": "Exactly one burst-sourced casterAtkPct buffApply per target per cast — never two",
+      "inertness": "No distinct second buff key from the burst slot",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:fullCharge-heal-3.9pct-recovery-tandem",
+    "skill1:fullBurstEnter-attackDamagePct-27.45-self+fray",
+    "skill1:chargeSpeed-statImmunity-both-directions",
+    "skill2:fullBurstEnter-casterAtkPct-29.17-self+fray",
+    "skill2:fullCharge-rider-220.7pct-enemy",
+    "burst:burstCast-casterAtkPct-34.84-all-allies-10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Cooldown of Burst Skill ▲ 40 sec",
+      "Nanoparticle Consumption: DEF ▲ 10%"
+    ],
+    "skill2": [
+      "shared shield, 7.39% of caster max HP",
+      "Goddess Blessing: DEF ▲ 42.24% 10 sec"
+    ],
+    "burst": [
+      "Revives with 96% HP, once per battle",
+      "ATK ▲ 101.37% (≥3 incapacitated branch)",
+      "DEF ▲ 221.76% (≥3 incapacitated branch)",
+      "in Nanoparticle state: ATK ▲ 34.84%"
+    ]
+  },
+  "notes": "FIXTURE: she is Burst II — controlComp's crown occupies B2, so tests need a comp with a B1 + B3 and HER as the B2 (a lone-B2 check is moot; the chain concern mirrors the harness's B3 warning). Expected shared-prior misreads, in order of damage: (1) 'self and all allies in the Into the Fray state' (both FB-enter lines) misread as plain team-wide — nothing in HER kit opens 'Into the Fray', so in isolation both FB buffs are SELF-ONLY; a team-wide encoding over-credits the carry's Damage-Up and flat ATK every rotation. Encode alliesInStatus{statusPrefix:'Into the Fray', includeSelf:true}, never plain allies. (2) burst keyed to fullBurstEnter instead of burstCast — identical in a single-B2 fixture (she casts every rotation), so ONLY a cast-frame-vs-fullBurstStart-frame assertion distinguishes them; demand it. (3) the skill1 'Burst CD ▲ 40 sec' penalty applied passively (cd 40→80s) — it is gated on the unreachable Nanoparticle Injection; assert normal cast cadence. (4) rider defaults on the 220.7% line: no core, no range, FB by timing, crit at sheet rate. (5) Both reachable burst branches grant the identical 34.84 — one unconditional block is exact; branch-gating machinery (selfStatus for a state that can never open) is over-modeling. (6) The heal and shield lines are tandem channels, not damage: the heal IS modelable (fullCharge heal → recovery events, per-pull cadence ≈ 1/s is an unusually fast recovery pump — valuable with on-recovery consumers); the shield is NOT (hold-charge-1s has no engine primitive; the sim auto-releases at full charge) and must go to unmodeled with a tandem caveat, not get a proxy trigger. (7) charge-speed immunity → charFixes.statImmunities:['chargeSpeedPct'], a top-level fix a block-only driver will miss; it covers both ▲ and ▼ directions. All magnitudes are kit-literal (DATAMINED); no CALIBRATED ⚑ values are needed anywhere — a precise invented value should be treated as a red flag. Every duration in this kit is literal seconds; no round-count lines exist.",
+  "model": "claude-fable-5"
+}

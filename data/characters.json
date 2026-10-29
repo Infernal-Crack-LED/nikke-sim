@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-10-09T16:36:33.846Z",
+  "syncedAt": "2026-10-29T13:00:14.134Z",
   "characters": {
     "2b": {
       "slug": "2b",
@@ -915,8 +915,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2025-09-24",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -1469,8 +1469,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 9.5,
-      "releaseDate": "2024-02-15",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.25,
       "treasure": false,
       "skills": {
@@ -1981,11 +1981,11 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2025-09-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["aab", "bade"],
+      "nicknames": ["bade"],
       "skills": {
         "skill1": "■ Activates when landing Full Charge attacks on targets within the effective range. Affects all allies.\nATK ▲ 15.2% of the skill user's ATK for 5 sec.\n■ Activates when attacking with Full Charge. Affects self.\nSpy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec.",
         "skill2": "■ Activates when landing a Full Charge attack on a target within the effective range. Affects all allies.\nPierce Damage ▲ 18.36% for 5 sec.\n■ Activates only if Spy Lens is at max stacks. Affects self.\nGains Pierce. This effect is continuous.\nATK ▲ 16% continuously.",
@@ -2481,8 +2481,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.1,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.7,
       "treasure": false,
       "skills": {
@@ -2915,8 +2915,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
-      "rl3": 5.7,
-      "releaseDate": "2026-08-13",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -3297,8 +3297,8 @@
       "chargeFrames": 90,
       "chargeMultiplier": 350,
       "hitsPerShot": 1,
-      "rl3": 5.6,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -3770,11 +3770,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2024-06-06",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
-      "nicknames": ["awb"],
       "skills": {
         "skill1": "■ Activates after landing 60 normal attack(s). Affects all allies.\nRecovers 7.4% of the skill user's final Max HP as HP.\nCarrot Party: Damage to Interruption Parts ▲2%, stacks up to 5 time(s) and lasts for 5 sec.\n■ Activates after 90 normal attack(s). Affects all Water Code allies.\nStack count of buffs ▲ 1.",
         "skill2": "■ Activates after Full Burst ends. Affects all allies.\nBurst Gauge filling speed ▲ 10% for 5 sec.\n■ Activates when entering Full Burst. Affects all allies.\nMax Ammunition Capacity ▲ 40% for 15 sec.\nReload 40%.",
@@ -4283,8 +4282,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2023-08-03",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -4666,11 +4665,11 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2025-02-06",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
-      "nicknames": ["aim", "manchor", "maids (with mast)"],
+      "nicknames": ["manchor", "maids (with mast)"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects all allies.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Potency of HP ▲ 30.96% for 5 sec.\nTwice: Distributed Damage ▲ 30.4% for 10 sec.\nThree times: Stack count of debuffs ▼ 1.\n■ Activates when entering Full Burst while an ally from the same squad is on the battlefield. Affects all allies.\nRecovers 3.04% of the skill user's Max HP every 1 sec for 8 sec.",
         "skill2": "■ Activates when Full Burst ends. Affects all allies.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Hit Rate ▲ 10.13% for 10 sec.\nTwice: ATK ▲ 35.02% of the skill user's ATK for 10 sec.\nThree times: Reload Speed ▲ 40.04% for 15 sec.",
@@ -5215,12 +5214,12 @@
       "normalAttackMultiplier": 65.02,
       "coreAttackMultiplier": 200,
       "ammo": 6,
-      "reloadFrames": 142,
+      "reloadFrames": 61,
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 42.6,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 3.55,
       "treasure": false,
       "nicknames": ["base anis"],
@@ -5655,11 +5654,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 13,
-      "releaseDate": "2023-08-03",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.5,
       "treasure": false,
-      "nicknames": ["ass", "sanis"],
+      "nicknames": ["sanis"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects all Electric Code allies.\nATK ▲ 55.31% of the skill user's ATK for 10 sec.\nReload Speed ▲ 49.28% for 10 sec.",
         "skill2": "■ Activates when firing the last bullet. Affects the 2 enemy unit(s) with the highest final ATK.\nDeals 382.42% of final ATK as damage. \n■ Activates when firing the last bullet. Affects self.\nDamage to Interruption Parts ▲ 6.91% for 10 sec.",
@@ -6155,11 +6154,11 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 53.424,
-      "releaseDate": "2026-04-23",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
-      "nicknames": ["as", "aniss", "star", "ttanis"],
+      "nicknames": ["aniss", "star", "ttanis"],
       "skills": {
         "skill1": "■ Activates at the start of battle only if self is alive. Affects all allies.\nBurst Gauge filling speed ▲ 6% continuously.\n■ Activates at the start of battle and when Full Burst ends.\nEffects vary according to squad formation. Only one set of effects is applied.\nIf there are no other Burst 1 allies:\nEffect 1: Affects self. Cancels Everyone's Star.\nEffect 2: Affects self. My Own Star: ATK ▲ 40.01%. This effect is continuous and cannot be removed.\nEffect 3: Affects all allies. Cooldown of Burst Skill ▼ 7.48 sec.\nIf there are any other Burst 1 allies:\nEffect 1: Affects self. Cancels My Own Star.\nEffect 2: Affects self. Everyone's Star: Re-enters Burst and changes to Stage 1. This effect is continuous and cannot be removed.\n■ Activates when landing a Full Charge attack. Affects the target.\nDeals 120.13% of final ATK as additional damage.",
         "skill2": "■ Activates when entering Full Burst while in My Own Star status. Affects all allies.\nATK ▲ 35.01% of the skill user's ATK for 10 sec.\n■ Activates when performing a Full Charge attack while in Everyone's Star status. Affects all allies.\nRestores 1.26% of the skill user's final Max HP as HP.\n■ Activates when entering Full Burst. Affects self and all allies with lower final DEF than self.\nProjectile Explosion Damage ▲ 92.03% for 10 sec.\n■ Activates when entering Full Burst. Affects all allies.\nAttack Damage ▲ 34% for 10 sec.",
@@ -6751,11 +6750,11 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2022-12-15",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
-      "nicknames": ["amf", "anne"],
+      "nicknames": ["anne"],
       "skills": {
         "skill1": "■ Activates after 3 normal attacks. Affects all Supporter allies.\nRestores HP equal to 6.07% of attack damage. Lasts for 5 sec.",
         "skill2": "■ Affects all allies. Activates when above 90% HP.\nIncoming Healing ▲ 23.46%.\n■ Activates when the last bullet hits the target while this unit's HP is at 90% or above. Affects all enemies.\nIncoming Healing ▼ 78.93% for 10 sec.",
@@ -7239,8 +7238,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 18,
-      "releaseDate": "2025-05-15",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.5,
       "treasure": false,
       "skills": {
@@ -7817,11 +7816,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2026-03-19",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
-      "nicknames": ["afm", "jkana", "arcanafm"],
+      "nicknames": ["jkana", "arcanafm"],
       "skills": {
         "skill1": "■ Activates when Full Burst ends. Affects all shotgun-wielding allies. \nATK ▲ 13% of the skill user's ATK x stack count of Precious Moments for 15 sec.\n■ Activates when Happy Memories takes effect. Affects self.\nSnapshots of Youth: Normal Attack Damage Multiplier ▲ 10% continuously, stacks up to 3 time(s).\n■ Activates when Full Burst ends. Affects self.\nRemoves Making Memories.\nRemoves Snapshots of Youth.",
         "skill2": "■ Activates when performing normal attacks while in Making Memories status. Affects self.\nEffect varies according to the number of attacks. Only one effect is triggered at a time. Resets when Making Memories is removed.\nTwo times: Reloads 6 rounds.\nFour times: Happy Memories: Number of pellets ▲ 1 continuously. Stacks up to 3 times.\nSix times: Precious Moments: ATK ▲ 2.49% continuously. Stacks up to 3 times.\n■ Activates when using Burst Skill. Affects all shotgun-wielding allies (except self).\nAttack Damage ▲ 55% for 10 sec.",
@@ -8330,8 +8329,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -8751,8 +8750,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2026-06-11",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "nicknames": ["arb", "ark", "ranger", "black"],
@@ -9299,12 +9298,12 @@
       "normalAttackMultiplier": 18.76,
       "coreAttackMultiplier": 200,
       "ammo": 20,
-      "reloadFrames": 84,
+      "reloadFrames": 81,
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 11.4,
-      "releaseDate": "2024-08-22",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.3,
       "treasure": false,
       "skills": {
@@ -9804,11 +9803,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.6,
-      "releaseDate": "2025-02-20",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
-      "nicknames": ["aw", "wasuka"],
+      "nicknames": ["wasuka"],
       "skills": {
         "skill1": "■ Activates after landing 50 normal attack(s). Affects the target(s).\nDeals 471.86% of final ATK as additional damage.\n■ Activates only when in Annihilation State status. Affects self.\nAnnihilation State's additional effect:\nTarget: Affects 2 enemy unit(s) within the attack range nearest to the crosshair every 10 shot(s).\nDamage: Deals 15.62% of final ATK as damage.\nAdditional Effect: Anti A.T. Field: Damage Taken ▲ 0.83% for 30 sec, stacks up to 30 time(s).",
         "skill2": "■ Activates when entering Full Burst while in Annihilation State status. Affects self.\nAttack Damage ▲ 30.97% for 10 sec.\n■ Activates when using Annihilation. Affects self.\nEmergency Repair\nFunction: Reduces MG heating up speed and removes ammo. Fixes reload speed and continuously restores HP based on Max HP.\nEffect 1: MG heating up speed ▼ 100% for 3 sec.\nEffect 2: Removes 100% of ammo.\nEffect 3: Constantly recovers 3.77% of the skill user's final Max HP every 1 sec over 3 sec.\nEffect 4: Reload speed is fixed at a 60% increase for 1 rounds.",
@@ -10462,8 +10461,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2026-04-23",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -10896,8 +10895,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2025-07-17",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": true,
       "skills": {
@@ -11305,8 +11304,8 @@
       "chargeFrames": 90,
       "chargeMultiplier": 350,
       "hitsPerShot": 1,
-      "rl3": 11.2,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -11740,15 +11739,19 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2026-10-08",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
-      "nicknames": ["bpw"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects self.\nGhost Costume: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.\nPrank Preparation: Max HP ▲ 15.84% for 10 sec.\n■ Activates when entering Full Burst. Affects the ally to the right of this unit.\nATK ▲ 44.88% of the skill user's ATK for 10 sec.",
         "skill2": "■ Activates when landing a Full Charge attack while in the Ghost Costume state. Affects the target.\nGhostly Prank: Damage Taken ▲ 10.56% for 10 sec.\n■ Activates when performing a Full Charge attack. Affects the ally to the right  of this unit.\nSustained Damage ▲ 19.97% for 5 sec.",
         "burst": "■ Affects the ally to the right of this unit.\n ATK ▲ 47.52% of the skill user's ATK for 10 sec.\nSustained Damage ▲ 27.23% for 10 sec."
+      },
+      "skillCooldownsSec": {
+        "skill1": null,
+        "skill2": null,
+        "burst": 40
       },
       "role": {
         "weapon": {
@@ -12225,8 +12228,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2023-03-15",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -12738,8 +12741,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2023-05-18",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -13226,7 +13229,7 @@
       "imageUrl": "https://sg-tools-cdn.blablalink.com/ft-15/bt-92/0e343d2ef06fc953c3775f271b0bc94d.png",
       "weapon": "SR",
       "burst": "III",
-      "burstCooldownSec": 40,
+      "burstCooldownSec": 20,
       "class": "Attacker",
       "element": "Water",
       "manufacturer": "Tetra",
@@ -13237,8 +13240,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2025-03-27",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -13814,8 +13817,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -14209,11 +14212,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12.2,
-      "releaseDate": "2025-12-11",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
-      "nicknames": ["bst", "xbrid", "bridsl"],
+      "nicknames": ["xbrid", "bridsl"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects all Wind Code enemies.\nDamage Taken ▲ 15.12% for 10 sec.\n■ Activates when entering Full Burst. Affects all enemies.\nDeals 636% of final ATK as damage.",
         "skill2": "■ Activates after 10 normal attack(s). Affects 1 Wind Code enemy unit(s) with the lowest remaining HP.\nDamage Taken ▲ 12.12% for 10 sec.\n■ Activates after 5 normal attack(s). Affects 1 enemy unit(s) with the lowest remaining HP.\nDeals 675% of final ATK as damage.",
@@ -14705,12 +14708,12 @@
       "normalAttackMultiplier": 61.3,
       "coreAttackMultiplier": 200,
       "ammo": 6,
-      "reloadFrames": 111,
+      "reloadFrames": 51,
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 41.4,
-      "releaseDate": "2026-02-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 3.45,
       "treasure": true,
       "skills": {
@@ -15118,8 +15121,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2025-10-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -15527,8 +15530,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2026-02-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -16067,8 +16070,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 200,
       "hitsPerShot": 1,
-      "rl3": 3.6,
-      "releaseDate": "2024-10-31",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.225,
       "treasure": false,
       "nicknames": ["cindy"],
@@ -16531,11 +16534,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2026-07-02",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
-      "nicknames": ["ccw", "scindy"],
+      "nicknames": ["scindy"],
       "skills": {
         "skill1": "■ Activates upon reloading to max ammunition while in the Preparation for Change state. Affects self.\nChanges the weapon in use: Snipe Mode\nCharge Time: 1 sec\nDamage: 62.13% of final ATK\nFull Charge Damage: 250% of damage\nMax Ammunition Capacity: 15 rounds (max ammunition effect refreshes after reloading)\nAdditional Effect 1: Gains Pierce.\nAdditional Effect 2: Activates when performing a Full Charge attack. Expends ammo. Amount: 40 round(s).\nAdditional Effect 3: Charge time is fixed at 1 sec.\nRemoval Condition: Reloading to max ammunition while in the Preparation for Change state.\n■ Activates at the start of battle. Affects self.\nBeauty-Full: Attack Damage ▲ 24% continuously.\n■ Activates upon reloading to max ammunition. Affects self.\nPreparation for Change: Reload time is fixed at 3 sec for 6 sec. Removed upon firing the last bullet.\n■ Activates every 5 sec. Affects the enemy unit nearest to the crosshair.\nDeals 900% of final ATK as damage.\n■ Activates each time total ammo consumed by allies reaches 200. Affects all allies.\nFills Burst Gauge by 12%.",
         "skill2": "■ Activates at the start of battle and when using Burst Skill. Affects self.\nDecoy: Creates an avatar with 70.34% of the skill user's final Max HP. This effect is continuous.\n■ Activates at the start of battle. Affects self.\nATK ▲ 29% continuously.\n■ Activates when Snipe Mode takes effect. Affects self.\nDestroy: Damage to Parts ▲ 26.21% continuously.\nRemoves Pinpoint.\n■ Activates at the start of battle and when Snipe Mode is removed. Affects self.\nPinpoint: Damage dealt when attacking core ▲ 26% continuously.\nRemoves Destroy.\n■ Activates when entering Full Burst after this unit uses her Burst Skill.\nEffect varies according to this unit's current mode. Only one effect is applied.\nActivates while in Snipe Mode. Affects all enemies (including parts).\nEffect 1: Deals 1189.66% of final ATK as damage.\nActivates while not in Snipe Mode. Affects all enemies with activated cores.\nEffect 1: Deals 833.79% of final ATK as core strike damage.",
@@ -17110,8 +17113,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2025-09-24",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -17519,8 +17522,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2024-06-20",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -17992,8 +17995,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2023-02-01",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -18426,8 +18429,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
-      "rl3": 11.4,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -18821,8 +18824,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2024-04-25",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -19399,8 +19402,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2025-04-10",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -20567,8 +20570,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 7.95,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.65,
       "treasure": false,
       "skills": {
@@ -20975,11 +20978,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2025-10-16",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
-      "nicknames": ["dnt"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects all enemies.\nNinjutsu Acid Bomb: Damage Taken ▲ 12% for 15 sec.\n■ Activates when using Burst Skill. Affects self.\nATK ▲ 15.04% for 10 sec.\n■ Activates when using Burst Skill. Affects enemies within attack range nearest to the crosshair.\nNinjutsu Hyper Acid Bomb: Damage Taken ▲ 8% for 10 sec.",
         "skill2": "■ Activates at the start of battle.\nEffects vary according to squad formation. Only one set of effects is applied.\nAffects self if there are no other Defender allies in the squad.\nEffect 1: Creates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.\nEffect 2: Attract: Taunt all enemies continuously.\nAffects self if there is another Defender ally in the squad.\nEffect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.\nEffect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously.\n■ Activates when performing 200 normal attack(s). Affects self while in Attract status.\nCreates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.\n■ Affects self every 4 sec while in Ninjutsu Injection status.\nNinjutsu IFAK lasts for 4 sec.\nFunction: Stores up HP recovery for a time, after which all allies are healed for the stored amount.\nEffect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.\nEffect 2: Once the duration ends, all allies are healed for the stored recovery amount.",
@@ -21620,8 +21622,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2024-05-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": true,
       "skills": {
@@ -22080,11 +22082,11 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2025-12-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
-      "nicknames": ["dws", "xdiesel", "dieselws"],
+      "nicknames": ["xdiesel", "dieselws"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst for the first time after using Burst Skill. Affects self.\nIntro: Critical damage ▲ 20.28% continuously. This effect cannot be removed. Effect persists after revival.\n■ Activates when entering Full Burst for the first time without using own Burst Skill. Affects self.\nHighlight: Critical damage ▲ 20.28% continuously. This effect cannot be removed. Effect persists after revival.\n■ Activates when entering Full Burst. Affects self if in Intro status.\nSustained damage ▲ 60.19% for 10 sec.\n■ Activates when entering Full Burst. Affects self if in Highlight status.\nSustained damage ▲ 235.03% for 10 sec.",
         "skill2": "■ Activates when an ally or self destroys an enemy's part. Affects all allies (except self).\nMute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.\n■ Activates when an ally or self destroys an enemy's part. Affects self.\nSustained Damage ▲ 68.04% for 15 sec.\n■ Activates when performing a Full Charge attack. Affects self.\nSustained Damage ▲ 318.14% for 3 sec. Stacks up to 2 times.\n■ Activates when entering Full Burst. Affects the stage target.\nDeals 63.33% of final ATK as sustained damage every 1 sec for 9 sec.",
@@ -22698,11 +22700,10 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2024-03-07",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["dkw"],
       "skills": {
         "skill1": "■ Activates when attacking with Full Charge for 3 time(s). Affects self.\nGain Pierce for 1 shot.\n■ Activates when entering Full Burst. Affects all allies with a Sniper Rifle.\nPierce Damage ▲13.55% for 10 sec.",
         "skill2": "■ Activates when attacking with Full Charge for 8 time(s). Affects all allies.\nCooldown of Burst Skill ▼ 7 sec.\n■ Activates when attacking with Full Charge for 5 time(s). Affects all allies.\nAttack damage ▲ 5.06% for 10 sec.",
@@ -23185,8 +23186,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -23671,8 +23672,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2023-04-27",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -24108,11 +24109,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2025-07-17",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
-      "nicknames": ["ds", "sdoro"],
+      "nicknames": ["sdoro"],
       "skills": {
         "skill1": "■ Activates when hitting the target with 80 pellets. Affects self.\nGains Pierce for 3 round(s).\nHit Rate ▲ 98.18% for 3 round(s).\nAttack damage ▲ 72% for 3 round(s).\nPellet count is fixed at 1 for 3 round(s).\n■ Activates when hitting the target with 160 pellets. Affects self.\nExpands Pierce range by 200% for 3 round(s).",
         "skill2": "■ Activates at the start of battle. Affects self.\nPierce damage ▲ 55.08% continuously.\n■ Activates only during Full Burst. Affects self.\nATK ▲ 75.24% continuously.\nHit Rate ▲ 40.68% continuously.",
@@ -24634,12 +24635,12 @@
       "normalAttackMultiplier": 214.3,
       "coreAttackMultiplier": 200,
       "ammo": 9,
-      "reloadFrames": 111,
+      "reloadFrames": 51,
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 27.45,
-      "releaseDate": "2025-01-16",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 4.5,
       "treasure": true,
       "skills": {
@@ -25085,11 +25086,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
+      "rl3": null,
       "releaseDate": "2026-09-03",
       "burstGaugePerShot": 2,
       "treasure": false,
-      "nicknames": ["dgv", "drakegv", "vdrake"],
+      "nicknames": ["drakegv", "dgv", "vdrake"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects self.\nChanges the weapon in use: Super Duper Overdrive\nCharge Time: Fixed at 1.5 sec\nDamage: 243.75% of final ATK\nPellet Count: 15\nFull Charge Damage: 300%\nMax Ammunition Capacity: 6\n■ Activates when Super Duper Overdrive ends. Affects self.\nRemoves 100% of ammo.",
         "skill2": "■ Activates when Full Burst ends. Affects all allies.\nMax HP ▲ 10.5% of the skill user's max HP (without restoring HP) continuously. Stacks up to 4 times.\n■ Activates at the start of battle. Affects self.\nFashionably Late: ATK ▲ 6.23% of the skill user's final max HP continuously.",
@@ -26022,8 +26023,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 14,
-      "releaseDate": "2024-07-25",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -26498,8 +26499,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2024-02-22",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -26984,11 +26985,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2025-07-24",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
-      "nicknames": ["ebas", "selegg", "segg"],
+      "nicknames": ["selegg", "segg"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects 1 random enemy.\nPossession lasts for 6 sec.\nAbility: Find and capture ghosts possessing the enemy.\nRequired hit count: 100 time(s) in total, cumulative across all allies.\nEffect: Captures 1 ghost when the required hit count reaches 100%. A maximum of 13 ghost(s) can be captured.\nRecurring interval: 6 sec\n■ Affects all Water Code allies.\nEffects vary according to the number of ghosts. Each subsequent effect triggers all effects before it:\n1 or more ghosts:\nATK ▲ 16.2% of the skill user's ATK continuously.\n4 or more ghosts:\nElemental Advantage Attack Damage ▲ 35% continuously.",
         "skill2": "■ Activates when using Burst Skill. Affects self.\nATK ▲ 40% for 10 sec.\n■ Activates when a ghost is captured while at maximum ghost capacity. Affects all enemies.\nDeals 1100% of final ATK as damage.",
@@ -27512,8 +27513,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 37.8,
-      "releaseDate": "2024-03-21",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "nicknames": ["emi"],
@@ -28002,8 +28003,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -28423,8 +28424,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2025-08-07",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["emmatu"],
@@ -28910,8 +28911,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -29344,8 +29345,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -29791,8 +29792,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.7,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.9,
       "treasure": false,
       "skills": {
@@ -30264,8 +30265,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2025-08-14",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["eunwhatu"],
@@ -30725,8 +30726,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2025-06-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -31211,8 +31212,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2024-05-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": true,
       "skills": {
@@ -31684,8 +31685,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2026-07-23",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": true,
       "skills": {
@@ -32183,8 +32184,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -32643,8 +32644,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 7.95,
-      "releaseDate": "2024-05-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.65,
       "treasure": true,
       "skills": {
@@ -33103,8 +33104,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 17.1,
-      "releaseDate": "2024-11-07",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.45,
       "treasure": false,
       "skills": {
@@ -33645,8 +33646,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -34123,7 +34124,7 @@
       "burstCooldownSec": 40,
       "class": "Attacker",
       "element": "Water",
-      "manufacturer": "Pilgrim",
+      "manufacturer": "Elysion",
       "normalAttackMultiplier": 13.65,
       "coreAttackMultiplier": 200,
       "ammo": 60,
@@ -34131,11 +34132,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2024-12-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
-      "nicknames": ["gws"],
       "skills": {
         "skill1": "■ Activates every time EXP stacks 10. Affects self.\nHero Level Up: Reaches a maximum of Level 11.\nHero Level Up Reward: Reloads 10.26%.\nHero Level Up Reward: Recovers 2.44% of the skill user's final Max HP.\n■ Activates when Hero levels up. Affects all Water Code allies.\nElemental Advantage Attack Damage ▲ 1.16% * Hero Level continuously.\nATK ▲ 0.91% of the skill user's ATK * Hero Level continuously.",
         "skill2": "■ Activates after landing 6 normal attack(s) without hitting the core. Affects self.\nEXP: ATK ▲ 1.81%, stacks up to 100 time(s) continuously. \n■ Activates when hitting the Core for 3 time(s). Affects self.\nEXP: ATK ▲ 1.81%, stacks up to 100 time(s) continuously.\n■ Activates when Hero Level is 2 or above. Affects self.\nElemental Advantage Attack Damage ▲ 7.46% continuously.",
@@ -34696,8 +34696,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2023-01-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -35182,11 +35182,11 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2026-09-17",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["gmb", "bguilty"],
+      "nicknames": ["bguilty"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nATK ▲ 20.1%. This effect is continuous.\n■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds while this unit is not in the Mighty Stomp state. Affects self.\nInitiates a new Bunny Mode based on the current mode.\nActivates if this unit is in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\nActivates if this unit is not in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. \nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
         "skill2": "■ Activates only if this unit is in the Bunny Mode: Engage state.\nChain Release\nFunction: Changes some attacks' damage into true damage.\nEffect 1: Affects self. Normal attacks deal true damage. This effect is continuous and cannot be removed.\nEffect 2: Affects self. Mighty Stomp deals true damage. This effect is continuous and cannot be removed.\nEffect 3: Activates when landing a Full Charge attack. Affects the target. Deals 370.08% of final ATK as true damage.\n■ Activates only when this unit is in the Bunny Mode: Stance state.\nChain Enhance\nFunction: Enhances this unit's offensive capabilities.\nEffect 1: Affects self. Attack Damage ▲ 20.45%. This effect is continuous and cannot be removed.\nEffect 2: Affects self. Charge Damage ▲ 40%. This effect is continuous and cannot be removed.\nEffect 3: Activates when landing a Full Charge attack. Affects the target. Deals 450.89% of final ATK as additional damage.",
@@ -35656,8 +35656,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 14.5,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.9,
       "treasure": false,
       "skills": {
@@ -36104,8 +36104,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2025-01-16",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": true,
       "nicknames": ["thelm"],
@@ -36552,11 +36552,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.8,
-      "releaseDate": "2023-08-10",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
-      "nicknames": ["ha", "shelm"],
+      "nicknames": ["shelm"],
       "skills": {
         "skill1": "■ Activates after landing 30 normal attacks. Affects the target.\nDeals 131.34% of final ATK as additional damage.\n■ Activates when entering Full Burst. Affects all allies.\nEffects vary according to the number of times entered. Each subsequent effect triggers all effects before it:\nOnce: Cooldown of Burst Skill ▼ 1.82 sec.\nTwice: Cooldown of Burst Skill ▼ 2.2 sec.\nThree times: Cooldown of Burst Skill ▼ 2.6 sec.",
         "skill2": "■ Affects 1 enemy unit(s) randomly.\nDeals 105.58% of final ATK as damage.\n■ Activates when attacking an Electric Code target. Affects the target.\nDamage Taken ▲ 5.64%, stacks up to 5 time(s) and lasts for 5 sec.",
@@ -37026,8 +37026,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.7,
-      "releaseDate": "2023-02-22",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.9,
       "treasure": false,
       "skills": {
@@ -37486,11 +37486,10 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
-      "nicknames": ["if"],
       "skills": {
         "skill1": "■ Activates when the last bullet hits the target. Affects the target.\nATK ▼ 16.52% for 5 sec.",
         "skill2": "■ Affects 1 enemy unit(s) with the highest final ATK.\nATK ▼ 39.37% for 5 sec.",
@@ -37891,11 +37890,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
-      "nicknames": ["io"],
       "skills": {
         "skill1": "■ Activates when the last bullet hits the target. Affects 1 ally unit(s) with the lowest HP percentage. \nRecovers 4.86% of the skill user's final Max HP as HP.",
         "skill2": "■ Affects 1 ally unit(s) with the lowest HP percentage. \nRecovers 9.69% of the skill user's final Max HP as HP.",
@@ -38269,11 +38267,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 9.5,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.25,
       "treasure": false,
-      "nicknames": ["is"],
       "skills": {
         "skill1": "■ Affects self. Activates after landing 10 normal attack(s).\nDEF ▲ 7.56% for 5 sec.",
         "skill2": "■ There is a 20% chance to activate when attacked. \nATK ▲ 9.09% for 5 sec.",
@@ -38673,8 +38670,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -39156,12 +39153,12 @@
       "normalAttackMultiplier": 65.02,
       "coreAttackMultiplier": 200,
       "ammo": 6,
-      "reloadFrames": 142,
+      "reloadFrames": 61,
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 42.6,
-      "releaseDate": "2023-01-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 3.55,
       "treasure": false,
       "skills": {
@@ -39660,8 +39657,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 13.2,
-      "releaseDate": "2025-10-02",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.1,
       "treasure": false,
       "skills": {
@@ -40187,8 +40184,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2025-07-17",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": true,
       "skills": {
@@ -41120,8 +41117,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2024-04-25",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -41580,8 +41577,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2026-02-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -41988,8 +41985,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 12.9504,
-      "releaseDate": "2026-01-15",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -42474,8 +42471,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 34.8,
-      "releaseDate": "2024-05-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.45,
       "treasure": true,
       "nicknames": ["tlaplace"],
@@ -42483,6 +42480,11 @@
         "skill1": "■ Activates when attacking with Full Charge. Affects self.\nHero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 15 sec.",
         "skill2": "■ Activates when hitting a target with Full Charge. Affects the target.\nDeals 132.45% of final ATK as additional damage. \n■ Activates when hitting the target's Parts. Affects the target's body.\nDeals 14.78% of final ATK as additional damage.",
         "burst": "■ Affects self. \nChanges the weapon in use: \nFirst Damage: 1455.72% of final ATK\nNormal Damage: 22.2% of final ATK\nDuration: 10 sec\nAdditional Effect 1: Gains Pierce.\nAdditional Effect 2: Normal damage is applied as true damage when Hero Vision is at max stacks.\nNote: Unable to take cover while using Burst Skill.\n■ Affects the same enemy unit(s) when Hero Vision is at max stacks.\nDeals 11.9% of final ATK as true damage."
+      },
+      "skillCooldownsSec": {
+        "skill1": null,
+        "skill2": null,
+        "burst": 40
       },
       "role": {
         "weapon": {
@@ -42905,11 +42907,11 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 24,
-      "releaseDate": "2026-07-23",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.5,
       "treasure": false,
-      "nicknames": ["luh", "lapuh", "lap alt", "lapluh"],
+      "nicknames": ["lapuh", "lap alt", "lapluh", "luh"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nATK ▲ 4.05% of the skill user's final max HP continuously.\n■ Activates when performing a Full Charge attack. Affects self.\nWarm Up: Charge Speed ▲ 10% continuously. Stacks up to 5 times.\n■ Activates when Warm Up is at max stacks. Removes stacks and affects self.\nChanges the weapon in use: Electric Power, Fully Full Charge\nDamage: 9.45% of final ATK\nMax Ammunition Capacity: 120 (max ammunition effects refresh when the weapon in use changes)\nDeactivation condition: When all rounds are fired\nAdditional Effect: Gains Pierce\n■ Activates when Electric Power, Fully Full Charge ends. Affects self.\nRemoves 100% of ammo.",
         "skill2": "■ Activates after performing 12 normal attacks while in the Electric Power, Fully Full Charge state. Affects self.\nOver Energy ▲ 5% continuously, up to 100%.\n■ Activates when Over Energy reaches 100%. Resets Over Energy and affects self.\nAdvances to the next Over Energy stage. Effects vary for each stage of Over Energy. Each subsequent effect triggers all effects before it:\nStage 1: Max HP ▲ 2% continuously.\nStage 2: Max HP ▲ 3% continuously.\nStage 3: Max HP ▲ 7% continuously.\nStage 4: Max HP ▲ 10.5% continuously.\n■ Activates when entering Burst Stage 3. Affects self.\nAttack Damage ▲ 52.14% for 10 sec.",
@@ -43486,8 +43488,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2024-01-11",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -44011,8 +44013,8 @@
       "chargeFrames": 90,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 33.6,
-      "releaseDate": "2025-11-06",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["lib", "libby"],
@@ -44500,8 +44502,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2025-06-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -44921,8 +44923,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -45407,11 +45409,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 6.2,
-      "releaseDate": "2025-04-24",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
-      "nicknames": ["lm", "siren"],
+      "nicknames": ["siren"],
       "skills": {
         "skill1": "■ Activates only when in Focusing status. Affects all allies.\nFocuses fire continuously.\n■ Activates when Full Burst ends. Affects all allies.\nCooldown of Burst Skill ▼ 7.48 sec.\n■ Activates when entering Full Burst. Affects all allies.\nAttack Damage ▲ 4% for 10 sec.\n■ Activates each time the total ammo expended by allies reaches 400. Affects all allies.\nFills Burst Gauge by 37%.",
         "skill2": "■ Activates when the enemy appears. Affects the target.\nBubble: Damage Taken ▲ 5.05% continuously.\n■ Activates after landing 50 normal attacks. Affects the target if the target is in Bubble status.\nExplosive Bubble: Damage Taken ▲ 5.05% continuously.\nStuns for 3 sec.\nRemoves Bubble.\n■ Activates every 1 sec only during Full Burst. Affects random enemy units.\nDeals 63.36% of final ATK as damage. Attacks sequentially 4 times.\n■ Activates each time the total ammo expended by allies reaches 500. Affects random enemy units.\nBubble Barrage: Deals 85% of final ATK as damage. Attacks sequentially 10 times.",
@@ -45973,8 +45975,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 8.55,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.15,
       "treasure": false,
       "skills": {
@@ -46446,11 +46448,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.6,
-      "releaseDate": "2023-12-07",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
-      "nicknames": ["lwo", "xlud", "lewd"],
+      "nicknames": ["xlud", "lewd"],
       "skills": {
         "skill1": "■ Activates when landing 60 normal attack(s). Affects the target.\nDamage Taken ▲ 12.56% for 3 sec.\nDeals 158.43% of final ATK as additional damage.\n■ Activates when landing 60 normal attack(s). Affects self.\nReloads 20 round(s) of ammunition.",
         "skill2": "■ Activates when hitting the Core for 60 time(s). Affects the target.\nDeals 109.64% of final ATK as additional damage. \n■ Activates at the beginning of Full Burst. Affects self.\nCritical Rate ▲ 14.6% for 10 sec.",
@@ -46942,12 +46944,12 @@
       "normalAttackMultiplier": 231.6,
       "coreAttackMultiplier": 200,
       "ammo": 9,
-      "reloadFrames": 142,
+      "reloadFrames": 61,
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 27,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 4.5,
       "treasure": false,
       "skills": {
@@ -47367,11 +47369,11 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 27.3,
-      "releaseDate": "2024-12-05",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.82,
       "treasure": false,
-      "nicknames": ["mir", "xmaiden"],
+      "nicknames": ["xmaiden"],
       "skills": {
         "skill1": "■ Activates when entering Burst Stage 1. Affects self when MP is 0.\nMP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.\n■ Activates when entering Full Burst. Affects self when MP is above 1.\nMP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.\n■ Activates when attacking with Full Charge for 6 time(s). Affects self.\nMax HP ▲ 6.34% without restoring HP for 15 sec, stacks up to 10 time(s).",
         "skill2": "■ Activates when MP is replenished. Affects all Electric Code allies except for self.\nElemental Advantage Attack Damage ▲ 40.9% for 10 sec.\nATK ▲ 20.9% of the skill user's ATK for 10 sec.\n■ Activates when MP is used. Affects self.\nElemental Advantage Attack Damage ▲ 31.68% for 10 sec.\nATK ▲ 3.2% of the skill user's final Max HP for 10 sec.\n■ Activates when attacking with Full Charge for 1 time(s). Affects 1 enemy unit(s) nearest to the crosshair. \nDeals 547.62% of final ATK as damage.",
@@ -47946,8 +47948,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2023-02-22",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -48458,8 +48460,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 16.188,
-      "releaseDate": "2025-01-16",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.25,
       "treasure": false,
       "skills": {
@@ -48996,8 +48998,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2023-09-21",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -49443,11 +49445,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2026-07-09",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
-      "nicknames": ["mms", "smarci", "marcims", "smarciana", "marcianams"],
+      "nicknames": ["smarci", "marcims", "smarciana", "marcianams"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst after this unit uses her Burst Skill. Affects the 1 enemy unit(s) with the highest final Max HP.\nFlagged Target Designation\nEffect 1: Deals 3789.25% of final ATK as additional damage.\nEffect 2: Activates when the target is alive.\nFlagged Target: ATK ▼ 10.56% for 10 sec.\n■ Activates when an enemy is neutralized if the target is in the Flagged Target state. Affects 1 random enemy unit(s).\nFlagged Target Designation\nEffect 1: Deals 3789.25% of final ATK as additional damage.\nEffect 2: Activates when the target is alive.\nFlagged Target: ATK ▼ 10.56% for 10 sec.\n■ Activates when landing 20 normal attacks against a target in the High-Risk Target state. Affects the target.\nDeals 152.68% of final ATK as additional damage.",
         "skill2": "■ Activates at the start of battle. Affects self.\nWhistle: ATK ▲ 32.73% continuously. Stacks up to 5 times.\nWhistle stacks ▲ 4.\n■ Activates every time there are 3 or fewer Raptures present for a period of 5 sec. Affects self.\nWhistle: ATK ▲ 32.73% continuously. Stacks up to 5 times.\n■ Activates every time there are 6 or more Raptures present for a period of 1 sec.\nPenguin Emergency Dispatch\nFunction: Expends Whistle stacks to attack Raptures when there are 6 or more present.\nEffect 1: Affects all enemies. Deals 214.36% of final ATK as additional damage.\nEffect 2: Affects self. Whistle stacks ▼ 1.\n■ Only activates when a Rapture appears or is neutralized while there are 5 or fewer Raptures. Affects self.\nElemental Advantage Attack Damage ▲ 20.41% continuously.",
@@ -50049,7 +50051,7 @@
       "imageUrl": "https://sg-tools-cdn.blablalink.com/xw-36/ii-24/aa78e353677bdefb6b957cea4701af8f.png",
       "weapon": "SR",
       "burst": "II",
-      "burstCooldownSec": 20,
+      "burstCooldownSec": 40,
       "class": "Supporter",
       "element": "Electric",
       "manufacturer": "Abnormal",
@@ -50060,8 +50062,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2024-09-05",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -50511,6 +50513,587 @@
         "resourceId": 832
       }
     },
+    "marian-queen": {
+      "slug": "marian-queen",
+      "name": "Marian: Queen",
+      "imageUrl": "https://sg-tools-cdn.blablalink.com/nt-76/pa-11/bb8f1765d88ffee723d6efc545d68dca.png",
+      "weapon": "MG",
+      "burst": "III",
+      "burstCooldownSec": 40,
+      "class": "Attacker",
+      "element": "Fire",
+      "manufacturer": "Pilgrim",
+      "normalAttackMultiplier": 5.57,
+      "coreAttackMultiplier": 200,
+      "ammo": 300,
+      "reloadFrames": 171,
+      "chargeFrames": 0,
+      "chargeMultiplier": 0,
+      "hitsPerShot": 1,
+      "rl3": null,
+      "releaseDate": null,
+      "burstGaugePerShot": 0.05,
+      "treasure": false,
+      "skills": {
+        "skill1": "■ Activates at the start of battle. Affects self.\nInto the Fray: Sharpened Resolve\nFunction: Launches Dark Matter spears at random enemies.\nEffect 1: Affects random enemies. Dark Matter Spear: Deals 125.51% of final ATK as damage. Attacks sequentially 7 times.\nEffect 2: Activates when landing a hit with a Dark Matter spear. Affects the target. Open Wounds: Damage Taken ▲ 5.05%. This effect is continuous and cannot be removed.\nRecurring interval: 4 sec\n■ Activates when using Burst Skill. Affects all enemies.\nOpen Wounds: Damage Taken ▲ 5.05%. This effect is continuous and cannot be removed.",
+        "skill2": "■ Activates when using Burst Skill. Affects self.\nInto the Fray: Penetrant Wish\nFunction: Deals core damage to all enemies in the Open Wounds state.\nEffect 1: Activates after performing 2 normal attacks. Affects all enemies in the Open Wounds state. Deals 14.06% of final ATK as core strike damage.\nEffect 2: Affects self. Recurring interval of Into the Fray: Sharpened Resolve ▼ 2 sec.\nDuration: 10 sec\n■ Activates when entering Full Burst while not in the Into the Fray: Penetrant Wish state. Affects self.\nSequential Attack Damage ▲ 85.17% for 10 sec.\n■ Activates when entering Full Burst while in the Into the Fray: Penetrant Wish state. Affects self.\nCore Damage ▲ 24.64% for 10 sec.",
+        "burst": "■ Affects self.\nReloads 100% of ammo.\nMachine Gun Ramp-Up Speed ▲ 100% for 10 sec.\nATK ▲ 78.4% for 10 sec.\nAttack Damage ▲ 78.14% for 10 sec.\n■ Affects all enemies.\nDeals 1346.4% of final ATK as Burst Skill damage."
+      },
+      "role": {
+        "weapon": {
+          "shot_id": 1001901,
+          "shot_detail": {
+            "id": 1001901,
+            "damage": 557,
+            "max_ammo": 300,
+            "shake_id": 2,
+            "ShakeType": "Fire_MG",
+            "box_width": 0,
+            "fire_type": "Instant",
+            "zoom_rate": 0,
+            "aim_prefab": "base_aim_reference_c019",
+            "box_height": 0,
+            "input_type": "DOWN",
+            "shot_count": 1,
+            "ShakeWeight": 120,
+            "attack_type": "Metal",
+            "camera_work": "camera_work_01",
+            "charge_time": 0,
+            "fire_timing": 0,
+            "penetration": 0,
+            "reload_time": 250,
+            "shot_timing": "Concurrence",
+            "spot_radius": 0,
+            "weapon_type": "MG",
+            "is_targeting": false,
+            "muzzle_count": 1,
+            "rate_of_fire": 60,
+            "name_localkey": "Machine Gun",
+            "prefer_target": "TargetPS",
+            "reload_bullet": 10000,
+            "counter_enermy": "Metal_Type",
+            "multi_aim_range": 0,
+            "spot_last_delay": 20,
+            "core_damage_rate": 20000,
+            "end_rate_of_fire": 4200,
+            "spot_first_delay": 20,
+            "center_shot_count": 0,
+            "reload_start_ammo": 299,
+            "full_charge_damage": 10000,
+            "multi_target_count": 0,
+            "spot_radius_object": 0,
+            "prefer_target_arena": "None",
+            "burst_energy_pershot": 500,
+            "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+            "maintain_fire_stance": 0,
+            "spot_explosion_range": 0,
+            "use_function_id_list": [0],
+            "accuracy_change_speed": 150,
+            "hurt_function_id_list": [0],
+            "spot_projectile_speed": 0,
+            "accuracy_change_pershot": 7,
+            "prefer_target_condition": "None",
+            "rate_of_fire_reset_time": 100,
+            "full_charge_burst_energy": 0,
+            "end_accuracy_circle_scale": 10,
+            "auto_accuracy_change_speed": 150,
+            "rate_of_fire_change_pershot": 100,
+            "start_accuracy_circle_scale": 250,
+            "target_burst_energy_pershot": 1000,
+            "auto_accuracy_change_pershot": 7,
+            "prefer_target_condition_arena": "None",
+            "auto_end_accuracy_circle_scale": 10,
+            "auto_start_accuracy_circle_scale": 250
+          },
+          "bonusrange_max": 55,
+          "bonusrange_min": 35
+        },
+        "burstMeta": {
+          "burst_duration": 1000,
+          "use_burst_skill": "Step3",
+          "burst_apply_delay": 1,
+          "change_burst_step": "StepFull"
+        },
+        "skillDetails": {
+          "skill1_id": 2019101,
+          "skill2_id": 2019201,
+          "skill1_table": "StateEffect",
+          "skill2_table": "StateEffect",
+          "skill1_detail": {
+            "id": 2019101,
+            "icon": "icn_skill_damage_01",
+            "group_id": 20191,
+            "skill_level": 1,
+            "name_localkey": "Sharpened Resolve",
+            "next_level_id": 2019102,
+            "level_up_cost_id": 10102,
+            "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF><word_group=10111>Into the Fray</word_group>: Sharpened Resolve\nFunction: Launches Dark Matter spears at random enemies.\nEffect 1: Affects random enemies. Dark Matter Spear: Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as damage. <word_group=10050>Attacks sequentially</word_group> {description_value_02} times.\nEffect 2: Activates when landing a hit with a Dark Matter spear. Affects the target. Open Wounds: Damage Taken ▲ {description_value_03}%. This effect is continuous and cannot be removed.\n<word_group=10085>Recurring interval</word_group>: {description_value_04} sec</color>\n■ Activates when using Burst Skill. Affects all enemies.\n<color=#00AEFF>Open Wounds: Damage Taken ▲ {description_value_03}%. This effect is continuous and cannot be removed.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "74.16",
+                  "79.87",
+                  "85.57",
+                  "91.28",
+                  "96.98",
+                  "102.69",
+                  "108.39",
+                  "114.1",
+                  "119.8",
+                  "125.51"
+                ]
+              },
+              {
+                "description_value": [
+                  "7",
+                  "7",
+                  "7",
+                  "7",
+                  "7",
+                  "7",
+                  "7",
+                  "7",
+                  "7",
+                  "7"
+                ]
+              },
+              {
+                "description_value": [
+                  "2.98",
+                  "3.21",
+                  "3.44",
+                  "3.67",
+                  "3.9",
+                  "4.13",
+                  "4.36",
+                  "4.59",
+                  "4.82",
+                  "5.05"
+                ]
+              },
+              {
+                "description_value": [
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4",
+                  "4"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 1"
+          },
+          "skill2_detail": {
+            "id": 2019201,
+            "icon": "icn_skill_coredamage_01",
+            "group_id": 20192,
+            "skill_level": 1,
+            "name_localkey": "Synthetic World",
+            "next_level_id": 2019202,
+            "level_up_cost_id": 10202,
+            "description_localkey": "■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF><word_group=10111>Into the Fray</word_group>: Penetrant Wish\nFunction: Deals core damage to all enemies in the Open Wounds state.\nEffect 1: Activates after performing {description_value_01} normal attacks. Affects all enemies in the Open Wounds state. Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as <word_group=10104>core strike damage</word_group>.\nEffect 2: Affects self. <word_group=10085>Recurring interval</word_group> of <word_group=10111>Into the Fray</word_group>: Sharpened Resolve ▼ {description_value_03} sec.\nDuration: {description_value_04} sec</color>\n■ Activates when entering Full Burst while not in the <word_group=10111>Into the Fray</word_group>: Penetrant Wish state. Affects self.\n<color=#00AEFF><word_group=10050>Sequential Attack</word_group> Damage ▲ {description_value_05}% for {description_value_06} sec.</color>\n■ Activates when entering Full Burst while in the <word_group=10111>Into the Fray</word_group>: Penetrant Wish state. Affects self.\n<color=#00AEFF>Core Damage ▲ {description_value_07}% for {description_value_08} sec.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2"
+                ]
+              },
+              {
+                "description_value": [
+                  "8.31",
+                  "8.95",
+                  "9.59",
+                  "10.22",
+                  "10.86",
+                  "11.5",
+                  "12.14",
+                  "12.78",
+                  "13.42",
+                  "14.06"
+                ]
+              },
+              {
+                "description_value": [
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "50.33",
+                  "54.2",
+                  "58.07",
+                  "61.94",
+                  "65.81",
+                  "69.68",
+                  "73.56",
+                  "77.43",
+                  "81.3",
+                  "85.17"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "14.56",
+                  "15.68",
+                  "16.8",
+                  "17.92",
+                  "19.04",
+                  "20.16",
+                  "21.28",
+                  "22.4",
+                  "23.52",
+                  "24.64"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 2"
+          },
+          "ulti_skill_id": 1019301,
+          "ulti_skill_detail": {
+            "id": 1019301,
+            "icon": "icn_skill_c019_ult",
+            "group_id": 10193,
+            "shake_id": 1,
+            "skill_type": "InstantAll",
+            "attack_type": "Fire",
+            "skill_level": 1,
+            "counter_type": "Metal_Type",
+            "duration_type": "None",
+            "name_localkey": "Distant New World",
+            "next_level_id": 1019302,
+            "prefer_target": "Random",
+            "resource_name": "c019_ulti",
+            "duration_value": 0,
+            "skill_cooltime": 4000,
+            "level_up_cost_id": 10302,
+            "skill_value_data": [
+              {
+                "skill_value": 79560,
+                "skill_value_type": "Percent"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              }
+            ],
+            "prefer_target_arena": "None",
+            "skill_cooltime_list": [
+              4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
+            ],
+            "description_localkey": "■ Affects self.\n<color=#00AEFF>Reloads {description_value_01}% of ammo.\n<word_group=10073>Machine Gun Ramp-Up Speed</word_group> ▲ {description_value_02}% for {description_value_03} sec.\nATK ▲ {description_value_04}% for {description_value_05} sec.\nAttack Damage ▲ {description_value_06}% for {description_value_07} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_08}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "59.09",
+                  "63.64",
+                  "68.18",
+                  "72.73",
+                  "77.27",
+                  "81.82",
+                  "86.37",
+                  "90.91",
+                  "95.46",
+                  "100"
+                ]
+              },
+              {
+                "description_value": [
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100",
+                  "100"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "46.33",
+                  "49.89",
+                  "53.46",
+                  "57.02",
+                  "60.58",
+                  "64.15",
+                  "67.71",
+                  "71.28",
+                  "74.84",
+                  "78.4"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "46.17",
+                  "49.72",
+                  "53.28",
+                  "56.83",
+                  "60.38",
+                  "63.93",
+                  "67.48",
+                  "71.04",
+                  "74.59",
+                  "78.14"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "795.6",
+                  "856.8",
+                  "918",
+                  "979.2",
+                  "1040.4",
+                  "1101.6",
+                  "1162.8",
+                  "1224",
+                  "1285.2",
+                  "1346.4"
+                ]
+              },
+              {},
+              {},
+              {}
+            ],
+            "prefer_target_condition": "None",
+            "info_description_localkey": "Burst Skill",
+            "after_use_function_id_list": [0],
+            "after_hurt_function_id_list": [0],
+            "before_use_function_id_list": [
+              101930101, 101930102, 101930103, 101930104, 101930105
+            ],
+            "before_hurt_function_id_list": [0],
+            "prefer_target_condition_arena": "None"
+          }
+        },
+        "statScaling": {
+          "grow_grade": 401902,
+          "grade_core_id": 1,
+          "stat_enhance_id": 5106,
+          "stat_enhance_detail": {
+            "id": 5106,
+            "core_hp": 200,
+            "grade_hp": 3000,
+            "core_attack": 200,
+            "grade_ratio": 200,
+            "core_defence": 200,
+            "grade_attack": 20,
+            "grade_defence": 100,
+            "core_bio_resist": 0,
+            "grade_bio_resist": 0,
+            "core_metal_resist": 0,
+            "core_energy_resist": 0,
+            "grade_metal_resist": 0,
+            "grade_energy_resist": 0
+          }
+        },
+        "element": {
+          "element_id": [100001],
+          "element_details": [
+            {
+              "id": 100001,
+              "element": "Fire",
+              "group_id": 5000001,
+              "element_icon": "icn_element_fire",
+              "weak_element_id": 200001,
+              "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+              "element_name_localekey": "Fire",
+              "element_code_name_localekey": "Code: H.S.T.A."
+            }
+          ]
+        },
+        "piece": {
+          "piece_id": 5100019,
+          "piece_detail": {
+            "id": 5100019,
+            "class": "Attacker",
+            "order": 1900,
+            "use_id": 0,
+            "use_type": "None",
+            "item_rare": "SSR",
+            "item_type": "Piece",
+            "stack_max": 9999999,
+            "use_value": 0,
+            "corporation": "PILGRIM",
+            "resource_id": 19,
+            "item_sub_type": "CharacterPiece",
+            "name_localkey": "Marian: Queen's Spare Body",
+            "use_limit_count": false,
+            "inventory_filter": ["etc"],
+            "description_localkey": "Used for a Nikke's Limit Break.\nSpare Bodies for a fully enhanced Nikke will be converted into Body Labels."
+          }
+        },
+        "meta": {
+          "id": 401901,
+          "class": "Attacker",
+          "order": 10168,
+          "name_code": 5185,
+          "corporation": "PILGRIM",
+          "resource_id": 19,
+          "name_localkey": "Marian: Queen",
+          "original_rare": "SSR",
+          "critical_ratio": 1500,
+          "category_type_1": "None",
+          "category_type_2": "None",
+          "category_type_3": "None",
+          "critical_damage": 15000,
+          "eff_category_type": "Walk",
+          "eff_category_value": 0
+        }
+      },
+      "generatorSupported": false,
+      "simSupported": true,
+      "baseStats": {
+        "hp": 13500,
+        "atk": 600,
+        "def": 75,
+        "core": {
+          "hp": 200,
+          "atk": 200,
+          "def": 200
+        },
+        "grade": {
+          "hp": 3000,
+          "atk": 20,
+          "def": 100,
+          "ratio": 200
+        },
+        "critRate": 15,
+        "maxLevel": 1400,
+        "critDamage": 150,
+        "resourceId": 19
+      }
+    },
     "mary": {
       "slug": "mary",
       "name": "Mary",
@@ -50528,8 +51111,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -50949,11 +51532,10 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 7.95,
-      "releaseDate": "2023-06-15",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.65,
       "treasure": false,
-      "nicknames": ["mbg"],
       "skills": {
         "skill1": "■ Activates when entering Full Burst. Affects all allies.\nEffects vary according to the number of times entered. Each subsequent effect triggers all effects before it:\nOnce: Recovers 1.05% of the skill user's final Max HP every 1 sec for 5 sec.\nTwice: Recovers 3.69% of the skill user's final Max HP every 1 sec for 5 sec.\nThree times: Recovers 6.86% of the skill user's final Max HP every 1 sec for 5 sec.",
         "skill2": "■ Activates when using Burst Skill. Affects all Water Code allies.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Elemental Advantage Attack Damage ▲ 20.85% for 3 sec.\nTwice: Elemental Advantage Attack Damage ▲ 13.88% for 5 sec.\nThree times: Elemental Advantage Attack Damage ▲ 8.36% for 10 sec.",
@@ -51475,8 +52057,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2023-07-20",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -52013,11 +52595,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2025-01-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
-      "nicknames": ["mrm", "mmast", "maids (with anchor)"],
+      "nicknames": ["mmast", "maids (with anchor)"],
       "skills": {
         "skill1": "■ Activates when entering Burst stage 1. Affects self.\nDrunken: Hit Rate ▼ 20%, stacks up to 3 times continuously.\n■ Activates only when in Drunken status. Affects all allies.\nCritical Rate ▲ 20.05% continuously.\nATK ▲ 35.02% of the skill user's ATK continuously.",
         "skill2": "■ Activates when entering Burst Stage 3 while in Drunken status. Affects all allies.\nDistributed Damage ▲ 15.03% x number of Drunken stacks for 10 sec.\nReload Speed ▲ 15.04% x number of Drunken stacks for 10 sec.\n■ Activates when Drunken is at max stacks at the end of Full Burst. Removes all stacks and affects self.\nHangover: Stunned for 10 sec.",
@@ -52528,8 +53110,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -52962,8 +53544,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 29.85,
-      "releaseDate": "2026-07-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["mom", "maxwell alt"],
@@ -53555,8 +54137,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -54003,11 +54585,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 22.8,
-      "releaseDate": "2023-12-14",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
-      "nicknames": ["msb"],
       "skills": {
         "skill1": "■ Activates when landing 120 normal attack(s). Affects all allies. \nTidying Up: Damage Taken ▼ 2%. Stacks up to 10 times and lasts for 15 sec.\n■ Activates when Tidying Up is at max stacks. Affects all allies.\nMax Ammunition Capacity ▲ 40% continuously.",
         "skill2": "■ Activates when landing 150 normal attack(s). Affects all allies.\nStack count of buffs ▲ 1.\n■ Activates at the start of battle. Affects self.\nBurst Gauge filling speed ▲ 300% continuously.",
@@ -54464,8 +55045,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 9.5,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.25,
       "treasure": false,
       "skills": {
@@ -54885,11 +55466,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 4.95,
-      "releaseDate": "2025-05-01",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
-      "nicknames": ["mbc", "miharabc", "mihara os"],
+      "nicknames": ["miharabc", "mihara os"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nCharges Restraint Chains by 10, up to 10.\n■ Activates when Full Burst ends if this unit has just used her Burst Skill. Affects self.\nCharges Restraint Chains by 10, up to 10.\n■ Affects random enemy units at a specific timing.\nDeals 50.06% of final ATK as damage. Attacks once for every Restraint Chain. Restraint Chain ▼ 1 for each attack.\n■ Affects the same enemy units.\nEnsnaring Chains: Deals 25.08% final ATK as sustained damage every 1 sec continuously, stacks up to 20 time(s). This effect cannot be removed.",
         "skill2": "■ Activates after landing 40 normal attacks during Full Burst on a target in the Ensnaring Chains state. Affects the target.\nEnsnaring Chains stacks ▲ 1.\n■ Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.\nEnsnaring Chains stacks ▲ 20.\n■ Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\nRestraint Chain ▲ 1, up to 10.\n■ Activates when entering Burst Stage 3. Affects self.\nSustained Damage ▲ 59.98% for 10 sec.",
@@ -55360,8 +55941,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2025-01-16",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": true,
       "skills": {
@@ -55755,11 +56336,10 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2025-09-11",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["mbb"],
       "skills": {
         "skill1": "■ Activates when performing a Full Charge attack. Affects self.\nGain Pierce for 6 sec.\n■ Activates when not in the Embarrassment state and when Full Charge lasts for 0.5 sec or more. Affects self.\nEmbarrassment\nFunction: Forcefully reloads at reduced reload speed, but increases attack capabilities and deals Distributed Damage.\nEffect 1: Affects all enemies. Deals 290% of final ATK as Distributed Damage.\nEffect 2: Affects self. Removes 100% of ammo.\nEffect 3: Affects self. Reload speed is fixed at a 50% reduction for 1 reload(s).\nEffect 4: Affects self. Forced Reload.\nEffect 5: Affects self. ATK ▲ 118.7% for 40 sec.",
         "skill2": "■ Activates only when in Embarrassment status. Affects self.\nPierce Damage ▲ 64.7% continuously.\n■ Activates only when in Overconfident, Huh?! status. Affects all enemies every 2 sec. \nDeals 447.7% of final ATK as Distributed Damage.",
@@ -56255,8 +56835,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2026-05-14",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "nicknames": ["idols (with prika)"],
@@ -56785,8 +57365,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2025-01-16",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": true,
       "nicknames": ["tmiranda"],
@@ -57272,8 +57852,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2024-08-22",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -57727,8 +58307,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
-      "rl3": 7.1,
-      "releaseDate": "2023-01-01",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -58240,8 +58820,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 9.5,
-      "releaseDate": "2026-02-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.25,
       "treasure": true,
       "nicknames": ["tmoran"],
@@ -58810,7 +59390,7 @@
       "weapon": "AR",
       "burst": "II",
       "burstCooldownSec": 20,
-      "class": "Supporter",
+      "class": "Defender",
       "element": "Wind",
       "manufacturer": "Missilis",
       "normalAttackMultiplier": 13.65,
@@ -58820,8 +59400,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2025-04-24",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -59793,8 +60373,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2023-10-05",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -60318,8 +60898,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2025-10-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "nicknames": ["nayu"],
@@ -60971,12 +61551,12 @@
       "normalAttackMultiplier": 224.5,
       "coreAttackMultiplier": 200,
       "ammo": 9,
-      "reloadFrames": 129,
+      "reloadFrames": 57,
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 27,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 4.5,
       "treasure": false,
       "skills": {
@@ -61409,11 +61989,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2023-06-22",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
-      "nicknames": ["nbo"],
       "skills": {
         "skill1": "■ Activates when using Burst Skill. Affects self.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Damage to Parts ▲ 12.4% for 20 sec.\nTwice: Damage to Parts ▲ 12.4% for 20 sec.\nThree times: Damage to Parts ▲ 12.4% for 20 sec.",
         "skill2": "■ Activates when entering Burst Stage 3. Affects self.\nEffects vary according to the number of times entered. Each subsequent effect triggers all effects before it:\nOnce: Elemental Advantage Attack Damage ▲ 20.56% for 10 sec.\nTwice: Elemental Advantage Attack Damage ▲ 20.2% for 10 sec.\nThree times: Elemental Advantage Attack Damage ▲ 20.2% for 10 sec.",
@@ -61922,11 +62501,11 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 9,
-      "releaseDate": "2026-04-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.75,
       "treasure": false,
-      "nicknames": ["nve", "neo neon", "veon", "nneon"],
+      "nicknames": ["neo neon", "veon", "nneon"],
       "skills": {
         "skill1": "■ Activates when attacked while not in Healthy Body status. Affects self.\nInvulnerable for 3 sec. Activates 5 time(s) per battle.\nGains debuff immunity to ∞ debuffs for 3 sec. Activates 5 time(s) per battle.\nHealthy Body: Incoming healing ▲ 10.26% for 20 sec.\n■ Activates when landing a Full Charge attack. Affects the enemy if the enemy is the stage target.\nFirepower Explosion:\nEffect: Deals 437.98% of final ATK as additional damage.\nAdditional effect of Super Firepower status: Deals 262.79% of final ATK as additional damage.",
         "skill2": "■ Activates at the start of battle. Affects self.\nIncreases the Firepower Gauge's charge by 100.\n■ Activates when performing a normal attack while in Firepower Charge status. Affects self.\nIncreases the Firepower Gauge's charge by 2.\n■ Activates when Firepower Charge ends. Affects self.\nIncreases the Firepower Gauge's charge by 45.\n■ Activates when Full Burst ends while Firepower Gauge is active. Affects self.\nBurst Gauge filling speed ▲ 5% x Firepower Gauge charge amount for 5 sec.\n■ Activates when entering Full Burst. Affects self.\nMaximum Firepower: \nEffect: ATK ▲ 80.04% for 10 sec.\nAdditional effect for Super Firepower: ATK ▲ 35.05% for 10 sec.",
@@ -62622,8 +63201,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2023-07-06",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -63147,8 +63726,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2022-12-08",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -63581,8 +64160,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 25.2,
-      "releaseDate": "2023-03-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -64029,8 +64608,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 2,
-      "rl3": 36,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.5,
       "treasure": false,
       "skills": {
@@ -64487,12 +65066,12 @@
       "normalAttackMultiplier": 204.6,
       "coreAttackMultiplier": 200,
       "ammo": 9,
-      "reloadFrames": 62,
+      "reloadFrames": 35,
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 27,
-      "releaseDate": "2023-05-25",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 4.5,
       "treasure": false,
       "skills": {
@@ -64992,8 +65571,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -65440,8 +66019,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -65926,8 +66505,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 27.6,
-      "releaseDate": "2023-09-01",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.15,
       "treasure": false,
       "skills": {
@@ -66344,12 +66923,12 @@
       "normalAttackMultiplier": 231.6,
       "coreAttackMultiplier": 200,
       "ammo": 9,
-      "reloadFrames": 142,
+      "reloadFrames": 61,
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 27,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 4.5,
       "treasure": false,
       "skills": {
@@ -66834,8 +67413,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 9.5,
-      "releaseDate": "2026-07-23",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.25,
       "treasure": true,
       "skills": {
@@ -67359,8 +67938,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2025-07-17",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": true,
       "skills": {
@@ -67819,8 +68398,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2023-02-22",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -68280,8 +68859,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2026-05-28",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["idols (with mint)"],
@@ -68819,8 +69398,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2026-02-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": true,
       "nicknames": ["tpriv", "priv"],
@@ -69267,11 +69846,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12.8,
-      "releaseDate": "2024-02-05",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
-      "nicknames": ["pum"],
       "skills": {
         "skill1": "■ Activates when hitting the target with 30 pellet(s). Affects 2 enemy unit(s) nearest to the crosshair. \nDeals 202.84% of final ATK as damage.",
         "skill2": "■ Activates when 5 or more pellets hit with a single normal attack. Affects self.\nReload Speed ▲ 20.88% for 2 sec.\n■ Activates when hitting 30 times with pellets during Full Burst. Affects self.\nReload 1 round(s).\nATK ▲ 11.22%, stacks up to 5 times and lasts for 2 sec.",
@@ -69793,11 +70371,10 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["p0"],
       "skills": {
         "skill1": "■ When a normal attack hits, there is a 20% chance of affecting 1 ally unit(s) with the lowest remaining HP.\nDEF ▲ 9.09% for 5 sec.",
         "skill2": "■ Affects 1 ally unit(s) with the highest final ATK. \nCritical Rate ▲ 22.99% for 5 sec.",
@@ -70210,11 +70787,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
-      "nicknames": ["p1"],
       "skills": {
         "skill1": "■ Affects self. Activates after 200 normal attacks.\nATK ▲ 8.28% for 5 sec.",
         "skill2": "■ Affects 1 enemy unit(s) with the lowest remaining HP. \nDeals 109.09% of final ATK as damage.",
@@ -70597,15 +71173,14 @@
       "normalAttackMultiplier": 231.6,
       "coreAttackMultiplier": 200,
       "ammo": 9,
-      "reloadFrames": 142,
+      "reloadFrames": 61,
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 27,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 4.5,
       "treasure": false,
-      "nicknames": ["p2"],
       "skills": {
         "skill1": "■ Activates when the last bullet hits the target. Affects self. \nDEF ▲ 8.1% for 10 sec.",
         "skill2": "■ Affects self.\nRecover 16.15% of attack damage as HP over 10 sec.",
@@ -70992,8 +71567,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2026-08-13",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
       "nicknames": ["makoto", "queen", "persona (with yukiko)"],
@@ -71539,8 +72114,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
-      "rl3": 11.4,
-      "releaseDate": "2023-01-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -71999,8 +72574,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
-      "rl3": 8.436,
-      "releaseDate": "2024-10-03",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.074,
       "treasure": false,
       "nicknames": ["qeq"],
@@ -72512,8 +73087,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2023-10-19",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -72964,7 +73539,7 @@
       "burst": "I",
       "burstCooldownSec": 40,
       "class": "Defender",
-      "element": "Fire",
+      "element": "Wind",
       "manufacturer": "Abnormal",
       "normalAttackMultiplier": 69.04,
       "coreAttackMultiplier": 200,
@@ -72973,8 +73548,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2024-03-21",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -73433,8 +74008,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -73880,8 +74455,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2025-01-01",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["rrh", "rapipi"],
@@ -74502,8 +75077,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 17.4,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.45,
       "treasure": false,
       "nicknames": ["rapu"],
@@ -74978,11 +75553,10 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2024-10-31",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["rpg"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nCreates a shared Shield equal to 20.59% of the skill user's final Max HP that protects all allies from damage. This effect is continuous.\n■ Activates when using Burst Skill. Affects self.\nCreates a shared Shield equal to 20.59% of the skill user's final Max HP that protects all allies from damage. This effect is continuous.\n■ Activates only when Full Charge is maintained for more than 1 sec while a Shield is set in front of this unit. Affects all allies.\nAttack Damage ▲ 10.41% continuously.",
         "skill2": "■ Activates when attacking with Full Charge. Affects self.\nRecovers 2% of the skill user's final Max HP.\n■ Activates only when Full Charge is maintained for more than 1 sec while a Shield is set in front of this unit. Affects self.\nCurrent HP ▼ 2% every 1 sec continuously.\nRestores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec continuously.",
@@ -75436,6 +76010,598 @@
         "resourceId": 226
       }
     },
+    "rapunzel-sanctuary": {
+      "slug": "rapunzel-sanctuary",
+      "name": "Rapunzel: Sanctuary",
+      "imageUrl": "https://sg-tools-cdn.blablalink.com/rw-15/xq-86/3b86ff4744b696ad61df9840cfcad0f0.png",
+      "weapon": "RL",
+      "burst": "II",
+      "burstCooldownSec": 40,
+      "class": "Supporter",
+      "element": "Fire",
+      "manufacturer": "Pilgrim",
+      "normalAttackMultiplier": 61.3,
+      "coreAttackMultiplier": 200,
+      "ammo": 6,
+      "reloadFrames": 141,
+      "chargeFrames": 60,
+      "chargeMultiplier": 250,
+      "hitsPerShot": 1,
+      "rl3": null,
+      "releaseDate": null,
+      "burstGaugePerShot": 1.4,
+      "treasure": false,
+      "skills": {
+        "skill1": "■ Activates when performing a Full Charge attack. Affects all allies.\nRestores HP equal to 3.9% of the skill user's final max HP.\n■ Activates when entering Full Burst. Affects self and all allies in the Into the Fray state.\nAttack Damage ▲ 27.45% for 10 sec.\n■ Activates when using Nanoparticle Injection. Affects self.\nCooldown of Burst Skill ▲ 40 sec. This effect cannot be removed.\nNanoparticle Consumption: DEF ▲ 10%. This effect is continuous and cannot be removed. Effect persists after revival.\n■ Activates only when at Full Charge during a Full Charge attack. Affects self.\nGains immunity to effects that increase charge speed. This effect is continuous.\nGains immunity to effects that decrease charge speed. This effect is continuous.",
+        "skill2": "■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Goddess Blessing state. Affects self.\nCreates a shared shield with HP equal to 7.39% of the skill user's final max HP that protects all allies from damage. This shield is removed when charging ends.\n■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Goddess Blessing state. Affects all allies.\nGoddess Blessing: DEF ▲ 42.24% of the skill user's DEF for 10 sec.\n■ Activates when entering Full Burst. Affects self and all allies in the Into the Fray state.\nATK ▲ 29.17% of the skill user's ATK for 10 sec.\n■ Activates when performing a Full Charge attack. Affects the enemy nearest to the crosshair.\nDeals 220.7% of final ATK as additional damage.",
+        "burst": "■ Activates when this unit is not in the Nanoparticle Consumption state.\nEffects vary according to the number of incapacitated allies. Only one set of effects is applied.\nActivates if 3 or more allies are incapacitated. Affects all incapacitated allies.\nNanoparticle Injection: Revives with 96% HP. Activates once per battle.\nATK ▲ 101.37% of the skill user's ATK for 10 sec. Activates once per battle.\nDEF ▲ 221.76% of the skill user's DEF for 10 sec. Activates once per battle.\n\nActivates if 2 or fewer allies are incapacitated. Affects all allies.\nATK ▲ 34.84% of the skill user's ATK for 10 sec.\n\n■ Activates when this unit is in the Nanoparticle Consumption state. Affects all allies.\nATK ▲ 34.84% of the skill user's ATK for 10 sec."
+      },
+      "role": {
+        "weapon": {
+          "shot_id": 1047301,
+          "shot_detail": {
+            "id": 1047301,
+            "damage": 6130,
+            "max_ammo": 6,
+            "shake_id": 2,
+            "ShakeType": "Fire_RL",
+            "box_width": 0,
+            "fire_type": "HomingProjectile",
+            "zoom_rate": 0,
+            "box_height": 0,
+            "input_type": "UP",
+            "shot_count": 1,
+            "ShakeWeight": 120,
+            "attack_type": "Metal",
+            "camera_work": "camera_work_01",
+            "charge_time": 100,
+            "fire_timing": 0,
+            "penetration": 0,
+            "reload_time": 200,
+            "shot_timing": "Concurrence",
+            "spot_radius": 50,
+            "weapon_type": "RL",
+            "is_targeting": false,
+            "muzzle_count": 1,
+            "rate_of_fire": 60,
+            "homing_script": "lv1",
+            "name_localkey": "Rocket Launcher",
+            "prefer_target": "TargetGL",
+            "reload_bullet": 10000,
+            "counter_enermy": "Metal_Type",
+            "multi_aim_range": 0,
+            "spot_last_delay": 20,
+            "core_damage_rate": 20000,
+            "end_rate_of_fire": 60,
+            "spot_first_delay": 20,
+            "center_shot_count": 0,
+            "reload_start_ammo": 5,
+            "full_charge_damage": 25000,
+            "multi_target_count": 0,
+            "spot_radius_object": 2,
+            "prefer_target_arena": "None",
+            "burst_energy_pershot": 14000,
+            "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+            "maintain_fire_stance": 0,
+            "spot_explosion_range": 500,
+            "use_function_id_list": [0],
+            "accuracy_change_speed": 0,
+            "hurt_function_id_list": [0],
+            "spot_projectile_speed": 100,
+            "accuracy_change_pershot": 0,
+            "prefer_target_condition": "None",
+            "rate_of_fire_reset_time": 0,
+            "full_charge_burst_energy": 25000,
+            "end_accuracy_circle_scale": 10,
+            "auto_accuracy_change_speed": 0,
+            "rate_of_fire_change_pershot": 0,
+            "start_accuracy_circle_scale": 10,
+            "target_burst_energy_pershot": 28000,
+            "auto_accuracy_change_pershot": 0,
+            "prefer_target_condition_arena": "None",
+            "auto_end_accuracy_circle_scale": 10,
+            "auto_start_accuracy_circle_scale": 10
+          },
+          "bonusrange_max": 0,
+          "bonusrange_min": 0
+        },
+        "burstMeta": {
+          "burst_duration": 1000,
+          "use_burst_skill": "Step2",
+          "burst_apply_delay": 1,
+          "change_burst_step": "Step3"
+        },
+        "skillDetails": {
+          "skill1_id": 2473101,
+          "skill2_id": 2473201,
+          "skill1_table": "StateEffect",
+          "skill2_table": "StateEffect",
+          "skill1_detail": {
+            "id": 2473101,
+            "icon": "icn_skill_heal_01",
+            "group_id": 24731,
+            "skill_level": 1,
+            "name_localkey": "Divine Light",
+            "next_level_id": 2473102,
+            "level_up_cost_id": 10102,
+            "description_localkey": "■ Activates when performing a Full Charge attack. Affects all allies.\n<color=#00AEFF>Restores HP equal to {description_value_01}% of the skill user's <word_group=10025>final</word_group> max HP.</color>\n■ Activates when entering Full Burst. Affects self and all allies in the <word_group=10111>Into the Fray</word_group> state.\n<color=#00AEFF>Attack Damage ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ Activates when using Nanoparticle Injection. Affects self.\n<color=#00AEFF><word_group=10031>Cooldown</word_group> of Burst Skill ▲ {description_value_04} sec. This effect cannot be removed.\nNanoparticle Consumption: DEF ▲ {description_value_05}%. This effect is continuous and cannot be removed. Effect persists after revival.</color>\n■ Activates only when at Full Charge during a Full Charge attack. Affects self.\n<color=#00AEFF>Gains <word_group=10092>immunity to effects that increase charge speed</word_group>. This effect is continuous.\nGains <word_group=10093>immunity to effects that decrease charge speed</word_group>. This effect is continuous.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "2.3",
+                  "2.48",
+                  "2.66",
+                  "2.83",
+                  "3.01",
+                  "3.19",
+                  "3.37",
+                  "3.54",
+                  "3.72",
+                  "3.9"
+                ]
+              },
+              {
+                "description_value": [
+                  "16.22",
+                  "17.47",
+                  "18.72",
+                  "19.96",
+                  "21.21",
+                  "22.46",
+                  "23.71",
+                  "24.96",
+                  "26.2",
+                  "27.45"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "40",
+                  "40",
+                  "40",
+                  "40",
+                  "40",
+                  "40",
+                  "40",
+                  "40",
+                  "40",
+                  "40"
+                ]
+              },
+              {
+                "description_value": [
+                  "5.91",
+                  "6.36",
+                  "6.82",
+                  "7.27",
+                  "7.73",
+                  "8.18",
+                  "8.64",
+                  "9.09",
+                  "9.55",
+                  "10"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 1"
+          },
+          "skill2_detail": {
+            "id": 2473201,
+            "icon": "icn_skill_barrier_01",
+            "group_id": 24732,
+            "skill_level": 1,
+            "name_localkey": "Celestial Haven",
+            "next_level_id": 2473202,
+            "level_up_cost_id": 10202,
+            "description_localkey": "■ Activates when Full Charge is maintained for {description_value_01} or more seconds while this unit is not in the Goddess Blessing state. Affects self.\n<color=#00AEFF>Creates a shared <word_group=10023>shield</word_group> with HP equal to {description_value_02}% of the skill user's <word_group=10025>final</word_group> max HP that protects all allies from damage. This shield is removed when charging ends.</color>\n■ Activates when Full Charge is maintained for {description_value_01} or more seconds while this unit is not in the Goddess Blessing state. Affects all allies.\n<color=#00AEFF>Goddess Blessing: DEF ▲ {description_value_03}% of the skill user's DEF for {description_value_04} sec.</color>\n■ Activates when entering Full Burst. Affects self and all allies in the <word_group=10111>Into the Fray</word_group> state.\n<color=#00AEFF>ATK ▲ {description_value_05}% of the skill user's ATK for {description_value_06} sec.</color>\n■ Activates when performing a Full Charge attack. Affects the enemy nearest to the crosshair.\n<color=#00AEFF>Deals {description_value_07}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1"
+                ]
+              },
+              {
+                "description_value": [
+                  "4.36",
+                  "4.7",
+                  "5.04",
+                  "5.37",
+                  "5.71",
+                  "6.04",
+                  "6.38",
+                  "6.72",
+                  "7.05",
+                  "7.39"
+                ]
+              },
+              {
+                "description_value": [
+                  "24.96",
+                  "26.88",
+                  "28.8",
+                  "30.72",
+                  "32.64",
+                  "34.56",
+                  "36.48",
+                  "38.4",
+                  "40.32",
+                  "42.24"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "17.23",
+                  "18.56",
+                  "19.89",
+                  "21.21",
+                  "22.54",
+                  "23.86",
+                  "25.19",
+                  "26.52",
+                  "27.84",
+                  "29.17"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "130.41",
+                  "140.44",
+                  "150.48",
+                  "160.51",
+                  "170.54",
+                  "180.57",
+                  "190.6",
+                  "200.64",
+                  "210.67",
+                  "220.7"
+                ]
+              },
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 2"
+          },
+          "ulti_skill_id": 1473301,
+          "ulti_skill_detail": {
+            "id": 1473301,
+            "icon": "icn_skill_c473_ult",
+            "group_id": 14733,
+            "shake_id": 1,
+            "skill_type": "SetBuff",
+            "attack_type": "Fire",
+            "skill_level": 1,
+            "counter_type": "Metal_Type",
+            "duration_type": "None",
+            "name_localkey": "Garden of Arcadia",
+            "next_level_id": 1473302,
+            "prefer_target": "Random",
+            "resource_name": "c473_ulti",
+            "duration_value": 0,
+            "skill_cooltime": 2000,
+            "level_up_cost_id": 10302,
+            "skill_value_data": [
+              {
+                "skill_value": 0,
+                "skill_value_type": "Percent"
+              },
+              {
+                "skill_value": 5,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 10000,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 1,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "None"
+              }
+            ],
+            "prefer_target_arena": "None",
+            "skill_cooltime_list": [
+              2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
+            ],
+            "description_localkey": "■ Activates when this unit is not in the Nanoparticle Consumption state.\n<color=#00AEFF>Effects vary according to the number of incapacitated allies. Only one set of effects is applied.\nActivates if {description_value_08} or more allies are incapacitated. Affects all incapacitated allies.\nNanoparticle Injection: Revives with {description_value_01}% HP. Activates once per battle.\nATK ▲ {description_value_02}% of the skill user's ATK for {description_value_03} sec. Activates once per battle.\nDEF ▲ {description_value_04}% of the skill user's DEF for {description_value_05} sec. Activates once per battle.\n\nActivates if {description_value_09} or fewer allies are incapacitated. Affects all allies.\nATK ▲ {description_value_06}% of the skill user's ATK for {description_value_07} sec.</color>\n\n■ Activates when this unit is in the Nanoparticle Consumption state. Affects all allies.\n<color=#00AEFF>ATK ▲ {description_value_06}% of the skill user's ATK for {description_value_07} sec.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "56.72",
+                  "61.09",
+                  "65.45",
+                  "69.82",
+                  "74.18",
+                  "78.54",
+                  "82.91",
+                  "87.27",
+                  "91.63",
+                  "96"
+                ]
+              },
+              {
+                "description_value": [
+                  "59.9",
+                  "64.51",
+                  "69.12",
+                  "73.72",
+                  "78.33",
+                  "82.94",
+                  "87.55",
+                  "92.16",
+                  "96.76",
+                  "101.37"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "131.04",
+                  "141.12",
+                  "151.2",
+                  "161.28",
+                  "171.36",
+                  "181.44",
+                  "191.52",
+                  "201.6",
+                  "211.68",
+                  "221.76"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "20.59",
+                  "22.17",
+                  "23.76",
+                  "25.34",
+                  "26.92",
+                  "28.51",
+                  "30.09",
+                  "31.68",
+                  "33.26",
+                  "34.84"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3",
+                  "3"
+                ]
+              },
+              {
+                "description_value": [
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2"
+                ]
+              },
+              {},
+              {}
+            ],
+            "prefer_target_condition": "None",
+            "info_description_localkey": "Burst Skill",
+            "after_use_function_id_list": [147330104, 147330106],
+            "after_hurt_function_id_list": [147330101],
+            "before_use_function_id_list": [147330105],
+            "before_hurt_function_id_list": [0],
+            "prefer_target_condition_arena": "None"
+          }
+        },
+        "statScaling": {
+          "grow_grade": 447302,
+          "grade_core_id": 1,
+          "stat_enhance_id": 5305,
+          "stat_enhance_detail": {
+            "id": 5305,
+            "core_hp": 200,
+            "grade_hp": 3000,
+            "core_attack": 200,
+            "grade_ratio": 200,
+            "core_defence": 200,
+            "grade_attack": 20,
+            "grade_defence": 100,
+            "core_bio_resist": 0,
+            "grade_bio_resist": 0,
+            "core_metal_resist": 0,
+            "core_energy_resist": 0,
+            "grade_metal_resist": 0,
+            "grade_energy_resist": 0
+          }
+        },
+        "element": {
+          "element_id": [100001],
+          "element_details": [
+            {
+              "id": 100001,
+              "element": "Fire",
+              "group_id": 5000001,
+              "element_icon": "icn_element_fire",
+              "weak_element_id": 200001,
+              "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+              "element_name_localekey": "Fire",
+              "element_code_name_localekey": "Code: H.S.T.A."
+            }
+          ]
+        },
+        "piece": {
+          "piece_id": 5100473,
+          "piece_detail": {
+            "id": 5100473,
+            "class": "Attacker",
+            "order": 47300,
+            "use_id": 0,
+            "use_type": "None",
+            "item_rare": "SSR",
+            "item_type": "Piece",
+            "stack_max": 9999999,
+            "use_value": 0,
+            "corporation": "PILGRIM",
+            "resource_id": 473,
+            "item_sub_type": "CharacterPiece",
+            "name_localkey": "Rapunzel: Sanctuary's Spare Body",
+            "use_limit_count": false,
+            "inventory_filter": ["etc"],
+            "description_localkey": "Used for a Nikke's Limit Break.\nSpare Bodies for a fully enhanced Nikke will be converted into Body Labels."
+          }
+        },
+        "meta": {
+          "id": 447301,
+          "class": "Supporter",
+          "order": 10170,
+          "name_code": 5187,
+          "corporation": "PILGRIM",
+          "resource_id": 473,
+          "name_localkey": "Rapunzel: Sanctuary",
+          "original_rare": "SSR",
+          "critical_ratio": 1500,
+          "category_type_1": "None",
+          "category_type_2": "None",
+          "category_type_3": "None",
+          "critical_damage": 15000,
+          "eff_category_type": "Walk",
+          "eff_category_value": 0
+        }
+      },
+      "generatorSupported": false,
+      "simSupported": true,
+      "baseStats": {
+        "hp": 15000,
+        "atk": 500,
+        "def": 98,
+        "core": {
+          "hp": 200,
+          "atk": 200,
+          "def": 200
+        },
+        "grade": {
+          "hp": 3000,
+          "atk": 20,
+          "def": 100,
+          "ratio": 200
+        },
+        "critRate": 15,
+        "maxLevel": 1400,
+        "critDamage": 150,
+        "resourceId": 473
+      }
+    },
     "raven": {
       "slug": "raven",
       "name": "Raven",
@@ -75453,8 +76619,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2025-06-19",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -75923,585 +77089,6 @@
         "resourceId": 851
       }
     },
-    "red-hood": {
-      "slug": "red-hood",
-      "name": "Red Hood",
-      "imageUrl": "https://sg-tools-cdn.blablalink.com/ik-95/fj-47/641ea404d0d316c8ad18a24f1708a07f.png",
-      "weapon": "SR",
-      "burst": "Λ",
-      "burstCooldownSec": 40,
-      "class": "Attacker",
-      "element": "Iron",
-      "manufacturer": "Pilgrim",
-      "normalAttackMultiplier": 69.04,
-      "coreAttackMultiplier": 200,
-      "ammo": 6,
-      "reloadFrames": 141,
-      "chargeFrames": 60,
-      "chargeMultiplier": 250,
-      "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2023-11-02",
-      "burstGaugePerShot": 2.8,
-      "treasure": false,
-      "nicknames": ["rh"],
-      "skills": {
-        "skill1": "■ Activates when performing a normal attack. Affects self.\nCharge Speed ▲ 3.81%, stacks up to 10 time(s) and lasts for 5 sec.\n■ Activates at the start of battle. Affects self.\nConvert excess value over 100% of Charge Speed to Charge Damage. Charge Damage ▲ 240% of the excess value continuously.",
-        "skill2": "■ Activates at the start of battle. Affects self.\nGain Pierce continuously.\n■ Activates during Beast Cage. Affects all allies.\nDEF ▲ 50.68% of the skill user's DEF for 10 sec.\n■ Activates during The Last Howl. Affects self.\nRecovers 23.04% of attack damage as HP over 10 sec.\n■ Activates when casting Red Wolf. Affects self.\nATK ▲ 71.42% for 10 sec.",
-        "burst": "When used in Step 1: Beast Cage\n■ Affects all allies.\nATK ▲ 77.55% of the skill user's ATK for 10 sec.\n■ Affects self.\nCooldown of Burst Skill ▼ 40 sec. Activates once per battle.\nWhen used in Step 2: The Last Howl\n■ Affects self.\nAttract: Taunts all enemies for 10 sec.\nIncoming healing ▲ 74.88% for 10 sec.\nCooldown of Burst Skill ▼ 40 sec. Activates once per battle.\nWhen used in Step 3: Red Wolf\n■ Affects self.\nChanges the weapon in use:\nDamage: 51.46% of final ATK \nFull Charge Damage: 250% of damage\nDuration: 10 sec\nAdditional Effects:\nExpand Pierce range by 100% for 10 sec.\nCharge Speed ▲ 100.8% for 10 sec."
-      },
-      "skillCooldownsSec": {
-        "skill1": null,
-        "skill2": null,
-        "burst": 40
-      },
-      "role": {
-        "weapon": {
-          "shot_id": 1047001,
-          "shot_detail": {
-            "id": 1047001,
-            "damage": 6904,
-            "max_ammo": 6,
-            "shake_id": 2,
-            "ShakeType": "Fire_SR",
-            "fire_type": "Instant",
-            "zoom_rate": 30,
-            "input_type": "UP",
-            "shot_count": 1,
-            "ShakeWeight": 120,
-            "attack_type": "Metal",
-            "camera_work": "camera_work_01",
-            "charge_time": 100,
-            "penetration": 0,
-            "reload_time": 200,
-            "shot_timing": "Concurrence",
-            "spot_radius": 0,
-            "weapon_type": "SR",
-            "is_targeting": false,
-            "muzzle_count": 1,
-            "rate_of_fire": 60,
-            "name_localkey": "Sniper Rifle",
-            "prefer_target": "Back",
-            "reload_bullet": 10000,
-            "counter_enermy": "Metal_Type",
-            "multi_aim_range": 0,
-            "spot_last_delay": 20,
-            "core_damage_rate": 20000,
-            "end_rate_of_fire": 60,
-            "spot_first_delay": 20,
-            "center_shot_count": 0,
-            "reload_start_ammo": 5,
-            "full_charge_damage": 25000,
-            "multi_target_count": 0,
-            "spot_radius_object": 0,
-            "uptype_fire_timing": 0,
-            "burst_energy_pershot": 28000,
-            "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
-            "maintain_fire_stance": 0,
-            "spot_explosion_range": 0,
-            "use_function_id_list": [0],
-            "accuracy_change_speed": 0,
-            "hurt_function_id_list": [0],
-            "spot_projectile_speed": 0,
-            "accuracy_change_pershot": 0,
-            "prefer_target_condition": "None",
-            "rate_of_fire_reset_time": 0,
-            "full_charge_burst_energy": 25000,
-            "end_accuracy_circle_scale": 10,
-            "auto_accuracy_change_speed": 0,
-            "rate_of_fire_change_pershot": 0,
-            "start_accuracy_circle_scale": 10,
-            "target_burst_energy_pershot": 56000,
-            "auto_accuracy_change_pershot": 0,
-            "auto_end_accuracy_circle_scale": 10,
-            "auto_start_accuracy_circle_scale": 10
-          },
-          "bonusrange_max": 100,
-          "bonusrange_min": 45
-        },
-        "burstMeta": {
-          "burst_duration": 1000,
-          "use_burst_skill": "AllStep",
-          "burst_apply_delay": 1,
-          "change_burst_step": "NextStep"
-        },
-        "skillDetails": {
-          "skill1_id": 2470101,
-          "skill2_id": 2470201,
-          "skill1_table": "StateEffect",
-          "skill2_table": "StateEffect",
-          "skill1_detail": {
-            "id": 2470101,
-            "icon": "icn_skill_chargedamage_01",
-            "group_id": 24701,
-            "skill_level": 1,
-            "name_localkey": "Glaring Eyes",
-            "next_level_id": 2470102,
-            "level_up_cost_id": 50102,
-            "description_localkey": "■ Activates when performing a normal attack. Affects self.\n<color=#00AEFF>Charge Speed ▲ {description_value_01}%, stacks up to {description_value_02} time(s) and lasts for {description_value_03} sec.</color>\n■ Activates at the start of battle. Affects self.\n<color=#00AEFF><word_group=10035>Convert excess value over 100% of Charge Speed to Charge Damage</word_group>. Charge Damage ▲ {description_value_04}% of the excess value continuously.</color>",
-            "description_value_list": [
-              {
-                "description_value": [
-                  "2.28",
-                  "2.45",
-                  "2.62",
-                  "2.79",
-                  "2.96",
-                  "3.13",
-                  "3.3",
-                  "3.47",
-                  "3.64",
-                  "3.81"
-                ]
-              },
-              {
-                "description_value": [
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10"
-                ]
-              },
-              {
-                "description_value": [
-                  "5",
-                  "5",
-                  "5",
-                  "5",
-                  "5",
-                  "5",
-                  "5",
-                  "5",
-                  "5",
-                  "5"
-                ]
-              },
-              {
-                "description_value": [
-                  "240",
-                  "240",
-                  "240",
-                  "240",
-                  "240",
-                  "240",
-                  "240",
-                  "240",
-                  "240",
-                  "240"
-                ]
-              },
-              {},
-              {},
-              {},
-              {},
-              {},
-              {},
-              {}
-            ],
-            "info_description_localkey": "Skill 1"
-          },
-          "skill2_detail": {
-            "id": 2470201,
-            "icon": "icn_skill_statpenetration_01",
-            "group_id": 24702,
-            "skill_level": 1,
-            "name_localkey": "Wild Tooth",
-            "next_level_id": 2470202,
-            "level_up_cost_id": 50202,
-            "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Gain Pierce continuously.</color>\n■ Activates during Beast Cage. Affects all allies.\n<color=#00AEFF>DEF ▲ {description_value_01}% of the skill user's DEF for {description_value_02} sec.</color>\n■ Activates during The Last Howl. Affects self.\n<color=#00AEFF>Recovers {description_value_03}% of attack damage as HP over {description_value_04} sec.</color>\n■ Activates when casting Red Wolf. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_05}% for {description_value_06} sec.</color>",
-            "description_value_list": [
-              {
-                "description_value": [
-                  "31.68",
-                  "33.79",
-                  "35.9",
-                  "38.01",
-                  "40.12",
-                  "42.24",
-                  "44.35",
-                  "46.46",
-                  "48.57",
-                  "50.68"
-                ]
-              },
-              {
-                "description_value": [
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10"
-                ]
-              },
-              {
-                "description_value": [
-                  "14.4",
-                  "15.36",
-                  "16.32",
-                  "17.28",
-                  "18.24",
-                  "19.2",
-                  "20.16",
-                  "21.12",
-                  "22.08",
-                  "23.04"
-                ]
-              },
-              {
-                "description_value": [
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10"
-                ]
-              },
-              {
-                "description_value": [
-                  "44.64",
-                  "47.61",
-                  "50.59",
-                  "53.56",
-                  "56.54",
-                  "59.52",
-                  "62.49",
-                  "65.47",
-                  "68.44",
-                  "71.42"
-                ]
-              },
-              {
-                "description_value": [
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10"
-                ]
-              },
-              {},
-              {},
-              {},
-              {},
-              {}
-            ],
-            "info_description_localkey": "Skill 2"
-          },
-          "ulti_skill_id": 1470301,
-          "ulti_skill_detail": {
-            "id": 1470301,
-            "icon": "icn_skill_c470_ult",
-            "group_id": 14703,
-            "shake_id": 1,
-            "skill_type": "SetBuff",
-            "attack_type": "Iron",
-            "skill_level": 1,
-            "counter_type": "Metal_Type",
-            "duration_type": "None",
-            "name_localkey": "Red Wolf",
-            "next_level_id": 1470302,
-            "prefer_target": "Defender",
-            "resource_name": "c470_ulti",
-            "duration_value": 0,
-            "skill_cooltime": 4000,
-            "level_up_cost_id": 50302,
-            "skill_value_data": [
-              {
-                "skill_value": 0,
-                "skill_value_type": "None"
-              },
-              {
-                "skill_value": 2,
-                "skill_value_type": "Integer"
-              },
-              {
-                "skill_value": 10000,
-                "skill_value_type": "Integer"
-              },
-              {
-                "skill_value": 0,
-                "skill_value_type": "None"
-              },
-              {
-                "skill_value": 0,
-                "skill_value_type": "None"
-              }
-            ],
-            "skill_cooltime_list": [
-              4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
-            ],
-            "description_localkey": "When used in Step 1: Beast Cage\n■ Affects all allies.\n<color=#00AEFF>ATK ▲ {description_value_01}% of the skill user's ATK for {description_value_02} sec.</color>\n■ Affects self.\n<color=#00AEFF><word_group=10031>Cooldown</word_group> of Burst Skill ▼ 40 sec. Activates once per battle.</color>\nWhen used in Step 2: The Last Howl\n■ Affects self.\n<color=#00AEFF>Attract: Taunts all enemies for {description_value_04} sec.\nIncoming healing ▲ {description_value_05}% for {description_value_06} sec.\n<word_group=10031>Cooldown</word_group> of Burst Skill ▼ 40 sec. Activates once per battle.</color>\nWhen used in Step 3: Red Wolf\n■ Affects self.\n<color=#00AEFF>Changes the weapon in use:\nDamage: {description_value_07}% of final ATK \nFull Charge Damage: 250% of damage\nDuration: 10 sec\nAdditional Effects:\nExpand Pierce range by {description_value_08}% for {description_value_09} sec.\nCharge Speed ▲ {description_value_10}% for {description_value_11} sec.</color>",
-            "description_value_list": [
-              {
-                "description_value": [
-                  "48.47",
-                  "51.7",
-                  "54.93",
-                  "58.16",
-                  "61.39",
-                  "64.62",
-                  "67.85",
-                  "71.08",
-                  "74.32",
-                  "77.55"
-                ]
-              },
-              {
-                "description_value": [
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10"
-                ]
-              },
-              {},
-              {
-                "description_value": [
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10"
-                ]
-              },
-              {
-                "description_value": [
-                  "46.8",
-                  "49.92",
-                  "53.04",
-                  "56.16",
-                  "59.28",
-                  "62.4",
-                  "65.52",
-                  "68.64",
-                  "71.76",
-                  "74.88"
-                ]
-              },
-              {
-                "description_value": [
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10"
-                ]
-              },
-              {
-                "description_value": [
-                  "37.02",
-                  "38.63",
-                  "40.23",
-                  "41.84",
-                  "43.44",
-                  "45.05",
-                  "46.65",
-                  "48.26",
-                  "49.86",
-                  "51.46"
-                ]
-              },
-              {
-                "description_value": [
-                  "100",
-                  "100",
-                  "100",
-                  "100",
-                  "100",
-                  "100",
-                  "100",
-                  "100",
-                  "100",
-                  "100"
-                ]
-              },
-              {
-                "description_value": [
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10"
-                ]
-              },
-              {
-                "description_value": [
-                  "100.8",
-                  "100.8",
-                  "100.8",
-                  "100.8",
-                  "100.8",
-                  "100.8",
-                  "100.8",
-                  "100.8",
-                  "100.8",
-                  "100.8"
-                ]
-              },
-              {
-                "description_value": [
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10",
-                  "10"
-                ]
-              }
-            ],
-            "prefer_target_condition": "None",
-            "info_description_localkey": "Burst Skill",
-            "after_use_function_id_list": [147030101, 147030104, 147030108],
-            "after_hurt_function_id_list": [0],
-            "before_use_function_id_list": [0],
-            "before_hurt_function_id_list": [0]
-          }
-        },
-        "statScaling": {
-          "grow_grade": 447002,
-          "grade_core_id": 1,
-          "stat_enhance_id": 5102,
-          "stat_enhance_detail": {
-            "id": 5102,
-            "core_hp": 200,
-            "grade_hp": 3000,
-            "core_attack": 200,
-            "grade_ratio": 200,
-            "core_defence": 200,
-            "grade_attack": 20,
-            "grade_defence": 100,
-            "core_bio_resist": 0,
-            "grade_bio_resist": 0,
-            "core_metal_resist": 0,
-            "core_energy_resist": 0,
-            "grade_metal_resist": 0,
-            "grade_energy_resist": 0
-          }
-        },
-        "element": {
-          "element_id": [500001],
-          "element_details": [
-            {
-              "id": 500001,
-              "element": "Iron",
-              "group_id": 5000005,
-              "element_icon": "icn_element_iron",
-              "weak_element_id": 300001,
-              "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
-              "element_name_localekey": "Iron",
-              "element_code_name_localekey": "Code: D.M.T.R."
-            }
-          ]
-        },
-        "piece": {
-          "piece_id": 5100470,
-          "piece_detail": {
-            "id": 5100470,
-            "class": "Attacker",
-            "order": 47000,
-            "use_id": 0,
-            "use_type": "None",
-            "item_rare": "SSR",
-            "item_type": "Piece",
-            "stack_max": 9999999,
-            "use_value": 0,
-            "corporation": "PILGRIM",
-            "resource_id": 470,
-            "item_sub_type": "CharacterPiece",
-            "name_localkey": "Red Hood's Spare Body",
-            "use_limit_count": false,
-            "inventory_filter": ["etc"],
-            "corporation_sub_type": "OVERSPEC",
-            "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
-          }
-        },
-        "meta": {
-          "id": 447001,
-          "class": "Attacker",
-          "order": 10147,
-          "name_code": 5101,
-          "corporation": "PILGRIM",
-          "resource_id": 470,
-          "name_localkey": "Red Hood",
-          "original_rare": "SSR",
-          "critical_ratio": 1500,
-          "category_type_1": "None",
-          "category_type_2": "None",
-          "category_type_3": "None",
-          "critical_damage": 15000,
-          "eff_category_type": "Walk",
-          "eff_category_value": 0
-        }
-      },
-      "generatorSupported": true,
-      "simSupported": true,
-      "baseStats": {
-        "hp": 13500,
-        "atk": 600,
-        "def": 76,
-        "core": {
-          "hp": 200,
-          "atk": 200,
-          "def": 200
-        },
-        "grade": {
-          "hp": 3000,
-          "atk": 20,
-          "def": 100,
-          "ratio": 200
-        },
-        "critRate": 15,
-        "maxLevel": 1200,
-        "critDamage": 150,
-        "resourceId": 470
-      }
-    },
     "rei": {
       "slug": "rei",
       "name": "Rei",
@@ -76519,8 +77106,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2023-04-27",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -78043,8 +78630,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2024-03-28",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -78529,8 +79116,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.65,
-      "releaseDate": "2026-07-23",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": true,
       "skills": {
@@ -79054,11 +79641,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2024-07-11",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
-      "nicknames": ["rco", "srosanna"],
+      "nicknames": ["srosanna"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects all allies.\nDamage to Parts ▲ 24.26% for 15 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects all allies.\nATK ▲ 3% of the skill user's ATK, stacks up to 5 time(s) and lasts for 30 sec.",
         "skill2": "■ Affects all allies.\nDamage to Parts ▲ 24.26% for 15 sec.\n■ Affects the enemy nearest to the crosshair.\nDeals 70.4% of final ATK as sustained damage every 1 sec for 15 sec.",
@@ -79541,8 +80128,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.7,
-      "releaseDate": "2024-09-19",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.9,
       "treasure": false,
       "skills": {
@@ -80078,12 +80665,12 @@
       "normalAttackMultiplier": 56.38,
       "coreAttackMultiplier": 200,
       "ammo": 6,
-      "reloadFrames": 129,
+      "reloadFrames": 57,
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 39,
-      "releaseDate": "2024-10-17",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 3.25,
       "treasure": false,
       "skills": {
@@ -80569,8 +81156,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -81029,11 +81616,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2022-12-08",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
-      "nicknames": ["rws"],
       "skills": {
         "skill1": "■ Activates when the last bullet hits the target. Affects all allies. \nDEF ▲ 19.02% for 5 sec.",
         "skill2": "■ Activates when an ally uses a Burst Skill. Affects all allies.\nShopping: DEF ▲ 1.33%. Stacks up to 4 times and lasts for 20 sec.\n■ Activates if Shopping is at max stacks when Full Burst ends. Affects all allies.\nBurst Gauge filling speed ▲ 7.9% for 5 sec.",
@@ -81503,8 +82089,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.1,
-      "releaseDate": "2023-03-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.7,
       "treasure": false,
       "skills": {
@@ -81989,11 +82575,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2024-07-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
-      "nicknames": ["sbis"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nForcefully uses Skill 2.\n■ Activates when an ally or self destroys an enemy's part. Affects self.\nSustained Damage ▲ 5.1% for 30 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.\nDancing Flower Duration ▲ 10.02 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.\nSakura Petals Duration ▲ 10.02 sec.",
         "skill2": "■ Affects self.\nDancing Flower: Attack Damage ▲ 15.64% for 15 sec.\n■ Affects the enemy with the highest final ATK.\nSakura Petals: Deals 256% of final ATK as sustained damage every 1 sec for 15 sec.",
@@ -82976,8 +83561,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 17.1,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.45,
       "treasure": false,
       "skills": {
@@ -83472,12 +84057,12 @@
       "normalAttackMultiplier": 57.29,
       "coreAttackMultiplier": 200,
       "ammo": 9,
-      "reloadFrames": 152,
+      "reloadFrames": 141,
       "chargeFrames": 18,
       "chargeMultiplier": 150,
       "hitsPerShot": 1,
-      "rl3": 13.75,
-      "releaseDate": "2024-01-01",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.25,
       "treasure": false,
       "nicknames": ["sbs"],
@@ -83950,6 +84535,559 @@
         "resourceId": 225
       }
     },
+    "scarlet-goddeath": {
+      "slug": "scarlet-goddeath",
+      "name": "Scarlet: Goddeath",
+      "imageUrl": "https://sg-tools-cdn.blablalink.com/bh-11/af-07/2c43a2a2abfd3a2c776baa9e01cb4de1.png",
+      "weapon": "AR",
+      "burst": "III",
+      "burstCooldownSec": 40,
+      "class": "Attacker",
+      "element": "Fire",
+      "manufacturer": "Pilgrim",
+      "normalAttackMultiplier": 107.57,
+      "coreAttackMultiplier": 200,
+      "ammo": 9,
+      "reloadFrames": 91,
+      "chargeFrames": 0,
+      "chargeMultiplier": 0,
+      "hitsPerShot": 1,
+      "rl3": null,
+      "releaseDate": null,
+      "burstGaugePerShot": 1.7,
+      "treasure": false,
+      "skills": {
+        "skill1": "■ Activates at the start of battle. Affects self.\nInto the Fray: Serene Mind\nFunction: Normal attacks become wide-range piercing attacks and deal additional damage to the enemy.\nEffect 1: Affects self. Gains Pierce. This effect is continuous and cannot be removed.\nEffect 2: Affects self. Normal Attack Critical Rate ▲ 35%. This effect is continuous and cannot be removed.\nEffect 3: Activates when performing a normal attack. Affects the enemy unit nearest to the crosshair. Iai: Deals 109% of final ATK as additional damage.\n■ Activates when entering Full Burst. Affects self.\nCritical Damage ▲ 60% for 10 sec.",
+        "skill2": "■ Activates after landing 2 critical hits with normal attacks while not in the Beyond the Fade: Full Bloom state. Affects self.\nReloads 1 round(s).\n■ Activates when using Burst Skill. Affects self.\nInto the Fray: At One With the Sword\nFunction: Enhances Iai damage and the offensive capabilities of normal attacks.\nEffect 1: Normal Attack Critical Rate ▲ 50% for 10 sec. This effect cannot be removed.\nEffect 2: Attack Damage ▲ 116% for 10 sec. This effect cannot be removed.\nEffect 3: Iai's additional damage is scaled by 100% for 10 sec. This effect cannot be removed.",
+        "burst": "■ Affects self.\nBeyond the Fade: Full Bloom: Changes the weapon in use.\nFunction: Enhances Scarlet: Goddeath and increases the range of normal attacks.\nDamage: 115% of final ATK\nDuration: 10 sec\nAdditional Effects\nEffect 1: Normal Attack Range ▲ 100% for 10 sec. This effect cannot be removed.\nEffect 2: ATK ▲ 120% for 10 sec. This effect cannot be removed.\n■ Affects the 1 enemy unit(s) nearest to the crosshair.\nDeals 3000% of final ATK as additional damage."
+      },
+      "role": {
+        "weapon": {
+          "shot_id": 1047201,
+          "shot_detail": {
+            "id": 1047201,
+            "damage": 10757,
+            "max_ammo": 9,
+            "shake_id": 2,
+            "ShakeType": "Fire_AR",
+            "box_width": 1000,
+            "fire_type": "InstantBox",
+            "zoom_rate": 0,
+            "aim_prefab": "base_aim_reference_c472",
+            "box_height": 50,
+            "input_type": "DOWN",
+            "shot_count": 1,
+            "ShakeWeight": 120,
+            "attack_type": "Metal",
+            "camera_work": "camera_work_01",
+            "charge_time": 0,
+            "fire_timing": 1500,
+            "penetration": 1,
+            "reload_time": 117,
+            "shot_timing": "Concurrence",
+            "spot_radius": 0,
+            "weapon_type": "AR",
+            "is_targeting": true,
+            "muzzle_count": 1,
+            "rate_of_fire": 90,
+            "name_localkey": "Assault Rifle",
+            "prefer_target": "TargetAR",
+            "reload_bullet": 10000,
+            "counter_enermy": "Metal_Type",
+            "multi_aim_range": 0,
+            "spot_last_delay": 20,
+            "core_damage_rate": 20000,
+            "end_rate_of_fire": 90,
+            "spot_first_delay": 20,
+            "center_shot_count": 0,
+            "reload_start_ammo": 8,
+            "full_charge_damage": 10000,
+            "multi_target_count": 0,
+            "spot_radius_object": 0,
+            "prefer_target_arena": "None",
+            "burst_energy_pershot": 17000,
+            "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+            "maintain_fire_stance": 0,
+            "spot_explosion_range": 0,
+            "use_function_id_list": [0],
+            "accuracy_change_speed": 0,
+            "hurt_function_id_list": [0],
+            "spot_projectile_speed": 0,
+            "accuracy_change_pershot": 0,
+            "prefer_target_condition": "None",
+            "rate_of_fire_reset_time": 0,
+            "full_charge_burst_energy": 0,
+            "end_accuracy_circle_scale": 10,
+            "auto_accuracy_change_speed": 0,
+            "rate_of_fire_change_pershot": 0,
+            "start_accuracy_circle_scale": 10,
+            "target_burst_energy_pershot": 34000,
+            "auto_accuracy_change_pershot": 0,
+            "prefer_target_condition_arena": "None",
+            "auto_end_accuracy_circle_scale": 10,
+            "auto_start_accuracy_circle_scale": 10
+          },
+          "bonusrange_max": 45,
+          "bonusrange_min": 25
+        },
+        "burstMeta": {
+          "burst_duration": 1000,
+          "use_burst_skill": "Step3",
+          "burst_apply_delay": 1,
+          "change_burst_step": "StepFull"
+        },
+        "skillDetails": {
+          "skill1_id": 2472101,
+          "skill2_id": 2472201,
+          "skill1_table": "StateEffect",
+          "skill2_table": "StateEffect",
+          "skill1_detail": {
+            "id": 2472101,
+            "icon": "icn_skill_statpenetration_01",
+            "group_id": 24721,
+            "skill_level": 1,
+            "name_localkey": "Beyond the Fade: Bloom",
+            "next_level_id": 2472102,
+            "level_up_cost_id": 10102,
+            "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF><word_group=10111>Into the Fray</word_group>: Serene Mind\nFunction: Normal attacks become wide-range piercing attacks and deal additional damage to the enemy.\nEffect 1: Affects self. Gains Pierce. This effect is continuous and cannot be removed.\nEffect 2: Affects self. Normal Attack Critical Rate ▲ {description_value_01}%. This effect is continuous and cannot be removed.\nEffect 3: Activates when performing a normal attack. Affects the enemy unit nearest to the crosshair. Iai: Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.</color>\n■ Activates when entering Full Burst. Affects self.\n<color=#00AEFF>Critical Damage ▲ {description_value_03}% for {description_value_04} sec.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "20.68",
+                  "22.27",
+                  "23.86",
+                  "25.45",
+                  "27.04",
+                  "28.63",
+                  "30.22",
+                  "31.81",
+                  "33.4",
+                  "35"
+                ]
+              },
+              {
+                "description_value": [
+                  "54.5",
+                  "60.56",
+                  "66.62",
+                  "72.68",
+                  "78.74",
+                  "84.8",
+                  "90.86",
+                  "96.92",
+                  "102.98",
+                  "109"
+                ]
+              },
+              {
+                "description_value": [
+                  "33",
+                  "36",
+                  "39",
+                  "42",
+                  "45",
+                  "48",
+                  "51",
+                  "54",
+                  "57",
+                  "60"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {},
+              {},
+              {},
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 1"
+          },
+          "skill2_detail": {
+            "id": 2472201,
+            "icon": "icn_skill_statcritical_01",
+            "group_id": 24722,
+            "skill_level": 1,
+            "name_localkey": "Beyond the Fade: Sword Dance",
+            "next_level_id": 2472202,
+            "level_up_cost_id": 10202,
+            "description_localkey": "■ Activates after landing {description_value_01} critical hits with normal attacks while not in the Beyond the Fade: Full Bloom state. Affects self.\n<color=#00AEFF>Reloads {description_value_02} round(s).</color>\n■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF><word_group=10111>Into the Fray</word_group>: At One With the Sword\nFunction: Enhances Iai damage and the offensive capabilities of normal attacks.\nEffect 1: Normal Attack Critical Rate ▲ {description_value_03}% for {description_value_04} sec. This effect cannot be removed.\nEffect 2: Attack Damage ▲ {description_value_05}% for {description_value_06} sec. This effect cannot be removed.\nEffect 3: Iai's additional damage is <word_group=10084>scaled</word_group> by 100% for {description_value_07} sec. This effect cannot be removed.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2",
+                  "2"
+                ]
+              },
+              {
+                "description_value": [
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1"
+                ]
+              },
+              {
+                "description_value": [
+                  "29.54",
+                  "31.81",
+                  "34.08",
+                  "36.35",
+                  "38.62",
+                  "40.89",
+                  "43.16",
+                  "45.43",
+                  "47.7",
+                  "50"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "58",
+                  "64.44",
+                  "70.88",
+                  "77.32",
+                  "83.76",
+                  "90.2",
+                  "96.64",
+                  "103.08",
+                  "109.52",
+                  "116"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {},
+              {},
+              {},
+              {}
+            ],
+            "info_description_localkey": "Skill 2"
+          },
+          "ulti_skill_id": 1472301,
+          "ulti_skill_detail": {
+            "id": 1472301,
+            "icon": "icn_skill_c472_ult",
+            "group_id": 14723,
+            "shake_id": 1,
+            "skill_type": "ChangeWeapon",
+            "attack_type": "Fire",
+            "skill_level": 1,
+            "counter_type": "Metal_Type",
+            "duration_type": "TimeSec",
+            "name_localkey": "Beyond the Fade: Goddeath",
+            "next_level_id": 1472302,
+            "prefer_target": "Random",
+            "resource_name": "c472_ulti",
+            "duration_value": 1000,
+            "skill_cooltime": 4000,
+            "level_up_cost_id": 10302,
+            "skill_value_data": [
+              {
+                "skill_value": 10757,
+                "skill_value_type": "Percent"
+              },
+              {
+                "skill_value": 90,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 1047202,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 0,
+                "skill_value_type": "Integer"
+              },
+              {
+                "skill_value": 1,
+                "skill_value_type": "Integer"
+              }
+            ],
+            "prefer_target_arena": "None",
+            "skill_cooltime_list": [
+              4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
+            ],
+            "description_localkey": "■ Affects self.\n<color=#00AEFF>Beyond the Fade: Full Bloom: Changes the weapon in use.\nFunction: Enhances Scarlet: Goddeath and increases the range of normal attacks.\nDamage: {description_value_01}% of <word_group=10025>final</word_group> ATK\nDuration: {description_value_02} sec\nAdditional Effects\nEffect 1: Normal Attack Range ▲ 100% for {description_value_03} sec. This effect cannot be removed.\nEffect 2: ATK ▲ {description_value_04}% for {description_value_05} sec. This effect cannot be removed.</color>\n■ Affects the {description_value_06} enemy unit(s) nearest to the crosshair.\n<color=#00AEFF>Deals {description_value_07}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+            "description_value_list": [
+              {
+                "description_value": [
+                  "107.57",
+                  "108.4",
+                  "109.22",
+                  "110.05",
+                  "110.87",
+                  "111.7",
+                  "112.52",
+                  "113.35",
+                  "114.17",
+                  "115"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "66",
+                  "72",
+                  "78",
+                  "84",
+                  "90",
+                  "96",
+                  "102",
+                  "108",
+                  "114",
+                  "120"
+                ]
+              },
+              {
+                "description_value": [
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10",
+                  "10"
+                ]
+              },
+              {
+                "description_value": [
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1",
+                  "1"
+                ]
+              },
+              {
+                "description_value": [
+                  "1649.98",
+                  "1799.98",
+                  "1949.98",
+                  "2099.98",
+                  "2249.98",
+                  "2399.98",
+                  "2549.98",
+                  "2699.98",
+                  "2849.98",
+                  "3000"
+                ]
+              },
+              {},
+              {},
+              {},
+              {}
+            ],
+            "prefer_target_condition": "None",
+            "info_description_localkey": "Burst Skill",
+            "after_use_function_id_list": [147230101, 147230102],
+            "after_hurt_function_id_list": [0],
+            "before_use_function_id_list": [147230104, 147230105],
+            "before_hurt_function_id_list": [0],
+            "prefer_target_condition_arena": "None"
+          }
+        },
+        "statScaling": {
+          "grow_grade": 447202,
+          "grade_core_id": 1,
+          "stat_enhance_id": 5101,
+          "stat_enhance_detail": {
+            "id": 5101,
+            "core_hp": 200,
+            "grade_hp": 3000,
+            "core_attack": 200,
+            "grade_ratio": 200,
+            "core_defence": 200,
+            "grade_attack": 20,
+            "grade_defence": 100,
+            "core_bio_resist": 0,
+            "grade_bio_resist": 0,
+            "core_metal_resist": 0,
+            "core_energy_resist": 0,
+            "grade_metal_resist": 0,
+            "grade_energy_resist": 0
+          }
+        },
+        "element": {
+          "element_id": [100001],
+          "element_details": [
+            {
+              "id": 100001,
+              "element": "Fire",
+              "group_id": 5000001,
+              "element_icon": "icn_element_fire",
+              "weak_element_id": 200001,
+              "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+              "element_name_localekey": "Fire",
+              "element_code_name_localekey": "Code: H.S.T.A."
+            }
+          ]
+        },
+        "piece": {
+          "piece_id": 5100472,
+          "piece_detail": {
+            "id": 5100472,
+            "class": "Attacker",
+            "order": 47200,
+            "use_id": 0,
+            "use_type": "None",
+            "item_rare": "SSR",
+            "item_type": "Piece",
+            "stack_max": 9999999,
+            "use_value": 0,
+            "corporation": "PILGRIM",
+            "resource_id": 472,
+            "item_sub_type": "CharacterPiece",
+            "name_localkey": "Scarlet: Goddeath's Spare Body",
+            "use_limit_count": false,
+            "inventory_filter": ["etc"],
+            "description_localkey": "Used for a Nikke's Limit Break.\nSpare Bodies for a fully enhanced Nikke will be converted into Body Labels."
+          }
+        },
+        "meta": {
+          "id": 447201,
+          "class": "Attacker",
+          "order": 10169,
+          "name_code": 5186,
+          "corporation": "PILGRIM",
+          "resource_id": 472,
+          "name_localkey": "Scarlet: Goddeath",
+          "original_rare": "SSR",
+          "critical_ratio": 1500,
+          "category_type_1": "None",
+          "category_type_2": "None",
+          "category_type_3": "None",
+          "critical_damage": 15000,
+          "eff_category_type": "Walk",
+          "eff_category_value": 0
+        }
+      },
+      "generatorSupported": false,
+      "simSupported": false,
+      "baseStats": {
+        "hp": 13500,
+        "atk": 600,
+        "def": 90,
+        "core": {
+          "hp": 200,
+          "atk": 200,
+          "def": 200
+        },
+        "grade": {
+          "hp": 3000,
+          "atk": 20,
+          "def": 100,
+          "ratio": 200
+        },
+        "critRate": 15,
+        "maxLevel": 1400,
+        "critDamage": 150,
+        "resourceId": 472
+      }
+    },
     "signal": {
       "slug": "signal",
       "name": "Signal",
@@ -83967,8 +85105,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -84427,8 +85565,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2023-01-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -84939,11 +86077,11 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2026-09-24",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["ssb", "bsin"],
+      "nicknames": ["bsin"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self.\nATK ▲ 15.35%. This effect is continuous.\n■ Activates during Full Charge if this unit is not in the Swift Piercing state. Affects self.\nNormal Attack Damage Multiplier ▲ 100% for 1 round(s).\nCharge Damage ▲ 52.12% for 1 round(s).\n■ Activates at the start of battle and when Full Charge is maintained for 1 or more seconds. Affects self.\nInitiates a new Bunny Mode based on the current mode.\nActivates if this unit is in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\nActivates if this unit is not in the Bunny Mode: Stance state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Engage state. Affects all allies in the Bunny Mode: Stance state. \nInitiates Bunny Mode: Engage. This effect is continuous and cannot be removed.\n■ Activates when this unit enters the Bunny Mode: Stance state. Affects all allies in the Bunny Mode: Engage state.\nInitiates Bunny Mode: Stance. This effect is continuous and cannot be removed.",
         "skill2": "■ Activates only if this unit is in the Bunny Mode: Engage state.\nNoise Bullets\nFunction: Changes some attacks' damage into true damage.\nEffect 1: Normal attacks deal true damage. This effect is continuous and cannot be removed.\nEffect 2: Swift Piercing deals true damage. This effect is continuous and cannot be removed.\n■ Activates only if this unit is in the Bunny Mode: Stance state.\nEnhanced Bullets\nFunction: Enhances this unit's offensive capabilities.\nEffect 1: Critical Rate ▲ 35.14%. This effect is continuous and cannot be removed.\nEffect 2: Critical Damage ▲ 75.12%. This effect is continuous and cannot be removed.\n■ Activates when using Burst Skill. Affects self.\nSwift Piercing: Changes the weapon in use\nCharge Time: Fixed at 0.5 sec\nDamage: 73.22% of final ATK\nFull Charge Damage: 300%\nDuration: 5 sec",
@@ -85452,11 +86590,10 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2026-04-09",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
-      "nicknames": ["sc"],
       "skills": {
         "skill1": "■ Activates only while not in Terminated Contract status. Affects all allies.\nExclusive Recovery Agreement: Max HP ▲ 10% of the skill user's Max HP continuously.\n■ Activates when recovery takes effect if the recovery is not coming from this unit. Affects self.\nProof of Violation: Outgoing healing ▼ 10% continuously, up to 3 time(s).",
         "skill2": "■ Activates after 3 Full Charge attack(s). Affects all allies in Exclusive Recovery Agreement status.\nRecovers 1.32% of the skill user's final Max HP as HP.\n■ Activates when entering Full Burst. Affects all allies. \nGenerates a Shield equal to 9.5% of the skill user's final Max HP for 10 sec.\n■ Activates when Proof of Violation reaches max stacks. Affects self. \nTerminated Contract: Gains immunity to Proof of Violation continuously.\nRecovers 0.24% of the skill user's final Max HP as HP every 1 sec continuously.",
@@ -85900,11 +87037,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 9.75,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.25,
       "treasure": false,
-      "nicknames": ["sw"],
       "skills": {
         "skill1": "■ Activates when normal attack hits 30 time(s). Affects the target(s).\nDeals 82.8% of final ATK as additional damage. \n■ Activates when normal attack hits 30 time(s). Affects self.\nATK ▲ 8.28% for 5 sec.",
         "skill2": "■ Affects enemies within range.\nDeals 144.73% of final ATK as damage. \n■ Activates when using this skill during Full Burst. Affects self.\nCritical Rate ▲ 26.1% for 10 sec.",
@@ -86349,8 +87485,8 @@
       "chargeFrames": 72,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 67.2,
-      "releaseDate": "2026-01-01",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["swha"],
@@ -86997,11 +88133,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 1.95,
-      "releaseDate": "2023-11-02",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
-      "nicknames": ["swid"],
       "skills": {
         "skill1": "■ Activates after landing 30 normal attack(s). Affects self.\nMax Ammunition Capacity ▲ 25.66%, stacks up to 5 time(s) and lasts for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects enemies within attack range. \nDeals 188.68% of final ATK as damage.",
         "skill2": "■ Activates when landing 50 normal attack(s). Affects all enemies.\nDeals 61.69% of final ATK as damage. \n■ Activates when using Burst Skill. Affects self.\nAttack damage ▲ 21.12% for 10 sec.",
@@ -87513,8 +88648,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
-      "releaseDate": "2023-02-08",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -87956,15 +89091,15 @@
       "normalAttackMultiplier": 231.6,
       "coreAttackMultiplier": 200,
       "ammo": 9,
-      "reloadFrames": 142,
+      "reloadFrames": 61,
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 27,
-      "releaseDate": "2024-05-30",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 4.5,
       "treasure": false,
-      "nicknames": ["stb", "bsoda"],
+      "nicknames": ["bsoda"],
       "skills": {
         "skill1": "■ Activates at the start of battle. Affects self. \nGolden Chip stacks ▲ 50.\n■ Activates after performing 3 normal attack(s) during Full Burst. Affects self.\nGolden Chip: Critical Damage ▲ 1.32% continuously, stacks up to 50 time(s).\n■ Activates after performing 3 normal attack(s) during Full Burst. Affects self and the 1 ally unit(s) with the highest final ATK (except the skill user). \nAttack Damage ▲ 10.51% for 2 sec.",
         "skill2": "■ Activates when entering Burst Stage 3. Affects all allies.\nEffects vary according to the number of Golden Chip stacks. Each subsequent effect triggers all effects before it:\nStage 1: With 10 or more stacks of Golden Chip,\nTime Extension I: Full Burst Duration▲ 2 sec. Lasts until Full Burst ends.\nStage 2: With 20 or more stacks of Golden Chip,\nTime Extension II: Full Burst Duration▲ 3 sec. Lasts until Full Burst ends.\n■ Activates when performing a normal attack during Full Burst. Affects the 1 enemy unit(s) nearest to the crosshair. \nEffects vary according to the state of Time Extension. Each subsequent effect triggers all effects before it:\nStage 1: When in Time Extension I state,\ndeals 52.04% of final ATK as damage.\nStage 2: When in Time Extension II state,\ndeals 85.02% of final ATK as damage.",
@@ -88564,11 +89699,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": false,
-      "nicknames": ["se"],
       "skills": {
         "skill1": "■ When a normal attack hits, there is a 5% chance of affecting self.\nATK ▲ 7.92% for 5 sec.",
         "skill2": "■ Affects self.\nMax Ammunition Capacity ▲ 112.77% for 5 sec.",
@@ -88955,11 +90089,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
-      "nicknames": ["sf"],
       "skills": {
         "skill1": "■ There is a 10% chance of activating when attacked. Affects self.\nDEF ▲ 9.09% for 10 sec.",
         "skill2": "■ Affects self.\nRecover 20.19% of attack damage as HP over 8 sec.",
@@ -89346,11 +90479,10 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
-      "nicknames": ["so"],
       "skills": {
         "skill1": "■ There is a 10% chance of activating after casting normal attack(s). Affects the target(s).\nDeals 75.6% of final ATK as additional damage.",
         "skill2": "■ Affects 3 ally unit(s) with the highest final ATK. \nCover's DEF ▲ 128.57% for 5 sec.",
@@ -89737,8 +90869,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
-      "rl3": 11.4,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -90145,11 +91277,11 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 12,
-      "releaseDate": "2025-11-20",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2,
       "treasure": false,
-      "nicknames": ["sft", "solineft"],
+      "nicknames": ["solineft"],
       "skills": {
         "skill1": "■ Activates at the start of battle and when using Burst Skill. Affects all allies.\nIssues 1 ticket, up to a maximum of 2. This effect is continuous.\nTicket effect: Max HP ▲ number of tickets * 10% of the skill user's Max HP.\n■ Activates when entering Full Burst. Affects all allies.\nCooldown of Burst Skill ▼ 7.48 sec.\n■ Activates when entering Full Burst. Affects all allies.\nRemoves First Train Discount.",
         "skill2": "■ Activates when the HP of anyone in the squad is lower than 15%. Affects the target if the target has any tickets.\nRecovers 12.27% of the skill user's final Max HP as HP.\nTicket count ▼ 1.\n■ Activates at the start of battle. Affects all allies.\nFirst Train Discount for 6 sec.\nFunction: The effects of I'll Help You Board the Train! will not consume tickets.",
@@ -90567,8 +91699,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2025-07-03",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -90985,12 +92117,12 @@
       "normalAttackMultiplier": 231.6,
       "coreAttackMultiplier": 200,
       "ammo": 9,
-      "reloadFrames": 142,
+      "reloadFrames": 61,
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 27,
-      "releaseDate": "2026-07-23",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 4.5,
       "treasure": true,
       "nicknames": ["tsugar"],
@@ -91477,8 +92609,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2026-02-19",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -91976,8 +93108,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2023-10-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -92502,8 +93634,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 7.6,
-      "releaseDate": "2025-07-17",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.2,
       "treasure": true,
       "nicknames": ["ttove"],
@@ -92985,12 +94117,12 @@
       "normalAttackMultiplier": 68.59,
       "coreAttackMultiplier": 200,
       "ammo": 6,
-      "reloadFrames": 170,
+      "reloadFrames": 71,
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 43.2,
-      "releaseDate": "2025-03-13",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 3.6,
       "treasure": false,
       "skills": {
@@ -93634,8 +94766,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2024-05-16",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -94133,8 +95265,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.4,
-      "releaseDate": "2026-01-29",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["vel"],
@@ -94733,12 +95865,12 @@
       "normalAttackMultiplier": 61.3,
       "coreAttackMultiplier": 200,
       "ammo": 6,
-      "reloadFrames": 142,
+      "reloadFrames": 141,
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 16.8,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -95207,15 +96339,15 @@
       "normalAttackMultiplier": 22.44,
       "coreAttackMultiplier": 200,
       "ammo": 8,
-      "reloadFrames": 142,
+      "reloadFrames": 141,
       "chargeFrames": 120,
       "chargeMultiplier": 200,
       "hitsPerShot": 1,
-      "rl3": 31.2,
-      "releaseDate": "2025-08-21",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.65,
       "treasure": false,
-      "nicknames": ["vtu", "vestitu"],
+      "nicknames": ["vestitu"],
       "skills": {
         "skill1": "■ Activates when performing a Full Charge attack while not in Missile Guide status. Affects self.\nMissile Guide: Charge Speed ▲ 100% for 3 round(s).\nCharge Damage ▲ 58.5% for 3 round(s).\n■ Activates upon reloading to max ammunition. Affects self.\nRemoves Missile Guide.",
         "skill2": "■ Activates when landing Full Charge attacks. Affects target(s).\nDeals 266.6% of final ATK as true damage. \n■ Activates when landing Full Charge attacks if self is in Battle Formation status. Affects self.\nATK ▲ 20% for 3 sec. \n■ Activates when landing Full Charge attacks if target(s) is in Explosive Round status. Affects self.\nProjectile Explosion Damage ▲ 20% for 3 sec.",
@@ -95710,12 +96842,12 @@
       "normalAttackMultiplier": 220.4,
       "coreAttackMultiplier": 200,
       "ammo": 9,
-      "reloadFrames": 122,
+      "reloadFrames": 55,
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 27,
-      "releaseDate": "2024-07-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 4.5,
       "treasure": true,
       "skills": {
@@ -96174,8 +97306,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 5.7,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -96660,8 +97792,8 @@
       "chargeFrames": 90,
       "chargeMultiplier": 350,
       "hitsPerShot": 1,
-      "rl3": 11.2,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -97082,7 +98214,7 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
-      "rl3": 3.55,
+      "rl3": null,
       "releaseDate": "2026-08-20",
       "burstGaugePerShot": 0.05,
       "treasure": false,
@@ -97629,8 +98761,8 @@
       "chargeFrames": 60,
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
-      "rl3": 8.25,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 2.75,
       "treasure": false,
       "skills": {
@@ -98050,8 +99182,8 @@
       "chargeFrames": 90,
       "chargeMultiplier": 350,
       "hitsPerShot": 1,
-      "rl3": 11.2,
-      "releaseDate": "2022-11-04",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -98498,8 +99630,8 @@
       "chargeFrames": 0,
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
-      "rl3": 21,
-      "releaseDate": "2026-02-12",
+      "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.75,
       "treasure": true,
       "nicknames": ["tzwei"],

@@ -188,6 +188,13 @@ export type TargetDef =
   // first, so 'right' = slot index + 1. An owner at the matching edge (rightmost for 'right') has
   // no such ally and the block applies to nobody — the literal reading of the kit text.
   | { kind: 'adjacentAlly'; side: 'left' | 'right' }
+  // "[self and] all allies in the <Name> state" — the allies whose kit-NAMED self-status window
+  // (opened by a `selfStatus` effect, the `requiresSelfStatus` channel) is open at the apply frame
+  // and whose status name STARTS WITH `statusPrefix`, so one prefix covers a family of named modes
+  // ("Into the Fray" matches "Into the Fray: Sharpened Resolve", "Into the Fray: Serene Mind", …).
+  // `includeSelf` adds the owner unconditionally ("Affects self and all allies in …"). An ally
+  // whose override never emits a matching status is never selected (rapunzel-sanctuary).
+  | { kind: 'alliesInStatus'; statusPrefix: string; includeSelf?: boolean }
   // "the N ally unit(s) with the lowest remaining HP [(except self)]" (blanc/moran survival grants).
   // v1 has no HP pool (immortal boss, nobody takes damage) so "lowest remaining HP" is indeterminate —
   // resolved deterministically to the leftmost `count` allies as a documented stand-in. The Max-HP grants

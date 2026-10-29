@@ -513,6 +513,10 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://nikkesim.app/unit/marian-queen</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://nikkesim.app/unit/mary</loc>
     <priority>0.7</priority>
   </url>
@@ -714,6 +718,10 @@
   </url>
   <url>
     <loc>https://nikkesim.app/unit/rapunzel-pure-grace</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://nikkesim.app/unit/rapunzel-sanctuary</loc>
     <priority>0.7</priority>
   </url>
   <url>

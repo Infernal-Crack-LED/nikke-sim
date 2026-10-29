@@ -1,0 +1,42 @@
+{
+  "role": "code-review",
+  "verdict": "FIX-BEFORE-MERGE",
+  "findings": [
+    {
+      "severity": "FIX",
+      "where": "src/skills/validate-structural.ts:1340-1377 (and src/engine/sim.ts:2358)",
+      "issue": "The new target is a CROSS-UNIT consumer of self-status names, but the only self-status census in the validator is the same-unit requiresSelfStatus one. Nothing checks that ANY override in the roster emits a selfStatus whose name starts with an authored statusPrefix, so a typo'd prefix or a family member whose override names its mode differently is 'dead authoring that looks live' — exactly the class this validator exists to catch (its own comments at :953, :960, :972). This is not hypothetical today: data/characters.json shows marian-queen is an Into the Fray family member in-game (S1 'Into the Fray: Sharpened Resolve' at battle start, S2 'Into the Fray: Penetrant Wish' on burst), but src/skills/overrides/marian-queen.json emits its selfStatus as the bare name 'Penetrant Wish' (producer skill2[0], consumers skill2[1]/[3]) and emits NO status for the always-on S1 mode. So in any comp pairing rapunzel-sanctuary with marian-queen the engine selects nobody but self while the game buffs marian-queen all fight. scarlet-goddeath (also in the current gauntlet, per the untracked portraits) carries 'Into the Fray: Serene Mind' at battle start and will have the same contract to honour. The engine code itself is correct; the gap is that the naming contract it depends on is unenforced.",
+      "suggestedFix": "Add a cross-slug census next to the requiresSelfStatus one: collect every selfStatus producer name roster-wide, and for each alliesInStatus target emit a WARN (not ERROR — the family can legitimately be unmodeled yet) when no producer in any override starts with the prefix, naming the prefix and the block path; mirror the boss-channel two-tier wording. Update the comment at :1340-1347 ('no cross-unit self-status reads exist today') since alliesInStatus is now one. Separately, when the rapunzel-sanctuary override lands, rename marian-queen's status to the game's full 'Into the Fray: Penetrant Wish' (consumers too) and add a permanent battle-start 'Into the Fray: Sharpened Resolve' selfStatus producer so the family contract is actually met — that is an override edit outside this diff and belongs in its own commit."
+    },
+    {
+      "severity": "FOLLOW-UP",
+      "where": "src/ranks/buffer.ts:348 and :407-423",
+      "issue": "The rank-builder's synthetic carries never open a self-status, so (a) an alliesInStatus-targeted burstCdr block would be counted as making its owner the team enabler via startsWith('allies') while never reducing anyone's cooldown in that team, and (b) deriveCarrySpec has no rule for the kind, so any ally-facing alliesInStatus grant is silently dropped from the carries' ranking contribution. Inert today (rapunzel-sanctuary's lines are Attack Damage / caster-ATK grants, not CDR, and no override authors the kind yet), but the same approximation comment the file already keeps for teamHas should be extended to name this kind.",
+      "suggestedFix": "In hasAllyCdr, exclude 'alliesInStatus' explicitly (or require includeSelf for it to count), and add a rules.push note in deriveCarrySpec that alliesInStatus grants are not creditable to synthetic carries — or give the carries the status in a later change if a family-member carry is ever wanted."
+    },
+    {
+      "severity": "FOLLOW-UP",
+      "where": "docs/STATE.md:249 and docs/engine-modeling-gaps.md:30",
+      "issue": "The target-kind registry in STATE.md and the primitive census in engine-modeling-gaps.md list adjacentAlly but not alliesInStatus. The mirror commit's docs row landed the same day in a separate commit (bcc22c30), so this is the expected follow-up, not a defect of the diff.",
+      "suggestedFix": "Run /mechanics-doc-upkeep for the STATE.md row + regenerated primitive census when the rapunzel-sanctuary override lands."
+    },
+    {
+      "severity": "NOTE",
+      "where": "src/engine/sim.ts:2364",
+      "issue": "Expired selfStatuses entries are never deleted from the map, so the until > frame test is load-bearing (it is present and matches the gate's '<= frame ⇒ closed' at :2570, open iff expiry > frame — verified). Same-frame ordering is also fine for the carrier's actual lines: a family member's burst-cast mode is opened before Full Burst begins (verified fact), so it is open at the FB-entry apply frame.",
+      "suggestedFix": "none"
+    }
+  ],
+  "unexercisedScope": "(1) Cross-override name agreement — the pin test opens its own synthetic 'Into the Fray: …' statuses, so it can never detect that real family members' overrides use different names (marian-queen does). (2) src/ranks/buffer.ts enabler/carry-spec paths for the new kind — no test, and no override exercises them. (3) The web targetLabel string — typecheck only. (4) Roster inertness was established by the author's byte-identical regression output, which I did not rerun; the mechanism is sound since no shipped override authors the kind (grep confirmed) and the switch arm is unreachable otherwise. (5) scripts/census-synergy-events.ts treats target.kind as an opaque string, so it needs no change.",
+  "whatIRan": [
+    "npx vitest run scripts/tests/engine/allies-in-status.test.ts scripts/tests/engine/adjacent-ally.test.ts  (12/12 passed)",
+    "npm run typecheck  (clean, web + root)",
+    "git show --stat cb191d32 / 535abade  (same five touchpoints as the mirror)",
+    "git log -S'adjacentAlly' -- docs/STATE.md docs/engine-modeling-gaps.md  (docs row landed separately, bcc22c30)",
+    "python3 walk of src/skills/overrides/marian-queen.json for selfStatus producers/consumers  (name is bare 'Penetrant Wish'; no S1 mode status)",
+    "grep 'Into the Fray' across data/characters.json, overrides, tests, kit-autonomy results",
+    "git check-ignore scratchpad/gates/2026-10-29-alliesInStatus/review-packet.md  (gitignored; leaves nothing in the tree)",
+    "read: sim.ts resolveTargets callers (all pass the live frame), selfStatus effect emitter :3157-3172, requiresSelfStatus gate :2567-2573, validate-structural :940-980 and :1340-1377, ranks/buffer.ts :330-430, census-synergy-events.ts :100-135, harness exports"
+  ],
+  "model": "claude-fable-5-1"
+}

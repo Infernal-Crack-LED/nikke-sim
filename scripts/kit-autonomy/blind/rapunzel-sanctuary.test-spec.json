@@ -1,0 +1,93 @@
+{
+  "slug": "rapunzel-sanctuary",
+  "model": "claude-opus-5",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Restores HP equal to 3.9% of ... max HP",
+      "disposition": "FAITHFUL",
+      "assertion": "Plants a synthetic {kind:'recovery'} consumer on crown; her heal must fire it, and stripping the heal must collapse the count by >20. Proves the heal exists, reaches ALL allies, and fires per full charge. RED under the nearest-wrong 'defensive line, skip it' (consumer never fires) and under a once-per-battle/battleStart keying (delta ≤ 1)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack Damage ▲ 27.45% for 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Applications == fullBurstStart count, all targetSlug === her (no Into-the-Fray ally in the comp), raw value 27.45, durationShots null. RED under target {kind:'allies'} (counterfactual gives TEAM× the applications), under burstCast keying (count would drop below FB count), and under a round-count duration."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Cooldown of Burst Skill ▲ 40 sec",
+      "disposition": "GAP",
+      "assertion": "it.skip — gated on Nanoparticle Injection (her own revive); v1 has no HP pool / no incapacitation, so the trigger is unreachable. Also asserted negatively: no defPct 10 (Nanoparticle Consumption) ever appears."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Nanoparticle Consumption: DEF ▲ 10%",
+      "disposition": "GAP",
+      "assertion": "Same unreachable trigger; defPct is inert in v1 anyway. Negative assertion: zero defPct applies at value 10 in the control run, so a mis-keyed always-on encoding would go RED."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "immunity to charge speed ▲/▼",
+      "disposition": "FAITHFUL",
+      "assertion": "Injects a chargeSpeedPct ▲60 that can reach only her (alliesOfWeapon 'RL' — she is the sole RL); every unit's total must stay byte-identical. Non-vacuity + nearest-wrong: deleting charFixes.statImmunities with the same injection must raise her damage. RED if the immunity is unmodeled (control run already shifts) or if statImmunities omits chargeSpeedPct."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "shared shield 7.39% of ... max HP",
+      "disposition": "UNMODELED",
+      "assertion": "A shield effect must exist (strip hits > 0) and removing it must leave every unit's total identical — documents the line as a tandem-only channel with no consumer in this comp. RED if the shield were folded into a damage term."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Goddess Blessing: DEF ▲ 42.24%",
+      "disposition": "FIX",
+      "assertion": "No caster-DEF StatKey exists, so defPct 42.24 to all allies is the faithful approximation; target set == TEAM, value 42.24, and 6–24 applications per ally over 180 s (a ~10 s duty cycle from the 'while not in Goddess Blessing' gate). RED under the nearest-wrong ungated encoding — the counterfactual that deletes noRetriggerWhileActive must give >2× the applications (≈ one per pull)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 29.17% of the skill user's ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "casterAtkPct FLAT-resolved (value >> 29.17, basis recovered as min(her caster-ATK values)/0.2917), applications == FB count, self-only, durationShots null. RED under plain atkPct (no casterAtkPct event at all), under target allies (teammates appear), and under a raw-percentage emission."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 220.7% of final ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "Strip-the-rider delta is >15% of her total; then one axis at a time — core:true must ADD (so faithful is no-core, the kit never says 'core strike'), crit:false must LOSE (riders crit at the caster's rate), noFb:true must LOSE (FB by timing), and re-keying to hitCount:2 must cost 30–70% of the rider's share (so the faithful cadence is one per PULL). Each is RED under exactly the opposite encoding."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 34.84% of ... ATK for 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Re-keying her burstCast blocks to fullBurstEnter must yield exactly fbStarts × TEAM applications at the 34.84-derived flat value (proves the block exists, the magnitude, and the all-ally target set), while the control run must have STRICTLY FEWER — she is the second Burst-II unit behind crown, so her own casts cannot match the team's FB count. RED under FB-enter keying (control == counterfactual) and under a self-only target set."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Nanoparticle Injection: Revives 96% HP",
+      "disposition": "GAP",
+      "assertion": "it.skip — '3 or more allies are incapacitated' is unsatisfiable in v1 (no HP pool). Backed by a positive test that the revive branch's 101.37% ATK and 221.76% DEF magnitudes never appear, so a mis-modeled always-on branch would go RED."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Only one set of effects is applied",
+      "disposition": "FAITHFUL",
+      "assertion": "At most ONE distinct caster-scaled ATK magnitude may appear from her burst slot — the ≤2-incapacitated branch and the Nanoparticle-Consumption branch carry the identical 34.84% payload, so stacking both (a plausible double-encode of the two ■ headers) would show two magnitudes or double the applications and go RED."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge maintained for 1+ sec",
+      "disposition": "GAP",
+      "assertion": "it.skip — no primitive for HOLDING at full charge (the sim releases on reaching it) and no inverse-of-requiresSelfStatus gate; documented as the fullCharge proxy plus the buff-level duty cycle, which the shield cannot share."
+    }
+  ],
+  "fixtures": "controlComp('rapunzel-sanctuary', true) for every run — liter (B1) / crown (B2) / her / helm (B3), boss Fire, focus on her. fixedB3 is left TRUE because the alternative (false) leaves liter B1 + crown B2 + her B2 and NO Burst III, which makes zero Full Bursts and kills every FB-enter line; helm's buffs do not confound any assertion here because all of them are either event-filtered to her own casterIdx or read as a control-vs-counterfactual delta. Three override channels are injected: (a) a synthetic {kind:'recovery'} consumer on crown to make the event-less heal observable, (b) a passive chargeSpeedPct ▲60 on liter targeted alliesOfWeapon 'RL' — she is the only RL in the comp, so the probe cannot perturb anyone else — and (c) withPatchedOverride clones of her own file for the nearest-wrong counterfactuals. 14 hoisted runs (one 180 s sim each). Every patch carries a hit counter that is asserted > 0, so a patch that silently matched nothing fails loudly instead of passing vacuously; all count claims are ratios or wide bands because her cadence derives from the datamine-unreliable chargeFrames/reloadFrames pair. NOTE: this session had no filesystem tools, so scripts/kit-autonomy/blind/rapunzel-sanctuary.test.ts and .test-spec.json could NOT be written — the full source is inline in testSource above and must be saved by the orchestrator.",
+  "gaps": [
+    "S1-c (it.skip): 'Activates when using Nanoparticle Injection' — burst-cooldown ▲40 s and the continuous Nanoparticle Consumption DEF ▲10% are gated on her own revive; v1 models no HP pool and no incapacitation, so the trigger is unreachable (and defPct is inert regardless).",
+    "B-a (it.skip): the ≥3-incapacitated revive branch (96% HP revive, once-per-battle ATK ▲101.37% / DEF ▲221.76%) is unsatisfiable for the same reason; only the ≤2-incapacitated / Nanoparticle-Consumption ATK ▲34.84% branch is ever live.",
+    "S2-a/S2-b trigger fidelity (it.skip): 'Full Charge is maintained for 1 or more seconds' has no primitive (the sim releases at full charge rather than holding), and 'while this unit is not in the Goddess Blessing state' has no inverse-of-requiresSelfStatus gate — the duty cycle can only ride the buff's own noRetriggerWhileActive, which the shield effect cannot share, so the shield is expected to over-fire.",
+    "Shield and heal payloads are unobservable directly (no shield/heal event kind; the heal models no HP amount and the shield no HP pool) — both are reachable only through a planted consumer or an inertness delta.",
+    "'Into the Fray' and 'Goddess Blessing' state MEMBERSHIP has no event channel, so the alliesInStatus target set can only be verified negatively (no teammate here carries either state).",
+    "fullCharge vs shotFired is NOT discriminable for an unswapped RL (every pull is a full charge), so the S1-a / S2-b / S2-d trigger identity is asserted at cadence level only."
+  ]
+}

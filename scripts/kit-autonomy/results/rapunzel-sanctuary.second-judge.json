@@ -1,0 +1,147 @@
+{
+  "slug": "rapunzel-sanctuary",
+  "kitDescription": "Rapunzel: Sanctuary is a Fire rocket-launcher Supporter who bursts in stage II. Every full-charge shot she fires heals the whole team for 3.9% of her max HP and launches an extra hit worth 220.7% of her ATK at the enemy nearest her crosshair. Whenever any Full Burst begins, she buffs herself — and any allies standing in an 'Into the Fray' stance, a state her own kit never grants but some other Pilgrims carry — with Attack Damage ▲27.45% and a flat ATK boost equal to 29.17% of her own ATK, both for 10 seconds. Her burst skill normally gives the whole team ATK equal to 34.84% of her ATK for 10 seconds; if three or more allies are down it instead revives them once per battle with big one-time ATK/DEF buffs, at the permanent cost of +40 seconds on her burst cooldown. Holding a full charge for at least a second (something auto play never does) also projects a shared shield and a team DEF blessing, and she is permanently immune to anything that speeds up or slows down her charge.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "VERBATIM file: every test fails on a wiring defect (it hooks opts.onEvent; the harness reads opts.cfg.onEvent), so classification is on the driver's minimally-adapted run (7 pass / 3 fail / 3 skip).",
+      "S2-a 'a shield effect must exist to strip' (shieldStripHits > 0) — driver ships no shield block; the hold-charge line is UNMODELED with a tandem caveat (⚑3). Blind-side proxy divergence, not a driver fault.",
+      "S2-b 'Goddess Blessing DEF grant must be emitted' — driver ships no defPct block for the same unreachable hold-charge trigger; documented UNMODELED. Blind-side proxy divergence.",
+      "S2-d noFb counterfactual arm 'noFb:true must LOSE damage' — noFb on an override effect is engine-inert under the default (validator rejects it), so the arm cannot move damage; a blind test defect (RECON_ERROR). The arm's premise (rider takes FB +50% by landing time) is separately pinned GREEN by the driver's L8 fbMajorApplied assertion."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Full Charge atk → allies: HP 3.9%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullCharge → allies → heal (recovery event per shot; the 3.9% amount has no engine consumer — documented magnitude-only unmodeled)",
+        "blindSaid": "S5 and S6 identical (fullCharge/allies/heal); S5's planted recovery probe fires per shot — GREEN",
+        "formulaCheck": "No HP pool in v1; the taxonomy tandem rule says the recovery EVENT is the board-relevant half, which is modeled. RL auto-releases at full charge so fullCharge ≡ per-shot cadence",
+        "fireRateOk": true,
+        "explanation": "Driver L1 pins the ally probe firing on every one of her shot frames, with self-target and dropped-heal counterfactuals RED. All four agents converge."
+      },
+      {
+        "kitLine": "FB enter: Attack Damage ▲27.45% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → alliesInStatus{'Into the Fray', includeSelf} → attackDamagePct 27.45, 10s (new engine target, regression byte-identical)",
+        "blindSaid": "S6 byte-identical block; both S2b reviewers demanded exactly this target shape and named plain-allies as the nearest-wrong",
+        "formulaCheck": "attackDamagePct = generic DamageUp bucket member — correct routing; 'self and all allies in the Into the Fray state' is a status-scoped set, self-only absent an external carrier",
+        "fireRateOk": true,
+        "explanation": "L2 pins grant frames == every fullBurstStart (incl. a two-B2 fixture proving it fires on Full Bursts she sat out — the fable-5-1 fixture hazard), holders == {self, the patched Into-the-Fray ally}, 600f expiry; allies/self/burstCast counterfactuals all RED."
+      },
+      {
+        "kitLine": "Nanoparticle Inj.: Burst CD ▲40 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim: gated on the burst's ≥3-incapacitated Nanoparticle Injection, unreachable (v1 has no HP pool)",
+        "blindSaid": "All four blind agents independently ruled it unreachable; S2b named the passive 40→80s cooldown as the nearest-wrong",
+        "formulaCheck": "Correct: the trigger is the revive branch; applying it passively would halve her cast cadence",
+        "fireRateOk": true,
+        "explanation": "L3 asserts normal cast cadence AND runs the unconditional-80s counterfactual (fewer casts) — the nearest-wrong is discriminated, not just absent."
+      },
+      {
+        "kitLine": "Nanoparticle Consumption: DEF ▲10%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim: same unreachable gate; DEF inert in v1",
+        "blindSaid": "Unanimous; S5 backs it with a negative pin (no defPct-10 grant ever appears)",
+        "formulaCheck": "defPct has no damage consumer; doubly inert",
+        "fireRateOk": true,
+        "explanation": "L6/L10 negative assertion covers it (no DEF grant from her at all)."
+      },
+      {
+        "kitLine": "Immunity to charge speed ▲/▼",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "charFixes.statImmunities ['chargeSpeedPct'] — whole-fight, both directions, buff-effects-only (⚑2 flags the ~1s arming-delay over-scope)",
+        "blindSaid": "S6 identical; both S2b reviewers specified exactly this primitive and named omission as the nearest-wrong",
+        "formulaCheck": "Matches mechanics SSOT §11: strip at application, per-stat per-target, direction-blind, cube/OL unaffected",
+        "fireRateOk": true,
+        "explanation": "L4 injects an ally-wide chargeSpeedPct buff and shows it lands on everyone but her, with the immunity-removed counterfactual showing she receives it. Damage-relevant in the conservative direction (her shot count refuses ally charge-speed)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Hold FC 1s: shield 7.39% maxHP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim with tandem caveat ⚑3: the sim releases at full charge and never holds, so the trigger never occurs; shield would feed ally 'shielded' triggers if held manually",
+        "blindSaid": "S5/S6 (both opus-5) proxied it onto fullCharge (shield every ~1.4s) — exactly the nearest-wrong both S2b reviewers pre-named ('fabricates shield events every pull'); this is the S5 RED",
+        "formulaCheck": "No hold-past-full-charge primitive exists; three shipped overrides (rapunzel-pure-grace, guilty-mighty-bunny, sin-swift-bunny) carry the same clause unmodeled. The driver's disposition is the corroborated one; the blind proxy would over-fire shielded consumers ~6x per 10s",
+        "fireRateOk": true,
+        "explanation": "The S5 divergence is spurious — a blind-side proxy choice, independently refuted by both S2b specs and repo precedent. Driver's L5 pins zero shield events AND runs the fullCharge-proxy counterfactual to show the probe would fire — the gap is discriminated, not silent."
+      },
+      {
+        "kitLine": "Goddess Blessing: DEF ▲42.24% 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim: same unreachable hold trigger; DEF damage-inert; no caster-DEF StatKey exists anyway",
+        "blindSaid": "S5 demanded a defPct emission on a 10s duty cycle (the second RED); S6 encoded it on the fullCharge proxy with noRetriggerWhileActive; both S2b ruled UNMODELED faithful and called the fullCharge encoding the nearest-wrong",
+        "formulaCheck": "Trigger unreachable + stat inert + basis inexpressible (caster-DEF-scaled); encoding it would misstate both trigger and basis",
+        "fireRateOk": true,
+        "explanation": "Same attribution as the shield line: blind-side proxy divergence, 2-of-2 independent S2b corroboration for the driver."
+      },
+      {
+        "kitLine": "FB enter: ATK ▲29.17% caster ATK 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → alliesInStatus{'Into the Fray', includeSelf} → casterAtkPct 29.17, 10s",
+        "blindSaid": "S6 byte-identical; S2b's two-headed nearest-wrong (atkPct basis / plain allies) both discriminated",
+        "formulaCheck": "casterAtkPct = flat add of caster's ATK × 29.17% — the non-diluting conversion per SSOT §1a, correct for 'of the skill user's ATK'",
+        "fireRateOk": true,
+        "explanation": "L7 pins frames == every FB start, holders == {self, Fray ally}, plus the dedicated atkPct-basis counterfactual; two-B2 fixture covers the fullBurstEnter identity."
+      },
+      {
+        "kitLine": "FC atk: 220.7% final ATK add'l dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullCharge → enemy → flatDamage atkPct 220.7 with engine rider defaults (crit at her rate, no core, noRange, FB by landing time)",
+        "blindSaid": "S6 identical except a redundant crit:true (riders crit by default — a no-op); S5's strip/core/crit/cadence arms all align; its noFb arm is the defective one",
+        "formulaCheck": "SSOT §2b function damage: crit yes / core never / range never / no charge bucket — the driver correctly did NOT route it through charge or core despite the 'Full Charge attack' wording (the S2b-named trap)",
+        "fireRateOk": true,
+        "explanation": "L8 pins one skill-bucket hit per shot on the shot frame, not core-eligible, crit-eligible, fbMajorApplied inside FB, with core:true and dropped counterfactuals. Her main personal damage line fires at full prose cadence."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "≥3 incap: revive 96% +101.37/221.76",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim: no incapacitation in v1, branch never activates",
+        "blindSaid": "Unanimous across all four blind agents; S5 negatively pins that the 101.37/221.76 magnitudes never appear",
+        "formulaCheck": "Immortal roster ⇒ empty target set; encoding the 101.37 would ~3x over-credit her burst payload",
+        "fireRateOk": true,
+        "explanation": "Covered by the L6/L10 absence pins; the real-fight revive behaviour is out of v1 scope by construction."
+      },
+      {
+        "kitLine": "≤2 incap: ATK ▲34.84% caster ATK 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → casterAtkPct 34.84, 10s — her own cast, landing before the Full Burst it opens",
+        "blindSaid": "S6 byte-identical block; S5 proves it via the fullBurstEnter re-key counterfactual; both S2b demanded the cast-frame-vs-FB-start assertion",
+        "formulaCheck": "Burst-cast grants resolve before the FB window (SSOT §8); buffs granted at cast DO apply to the window — cast-frame < fbStart is the correct timing and L9 pins it",
+        "fireRateOk": true,
+        "explanation": "L9/L11 pins grants on each of her cast frames (≥3 casts in fixture), all four allies, exactly one grant per ally per cast (the branch-collapse guard), 600f expiry, with fullBurstEnter / self-only / double-branch counterfactuals all RED. The trigger-identity question — the kit's hardest call — is settled mechanically."
+      },
+      {
+        "kitLine": "In Consumption: ATK ▲34.84% allies",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim with the collapse documented: payload identical to the ≤2 branch, so one unconditional block is the burst in every reachable state",
+        "blindSaid": "All four agents independently reached the same collapse; S2b called branch-gating machinery for an unreachable state over-modeling",
+        "formulaCheck": "'Only one set of effects is applied' + identical payload ⇒ behaviorally exact collapse, guarded by the exactly-one-grant-per-ally-per-cast pin",
+        "fireRateOk": true,
+        "explanation": "The double-encode trap is explicitly counterfactualed (L9's 'both branches unconditional' arm)."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA survives. All 12 kit lines are FAITHFUL (6) or DOCUMENTED_GAP (6, each verbatim in unmodeled with a reasoned reachability/primitive argument and a ⚑ recipe), and the S2d matrix shows arm-1 RED (no override) plus every named nearest-wrong counterfactual discriminated in-file, so discrimination holds. The S5 convergence run is formally RED, but all three failures attribute to the blind side: S2-a/S2-b stem from S5/S6 proxying the 'Full Charge maintained ≥1s' hold trigger onto fullCharge — the exact nearest-wrong both independent S2b reviewers pre-registered, and the opposite of three precedent overrides — and the S2-d noFb arm patches an engine-inert field (a blind test defect; the premise it probes is separately pinned GREEN by the driver's fbMajorApplied assertion). The blind re-derivations otherwise converge byte-identically on every damage-bearing block, including the kit's two hard calls (burstCast vs fullBurstEnter identity, proven with a cast-frame-precedes-FB pin plus a two-B2 fixture; the casterAtkPct flat basis). The engine change (alliesInStatus target) was regression-byte-identical and separately code-reviewed/pinned, so no NO-GO(engine-core) concern. Same-model residuals for the owner to spot-check: (1) the ⚑1 ecosystem dependency — no shipped override yet emits an 'Into the Fray: …' selfStatus, so both FB-entry grants are self-only in every current comp and her graded team-support value is understated until marian-queen/scarlet-goddeath emit the status (the proposed cross-override edit is correctly left to the orchestrator); (2) all magnitudes are SL10 kit literals with no real-fight recording yet — a single popup read of the 220.7% rider inside vs outside FB would independently confirm the FB-by-timing default; (3) the shield line's tandem channel means her value next to a shielded-trigger consumer is genuinely unmodeled, per the documented caveat, and a manual-play hold-charge measurement is the recorded recipe. NOTE: this judge session has no filesystem tools, so this JSON could not be written to scripts/kit-autonomy/results/rapunzel-sanctuary.json — the orchestrator must save it.",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,174 @@
+{
+  "slug": "marian-queen",
+  "kitDescription": "Marian: Queen is a Fire machine-gun Attacker (Burst III, 40s cooldown) whose damage comes from three streams: her 300-round MG, and from battle start a volley of 7 Dark Matter spears every 4 seconds, each volley marking the boss with Open Wounds — a permanent, unremovable 5.05% Damage Taken debuff the whole team benefits from. Her Burst refills her belt, buffs her own ATK (+78.4%) and Attack Damage (+78.14%) for 10 seconds, hits all enemies for 1346.4%, guarantees Open Wounds, and opens a 10-second 'Penetrant Wish' state. While in that state her spear interval halves (4s to 2s) and every 2 MG rounds she deals an extra 14.06% core strike to Open-Wounds targets. The Full Burst entry line branches on that state: if she did not burst that rotation she gains Sequential Attack Damage +85.17% (feeding only the spears); if she did, she gains Core Damage +24.64% instead. Her Burst's 'MG Ramp-Up Speed +100%' line (faster wind-up to max fire rate) is real but unmodeled — the engine has no wind-up-speed modifier.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "125.51% ATK, sequentially 7 times",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval sec:4 block, SEVEN flatDamage 125.51 effects, flavor 'sequential' (literal split form; 7 gauge credits).",
+        "blindSaid": "S6 merged into one 878.57 with gaugeHits:7 — damage- and gauge-identical in the expected-value sim; S5 bounds + CDR counterfactual GREEN. S2b both: interval 4s, sequential flavor mandatory.",
+        "formulaCheck": "Skill function damage: crit default-on, never core, noRange; 'sequential' flavor is what lets sequentialDamagePct (additive DamageUp, §1e) reach it. 7×125.51 = 878.57 per volley.",
+        "fireRateOk": true,
+        "explanation": "Volleys observed first at frame 240, every 240f outside the window, 120f inside (driver notes + P1/P5 + S5 run). First-fire phase t=4s vs t=0 is the documented ⚑2 interval convention — at most one volley over 180s."
+      },
+      {
+        "kitLine": "Open Wounds: Damage Taken ▲ 5.05%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "damageTakenPct 5.05 with no duration (permanent) + targetStatus 'Open Wounds' 999s on the boss; re-applications refresh one instance, never stack.",
+        "blindSaid": "S6 identical pair; S2b both: one permanent refreshed instance (no stack wording), and the named status MUST exist or skill2's gate is dead. S5 flags the stack ceiling as unobservable blind but notes uncapped (~+1900%) 'cannot be right'.",
+        "formulaCheck": "Taken bucket (§1g); SSOT §11 same-key re-application refreshes. No 'stacks up to N' wording in the prose, so the single-instance read is the stacking-rule default, not a fudge.",
+        "fireRateOk": true,
+        "explanation": "Applied on the first landed spear of the first volley (frame 240), key-stable across volleys and her burst casts (P2 pins stacks 1, no expiry, team-wide benefit via liter's totals). Driver note records the no-stack decision."
+      },
+      {
+        "kitLine": "when using Burst Skill: Open Wounds",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast-keyed block in the skill1 slot, same damageTakenPct 5.05 + status, sharing the S1 key so it refreshes and never sums to 10.1.",
+        "blindSaid": "Both S2b: burstCast (her OWN cast), never fullBurstEnter; fable-5-1 explicitly warns against a second key summing to 10.1. S6 identical block. S5's order-based burstCast-vs-fbEnter test GREEN.",
+        "formulaCheck": "'Activates when using Burst Skill' = her own cast; burst-cast effects resolve before the FB window opens (§8 scope rule) — the pre-first-FB application order the S5 test asserts.",
+        "fireRateOk": true,
+        "explanation": "P3 pins an application on every cast frame and the no-co-stack invariant; the drop-the-block counterfactual diverges."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Penetrant Wish … Duration: 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → selfStatus 'Penetrant Wish' 10s. The central burstCast-vs-fullBurstEnter trap avoided.",
+        "blindSaid": "All four blind artifacts converge on burstCast; S5's fullBurstEnter counterfactual (window opening on helm's FBs) is discriminated in the driver's P4.",
+        "formulaCheck": "40s cooldown vs 10s window ⇒ no overlap; cast leads FB entry by 22f so the state is live at FB entry iff she cast.",
+        "fireRateOk": true,
+        "explanation": "6 own casts observed; zero rider activity in helm-completed rotations (P4 + S5 both pin it)."
+      },
+      {
+        "kitLine": "after 2 normal attacks: 14.06% core",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount count:2 countScope 'gated', requiresSelfStatus + requiresTargetStatus 'Open Wounds', flatDamage 14.06 core:true — resolving at the MG flat 0.95 core rate, carried as ⚑3 (estimate + recipe).",
+        "blindSaid": "S6 byte-equivalent (plus degenerate perPull/crit flags). S2b fable-5-1 and S5 read 'core strike damage' as a GUARANTEED core (rate 1.0); S2b fable-5 reads it as core-bucket-eligible. The one substantive blind divergence.",
+        "formulaCheck": "MG has no accuracy circle → flat 0.95 ACR, so the two readings differ by ~5% on this rider. The engine does own a per-hit coreOverride path (dorothy-S precedent) that could express a guaranteed core if measurement says so; repo precedent (cinderella-crystal-wave) currently routes 'core strike' through core:true.",
+        "fireRateOk": true,
+        "explanation": "1317 strikes over the fight, ~220/window = ⌊in-window rounds/2⌋; gated counting pinned by the cumulative-exact assertion and discriminated against the ungated counter. The 0.95-vs-1.0 question is documented, small, and measurement-gated — listed as a documented gotcha, not a defect."
+      },
+      {
+        "kitLine": "Recurring interval … ▼ 2 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skillCooldownReductionSec 2, self, 10s (dorothy Manifestation precedent; she has exactly one interval block).",
+        "blindSaid": "All agents identical; S5's delete-the-buff counterfactual costs 3+ volleys, GREEN.",
+        "formulaCheck": "Interval timer 4s → 2s inside the window ≈ 2.5 extra 878.57% volleys per own burst — a damage line, correctly not dropped as utility.",
+        "fireRateOk": true,
+        "explanation": "In-window volley period measured at exactly 120f, reverting to 240f after expiry (P5)."
+      },
+      {
+        "kitLine": "FB enter NOT in state: Seq ▲ 85.17%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter + ownBurstGate 'notCast' → sequentialDamagePct 85.17, 10s, self.",
+        "blindSaid": "Both S2b and S6 independently chose the identical proxy (the schema has no negated requiresSelfStatus). S5's exactly-one-branch-per-FB invariant and the spears-lift test GREEN.",
+        "formulaCheck": "sequentialDamagePct is the additive DamageUp member (§1e) — correctly NOT sequentialMultPct (undiluted multiplier) and NOT attackDamagePct; reaches only the sequential-flavored spears.",
+        "fireRateOk": true,
+        "explanation": "Applies only on helm-completed FBs; spear DamageUp term lifts by exactly 0.8517 there (P6). The proxy's one unreachable edge (a stalled chain entering FB >10s after her cast) is the residual noted in the rationale."
+      },
+      {
+        "kitLine": "FB enter IN state: Core Damage ▲ 24.64%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter + requiresSelfStatus 'Penetrant Wish' → coreDamagePct 24.64, 10s, self.",
+        "blindSaid": "S6 used ownBurstGate 'cast' — same frames on every reachable fixture (cast leads FB by 22f, window 10s, cd 40s). S5 solo-fixture determinism (#core === #fbStarts) GREEN.",
+        "formulaCheck": "coreDamagePct joins the Major-bucket coreBonus (§1b) — lifts her MG core hits and the 14.06% riders in the same window. The driver's positive-status gate is the more literal of the two equivalent encodings.",
+        "fireRateOk": true,
+        "explanation": "Fires on exactly her 6 own-burst FB entries, never on helm's; mutual exclusivity with the Sequential branch pinned both directions (P6)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Reloads 100% of ammo",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "instantReload on burstCast (fraction default = 1; S6 wrote fraction:1 explicitly — same value).",
+        "blindSaid": "All agents: a weapon-state line that IS damage, not skippable QoL. S5's remove-it-costs-rounds counterfactual GREEN.",
+        "formulaCheck": "300-round belt / 171-frame reload — a mid-belt refill deletes reload downtime and feeds the MG wind-up continuity.",
+        "fireRateOk": true,
+        "explanation": "Ammo snaps to ≥298 on the first post-cast shot; stripped-override run fires strictly fewer rounds (P7)."
+      },
+      {
+        "kitLine": "MG Ramp-Up Speed ▲ 100% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled: verbatim line in unmodeled.burst, ⚑1 with estimate (small, positive — only post-reload spin-up inside the window) + recipe + engine-gap tier; P8 it.skip; no fireRatePct fudge.",
+        "blindSaid": "Unanimous GAP across all four blind artifacts; S5's anti-fudge pin (no fireRatePct/attackSpeedPct 100 buffApply) GREEN against the shipped override.",
+        "formulaCheck": "The engine runs the measured MG wind-up ladder (§3 / mg-windup doc) but exposes no wind-up-speed modifier; fireRatePct would raise the 60/s steady-state cap, a different mechanic and an over-credit.",
+        "fireRateOk": true,
+        "explanation": "The decision is recorded exactly as the contract requires — honest flag over fudge. Note the interaction: her burst refill lands inside the grace window, so the ladder rarely resets post-burst anyway; the unmodeled value is genuinely small."
+      },
+      {
+        "kitLine": "ATK ▲ 78.4% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "atkPct 78.4, self, 10s, burstCast.",
+        "blindSaid": "Identical in S6; S5's raw-percentage pin (value < 1000, not flat-resolved) GREEN.",
+        "formulaCheck": "Plain ATK ▲ dilutes into the (1+ΣATK%) term on staticAtk (§1a) — separate bucket from the Attack Damage line below; not folded.",
+        "fireRateOk": true,
+        "explanation": "One application per cast frame, self index only, 600f expiry (P7)."
+      },
+      {
+        "kitLine": "Attack Damage ▲ 78.14% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "attackDamagePct 78.14, self, 10s — distinct stat alongside (not merged with) the ATK line.",
+        "blindSaid": "Identical in S6; both S2b warned against folding the two 78-ish lines into one — not done.",
+        "formulaCheck": "Additive DamageUp member (§1e), diluting with sequentialDamagePct where co-active — the correct composition.",
+        "fireRateOk": true,
+        "explanation": "Applies on every cast alongside atkPct (P7)."
+      },
+      {
+        "kitLine": "1346.4% of final ATK as Burst Skill dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst-slot flatDamage 1346.4, burstDesc 'allEnemies'; FB exemption left to the engine's burst-cast timing (noFb forced for burst-cast direct damage) and PINNED by the fbMajorApplied===false assertion.",
+        "blindSaid": "S6 flagged uncertainty over whether the engine applies the exemption automatically — the driver's test resolves that flag empirically (false on every cast). S6's crit:true is the engine default for function damage, so its absence in the driver file is value-identical.",
+        "formulaCheck": "Burst-cast damage lands before the FB window opens (§1b MEASURED boundary rule) — neither +50% nor entry auras; no core (no 'core strike' wording); crit at caster rate by default.",
+        "fireRateOk": true,
+        "explanation": "One nuke per cast frame, burst bucket, no FB major; the fullBurstEnter re-keying counterfactual moves it off the cast frame (P7). Buff-before-nuke same-cast ordering follows the kit's listing order; pinned implicitly by the test's cast-frame assertions."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "'Core strike damage' on the 14.06% rider resolves at the MG's flat 0.95 core rate rather than a guaranteed core hit — two blind agents read the wording as guaranteed (rate 1.0), a ~5% under-credit on this rider if they are right.",
+      "evidence": "Kit: 'Deals 14.06% of final ATK as core strike damage.' Driver: flatDamage core:true (repo precedent cinderella-crystal-wave), ⚑3 in the override note. Blind: S2b claude-fable-5-1 and S5 both specify guaranteed core; S2b claude-fable-5 sided with core-eligible. Formula: MG ACR is flat 0.95 (§1b), so the gap is bounded at ~5% of one sub-stream (~431M of 1.44B total).",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Needs measurement — popup colour of the 14.06% strikes inside one Penetrant Wish focus-recording window (red CORE HIT on every strike = guaranteed). If guaranteed, express it through the engine's existing per-hit coreOverride path (rate 1.0, the dorothy-S precedent) rather than inventing a new field.",
+      "outcome": null
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2",
+      "summary": "The two FB-entry gates are asymmetric encodings (ownBurstGate 'notCast' vs requiresSelfStatus): on a hypothetical stalled chain entering Full Burst more than 10s after her cast, NEITHER branch fires, where the prose would grant the Sequential buff ('not in the state').",
+      "evidence": "Kit: 'entering Full Burst while not in the Into the Fray: Penetrant Wish state.' Driver note claims exactness 'here' (cast leads FB by 22f at scope lock, window 10s, cd 40s) — true on every reachable fixture; the matrix's coverage note records the same bound. Unreachable at scope lock, so no test can go RED on it.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Faithful representation if the schema ever grows a negated requiresSelfStatus: key the Sequential branch on NOT-'Penetrant Wish' directly. Until then the proxy is exact on all deterministic fixtures; no value change.",
+      "outcome": null
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Convergence is mechanically GREEN: the S5 blind tests (claude-opus-5), run unmodified against the shipped override bar a one-line harness wiring fix, pass 14/14 with 4 FLAG skips, and the S6 blind override is structurally identical to the driver's on every block (the only diffs — merged-vs-split spears, 'cast' gate vs requiresSelfStatus, default crit/fraction flags, status naming — are value-identical in the deterministic sim). All 13 kit lines are FAITHFUL or DOCUMENTED_GAP; every FAITHFUL block demonstrably fires at prose cadence (volleys at 240f/120f, 1317 gated core strikes, one branch buff per FB entry, nuke per cast), and every load-bearing assertion has a named nearest-wrong counterfactual that diverges in the same file, so discrimination holds. The two documented gotchas are both low-severity and measurement-gated: the 0.95-vs-guaranteed core rate on the 14.06% rider (the one substantive blind divergence; recipe is a popup-colour read, and the engine's coreOverride path already exists if it proves guaranteed), and the unreachable stalled-chain edge of the notCast proxy. The MG Ramp-Up Speed line is an honest, unanimous engine GAP with a small bounded estimate. The same-model residual the owner should spot-check: all five agents share the burstCast-reading of 'Activates when using Burst Skill' and the refresh-not-stack reading of Open Wounds — both follow the SSOT conventions and the S5 arithmetic sanity check (uncapped stacking ⇒ +1900% Damage Taken, absurd), but a single focus recording (first-volley timestamp, debuff-icon stack counter, strike popup colour) would retire ⚑2, the stacking question, and ⚑3 in one pass. Nothing must change for GO.",
+  "note": "No tools available in this invocation — orchestrator must write this JSON to scripts/kit-autonomy/results/marian-queen.json.",
+  "model": "claude-fable-5"
+}

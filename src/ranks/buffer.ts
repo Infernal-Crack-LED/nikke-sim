@@ -346,6 +346,9 @@ export function suppliesTeamCdr(
       // burstCdr, which would make a unit the team's enabler without ever
       // reducing an ally's cooldown. None exists today.
       String(block.target.kind).startsWith('allies') &&
+      // alliesInStatus selects only allies holding a named self status, which the
+      // synthetic carries never open — it can reduce no carry's cooldown here.
+      block.target.kind !== 'alliesInStatus' &&
       Array.isArray(block.effects) &&
       !(burstSuppressed && block.slot === 'burst') &&
       // The standard team ALWAYS seats a B1 (the no-op B1 on every row, plus

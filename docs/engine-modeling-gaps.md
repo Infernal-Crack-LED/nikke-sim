@@ -29,6 +29,7 @@
 | --- | --- | --- |
 | `adjacentAlly` | 1 | belorta-pumpkin-witch |
 | `advantageVs` | 2 | rapi-red-hood, sugar |
+| `alliesInStatus` | 1 | rapunzel-sanctuary |
 | `alliesLowestAtk` | 1 | liberalio |
 | `alliesLowestHp` | 10 | blanc, ether, mary, misato, naga, pascal, pepper, poli, … |
 | `alliesOfClass` | 4 | anne-miracle-fairy, biscuit, d, quiry |
@@ -66,10 +67,10 @@
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 20 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 11 | clay, ether, eunhwa-tactical-upgrade, kurumi, mihara-bonding-chain, modernia, privaty-unkind-maid, soda-twinkling-bunny, … |
-| `flatDamage` | 104 | 2b, a2, aigis, anchor, anis, anis-sparkling-summer, anis-star, arcana, … |
+| `flatDamage` | 106 | 2b, a2, aigis, anchor, anis, anis-sparkling-summer, anis-star, arcana, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
-| `fullCharge` | 34 | a2, ade-agent-bunny, anis-star, belorta-pumpkin-witch, bready, cinderella, delta, diesel-winter-sweets, … |
+| `fullCharge` | 35 | a2, ade-agent-bunny, anis-star, belorta-pumpkin-witch, bready, cinderella, delta, diesel-winter-sweets, … |
 | `gainPierce` | 15 | ade-agent-bunny, asuka, d-killer-wife, dorothy, grave, harran, makima, mari, … |
 | `gaugeHits` | 4 | eve, liberalio, little-mermaid, snow-white-heavy-arms |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
@@ -77,13 +78,13 @@
 | `hasTrueNormals` | 0 | _none_ |
 | `highestAllyAtkPct` | 1 | guilty |
 | `highestAllyMaxHpPct` | 2 | quency, sin |
-| `hitCount` | 67 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, anne-miracle-fairy, ark-ranger-black, asuka-wille, blanc, … |
+| `hitCount` | 68 | 2b, ade, ade-agent-bunny, alice-wonderland-bunny, anne-miracle-fairy, ark-ranger-black, asuka-wille, blanc, … |
 | `hitRatePct` | 20 | anchor-innocent-maid, aria, asuka, chisato, dorothy-serendipity, drake, jill, leona, … |
 | `hitsPerShot` | 36 _(char-data)_ | aigis, anis-sparkling-summer, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, drake-great-villain, … |
 | `inFb` | 11 | clay, ether, eunhwa-tactical-upgrade, kurumi, mihara-bonding-chain, modernia, privaty-unkind-maid, soda-twinkling-bunny, … |
 | `instantInFb` | 1 | rapi-red-hood |
-| `instantReload` | 14 | alice-wonderland-bunny, arcana-fortune-mate, asuka-wille, diesel, drake-great-villain, eve, guillotine-winter-slayer, little-mermaid, … |
-| `interval` | 39 | ade, anis, brid, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, … |
+| `instantReload` | 15 | alice-wonderland-bunny, arcana-fortune-mate, asuka-wille, diesel, drake-great-villain, eve, guillotine-winter-slayer, little-mermaid, … |
+| `interval` | 40 | ade, anis, brid, cinderella-crystal-wave, d, delta-ninja-thief, dolla, dorothy, … |
 | `lastBullet` | 19 | anchor, anis-sparkling-summer, aria, cinderella-crystal-wave, crow, dorothy, epinel, eunhwa, … |
 | `levelConst` | 7 | ada, arcana-fortune-mate, eve, prika, rapi-red-hood, red-hood, snow-white-heavy-arms |
 | `levelScale` | 18 | arcana-fortune-mate, asuka-wille, cinderella, ein, emilia, eve, guillotine-winter-slayer, liberalio, … |
@@ -96,9 +97,9 @@
 | `noRetriggerWhileActive` | 1 | vesti-tactical-upgrade |
 | `nonBurstCasters` | 1 | crown |
 | `normalAttackPct` | 7 | arcana-fortune-mate, asuka-wille, chime, jill, mast-romantic-maid, rumani, sin-swift-bunny |
-| `notCast` | 1 | diesel-winter-sweets |
+| `notCast` | 2 | diesel-winter-sweets, marian-queen |
 | `outFb` | 1 | velvet |
-| `ownBurstGate` | 7 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study, mihara-bonding-chain |
+| `ownBurstGate` | 8 | arcana, asuka-wille, avistar, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study, marian-queen, mihara-bonding-chain |
 | `pelletCountFlat` | 3 | arcana-fortune-mate, dorothy-serendipity, leona |
 | `perResource` | 8 | e-h, exia, guillotine, mana, marciana-marine-study, mihara-bonding-chain, phantom, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
@@ -109,9 +110,9 @@
 | `removeOnReload` | 1 | vesti-tactical-upgrade |
 | `requiresCore` | 3 | liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
-| `requiresSelfStatus` | 4 | asuka-wille, belorta-pumpkin-witch, rei-ayanami-tentative-name, rem |
+| `requiresSelfStatus` | 5 | asuka-wille, belorta-pumpkin-witch, marian-queen, rei-ayanami-tentative-name, rem |
 | `requiresShielded` | 5 | asuka, kilo, mori, naga, rapunzel-pure-grace |
-| `requiresTargetStatus` | 11 | d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, privaty, … |
+| `requiresTargetStatus` | 12 | d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, marian-queen, mast, phantom, … |
 | `resourceGate` | 25 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace, … |
 | `sameWeapon` | 6 | ada, chisato, clay, frima, jill, snow-white-heavy-arms |
 | `selfAndAdjacent` | 2 | flora, rouge |
@@ -121,13 +122,13 @@
 | `stackedNuke` | 1 | maiden-ice-rose |
 | `stageCast` | 1 | rupee-winter-shopper |
 | `stageEnter` | 13 | cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, … |
-| `statImmunities` | 1 | liberalio |
+| `statImmunities` | 2 | liberalio, rapunzel-sanctuary |
 | `storedHit` | 1 | rapi-red-hood |
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 10 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, sin-swift-bunny, snow-white-heavy-arms, takina, … |
 | `swapped` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
 | `targetMaxHpPct` | 18 | 2b, belorta-pumpkin-witch, blanc, delta, diesel, folkwang, label, laplace-ultimate-hero, … |
-| `targetStatus` | 9 | d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, privaty, … |
+| `targetStatus` | 10 | d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, marian-queen, mast, phantom, … |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 4 | anchor-innocent-maid, blanc, eunhwa-tactical-upgrade, noir |
 | `trueNormals` | 7 | chisato, clay, eunhwa-tactical-upgrade, frima, jill, laplace, takina |
@@ -860,3 +861,51 @@ with an ammo/reload line (jill, asuka-wille, grave, laplace-ultimate-hero, milk-
 "Removes 100% of ammo"; none of them pairs it with a timed real-weapon swap today, so none inherits
 the trap yet). Surfaced by the `claude-opus-5` second judge as an ENGINE gotcha (GO, not blocking).
 
+
+### 23. "Machine Gun Ramp-Up Speed ▲ N%" — no MG wind-up-speed modifier — ⚑ OPEN (logged 2026-10-29)
+
+Three kits print this line, and none of them can express it: `marian-queen` (Marian: Queen — her own burst,
+self, ▲100% for 10s), `rei-ayanami-tentative-name` (Full Burst entry → MG allies who used their burst,
+▲100% for 13s) and `asuka-wille` (its ⚑2). The engine drives every MG through the measured wind-up ladder
+(`MG_RAMP_INTERVALS` in `src/engine/sim.ts`: 142 frames from the first round to 1 round/frame, restarted
+after every reload, with the measured wind-down on idle) and has no stat that scales how fast a unit climbs
+it. `fireRatePct` / `attackSpeedPct` are the wrong proxies: they raise the steady-state cadence, which a
+ramp-up line does not touch.
+
+**Size for marian-queen:** on the control comp (liter / crown / marian-queen / `helm`) her refilled
+300-round belt runs dry about 7.3s into her 10s burst window and the reload finishes about 9s in, so only
+the first ~1s of one climb falls inside the window — the line would add a handful of rounds (and the
+Penetrant Wish core strikes they carry) per burst. Her burst refill (`instantReload`) does not stop her
+firing, so it does not trigger a climb of its own. (Sim output, not a game measurement: shot `ammoAfter` +
+reload events on the fixture of `scripts/tests/units/marian-queen.test.ts`.)
+
+**Not landed by the new-unit job:** a modifier changes how the measured ladder is consumed, and the
+wording ("▲100%" — half the climb time, or double the rung advance per frame?) is not settled. Recipe: an
+MG focus recording with the buff live — time from the first post-reload round to steady 60 rounds/s, inside
+and outside the window — then add an opt-in `mgRampSpeedPct` stat read where the ladder index advances,
+inert for every unit without the line. All three carriers keep the line verbatim in `unmodeled`.
+
+### 24. "Into the Fray" allies — no shipped override emits the state `alliesInStatus` reads — ⚑ OPEN (logged 2026-10-29)
+
+`rapunzel-sanctuary` (Rapunzel: Sanctuary) grants Attack Damage ▲27.45% and ATK ▲29.17% of her ATK for 10s at
+every Full Burst entry to "self and all allies in the Into the Fray state". The engine target for that is
+`alliesInStatus` (statusPrefix `Into the Fray`, includeSelf): it selects an ally only while that ally holds
+an open `selfStatus` whose name starts with the prefix. "Into the Fray" is a family of named modes, and two
+roster units are in one for the whole fight from battle start — `marian-queen` (Into the Fray: Sharpened
+Resolve; Into the Fray: Penetrant Wish on her burst) and `scarlet-goddeath` (Into the Fray: Serene Mind;
+Into the Fray: At One With the Sword on her burst). Neither emits a matching status today: marian-queen's
+burst mode is the selfStatus `Penetrant Wish` (bare name) and her battle-start mode carries no status;
+scarlet-goddeath has no override. So in every current comp both grants reach rapunzel-sanctuary alone, and
+`validate-structural`'s cross-slug census warns on the prefix.
+
+**Size:** per Full Burst, an Into the Fray ally misses Attack Damage ▲27.45% (Damage Up bucket) plus a flat
+ATK add of 29.17% of rapunzel-sanctuary's static ATK, for 10s. The unit test exercises the ally half by
+patching marian-queen in the fixture with a battle-start `Into the Fray: Sharpened Resolve` status
+(`scripts/tests/units/rapunzel-sanctuary.test.ts`, L2/L7).
+
+**Fix (override edits outside the new-unit job's authority):** marian-queen — add a battle-start self
+`selfStatus` `Into the Fray: Sharpened Resolve` (999s) and rename `Penetrant Wish` to `Into the Fray:
+Penetrant Wish` in its producer and both `requiresSelfStatus` consumers (and the names its unit test reads);
+scarlet-goddeath — emit `Into the Fray: Serene Mind` at battle start and name its burst mode in full when its
+override lands. No engine or rapunzel-sanctuary change is needed; the census warning clears once a producer
+exists.

@@ -1,0 +1,69 @@
+S2d INDEPENDENT VERIFICATION MATRIX — marian-queen — kit-autonomy gauntlet 2026-10-29
+Arm 1 (pre-S3, NO override on disk — the new unit's starting state; commit 62693a87): RED as required:
+    Error: no skill override for "marian-queen" — the engine does not parse skill prose at runtime; run `npx tsx scripts/materialize-overrides.ts --write marian-queen` or author one via /kit-parse
+          Tests  no tests
+Arm 2 (shipped override): npx vitest run scripts/tests/units/marian-queen.test.ts --reporter=verbose — every DISCRIMINATING case runs the named nearest-wrong encoding via withPatchedOverride in the same file and asserts it diverges, so GREEN-vs-shipped and RED-vs-counterfactual are both inside the listed assertions.
+
+ ✓ scripts/tests/units/marian-queen.test.ts > marian-queen — fixture > she casts her burst, and helm completes some Full Bursts without her
+ ✓ scripts/tests/units/marian-queen.test.ts > P1 — Sharpened Resolve: 7 sequential Dark Matter spears × 125.51%, every 4 sec > every volley is exactly 7 hits at 125.51% of final ATK on the boss
+ ✓ scripts/tests/units/marian-queen.test.ts > P1 — Sharpened Resolve: 7 sequential Dark Matter spears × 125.51%, every 4 sec > the first volley lands at t=4s (interval convention) and outside the burst window every 240f
+ ✓ scripts/tests/units/marian-queen.test.ts > P1 — Sharpened Resolve: 7 sequential Dark Matter spears × 125.51%, every 4 sec > the spears are sequential-flavored (static block shape)
+ ✓ scripts/tests/units/marian-queen.test.ts > P1 — Sharpened Resolve: 7 sequential Dark Matter spears × 125.51%, every 4 sec > DISCRIMINATING: a single 125.51% hit per volley deals 1/7 of the spear damage
+ ✓ scripts/tests/units/marian-queen.test.ts > P2 — Open Wounds: boss Damage Taken ▲ 5.05%, continuous, non-stacking > first applied on the first spear volley, on the BOSS, value 5.05, with NO expiry
+ ✓ scripts/tests/units/marian-queen.test.ts > P2 — Open Wounds: boss Damage Taken ▲ 5.05%, continuous, non-stacking > never stacks: one entry, stacks 1, across every volley and burst cast
+ ✓ scripts/tests/units/marian-queen.test.ts > P2 — Open Wounds: boss Damage Taken ▲ 5.05%, continuous, non-stacking > DISCRIMINATING: a stacking reading (maxStacks 7) accumulates stacks
+ ✓ scripts/tests/units/marian-queen.test.ts > P2 — Open Wounds: boss Damage Taken ▲ 5.05%, continuous, non-stacking > DISCRIMINATING: a timed (10s) reading carries an expiry
+ ✓ scripts/tests/units/marian-queen.test.ts > P2 — Open Wounds: boss Damage Taken ▲ 5.05%, continuous, non-stacking > it amplifies the whole team (an ally deals less without it)
+ ✓ scripts/tests/units/marian-queen.test.ts > P3 — burst use re-applies Open Wounds to all enemies (same debuff, no co-stack) > an Open Wounds application lands on each of her burst-cast frames
+ ✓ scripts/tests/units/marian-queen.test.ts > P3 — burst use re-applies Open Wounds to all enemies (same debuff, no co-stack) > the burst-use block is burstCast-keyed, enemy-targeted, and shares the S1 slot key
+ ✓ scripts/tests/units/marian-queen.test.ts > P3 — burst use re-applies Open Wounds to all enemies (same debuff, no co-stack) > DISCRIMINATING: without the burst-use block, no application lands on a cast frame between volleys
+ ✓ scripts/tests/units/marian-queen.test.ts > P4 — Penetrant Wish (10s after her burst): every 2 normal attacks → 14.06% core strike > core strikes are 14.06%, core-eligible, skill damage
+ ✓ scripts/tests/units/marian-queen.test.ts > P4 — Penetrant Wish (10s after her burst): every 2 normal attacks → 14.06% core strike > they occur ONLY inside the 10s window after each of her casts, on her shot frames
+ ✓ scripts/tests/units/marian-queen.test.ts > P4 — Penetrant Wish (10s after her burst): every 2 normal attacks → 14.06% core strike > one strike per 2 of her shots inside each window
+ ✓ scripts/tests/units/marian-queen.test.ts > P4 — Penetrant Wish (10s after her burst): every 2 normal attacks → 14.06% core strike > only rounds fired inside Penetrant Wish count toward the 2 (cumulative strikes = ⌊in-window rounds / 2⌋)
+ ✓ scripts/tests/units/marian-queen.test.ts > P4 — Penetrant Wish (10s after her burst): every 2 normal attacks → 14.06% core strike > DISCRIMINATING: an ungated counter is pre-charged by rounds fired outside the window
+ ✓ scripts/tests/units/marian-queen.test.ts > P4 — Penetrant Wish (10s after her burst): every 2 normal attacks → 14.06% core strike > the Penetrant Wish status is opened by her burst, self, 10s
+ ✓ scripts/tests/units/marian-queen.test.ts > P4 — Penetrant Wish (10s after her burst): every 2 normal attacks → 14.06% core strike > DISCRIMINATING: dropping the Penetrant Wish gate fires strikes outside the window
+ ✓ scripts/tests/units/marian-queen.test.ts > P4 — Penetrant Wish (10s after her burst): every 2 normal attacks → 14.06% core strike > DISCRIMINATING: a fullBurstEnter-keyed Penetrant Wish opens the window on helm’s Full Bursts too
+ ✓ scripts/tests/units/marian-queen.test.ts > P4 — Penetrant Wish (10s after her burst): every 2 normal attacks → 14.06% core strike > DISCRIMINATING: every normal attack (count 1) doubles the strikes
+ ✓ scripts/tests/units/marian-queen.test.ts > P4 — Penetrant Wish (10s after her burst): every 2 normal attacks → 14.06% core strike > DISCRIMINATING: a plain (non-core) hit is not core-eligible
+ ✓ scripts/tests/units/marian-queen.test.ts > P4 — Penetrant Wish (10s after her burst): every 2 normal attacks → 14.06% core strike > DISCRIMINATING: with no Open Wounds status on the boss the strikes never fire
+ ✓ scripts/tests/units/marian-queen.test.ts > P5 — Penetrant Wish: Sharpened Resolve recurring interval ▼ 2 sec (4s → 2s) > inside the window the volley period is 120f
+ ✓ scripts/tests/units/marian-queen.test.ts > P5 — Penetrant Wish: Sharpened Resolve recurring interval ▼ 2 sec (4s → 2s) > the reduction is a self skillCooldownReductionSec 2 for 10s on each cast
+ ✓ scripts/tests/units/marian-queen.test.ts > P5 — Penetrant Wish: Sharpened Resolve recurring interval ▼ 2 sec (4s → 2s) > DISCRIMINATING: without the reduction every in-window gap stays 240f
+ ✓ scripts/tests/units/marian-queen.test.ts > P6 — Full Burst entry branches on the Penetrant Wish state > IN Penetrant Wish (FB after her cast) → Core Damage ▲ 24.64% 10s, no Sequential buff
+ ✓ scripts/tests/units/marian-queen.test.ts > P6 — Full Burst entry branches on the Penetrant Wish state > NOT in Penetrant Wish (FB helm completed) → Sequential Attack Damage ▲ 85.17% 10s, no Core buff
+ ✓ scripts/tests/units/marian-queen.test.ts > P6 — Full Burst entry branches on the Penetrant Wish state > the Sequential buff lifts the spears’ Damage-Up term by 0.8517 in those Full Bursts
+ ✓ scripts/tests/units/marian-queen.test.ts > P6 — Full Burst entry branches on the Penetrant Wish state > DISCRIMINATING: dropping the NOT-state gate grants the Sequential buff after her cast too
+ ✓ scripts/tests/units/marian-queen.test.ts > P6 — Full Burst entry branches on the Penetrant Wish state > DISCRIMINATING: dropping the IN-state gate grants Core Damage on helm’s Full Bursts too
+ ✓ scripts/tests/units/marian-queen.test.ts > P7 — burst: self ATK / Attack Damage 10s, 100% reload, 1346.4% nuke > the nuke lands on each cast frame: 1346.4%, burst bucket, no Full-Burst +50%
+ ✓ scripts/tests/units/marian-queen.test.ts > P7 — burst: self ATK / Attack Damage 10s, 100% reload, 1346.4% nuke > self ATK ▲ 78.4% and Attack Damage ▲ 78.14% for 10s on each cast
+ ✓ scripts/tests/units/marian-queen.test.ts > P7 — burst: self ATK / Attack Damage 10s, 100% reload, 1346.4% nuke > the magazine is full again right after each cast
+ ✓ scripts/tests/units/marian-queen.test.ts > P7 — burst: self ATK / Attack Damage 10s, 100% reload, 1346.4% nuke > DISCRIMINATING: without the reload the first post-cast shot is not from a full magazine
+ ✓ scripts/tests/units/marian-queen.test.ts > P7 — burst: self ATK / Attack Damage 10s, 100% reload, 1346.4% nuke > DISCRIMINATING: fullBurstEnter keying moves the nuke off the cast frame
+ ↓ scripts/tests/units/marian-queen.test.ts > P8 — burst: Machine Gun Ramp-Up Speed ▲ 100% for 10 sec > GAP: no MG wind-up-speed modifier exists in the engine (docs/engine-modeling-gaps.md — MG ramp-up speed); the line is in `unmodeled`
+ ✓ scripts/tests/units/marian-queen.test.ts > P8 — burst: Machine Gun Ramp-Up Speed ▲ 100% for 10 sec > the line is recorded verbatim in unmodeled.burst
+      Tests  38 passed | 1 skipped (39)
+
+Coverage note: the ownBurstGate:'notCast' proxy for 'while NOT in Penetrant Wish' and the requiresSelfStatus gate for 'while IN' are exact complements on this fixture (Penetrant Wish opens 22f before her own rotation's Full Burst and lasts 10s against a 40s cooldown); both directions are discriminated by the gate-removal counterfactuals in P6. The skipped case is the P8 GAP (MG Ramp-Up Speed — no engine wind-up-speed modifier).
+
+S7 CONVERGENCE (S5 blind tests, claude-opus-5, run UNMODIFIED except the one-line onEvent→cfg wiring fix, against the shipped override):
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen S1 — Dark Matter spears + Open Wounds > spear volleys land as skill1 function damage and recur all fight
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen S1 — Dark Matter spears + Open Wounds > Open Wounds is a BOSS debuff — deleting it costs the TEAM damage, not just hers
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen S1 — Dark Matter spears + Open Wounds > the second Open Wounds source is BURST CAST, not Full Burst entry
+ ↓ blind/marian-queen.adapted.test.ts > marian-queen S1 — Dark Matter spears + Open Wounds > FLAG: volley fold (1×878.57 vs 7×125.51), Open-Wounds stacks-per-volley and its stack CEILING, plus the interval phase (first fire t=4s vs t=0) are all unobservable blind. The kit states no cap, and the fold decides how many times the per-hit rider can fire (1 vs 7) — uncapped 5.05% × 7 × ~55 volleys is +1900% Damage Taken, which cannot be right. Recipe: popup-read a focus recording for the per-volley stack gain and watch the debuff icon for a cap.
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen S2 — the Penetrant Wish window > core rider recurs every 2 normal attacks and is confined to the 10s window
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen S2 — the Penetrant Wish window > the rider is CORE STRIKE damage
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen S2 — the Penetrant Wish window > the interval -2 sec line genuinely accelerates S1
+ ↓ blind/marian-queen.adapted.test.ts > marian-queen S2 — the Penetrant Wish window > FLAG: 'all enemies in the Open Wounds state' is scope-trivial in every fixture — the boss carries Open Wounds from the first volley (t~4s) and again from her own burst cast, so a requiresTargetStatus gate on the rider is unobservable. Authoring it is harmless and more faithful; its absence is not detectable here.
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen S2 — the two FB-entry branches > exactly ONE branch fires per Full Burst
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen S2 — the two FB-entry branches > solo (she is the only B3): core branch every FB, sequential branch never
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen S2 — the two FB-entry branches > the Sequential buff is wired to real sequential-flavored damage
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen S2 — the two FB-entry branches > the Core Damage buff moves damage and is self-scoped
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen burst > self ATK / Attack Damage: raw percentages, once per own burst
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen burst > burst nuke: burst-slot instances, Full-Burst-major exempt
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen burst > the 100%-ammo reload is modeled — removing it costs rounds fired
+ ✓ blind/marian-queen.adapted.test.ts > marian-queen burst > MG Ramp-Up Speed is not fudged as a 1:1 +100 fire-rate / attack-speed buff
+ ↓ blind/marian-queen.adapted.test.ts > marian-queen burst > FLAG: 'Machine Gun Ramp-Up Speed +100%' has NO schema primitive — there is no MG spin-up stat, and fireRatePct / attackSpeedPct are a different mechanic. Belongs in unmodeled with a recipe: MG focus recording, time-to-max-RPM with and without her burst window, then model as the spin-up curve (or a measured fireRatePct equivalent over the ramp only).
+ ↓ blind/marian-queen.adapted.test.ts > marian-queen burst > FLAG: burstDesc:'allEnemies' on the 1346.4% nuke (its clause is 'Affects all enemies') is unobservable without a burstSkillAoeDamagePct carrier (jackal / trina) in the fixture; authorable and recommended, but untestable in controlComp.
+      Tests  14 passed | 4 skipped (18)

@@ -849,6 +849,65 @@ describe('targetStatusCensus — selfStatus same-unit rule (2026-08-24)', () => 
   });
 });
 
+describe('targetStatusCensus — alliesInStatus cross-slug prefix (2026-10-29)', () => {
+  const reader = (prefix: string) =>
+    minimal({
+      skill1: [
+        block({
+          trigger: { kind: 'fullBurstEnter' },
+          target: {
+            kind: 'alliesInStatus',
+            statusPrefix: prefix,
+            includeSelf: true,
+          },
+          effects: [
+            { kind: 'buff', stat: 'atkPct', value: 1, durationSec: 10 },
+          ],
+        }),
+      ],
+    });
+  const producer = (name: string) =>
+    minimal({
+      skill1: [
+        block({
+          trigger: { kind: 'battleStart' },
+          target: { kind: 'self' },
+          effects: [{ kind: 'selfStatus', name, durationSec: 999 }],
+        }),
+      ],
+    });
+
+  it('warns (not errors) when no override emits a status starting with the prefix', () => {
+    const r = targetStatusCensus(
+      new Map([['a-unit', reader('Into the Fray')]])
+    );
+    expect(r.errors).toEqual([]);
+    expect(r.warnings.join('\n')).toMatch(
+      /alliesInStatus "Into the Fray" \(a-unit: skill1\[0\]\) — no override emits/
+    );
+  });
+
+  it('a producer in ANOTHER unit whose name starts with the prefix satisfies it', () => {
+    const r = targetStatusCensus(
+      new Map([
+        ['a-unit', reader('Into the Fray')],
+        ['b-unit', producer('Into the Fray: Serene Mind')],
+      ])
+    );
+    expect(r.warnings.filter((w) => w.includes('alliesInStatus'))).toEqual([]);
+  });
+
+  it('a producer whose name does not start with the prefix does not', () => {
+    const r = targetStatusCensus(
+      new Map([
+        ['a-unit', reader('Into the Fray')],
+        ['b-unit', producer('Penetrant Wish')],
+      ])
+    );
+    expect(r.warnings.join('\n')).toMatch(/alliesInStatus "Into the Fray"/);
+  });
+});
+
 describe('structuralCheck — levelScale / levelConst annotations', () => {
   const withEffect = (eff: Record<string, unknown>) =>
     minimal({

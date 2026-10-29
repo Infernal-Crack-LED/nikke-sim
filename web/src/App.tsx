@@ -1281,6 +1281,8 @@ function targetLabel(t: any): string {
       return `${t.count} lowest-HP all${t.count === 1 ? 'y' : 'ies'}${t.excludeSelf ? ' (not self)' : ''}`;
     case 'adjacentAlly':
       return `ally to the ${t.side}`;
+    case 'alliesInStatus':
+      return `${t.includeSelf ? 'self + ' : ''}allies in ${t.statusPrefix}`;
     default:
       return 'allies';
   }
