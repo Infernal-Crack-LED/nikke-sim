@@ -1,0 +1,115 @@
+{
+  "note": "Rapunzel: Sanctuary (`rapunzel-sanctuary`; NOT the base `rapunzel` RL/Iron nor `rapunzel-pure-grace` SR/Iron). RL / Supporter / Fire / Pilgrim, Burst II (cd 40s), ammo 6, chargeFrames 60, chargeMult 250, normalMult 61.3, coreMult 200 — weapon cycle carried by characters.json. Kit-autonomy gauntlet 2026-10-29 — test-first, pinned by scripts/tests/units/rapunzel-sanctuary.test.ts (L1–L11). No real-fight recording yet: structure is test-pinned, magnitudes are SL10 kit-text literals (DATAMINED). v1 has no HP pool, so no ally is ever incapacitated: the burst's ≥3-incapacitated Nanoparticle Injection branch never activates, and with it the +40s burst-cooldown rider and the Nanoparticle Consumption state never happen — the burst is always the '2 or fewer incapacitated' branch, and the in-Consumption branch carries the same grant, so one burstCast block is the burst in every reachable state. SKILL1: (a) Full Charge attack → all allies: heal (recovery EVENT per full-charge shot — an RL releases only at full charge, so one per shot; the 3.9%-of-caster-Max-HP amount has no engine consumer); (b) entering Full Burst → target alliesInStatus {statusPrefix 'Into the Fray', includeSelf} → attackDamagePct 27.45 for 10s (self always; an ally only while it holds an open selfStatus named 'Into the Fray: <Mode>'); (c) charge-speed immunity both directions → charFixes.statImmunities ['chargeSpeedPct'] (in-battle buff effects stripped for her only; cube/Overload stats still apply). SKILL2: (a) entering Full Burst → same alliesInStatus target → casterAtkPct 29.17 for 10s (% of HER ATK, a flat add); (b) Full Charge attack → enemy flatDamage 220.7 (plain additional damage: skill bucket, engine rider defaults — crit at her rate, not core-eligible, no range bonus). BURST (burstCast, her own cast — lands before the Full Burst it opens): all allies casterAtkPct 34.84 for 10s. ⚑ LIST: [⚑1] Into the Fray allies: the alliesInStatus target selects an ally only if that ally's override emits a selfStatus whose name starts with 'Into the Fray'. No shipped override does today (marian-queen's burst mode status is named 'Penetrant Wish' and her battle-start Sharpened Resolve mode carries no status; scarlet-goddeath has no override), so in every current comp both Full-Burst-entry grants reach only her. ESTIMATE: an Into the Fray ally (marian-queen / scarlet-goddeath are in a battle-start Into the Fray mode all fight) gains Attack Damage ▲27.45% + 29.17% of her ATK for 10s at every Full Burst. RECIPE: those overrides emit a battle-start selfStatus 'Into the Fray: <Mode>' (999s) and name their burst modes in full; the target then picks them up with no change here. TIER: kit-literal target; ally-side status naming pending. [⚑2] The charge-speed immunity is armed in-game at her first full-charge attack (~1s in); statImmunities is whole-fight. ESTIMATE: differs only for a charge-speed buff applied in the first second that persists. RECIPE: none needed unless such an ally lands. TIER: convention. [⚑3] The two 'Full Charge maintained for 1 or more seconds' lines (shared shield, Goddess Blessing DEF) never fire: the sim releases at full charge and never holds (rapunzel-pure-grace / guilty-mighty-bunny precedent). Both are defensive; the shield would additionally emit 'shielded' events for shield-synergy allies if a player held the charge. ESTIMATE: zero damage under auto-release. RECIPE: a focus recording with a shield-synergy ally, checking for the shield icon between shots. TIER: engine convention (no charge-hold state).",
+  "charFixes": {
+    "statImmunities": ["chargeSpeedPct"]
+  },
+  "unmodeled": {
+    "skill1": [
+      "Restores HP equal to 3.9% of the skill user's final max HP. — magnitude only: the HP amount has no engine consumer (no HP pool); the recovery EVENT is modeled (heal, skill1), which is the board-relevant half.",
+      "■ Activates when using Nanoparticle Injection. Affects self.\nCooldown of Burst Skill ▲ 40 sec. This effect cannot be removed.\nNanoparticle Consumption: DEF ▲ 10%. This effect is continuous and cannot be removed. Effect persists after revival. — unreachable: Nanoparticle Injection is the burst's ≥3-incapacitated branch, and v1 has no incapacitation (no HP pool)."
+    ],
+    "skill2": [
+      "■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Goddess Blessing state. Affects self.\nCreates a shared shield with HP equal to 7.39% of the skill user's final max HP that protects all allies from damage. This shield is removed when charging ends. — the sim releases at full charge and never holds it (⚑3); defensive.",
+      "■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Goddess Blessing state. Affects all allies.\nGoddess Blessing: DEF ▲ 42.24% of the skill user's DEF for 10 sec. — same unreachable charge-hold trigger (⚑3); DEF is damage-inert."
+    ],
+    "burst": [
+      "Activates if 3 or more allies are incapacitated. Affects all incapacitated allies.\nNanoparticle Injection: Revives with 96% HP. Activates once per battle.\nATK ▲ 101.37% of the skill user's ATK for 10 sec. Activates once per battle.\nDEF ▲ 221.76% of the skill user's DEF for 10 sec. Activates once per battle. — unreachable: v1 has no incapacitation (no HP pool), so the burst is always the '2 or fewer' branch.",
+      "■ Activates when this unit is in the Nanoparticle Consumption state. Affects all allies.\nATK ▲ 34.84% of the skill user's ATK for 10 sec. — the Consumption state is unreachable; the grant is identical to the encoded '2 or fewer incapacitated' branch, which is the burst's behaviour in every reachable state."
+    ]
+  },
+  "caveats": [
+    "skill1/skill2: the Full-Burst-entry grants reach Into the Fray allies only through an ally selfStatus named 'Into the Fray: <Mode>'; no shipped override emits one yet, so today they land on her alone (⚑1).",
+    "skill1: charge-speed immunity is whole-fight (statImmunities), armed in-game at her first full-charge attack (⚑2).",
+    "skill2: the shared shield and Goddess Blessing DEF need Full Charge held ≥1s, which the sim never does (⚑3)."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesInStatus",
+        "statusPrefix": "Into the Fray",
+        "includeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 27.45,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesInStatus",
+        "statusPrefix": "Into the Fray",
+        "includeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 29.17,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 220.7
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 34.84,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

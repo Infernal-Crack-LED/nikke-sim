@@ -55,16 +55,18 @@
 //       Counterfactual: statImmunities removed (she receives it).
 //   L7  Same set / frames / duration as L2 for the caster-ATK 29.17 grant. Counterfactuals as L2,
 //       plus atkPct (own-ATK) instead of casterAtkPct.
-//   L8  Exactly one skill2 220.7% hit per shot of hers, on the shot frame. Counterfactuals: dropped;
-//       keyed on shotFired-with-count, or doubled.
+//   L8  Exactly one skill2 220.7% hit per shot of hers, on the shot frame, skill bucket, not
+//       core-eligible. Counterfactuals: dropped; doubled; core-flagged.
 //   L9  On EACH of her burst casts, caster-ATK 34.84 lands on all four allies on the CAST frame
-//       (before Full Burst), expiring 600f later. Counterfactuals: fullBurstEnter keying (frame
-//       shift); target self only.
+//       (before Full Burst), expiring 600f later, exactly one grant per ally per cast.
+//       Counterfactuals: fullBurstEnter keying (frame shift); target self only; both 34.84 branches
+//       encoded unconditionally (double grant).
 //   L3/L5/L6/L10/L11 inertness: no shield events, no DEF/101.37 grants, burst cooldown never grows.
 //
 // Fixture: liter (B1) / rapunzel-sanctuary (B2, focus) / marian-queen (B3, +Into the Fray status) /
 // folkwang (B2, bare weapon + synthetic probe blocks: a 'recovery' consumer, a 'shielded' consumer),
-// boss Fire. Deterministic (no seed).
+// boss Fire. folkwang never takes a stage-2 cast here, so the fullBurstEnter-vs-burstCast check on
+// Full Bursts she sat out uses a second fixture with two B2s (twoB2, below). Deterministic (no seed).
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
 import {
@@ -226,6 +228,40 @@ const dropEffect = (pred: (e: any) => boolean) =>
     }
   });
 
+/** Second fixture — liter (B1) / crown (B2) / rapunzel-sanctuary (B2) / marian-queen (B3, +Into the
+ *  Fray status) / helm (B3, the SR/Water Helm — NOT helm-aquamarine), boss Fire: crown sits before
+ *  her in slot order, so some chains are cast by crown and she sits those Full Bursts out. */
+let TWO_B2: ReturnType<typeof twoB2Run> | undefined;
+function twoB2Run() {
+  const team = ['liter', 'crown', SLUG, 'marian-queen', 'helm'];
+  const rap = team.indexOf(SLUG);
+  const events: SimEvent[] = [];
+  runComp({
+    slugs: team,
+    bossElement: 'Fire',
+    focusSlug: SLUG,
+    overrides: { 'marian-queen': marianInFray() },
+    cfg: { onEvent: (e) => events.push(e) },
+  });
+  return {
+    casts: events
+      .filter((e) => e.kind === 'burstCast' && e.unitIdx === rap)
+      .map((e) => e.frame),
+    fbStarts: events
+      .filter((e) => e.kind === 'fullBurstStart')
+      .map((e) => e.frame),
+    mine: (stat: string, value: number) =>
+      events.filter(
+        (e): e is BuffApply =>
+          e.kind === 'buffApply' &&
+          e.casterIdx === rap &&
+          e.stat === stat &&
+          e.key.endsWith(`:${stat}:${value}`)
+      ),
+  };
+}
+const twoB2 = () => (TWO_B2 ??= twoB2Run());
+
 let BASE: Run | undefined;
 const base = () => (BASE ??= run());
 
@@ -294,14 +330,15 @@ for (const [id, stat, value] of FB_GRANTS) {
     });
 
     it('includes Full Bursts whose chain she did NOT cast in (a fullBurstEnter line, not burstCast)', () => {
-      const r = base();
+      // two-B2 fixture: crown (slot before her) takes the stage-2 cast whenever it is ready
+      const r = twoB2();
       const withoutHer = r.fbStarts.filter(
         (s) => !r.casts.some((c) => c <= s && s - c <= 120)
       );
       // the fixture must contain such Full Bursts, else this assertion is vacuous
       expect(withoutHer.length).toBeGreaterThan(0);
       const frames = new Set(r.mine(stat, value).map((g) => g.frame));
-      for (const s of withoutHer) {
+      for (const s of r.fbStarts) {
         expect(frames.has(s)).toBe(true);
       }
     });
@@ -386,8 +423,24 @@ describe('L8 — Full Charge attack → enemy: 220.7% of final ATK as additional
     for (const h of hits) {
       expect(h.atkPct).toBeCloseTo(220.7, 6);
       expect(h.bucket).toBe('skill');
+      // plain "additional damage" — no core-strike wording, so not core-eligible
+      expect(h.coreEligible).toBe(false);
     }
     expect(hits.map((h) => h.frame)).toEqual(r.shots.map((s) => s.frame));
+  });
+
+  it('COUNTERFACTUAL core-strike reading (core:true) → the rider becomes core-eligible', () => {
+    const cf = run(
+      patch((ov) => {
+        for (const b of blocksWith(ov, (e) => e.kind === 'flatDamage')) {
+          for (const e of b.effects) {
+            e.core = true;
+          }
+        }
+      })
+    );
+    const hits = cf.dmg.filter((d) => d.srcSlot === 'skill2');
+    expect(hits.some((h) => h.coreEligible)).toBe(true);
   });
 
   it('COUNTERFACTUAL dropped → no skill2 damage', () => {
@@ -409,6 +462,8 @@ describe('L9/L11 — burst → all allies: ATK ▲ 34.84% of the skill user’s 
     for (const g of grants) {
       expect(g.expiresFrame).toBe(g.frame + WIN);
     }
+    // "Only one set of effects is applied": one grant per ally per cast, never a second branch
+    expect(grants).toHaveLength(4 * r.casts.length);
   });
 
   it('the grant precedes the Full Burst it opens (cast frame < FB start)', () => {
@@ -429,6 +484,19 @@ describe('L9/L11 — burst → all allies: ATK ▲ 34.84% of the skill user’s 
     expect(frames.some((f) => cf.casts.includes(f))).toBe(false);
   });
 
+  it('COUNTERFACTUAL both 34.84 branches encoded unconditionally → a second grant per ally per cast', () => {
+    const cf = run(
+      patch((ov) => {
+        const b = blocksWith(ov, isGrant('casterAtkPct', 34.84))[0];
+        ov.skill1 = [...ov.skill1, { ...b, slot: 'skill1' }];
+      })
+    );
+    const all = cf.buffs.filter(
+      (b) => b.casterIdx === RAP && b.key.endsWith(':casterAtkPct:34.84')
+    );
+    expect(all.length).toBeGreaterThan(4 * cf.casts.length);
+  });
+
   it('COUNTERFACTUAL target self → allies not buffed', () => {
     const cf = run(retarget('casterAtkPct', 34.84, { kind: 'self' }));
     const holders = new Set(
@@ -444,6 +512,23 @@ describe('L3/L5/L6/L10 — unreachable (no incapacitation, no held charge) / def
     expect(base().probe(SHIELD_MARK)).toHaveLength(0);
   });
 
+  it('COUNTERFACTUAL L5 shield keyed on fullCharge → the ally shielded probe fires', () => {
+    const cf = run(
+      patch((ov) => {
+        ov.skill2 = [
+          ...ov.skill2,
+          {
+            slot: 'skill2',
+            trigger: { kind: 'fullCharge' },
+            target: { kind: 'allies' },
+            effects: [{ kind: 'shield', maxHpPct: 7.39 }],
+          },
+        ];
+      })
+    );
+    expect(cf.probe(SHIELD_MARK).length).toBeGreaterThan(0);
+  });
+
   it('L6/L10: no DEF grant and no once-per-battle 101.37% revive grant from her', () => {
     const r = base();
     const hers = r.buffs.filter((b) => b.casterIdx === RAP);
@@ -452,9 +537,21 @@ describe('L3/L5/L6/L10 — unreachable (no incapacitation, no held charge) / def
   });
 
   it('L3: her burst cooldown never grows by 40s (consecutive casts < 80s apart)', () => {
+    // liter (B1) shortens burst cooldowns, so even an 80s cooldown would land a little under 80s —
+    // the discriminating arm is the cast-count counterfactual below
     const r = base();
     for (let i = 1; i < r.casts.length; i++) {
       expect(r.casts[i] - r.casts[i - 1]).toBeLessThan(80 * 60);
     }
+  });
+
+  it('COUNTERFACTUAL L3 +40s burst cooldown applied unconditionally → she casts fewer bursts', () => {
+    // (liter's burst-cooldown reduction shortens both arms, so compare cast COUNTS, not gaps)
+    const cf = run(
+      patch((ov) => {
+        ov.charFixes = { ...(ov.charFixes ?? {}), burstCooldownSec: 80 };
+      })
+    );
+    expect(cf.casts.length).toBeLessThan(base().casts.length);
   });
 });
