@@ -1,0 +1,37 @@
+S2d INDEPENDENT VERIFICATION MATRIX — rapunzel-sanctuary — kit-autonomy gauntlet 2026-10-29
+Arm 1 (pre-S3, NO override on disk — the new unit's starting state; commit 09f031a0): RED as required:
+    26 failed (26) — Error: no skill override for "rapunzel-sanctuary" — the engine does not parse skill prose at runtime …
+    (counterfactual builders: Error: rapunzel-sanctuary: no override on disk — fixture is stale)
+Arm 2 (shipped override, commit d621d81d): npx vitest run scripts/tests/units/rapunzel-sanctuary.test.ts --reporter=verbose — every COUNTERFACTUAL case runs the named nearest-wrong encoding via withPatchedOverride in the same file and asserts it diverges, so GREEN-vs-shipped and RED-vs-counterfactual are both inside the listed assertions. Lines with a GREEN-only pin and their counterfactual arm: L1 (self-target, dropped), L2/L7 (allies, self, burstCast), L7 (atkPct basis), L4 (immunity removed), L8 (core:true, dropped), L9/L11 (fullBurstEnter, self, double branch), L5 (shield on fullCharge), L3 (unconditional +40s cooldown → fewer casts). L6/L10 are absence pins (no DEF / no 101.37 grant) — inert-by-construction, documented UNMODELED.
+
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > fixture > she shoots, casts her burst in several rotations, and Full Bursts happen 50ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L1 — Full Charge attack → all allies: HP recovery (event; magnitude unmodeled) > the ally recovery probe fires on every one of her shot frames 1ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L1 — Full Charge attack → all allies: HP recovery (event; magnitude unmodeled) > COUNTERFACTUAL heal targets self only → the ally probe never fires 42ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L1 — Full Charge attack → all allies: HP recovery (event; magnitude unmodeled) > COUNTERFACTUAL heal dropped → the ally probe never fires 36ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L2 — entering Full Burst → self + Into the Fray allies: attackDamagePct 27.45 for 10s > lands at EVERY Full Burst start on exactly {self, the Into the Fray ally}, 600f 1ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L2 — entering Full Burst → self + Into the Fray allies: attackDamagePct 27.45 for 10s > includes Full Bursts whose chain she did NOT cast in (a fullBurstEnter line, not burstCast) 64ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L2 — entering Full Burst → self + Into the Fray allies: attackDamagePct 27.45 for 10s > COUNTERFACTUAL target all allies → liter and folkwang also buffed 33ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L2 — entering Full Burst → self + Into the Fray allies: attackDamagePct 27.45 for 10s > COUNTERFACTUAL target self → the Into the Fray ally is missed 30ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L2 — entering Full Burst → self + Into the Fray allies: attackDamagePct 27.45 for 10s > COUNTERFACTUAL burstCast keying → grant frames are not the Full Burst starts 36ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L7 — entering Full Burst → self + Into the Fray allies: casterAtkPct 29.17 for 10s > lands at EVERY Full Burst start on exactly {self, the Into the Fray ally}, 600f 0ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L7 — entering Full Burst → self + Into the Fray allies: casterAtkPct 29.17 for 10s > includes Full Bursts whose chain she did NOT cast in (a fullBurstEnter line, not burstCast) 1ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L7 — entering Full Burst → self + Into the Fray allies: casterAtkPct 29.17 for 10s > COUNTERFACTUAL target all allies → liter and folkwang also buffed 37ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L7 — entering Full Burst → self + Into the Fray allies: casterAtkPct 29.17 for 10s > COUNTERFACTUAL target self → the Into the Fray ally is missed 27ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L7 — entering Full Burst → self + Into the Fray allies: casterAtkPct 29.17 for 10s > COUNTERFACTUAL burstCast keying → grant frames are not the Full Burst starts 33ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L7 — the grant is % of the SKILL USER’s ATK (casterAtkPct), not the target’s own ATK > no atkPct 29.17 grant exists; COUNTERFACTUAL atkPct is distinguishable 24ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L4 — immunity to charge-speed increase/decrease effects > an ally-wide charge-speed buff lands on every ally but her 34ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L4 — immunity to charge-speed increase/decrease effects > COUNTERFACTUAL immunity removed → she receives it 35ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L8 — Full Charge attack → enemy: 220.7% of final ATK as additional damage > exactly one skill2 220.7% hit per shot, on the shot frame 2ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L8 — Full Charge attack → enemy: 220.7% of final ATK as additional damage > COUNTERFACTUAL core-strike reading (core:true) → the rider becomes core-eligible 27ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L8 — Full Charge attack → enemy: 220.7% of final ATK as additional damage > COUNTERFACTUAL dropped → no skill2 damage 25ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L9/L11 — burst → all allies: ATK ▲ 34.84% of the skill user’s ATK for 10s > lands on all four allies on EACH of her cast frames, 600f 0ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L9/L11 — burst → all allies: ATK ▲ 34.84% of the skill user’s ATK for 10s > the grant precedes the Full Burst it opens (cast frame < FB start) 0ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L9/L11 — burst → all allies: ATK ▲ 34.84% of the skill user’s ATK for 10s > COUNTERFACTUAL fullBurstEnter keying → frames shift off her casts 23ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L9/L11 — burst → all allies: ATK ▲ 34.84% of the skill user’s ATK for 10s > COUNTERFACTUAL both 34.84 branches encoded unconditionally → a second grant per ally per cast 23ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L9/L11 — burst → all allies: ATK ▲ 34.84% of the skill user’s ATK for 10s > COUNTERFACTUAL target self → allies not buffed 22ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L3/L5/L6/L10 — unreachable (no incapacitation, no held charge) / defensive lines > L5: no shield event from her (the sim releases at full charge — never holds 1s) 0ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L3/L5/L6/L10 — unreachable (no incapacitation, no held charge) / defensive lines > COUNTERFACTUAL L5 shield keyed on fullCharge → the ally shielded probe fires 41ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L3/L5/L6/L10 — unreachable (no incapacitation, no held charge) / defensive lines > L6/L10: no DEF grant and no once-per-battle 101.37% revive grant from her 0ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L3/L5/L6/L10 — unreachable (no incapacitation, no held charge) / defensive lines > L3: her burst cooldown never grows by 40s (consecutive casts < 80s apart) 0ms
+ ✓ scripts/tests/units/rapunzel-sanctuary.test.ts > L3/L5/L6/L10 — unreachable (no incapacitation, no held charge) / defensive lines > COUNTERFACTUAL L3 +40s burst cooldown applied unconditionally → she casts fewer bursts 26ms
+      Tests  30 passed (30)

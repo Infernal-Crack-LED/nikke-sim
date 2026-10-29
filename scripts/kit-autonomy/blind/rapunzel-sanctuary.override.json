@@ -1,0 +1,168 @@
+{
+  "slug": "rapunzel-sanctuary",
+  "charFixes": {
+    "statImmunities": [
+      "chargeSpeedPct"
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesInStatus",
+        "statusPrefix": "Into the Fray",
+        "includeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 27.45,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 7.39,
+          "durationSec": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 42.24,
+          "durationSec": 10,
+          "noRetriggerWhileActive": true
+        },
+        {
+          "kind": "selfStatus",
+          "name": "Goddess Blessing",
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesInStatus",
+        "statusPrefix": "Into the Fray",
+        "includeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 29.17,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 220.7,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 34.84,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when using Nanoparticle Injection. Affects self.",
+      "Cooldown of Burst Skill ▲ 40 sec. This effect cannot be removed.",
+      "Nanoparticle Consumption: DEF ▲ 10%. This effect is continuous and cannot be removed. Effect persists after revival."
+    ],
+    "skill2": [],
+    "burst": [
+      "Activates if 3 or more allies are incapacitated. Affects all incapacitated allies.",
+      "Nanoparticle Injection: Revives with 96% HP. Activates once per battle.",
+      "ATK ▲ 101.37% of the skill user's ATK for 10 sec. Activates once per battle.",
+      "DEF ▲ 221.76% of the skill user's DEF for 10 sec. Activates once per battle.",
+      "■ Activates when this unit is in the Nanoparticle Consumption state. Affects all allies.",
+      "ATK ▲ 34.84% of the skill user's ATK for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ ENTIRE NANOPARTICLE CHAIN IS UNREACHABLE AT SCOPE, NOT SKIPPED ON POLICY: 'Nanoparticle Injection' only fires from the burst's 3+-incapacitated branch, and v1 has no HP pool / no incapacitation, so she can never enter 'Nanoparticle Consumption'. Consequently the skill1 burst-cooldown +40s penalty and the continuous DEF ▲10% never apply, and her burst deterministically resolves to the ≤2-incapacitated branch every rotation. This is a REACHABILITY skip of DEF/HP lines, explicitly not the auto-skip the hard rules forbid.",
+    "⚑ The NC-branch ATK line (burst, unmodeled list, last entry) is numerically IDENTICAL to the modeled ≤2-incapacitated line (34.84% casterAtkPct / 10 sec / all allies), so the single modeled burst block is magnitude-correct under BOTH branches — nothing is lost by the branch collapse. It is listed as unmodeled only because that specific textual instance sits under the unreachable NC header.",
+    "⚑ 'Full Charge is maintained for 1 or more seconds' has no engine primitive — in-sim charge weapons release instantly at full charge. Proxied by `fullCharge`; the real kit's ~1s hold ALSO lengthens her true per-shot cycle, which the cadence tuple does not contain (see flags).",
+    "⚑ The 'while not in the Goddess Blessing state' gate is a NEGATED self-status gate; no such block gate exists. The DEF block's duty cycle is reproduced with `noRetriggerWhileActive` on the Goddess Blessing buff itself (re-trigger suppressed until the 10s window lapses). The shield block has NO equivalent flag on a `shield` effect, so it re-emits on every full charge instead of once per ~10s cycle — over-firing ally `shielded` triggers / `requiresShielded` gates by roughly the charge count per 10s.",
+    "⚑ Goddess Blessing is '42.24% of the SKILL USER'S DEF'. The schema has no casterDefPct StatKey; encoded as `defPct` 42.24 (target-relative semantics, not caster-relative). `defPct` is documented inert in v1, so this is a completeness record for a future consumer, not a damage claim.",
+    "⚑ `selfStatus 'Goddess Blessing'` is authored purely to make the kit-NAMED state visible/queryable (statuses carry no stats). It is NOT load-bearing: the gate that reads it is negated and therefore implemented via `noRetriggerWhileActive` instead. Drop it if the judge prefers zero non-mechanical effects.",
+    "⚑ The shared shield's header says 'Affects self' but the body says it 'protects all allies'. Targeted at `allies` so cross-unit shield-synergy consumers see it; a strict header read would be `self`. Only matters for other kits' shield gates — no self damage delta.",
+    "⚑ 'Into the Fray' is a CROSS-UNIT status this kit never grants. Both FB-enter buffs use `alliesInStatus` + `includeSelf:true`, so in an isolation/control comp they land on SELF ONLY. Her headline team ATK/Damage-Up output is therefore composition-gated, not a flat team buff — do not read the solo number as her support value.",
+    "⚑ Charge-speed immunity is modeled as whole-fight `charFixes.statImmunities:['chargeSpeedPct']` (both directions, as the kit lists both). Kit wording scopes the activation to 'only when at Full Charge during a Full Charge attack' but calls the effect continuous; whole-fight is the closest primitive and is slightly over-scoped. This is DAMAGE-RELEVANT: she rejects ally charge-speed buffs, so her shot count must not be modeled as benefiting from them.",
+    "⚑ skill2's 220.7% rider: `crit:true` (riders crit at the caster's sheet rate), no `core` (text does not say core strike), `noFb` NOT set (FB-by-timing default ON), `noRange` not set (engine-automatic).",
+    "⚑ The 3.9% max-HP heal fires on EVERY full charge (kit-literal). The engine models no HP amount, so its only live consequence is pumping ally on-`recovery` consumers at her full-charge cadence — a cadence that is itself ⚑ (see flags)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the prose only. Scope-reachable kit = a per-full-charge 220.7% rider + per-full-charge team heal, a shared shield + Goddess Blessing DEF on a ~10s duty cycle, two FB-enter buffs scoped to the cross-unit 'Into the Fray' status (SELF-ONLY in isolation), and a burst that collapses deterministically to all-allies casterAtkPct 34.84%/10s because v1 has no incapacitation. Charge-speed immunity is modeled and is the main non-obvious damage term."
+}
