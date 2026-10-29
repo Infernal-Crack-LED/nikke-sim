@@ -860,3 +860,26 @@ with an ammo/reload line (jill, asuka-wille, grave, laplace-ultimate-hero, milk-
 "Removes 100% of ammo"; none of them pairs it with a timed real-weapon swap today, so none inherits
 the trap yet). Surfaced by the `claude-opus-5` second judge as an ENGINE gotcha (GO, not blocking).
 
+
+### 23. "Machine Gun Ramp-Up Speed ▲ N%" — no MG wind-up-speed modifier — ⚑ OPEN (logged 2026-10-29)
+
+Three kits print this line, and none of them can express it: `marian-queen` (Marian: Queen — her own burst,
+self, ▲100% for 10s), `rei-ayanami-tentative-name` (Full Burst entry → MG allies who used their burst,
+▲100% for 13s) and `asuka-wille` (its ⚑2). The engine drives every MG through the measured wind-up ladder
+(`MG_RAMP_INTERVALS` in `src/engine/sim.ts`: 142 frames from the first round to 1 round/frame, restarted
+after every reload, with the measured wind-down on idle) and has no stat that scales how fast a unit climbs
+it. `fireRatePct` / `attackSpeedPct` are the wrong proxies: they raise the steady-state cadence, which a
+ramp-up line does not touch.
+
+**Size for marian-queen:** on the control comp (liter / crown / marian-queen / `helm`) her refilled
+300-round belt runs dry about 7.3s into her 10s burst window and the reload finishes about 9s in, so only
+the first ~1s of one climb falls inside the window — the line would add a handful of rounds (and the
+Penetrant Wish core strikes they carry) per burst. Her burst refill (`instantReload`) does not stop her
+firing, so it does not trigger a climb of its own. (Sim output, not a game measurement: shot `ammoAfter` +
+reload events on the fixture of `scripts/tests/units/marian-queen.test.ts`.)
+
+**Not landed by the new-unit job:** a modifier changes how the measured ladder is consumed, and the
+wording ("▲100%" — half the climb time, or double the rung advance per frame?) is not settled. Recipe: an
+MG focus recording with the buff live — time from the first post-reload round to steady 60 rounds/s, inside
+and outside the window — then add an opt-in `mgRampSpeedPct` stat read where the ladder index advances,
+inert for every unit without the line. All three carriers keep the line verbatim in `unmodeled`.
