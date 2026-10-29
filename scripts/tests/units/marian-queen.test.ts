@@ -363,6 +363,19 @@ describe('P4 — Penetrant Wish (10s after her burst): every 2 normal attacks �
     expect(cf.strikes.some((s) => !inWish(cf, s.frame))).toBe(true);
   });
 
+  it('DISCRIMINATING: a fullBurstEnter-keyed Penetrant Wish opens the window on helm’s Full Bursts too', () => {
+    const cf = run(
+      patch((ov) => {
+        findBlock(ov, 'skill2', (b: any) =>
+          b.effects.some((e: any) => e.kind === 'selfStatus')
+        ).trigger = { kind: 'fullBurstEnter' };
+      })
+    );
+    const other = fbWithoutHerCast(cf);
+    expect(cf.strikes.some((s) => inFbWindow(other, s.frame))).toBe(true);
+    expect(main.strikes.some((s) => inFbWindow(other, s.frame))).toBe(false);
+  });
+
   it('DISCRIMINATING: every normal attack (count 1) doubles the strikes', () => {
     const cf = run(
       patch((ov) => {
