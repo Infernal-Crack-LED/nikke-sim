@@ -29,6 +29,7 @@
 | --- | --- | --- |
 | `adjacentAlly` | 1 | belorta-pumpkin-witch |
 | `advantageVs` | 2 | rapi-red-hood, sugar |
+| `alliesInStatus` | 1 | rapunzel-sanctuary |
 | `alliesLowestAtk` | 1 | liberalio |
 | `alliesLowestHp` | 10 | blanc, ether, mary, misato, naga, pascal, pepper, poli, … |
 | `alliesOfClass` | 4 | anne-miracle-fairy, biscuit, d, quiry |
@@ -66,10 +67,10 @@
 | `everyNOffset` | 4 | mint, neon-vision-eye, phantom, power |
 | `excludeSelf` | 20 | anis, arcana-fortune-mate, avistar, bay, blanc, brid-silent-track, chime, grave, … |
 | `fbGate` | 11 | clay, ether, eunhwa-tactical-upgrade, kurumi, mihara-bonding-chain, modernia, privaty-unkind-maid, soda-twinkling-bunny, … |
-| `flatDamage` | 105 | 2b, a2, aigis, anchor, anis, anis-sparkling-summer, anis-star, arcana, … |
+| `flatDamage` | 106 | 2b, a2, aigis, anchor, anis, anis-sparkling-summer, anis-star, arcana, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
-| `fullCharge` | 34 | a2, ade-agent-bunny, anis-star, belorta-pumpkin-witch, bready, cinderella, delta, diesel-winter-sweets, … |
+| `fullCharge` | 35 | a2, ade-agent-bunny, anis-star, belorta-pumpkin-witch, bready, cinderella, delta, diesel-winter-sweets, … |
 | `gainPierce` | 15 | ade-agent-bunny, asuka, d-killer-wife, dorothy, grave, harran, makima, mari, … |
 | `gaugeHits` | 4 | eve, liberalio, little-mermaid, snow-white-heavy-arms |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
@@ -121,7 +122,7 @@
 | `stackedNuke` | 1 | maiden-ice-rose |
 | `stageCast` | 1 | rupee-winter-shopper |
 | `stageEnter` | 13 | cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, … |
-| `statImmunities` | 1 | liberalio |
+| `statImmunities` | 2 | liberalio, rapunzel-sanctuary |
 | `storedHit` | 1 | rapi-red-hood |
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 10 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, sin-swift-bunny, snow-white-heavy-arms, takina, … |
@@ -883,3 +884,28 @@ wording ("▲100%" — half the climb time, or double the rung advance per frame
 MG focus recording with the buff live — time from the first post-reload round to steady 60 rounds/s, inside
 and outside the window — then add an opt-in `mgRampSpeedPct` stat read where the ladder index advances,
 inert for every unit without the line. All three carriers keep the line verbatim in `unmodeled`.
+
+### 24. "Into the Fray" allies — no shipped override emits the state `alliesInStatus` reads — ⚑ OPEN (logged 2026-10-29)
+
+`rapunzel-sanctuary` (Rapunzel: Sanctuary) grants Attack Damage ▲27.45% and ATK ▲29.17% of her ATK for 10s at
+every Full Burst entry to "self and all allies in the Into the Fray state". The engine target for that is
+`alliesInStatus` (statusPrefix `Into the Fray`, includeSelf): it selects an ally only while that ally holds
+an open `selfStatus` whose name starts with the prefix. "Into the Fray" is a family of named modes, and two
+roster units are in one for the whole fight from battle start — `marian-queen` (Into the Fray: Sharpened
+Resolve; Into the Fray: Penetrant Wish on her burst) and `scarlet-goddeath` (Into the Fray: Serene Mind;
+Into the Fray: At One With the Sword on her burst). Neither emits a matching status today: marian-queen's
+burst mode is the selfStatus `Penetrant Wish` (bare name) and her battle-start mode carries no status;
+scarlet-goddeath has no override. So in every current comp both grants reach rapunzel-sanctuary alone, and
+`validate-structural`'s cross-slug census warns on the prefix.
+
+**Size:** per Full Burst, an Into the Fray ally misses Attack Damage ▲27.45% (Damage Up bucket) plus a flat
+ATK add of 29.17% of rapunzel-sanctuary's static ATK, for 10s. The unit test exercises the ally half by
+patching marian-queen in the fixture with a battle-start `Into the Fray: Sharpened Resolve` status
+(`scripts/tests/units/rapunzel-sanctuary.test.ts`, L2/L7).
+
+**Fix (override edits outside the new-unit job's authority):** marian-queen — add a battle-start self
+`selfStatus` `Into the Fray: Sharpened Resolve` (999s) and rename `Penetrant Wish` to `Into the Fray:
+Penetrant Wish` in its producer and both `requiresSelfStatus` consumers (and the names its unit test reads);
+scarlet-goddeath — emit `Into the Fray: Serene Mind` at battle start and name its burst mode in full when its
+override lands. No engine or rapunzel-sanctuary change is needed; the census warning clears once a producer
+exists.

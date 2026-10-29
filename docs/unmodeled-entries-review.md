@@ -11,20 +11,20 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 214 | 43.9% |
-| Missing engine primitive / trigger | 102 | 20.9% |
-| Other / see caveats | 94 | 19.3% |
-| Out-of-domain / parser unsupported | 39 | 8.0% |
-| Weapon-state / shot-count approximation | 13 | 2.7% |
-| Partless boss | 10 | 2.1% |
+| Defensive / HP / shield / aggro | 220 | 44.6% |
+| Missing engine primitive / trigger | 102 | 20.7% |
+| Other / see caveats | 94 | 19.1% |
+| Out-of-domain / parser unsupported | 39 | 7.9% |
+| Weapon-state / shot-count approximation | 13 | 2.6% |
+| Partless boss | 10 | 2.0% |
 | RNG / probabilistic | 6 | 1.2% |
 | Self-status / stack gate | 5 | 1.0% |
 | Measurement-gated / unverified cadence | 4 | 0.8% |
-| **Total** | **487** | 100.0% |
+| **Total** | **493** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (214)
+### Defensive / HP / shield / aggro (220)
 
 **A2** (a2)
 
@@ -614,6 +614,29 @@ Stun for 1 sec.
 Current HP ▼ 2% every 1 sec continuously.
 Restores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec continuously.
   - *Why:* ⚑ skill2 GATED HP-DRAIN / SHIELD-HP-RESTORE line is UNMODELED (verbatim in `unmodeled`): 'Current HP ▼ 2% every 1 sec' needs an HP pool to drain and 'Restores Shield HP equal to 3.16% …' needs a shield-HP pool — neither exists in a DPS sim (no incoming damage, shields never deplete). Defensive/damage-inert; ESTIMATE of board impact: zero damage. RECIPE: requires an HP-pool + shield-HP-pool model before it can be enacted. Deliberately NOT encoded as a repeating 1 Hz 'shield' effect — that would re-fire every ally's 'shielded' trigger once per second and massively over-credit shield-synergy teammates.
+
+**Rapunzel: Sanctuary** (rapunzel-sanctuary)
+
+- **skill1:** Restores HP equal to 3.9% of the skill user's final max HP. — magnitude only: the HP amount has no engine consumer (no HP pool); the recovery EVENT is modeled (heal, skill1), which is the board-relevant half.
+  - *Why:* skill1/skill2: the Full-Burst-entry grants reach Into the Fray allies only through an ally selfStatus named 'Into the Fray: <Mode>'; no shipped override emits one yet, so today they land on her alone (⚑1).
+- **skill1:** ■ Activates when using Nanoparticle Injection. Affects self.
+Cooldown of Burst Skill ▲ 40 sec. This effect cannot be removed.
+Nanoparticle Consumption: DEF ▲ 10%. This effect is continuous and cannot be removed. Effect persists after revival. — unreachable: Nanoparticle Injection is the burst's ≥3-incapacitated branch, and v1 has no incapacitation (no HP pool).
+  - *Why:* v1 has no HP pool, so no ally is ever incapacitated: the burst's ≥3-incapacitated Nanoparticle Injection branch never activates, and with it the +40s burst-cooldown rider and the Nanoparticle Consumption state never happen — the burst is always the '2 or fewer incapacitated' branch, and the in-Consumption branch carries the same grant, so one burstCast block is the burst in every reachable state
+- **skill2:** ■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Goddess Blessing state. Affects self.
+Creates a shared shield with HP equal to 7.39% of the skill user's final max HP that protects all allies from damage. This shield is removed when charging ends. — the sim releases at full charge and never holds it (⚑3); defensive.
+  - *Why:* skill2: the shared shield and Goddess Blessing DEF need Full Charge held ≥1s, which the sim never does (⚑3).
+- **skill2:** ■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Goddess Blessing state. Affects all allies.
+Goddess Blessing: DEF ▲ 42.24% of the skill user's DEF for 10 sec. — same unreachable charge-hold trigger (⚑3); DEF is damage-inert.
+  - *Why:* skill2: the shared shield and Goddess Blessing DEF need Full Charge held ≥1s, which the sim never does (⚑3).
+- **burst:** Activates if 3 or more allies are incapacitated. Affects all incapacitated allies.
+Nanoparticle Injection: Revives with 96% HP. Activates once per battle.
+ATK ▲ 101.37% of the skill user's ATK for 10 sec. Activates once per battle.
+DEF ▲ 221.76% of the skill user's DEF for 10 sec. Activates once per battle. — unreachable: v1 has no incapacitation (no HP pool), so the burst is always the '2 or fewer' branch.
+  - *Why:* v1 has no HP pool, so no ally is ever incapacitated: the burst's ≥3-incapacitated Nanoparticle Injection branch never activates, and with it the +40s burst-cooldown rider and the Nanoparticle Consumption state never happen — the burst is always the '2 or fewer incapacitated' branch, and the in-Consumption branch carries the same grant, so one burstCast block is the burst in every reachable state
+- **burst:** ■ Activates when this unit is in the Nanoparticle Consumption state. Affects all allies.
+ATK ▲ 34.84% of the skill user's ATK for 10 sec. — the Consumption state is unreachable; the grant is identical to the encoded '2 or fewer incapacitated' branch, which is the burst's behaviour in every reachable state.
+  - *Why:* v1 has no HP pool, so no ally is ever incapacitated: the burst's ≥3-incapacitated Nanoparticle Injection branch never activates, and with it the +40s burst-cooldown rider and the Nanoparticle Consumption state never happen — the burst is always the '2 or fewer incapacitated' branch, and the in-Consumption branch carries the same grant, so one burstCast block is the burst in every reachable state
 
 **Red Hood** (red-hood)
 

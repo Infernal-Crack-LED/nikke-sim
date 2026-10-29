@@ -65,7 +65,7 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `atkOfCasterMaxHpPct` | FinalATK | flat ATK add of `% × caster's liveMaxHp` snapshotted at apply; stored as `casterAtkPct` | always | 1 | maxwell-ordinary-mechanic |
 | `atkOfMaxHpPct` | FinalATK | flat ATK add of `% × liveMaxHp`, **re-read every frame** | always | 5 | 2b, cinderella, drake-great-villain, laplace-ultimate-hero, maiden-ice-rose |
 | `atkPct` | FinalATK | `staticAtk × (1 + Σ/100)` — dilutes against other ATK ▲% | always | 84 | a2, ada, ade-agent-bunny, aigis, alice, anis-star, anne-miracle-fairy, arcana-fortune-mate, … |
-| `casterAtkPct` | FinalATK | flat ATK add, resolved at apply to `caster.staticAtk × %` — does NOT dilute | always | 51 | ada, ade, ade-agent-bunny, aigis, anchor-innocent-maid, anis-sparkling-summer, anis-star, arcana, … |
+| `casterAtkPct` | FinalATK | flat ATK add, resolved at apply to `caster.staticAtk × %` — does NOT dilute | always | 52 | ada, ade, ade-agent-bunny, aigis, anchor-innocent-maid, anis-sparkling-summer, anis-star, arcana, … |
 | `defPct` | FinalATK | ENEMY-targeted at a nonzero value: scales cfg.bossDef by (1 + Σ/100), floor 0 (the DEF ▼ channel, 2026-08-10); SELF/ally-targeted stays read by nothing — own DEF does not enter own damage | enemy-targeted buffs only; sub-0.1% at the graded surfaces (scope-lock bossDef 140), live at the web raid DEF defaults | 35 | aigis, anchor, anis, bay, centi, crow, crown, crust, … |
 | `highestAllyAtkPct` | FinalATK | flat ATK add of `max(all staticAtk) × %` at apply; stored as `casterAtkPct` | always | 1 | guilty |
 | `critDamagePct` | Major (crit) | additive pp into `critBonus` (base `(critDamage−100)/100`) | crit-eligible instances | 29 | admi, aria, diesel-winter-sweets, dolla, emma-tactical-upgrade, epinel, guillotine, isabel, … |
@@ -76,7 +76,7 @@ override files carry it. "Carriers" counts structural occurrences only — a uni
 | `elementDamagePct` | Element | additive pp on the 1.1 advantage base | elemental advantage only | 0 | _none_ |
 | `chargeDamageMultPct` | Charge | scales the BASE charge term (`baseCharge × %`), like the doll/collection lines | charge instances only | 2 | admi, helm |
 | `chargeDamagePct` | Charge | flat percentage points added AFTER the base term | charge instances only | 16 | a2, alice, ein, emilia, eunhwa, eunhwa-tactical-upgrade, guilty-mighty-bunny, himeno, … |
-| `attackDamagePct` | DamageUp | additive pp — the unflavored member every instance reads | always | 55 | ade-agent-bunny, anchor-innocent-maid, anis-star, arcana, arcana-fortune-mate, asuka, asuka-wille, avistar, … |
+| `attackDamagePct` | DamageUp | additive pp — the unflavored member every instance reads | always | 56 | ade-agent-bunny, anchor-innocent-maid, anis-star, arcana, arcana-fortune-mate, asuka, asuka-wille, avistar, … |
 | `burstSkillAoeDamagePct` | DamageUp | additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured) | burst-slot hits tagged burstDesc:'allEnemies' | 1 | trina |
 | `burstSkillSingleDamagePct` | DamageUp | additive pp (⚑ placement per the "○○ Damage ▲" family rule, unmeasured) | burst-slot hits tagged burstDesc:'singleEnemy' | 1 | jackal |
 | `pierceDamagePct` | DamageUp | additive pp | Pierce-tagged shots (`hasPierce` / live `gainPierce` / per-shot tag) | 10 | ade-agent-bunny, d-killer-wife, diesel, dorothy-serendipity, grave, mari, milk-blooming-bunny, mint, … |

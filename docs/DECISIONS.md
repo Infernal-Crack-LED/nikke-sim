@@ -6777,3 +6777,26 @@ red-by-design 2026-09-01, "the evidence favours landing"; the call was made 2026
 - **MG Ramp-Up Speed ▲ 100% is a GAP** (docs/engine-modeling-gaps.md §23): a wind-up speed modifier
   changes how the measured MG ladder is consumed and its wording is unsettled, so it is outside the
   new-unit job's engine bound. Proposed as an opt-in `mgRampSpeedPct` after a focus recording.
+
+## Rapunzel: Sanctuary enters the sim — new `alliesInStatus` target; unreachable branches collapsed (2026-10-29)
+
+- **Roster.** The daily new-unit watch synced Rapunzel: Sanctuary (`rapunzel-sanctuary` — RL / Supporter /
+  Fire / Pilgrim, Burst II, cd 40s; not the base `rapunzel` nor `rapunzel-pure-grace`). Kit-autonomy gauntlet
+  GO 1.0 / 1.0 (same-family Claude reviewers).
+- **New engine target `alliesInStatus` (statusPrefix, includeSelf).** "Affects self and all allies in the
+  Into the Fray state" names a family of kit modes ("Into the Fray: <Mode>") held by OTHER units; no
+  existing selector reads another unit's state. The smallest primitive that expresses it reuses the
+  existing per-unit `selfStatus` windows (the `requiresSelfStatus` channel) and matches by name prefix, so
+  the whole family is one target. Opt-in and board-inert (regression output byte-identical with and without
+  it). A prefix no override produces is a validator WARNING, not an error, because the family's members may
+  be unmodeled; today no override produces one (docs/engine-modeling-gaps.md §24), so her Full-Burst-entry
+  grants reach only her until marian-queen / scarlet-goddeath emit the named statuses.
+- **Unreachable branches collapse to one burst block.** v1 has no HP pool, so no ally is ever incapacitated:
+  the ≥3-incapacitated Nanoparticle Injection branch, its +40s burst-cooldown rider and the Nanoparticle
+  Consumption state never occur. Her burst is always the "2 or fewer incapacitated" branch, and the
+  in-Consumption branch carries the identical grant, so a single `burstCast` → all allies `casterAtkPct 34.84`
+  10s block is exact in every reachable state.
+- **"Full Charge maintained for 1 or more seconds" stays unmodeled** (shared shield, Goddess Blessing DEF),
+  as for rapunzel-pure-grace / guilty-mighty-bunny / sin-swift-bunny: the sim releases at full charge and never
+  holds. Both blind writers proxied it onto `fullCharge`; both S2b reviewers and both judges rejected that
+  reading. ⚑ with a footage recipe in her override.
