@@ -1,0 +1,410 @@
+{
+  "slug": "marian-queen",
+  "leakDetected": null,
+  "override": {
+    "slug": "marian-queen",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 4
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 878.57,
+            "flavor": "sequential",
+            "crit": true,
+            "gaugeHits": 7,
+            "levelScale": {
+              "atkPct": [125.51]
+            }
+          },
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 5.05
+          },
+          {
+            "kind": "targetStatus",
+            "name": "Open Wounds",
+            "durationSec": 999
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 5.05
+          },
+          {
+            "kind": "targetStatus",
+            "name": "Open Wounds",
+            "durationSec": 999
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "selfStatus",
+            "name": "Into the Fray: Penetrant Wish",
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "skillCooldownReductionSec",
+            "value": 2,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 2,
+          "perPull": true,
+          "countScope": "gated"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "requiresSelfStatus": "Into the Fray: Penetrant Wish",
+        "requiresTargetStatus": "Open Wounds",
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 14.06,
+            "core": true,
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "ownBurstGate": "notCast",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "sequentialDamagePct",
+            "value": 85.17,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "ownBurstGate": "cast",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "coreDamagePct",
+            "value": 24.64,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "instantReload",
+            "fraction": 1
+          },
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 78.4,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 78.14,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 1346.4,
+            "crit": true,
+            "burstDesc": "allEnemies"
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": ["Function: Launches Dark Matter spears at random enemies."],
+      "skill2": [
+        "Function: Deals core damage to all enemies in the Open Wounds state."
+      ],
+      "burst": ["Machine Gun Ramp-Up Speed ▲ 100% for 10 sec."]
+    },
+    "caveats": [
+      "⚑ SPEAR SPLIT-VS-MERGE: the 7 sequential 125.51% spears are MERGED into one 878.57% instance with gaugeHits:7 (kit-silent on split; popup-read required). If the engine's sequential/Damage-Up interaction or any per-hit gate ever needs per-hit granularity, split into 7 effects of 125.51%.",
+      "⚑ INTERVAL PHASE: 'Activates at the start of battle' + 'Recurring interval: 4 sec' is encoded as interval{sec:4}, which first fires at t=4. If the opening volley actually launches at t=0 the model loses one volley per fight (~1 of ~N volleys).",
+      "⚑ OPEN WOUNDS IS A STATE, NOT A STACK: Damage Taken ▲5.05% is modeled as ONE continuous instance (no maxStacks), because skill2 refers to 'the Open Wounds state' (a named status) and the kit gives no stack count. If it stacks per spear hit (up to 7 per volley, permanent, 'cannot be removed'), the team-wide debuff is grossly under-credited — this is the single largest value risk in the file.",
+      "DOUBLE-BOOK WATCH: both skill1 blocks grant damageTakenPct 5.05 (interval volley + burst-cast AoE). They are the SAME in-game status and must refresh, not sum to 10.1 — the shared caster+slot+stat+value buff key should handle it; verify with a buffApply filter on stat damageTakenPct.",
+      "FB-ENTER PAIR IS A PROXY: 'entering Full Burst while [not] in Into the Fray: Penetrant Wish' is encoded as ownBurstGate notCast/cast rather than a self-status gate, because the schema has no NEGATED requiresSelfStatus. Exact while her own burst cast is what opens the 10s window (she is Burst III, so her cast immediately precedes FB entry); it diverges only if a Full Burst begins within 10s of her cast without her casting.",
+      "'Affects random enemies' is scope-trivial at v1 (single boss) — all 7 spears land on the one target. On a multi-enemy scope the merge and the Open Wounds application would both need re-reading.",
+      "The skill2 14.06% core rider is a DIRECT core strike (core:true), not an auto-core-rate hit — the kit says 'core strike damage'. Its proc count is purely cadence-driven (see the cadence ⚑)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read from kit prose only. Shape: S1 = a battle-start 4s recurring sequential spear volley (7×125.51%, merged) that paints a permanent team-wide Open Wounds Damage Taken ▲5.05% debuff, plus a burst-cast AoE re-application of the same status. S2 = her own burst opens a 10s 'Into the Fray: Penetrant Wish' self-status that (a) adds an every-2-normal-attacks 14.06% direct CORE strike gated on Open Wounds and (b) cuts the S1 volley interval by 2s (4s → 2s) via skillCooldownReductionSec; the FB-enter pair is an either/or duty cycle — Sequential Attack Damage ▲85.17% on a Full Burst she did NOT burst into, Core Damage ▲24.64% on one she did. Burst = self ATK ▲78.4 / Attack Damage ▲78.14 / full reload + a 1346.4% AoE nuke. MG Ramp-Up Speed ▲100% is a REAL shot-count gain with no StatKey to express it and is flagged, not silently dropped."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates at start of battle. Self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block header; combined with 'Recurring interval: 4 sec' into trigger interval{sec:4} on an enemy-targeted block (the payload is enemy-facing; 'Affects self' is the mode-entry wrapper)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Into the Fray: Sharpened Resolve",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Named skill label — load-bearing: it is the interval that skill2 Effect 2 reduces by 2 sec (skillCooldownReductionSec)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Function: Launches Dark Matter spears",
+      "status": "SKIPPED",
+      "effectOrReason": "Descriptive Function summary of Effect 1; no independent mechanic. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 1: 125.51% ATK, 7 sequential",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 878.57 (=125.51×7, levelScale anchor [125.51]), flavor 'sequential' (S2's Sequential Attack Damage ▲ is the matching consumer), crit:true, gaugeHits:7. No core (text says plain 'damage'); noRange left to the engine; FB by timing (noFb unset)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 2: Open Wounds: Dmg Taken ▲5.05%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 5.05 with NO durationSec (continuous/cannot be removed) + targetStatus 'Open Wounds' durationSec 999 so skill2's requiresTargetStatus gate opens. Boss debuff = whole-team benefit, not a self buff."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recurring interval: 4 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger interval{sec:4} (first fire t=4 — see phase ⚑)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ When using Burst Skill. All enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast (her OWN cast — literal 'when using Burst Skill', NOT fullBurstEnter), target enemy. No stage set (Burst III, not Λ)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Open Wounds: Damage Taken ▲ 5.05%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Same pair as Effect 2 (damageTakenPct 5.05 continuous + targetStatus 'Open Wounds'); must REFRESH the same status, not sum — see double-book caveat."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ When using Burst Skill. Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast, target self — opens the Penetrant Wish window."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Into the Fray: Penetrant Wish",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "selfStatus name 'Into the Fray: Penetrant Wish' (durationSec 10), read by the core-rider's requiresSelfStatus gate."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Function: Deals core damage to all...",
+      "status": "SKIPPED",
+      "effectOrReason": "Descriptive Function summary of Effect 1. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 1: after 2 normal atks, 14.06% core",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:2, perPull:true, countScope:'gated'} (MG hitsPerShot 1 so perPull is byte-equal, authored for fidelity; 'gated' because the counting lives inside the 10s window), target enemy, requiresSelfStatus 'Into the Fray: Penetrant Wish' + requiresTargetStatus 'Open Wounds', flatDamage 14.06 core:true crit:true."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 2: Recurring interval ▼ 2 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff skillCooldownReductionSec 2 durationSec 10 on self — the schema's documented consumer 'dynamically shortens interval-trigger timers while active', i.e. S1's 4s volley becomes 2s for the window (~2× volleys + 2× Open Wounds reapplications)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Duration: 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "durationSec 10 on both the selfStatus and the skillCooldownReductionSec buff."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ FB enter while NOT in Penetrant Wish",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter + ownBurstGate 'notCast' (no negated requiresSelfStatus exists; her own burst is what grants the status, so 'not in it at FB entry' == she did not cast this rotation)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Sequential Atk Damage ▲85.17% 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff sequentialDamagePct 85.17 durationSec 10, self — ADDITIVE Damage-Up term; feeds her 'sequential'-flavored spear volley only."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ FB enter while IN Penetrant Wish",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter + ownBurstGate 'cast' — exact complement of the block above."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Core Damage ▲ 24.64% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff coreDamagePct 24.64 durationSec 10, self — pairs with the 14.06% core rider and her 200 coreAttackMultiplier normals."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast, target self for the three self lines."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reloads 100% of ammo.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "instantReload fraction 1 — weapon-state/shot-economy line, NOT skippable (300-round MG belt refilled on cast)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "MG Ramp-Up Speed ▲ 100% for 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey expresses MG ramp-up (the rate at which an MG reaches max RPM); the engine's cadence is a flat pulls/s with no ramp phase, so there is nothing to shorten. Encoding it as fireRatePct/attackSpeedPct would over-credit SUSTAINED RPM, which this line does not raise — a fudge. Verbatim in unmodeled.burst and ⚑-flagged as a real, unmodeled shot-count gain."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 78.4% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 78.4 durationSec 10, self (scales her own ATK; self-only per the '■ Affects self' header)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲ 78.14% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 78.14 durationSec 10, self — additive Damage-Up bucket."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Second burst block, target enemy; drives burstDesc 'allEnemies' on the nuke."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "1346.4% of final ATK as Burst Skill dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 1346.4, crit:true, burstDesc:'allEnemies' (so a jackal/trina burstSkillAoeDamagePct amp can read it). No core (no 'core strike' wording). See the FB-exemption ⚑."
+    }
+  ],
+  "flags": [
+    {
+      "field": "(base stats) cadence tuple — rate_of_fire / reloadFrames 171 / ammo 300",
+      "estimate": "Datamined MG cadence as given; reloadFrames 171 (~2.85s) and the 300-round belt taken at face value.",
+      "reasoning": "ALWAYS-⚑ #1: rate_of_fire and reloadFrames are known-unreliable datamine fields, and this unit is UNUSUALLY cadence-sensitive — the skill2 core rider fires every 2 normal attacks, so an MG RPM error propagates linearly into proc count across the whole 10s window, and the burst's 100% ammo refill only matters at the true belt/reload numbers.",
+      "recipe": "Focus recording: count trigger pulls over a fixed 10s non-FB window to get pulls/s, and time one dry-fire→full-belt reload for the real reload frames. Then count the 14.06% core popups inside one Penetrant Wish window and check it equals floor(pulls_in_window / 2)."
+    },
+    {
+      "field": "skill1[0].effects[0].atkPct (878.57 merged)",
+      "estimate": "ONE merged instance of 878.57% with gaugeHits:7, rather than 7× 125.51%.",
+      "reasoning": "ALWAYS-⚑ #5 split-vs-merge is kit-silent. Merge is damage-neutral for a flat multiplier stack and keeps the gauge right via gaugeHits, but it is wrong if any per-hit effect (a per-hit Open Wounds stack, a per-hit crit roll with non-linear consumers, a per-hit cap) exists.",
+      "recipe": "Read the damage popups on one volley in a focus recording: 7 distinct numbers = split (author 7 effects); one aggregated number = merge confirmed. The same recording settles whether each spear hit re-applies Open Wounds separately."
+    },
+    {
+      "field": "skill1[0].effects[1].value / maxStacks (Open Wounds 5.05%)",
+      "estimate": "5.05% as a SINGLE continuous instance, no maxStacks.",
+      "reasoning": "Read as a named STATE (skill2 gates on 'the Open Wounds state'), and the kit gives no stack count — guessing a precise stack cap would be the forbidden fudge. But 'landing a hit with a Dark Matter spear' is a per-hit trigger firing 7× every 4s permanently, which is exactly the shape a stacking debuff takes; if it stacks, a team-wide Damage Taken ▲ is under-credited by up to ~7×.",
+      "recipe": "Watch the boss debuff icon in a focus recording for a stack counter and whether the number climbs over the first ~12s (3 volleys). Cross-check arithmetically: compare a teammate's identical normal-attack hit at t≈2s vs t≈20s — the ratio IS the accumulated Damage Taken, independent of any parse."
+    },
+    {
+      "field": "skill1[0].trigger (interval first-fire phase)",
+      "estimate": "interval{sec:4}, first volley at t=4s.",
+      "reasoning": "ALWAYS-⚑ convention: 'Activates at the start of battle' argues for a t=0 opening volley, while the engine's interval primitive fires first at t=sec. One volley (878.57% + the first Open Wounds application ~4s earlier) rides on this.",
+      "recipe": "Timestamp the first Dark Matter spear popup from battle start in a focus recording; if it is ~0s, prepend a battleStart-triggered copy of the damage block (and keep interval for the rest)."
+    },
+    {
+      "field": "skill2[1].trigger (hitCount count 2 — recurring vs once)",
+      "estimate": "RECURRING every 2 normal attacks inside the 10s window (hitCount{count:2}).",
+      "reasoning": "'Activates after performing 2 normal attacks' under a 'Duration: 10 sec' header reads as the standard recurring per-N-attacks rider, and a one-shot reading would make a 14.06% core strike a rounding error on a Burst-III attacker's kit. Still a trigger-identity HYPOTHESIS, and it is the highest-leverage one in the file: on an MG the difference is ~1 proc vs tens.",
+      "recipe": "Count the 14.06% core popups in one Penetrant Wish window in a focus recording. Also pins countScope: if popups keep appearing on attacks after the status lapses, the counting is 'always', not 'gated'."
+    },
+    {
+      "field": "burst[1].effects[0].noFb / top-level burstSnapshotsPreFb",
+      "estimate": "noFb NOT set and burstSnapshotsPreFb NOT set — the 1346.4% nuke is left to the engine's burst-cast timing.",
+      "reasoning": "ALWAYS-⚑ #6: per-kit noFb is measured-only and defaults off, yet HARD RULE 9 states burst-cast/instant damage is always FB-exempt because the cast lands before the FB window opens. I cannot tell blind whether the engine already applies that for a burst-slot instance or whether this unit needs burstSnapshotsPreFb. If it needs it and does not have it, the nuke is over-credited by ×1.5.",
+      "recipe": "Run the committed file in the harness with cfg.onEvent and read inFullBurst / fbMajorApplied on the burst-bucket damage event for marian-queen; if fbMajorApplied is true, set burstSnapshotsPreFb (preferred) per her observed cast→FB frame gap. Cross-check against the banner-to-popup timing in a focus recording."
+    },
+    {
+      "field": "unmodeled.burst — 'Machine Gun Ramp-Up Speed ▲ 100% for 10 sec.'",
+      "estimate": "Unmodeled (zero credit). A faithful ceiling would be roughly the rounds lost to the spin-up each magazine — plausibly a low-single-digit % of shots inside the 10s window, NOT a 100% fire-rate gain.",
+      "reasoning": "HARD RULE 6 says weapon-state modifiers ARE damage, and this one genuinely gates shots fired — but no StatKey expresses ramp-up and the engine has no ramp phase to shorten, so there is nothing faithful to write. Mapping it onto fireRatePct would invent sustained RPM the kit never grants; a blind honest skip is correct here.",
+      "recipe": "Frame-count her shot intervals from first pull after a reload to steady state, with and without the burst buff, to measure the real rounds gained. If it is material, the fix is an engine ramp model (an engine-modeling-gaps entry), not an override value."
+    },
+    {
+      "field": "skill2[2].ownBurstGate / skill2[3].ownBurstGate (FB-enter duty cycle)",
+      "estimate": "notCast → Sequential ▲85.17; cast → Core ▲24.64.",
+      "reasoning": "PROXY, not the literal gate: the kit keys both on her own Penetrant Wish self-status, which the schema can only test positively. The mapping holds because her burst cast is the sole source of that status and she is Burst III (cast immediately precedes FB entry), but it diverges if a Full Burst begins within 10s of her cast without her casting, and the two blocks could in principle both fire or both miss on a timing race.",
+      "recipe": "Harness: assert exactly one of the two buffApply events (sequentialDamagePct 85.17 / coreDamagePct 24.64) per fullBurstStart across a multi-rotation comp with a second Burst III present. If the engine supports it, prefer requiresSelfStatus on the 'cast' block once the complement can be expressed."
+    }
+  ],
+  "model": "claude-opus-5"
+}
