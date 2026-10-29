@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-10-09T16:36:34.340Z",
+  "syncedAt": "2026-10-29T13:00:14.625Z",
   "source": "bakery-bot DB nikke_characters.sheet_data (community Tsareena build sheet)",
   "units": {
     "a2": {
@@ -37,7 +37,7 @@
       }
     },
     "ade-agent-bunny": {
-      "priority": "High Union Raid Priority",
+      "priority": "PvE Medium Priority",
       "annotations": [],
       "build": {
         "skillLevels": "7+/7+/10",
@@ -734,7 +734,7 @@
       }
     },
     "liter": {
-      "priority": "High Union Raid Priority",
+      "priority": "PvE Medium Priority",
       "annotations": [],
       "build": {
         "skillLevels": "10/7/10",
@@ -1190,23 +1190,6 @@
         "burstGen": "Auto: High Manual: Low",
         "pairWith": null,
         "notes": null
-      }
-    },
-    "red-hood": {
-      "priority": "High Union Raid Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Destruction · Resilience · Highest Level",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 1x Ammo · 3x Charge Speed",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Union Raid · PvP",
-        "burstGen": "Auto: Low Manual: High",
-        "pairWith": null,
-        "notes": "If you are using auto burst make sure you position her after your Burst 1 and 2"
       }
     },
     "rei-ayanami-tentative-name": {
