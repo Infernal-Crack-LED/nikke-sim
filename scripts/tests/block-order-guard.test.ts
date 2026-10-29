@@ -293,6 +293,6 @@ describe('block-order guard — the shipped overrides', () => {
   it('pins the census size, so a unit dropping out of it is loud too', () => {
     const units = Object.keys(pinned).length;
     const pairs = Object.values(pinned).reduce((n, p) => n + p.length, 0);
-    expect([units, pairs]).toEqual([16, 165]);
+    expect([units, pairs]).toEqual([17, 167]);
   });
 });

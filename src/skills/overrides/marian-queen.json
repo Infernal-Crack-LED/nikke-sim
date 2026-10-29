@@ -1,0 +1,119 @@
+{
+  "note": "Marian: Queen (`marian-queen`; no base `marian` exists in the roster). MG / Attacker / Fire / Pilgrim, Burst III (cd 40s), ammo 300, reloadFrames 171, normalMult 5.57, coreMult 200 — weapon cycle carried by characters.json, no charFixes. Kit-autonomy gauntlet 2026-10-29 — test-first, pinned by scripts/tests/units/marian-queen.test.ts (P1–P7; P8 GAP). No real-fight recording yet: structure is test-pinned, magnitudes are SL10 kit-text literals (DATAMINED). SKILL1 'Sharpened Resolve': the Into the Fray: Sharpened Resolve mode runs from battle start for the whole fight → one interval:4 block on the enemy — 7 sequential-flavored flatDamage 125.51% hits per volley ('Attacks sequentially 7 times'; single boss, so all 7 random-enemy spears land on it) + Open Wounds on the first landed spear: damageTakenPct 5.05 with NO duration ('continuous and cannot be removed') + targetStatus 'Open Wounds' 999s (the named status Skill 2's core strike gates on). Re-applications refresh the one S1-keyed debuff, never stack (no stack wording). Second ■ header 'Activates when using Burst Skill → all enemies: Open Wounds' = a burstCast block (HER OWN cast) with the same damageTakenPct 5.05 + status in the skill1 slot, so it shares the key and never co-stacks. SKILL2 'Synthetic World': on her burstCast → selfStatus 'Penetrant Wish' 10s + skillCooldownReductionSec 2 for 10s (Sharpened Resolve's recurring interval 4s → 2s inside the window; she has no other interval block). Effect 1 'after performing 2 normal attacks → all enemies in Open Wounds: 14.06% of final ATK as core strike damage' = hitCount count 2 (MG hitsPerShot 1, so rounds = pulls) gated requiresSelfStatus 'Penetrant Wish' + requiresTargetStatus 'Open Wounds' → flatDamage 14.06 core:true (text-fidelity: 'core strike damage'). Full-Burst entry branches on the state: IN Penetrant Wish → requiresSelfStatus 'Penetrant Wish' → self coreDamagePct 24.64 10s; NOT in Penetrant Wish → ownBurstGate 'notCast' → self sequentialDamagePct 85.17 10s (additive Damage Up, reaches only the sequential spears). ownBurstGate is the exact negation here: Penetrant Wish opens only on her own cast, 22f before that rotation's Full Burst, and lasts 10s against a 40s cooldown, so she is in the state at Full Burst entry iff she cast in that rotation. BURST 'Distant New World' (burstCast): self instantReload (100%), atkPct 78.4 10s, attackDamagePct 78.14 10s; enemy flatDamage 1346.4 burstDesc allEnemies (burst-cast damage lands before Full Burst — no +50%). ⚑ LIST: [⚑1] MG Ramp-Up Speed ▲ 100% for 10s is UNMODELED — the engine runs the measured MG wind-up ladder but has no wind-up-speed modifier (docs/engine-modeling-gaps.md, the MG ramp-up speed entry). ESTIMATE: small and positive — only the spin-up after a reload inside her 10s window is shortened; the burst refill itself does not stop her firing. RECIPE: a focus recording of her post-burst reload inside the window — count rounds in the first second after the reload vs outside the window. TIER: engine gap. [⚑2] Sharpened Resolve first-volley phase: the engine interval convention fires the first volley at t=4s, not at battle start (t=0). ESTIMATE: at most one extra 7×125.51% volley over 180s if the game fires at t=0. RECIPE: read the first spear popups after the 03:00 timer frame. TIER: engine convention. [⚑3] 'Core strike damage' is encoded core:true, which resolves at the engine's MG core rate × core exposure (the same path as every core-labelled rider), not a guaranteed 100% core hit. ESTIMATE: if every strike is a guaranteed core, the strikes run cold by the factor 1/coreRate. RECIPE: popup colour of the 14.06% strikes in a Penetrant Wish window (red CORE HIT on every strike = guaranteed). TIER: text-literal, rate unmeasured. [⚑4] 'Activates after performing 2 normal attacks' counts cumulative rounds (the hitCount counter is not reset when Penetrant Wish opens), so a window's first strike may come after its 1st round instead of its 2nd — ±1 strike per window.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Machine Gun Ramp-Up Speed ▲ 100% for 10 sec. — no MG wind-up-speed modifier exists in the engine (the measured wind-up ladder is fixed); see ⚑1 in the note and docs/engine-modeling-gaps.md."
+    ]
+  },
+  "caveats": [
+    "burst: MG Ramp-Up Speed ▲ 100% is unmodeled (⚑1) — her post-reload spin-up inside the 10s burst window runs at the normal ladder.",
+    "skill1: the first spear volley fires at t=4s by the engine interval convention (⚑2).",
+    "skill2: the 14.06% core strikes use the engine's MG core rate, not a guaranteed core hit (⚑3)."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "interval", "sec": 4 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 125.51, "flavor": "sequential" },
+        { "kind": "buff", "stat": "damageTakenPct", "value": 5.05 },
+        { "kind": "targetStatus", "name": "Open Wounds", "durationSec": 999 },
+        { "kind": "flatDamage", "atkPct": 125.51, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 125.51, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 125.51, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 125.51, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 125.51, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 125.51, "flavor": "sequential" }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "buff", "stat": "damageTakenPct", "value": 5.05 },
+        { "kind": "targetStatus", "name": "Open Wounds", "durationSec": 999 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "selfStatus", "name": "Penetrant Wish", "durationSec": 10 },
+        {
+          "kind": "buff",
+          "stat": "skillCooldownReductionSec",
+          "value": 2,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 2 },
+      "requiresSelfStatus": "Penetrant Wish",
+      "requiresTargetStatus": "Open Wounds",
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 14.06, "core": true }]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "ownBurstGate": "notCast",
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sequentialDamagePct",
+          "value": 85.17,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "requiresSelfStatus": "Penetrant Wish",
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 24.64,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "instantReload" },
+        { "kind": "buff", "stat": "atkPct", "value": 78.4, "durationSec": 10 },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 78.14,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 1346.4, "burstDesc": "allEnemies" }
+      ]
+    }
+  ]
+}

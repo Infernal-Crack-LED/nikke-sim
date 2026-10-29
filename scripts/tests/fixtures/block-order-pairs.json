@@ -193,6 +193,24 @@
         "order": "consumer-first"
       }
     ],
+    "marian-queen": [
+      {
+        "slot": "skill2",
+        "family": "selfStatus",
+        "name": "Penetrant Wish",
+        "producer": 0,
+        "consumer": 1,
+        "order": "producer-first"
+      },
+      {
+        "slot": "skill2",
+        "family": "selfStatus",
+        "name": "Penetrant Wish",
+        "producer": 0,
+        "consumer": 3,
+        "order": "producer-first"
+      }
+    ],
     "mica-snow-buddy": [
       {
         "slot": "skill1",
