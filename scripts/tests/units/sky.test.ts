@@ -18,14 +18,17 @@
 //
 // The sim releases at full charge and never HOLDS it, so the two "Full Charge maintained for 1 or
 // more seconds" lines cannot fire in-engine (the rapunzel-pure-grace / sin-swift-bunny precedent).
-// K2 is a user-selected mode: 'Release' (default — the line never fires) vs 'Hold' (a player who
-// holds at least once per 40s: Pierce + Pierce Damage ▲ 60% always up). K1 (debuff immunity) is
+// K2 is a user-selected mode: 'Hold' (default — every full charge counts as a qualifying hold:
+// fullCharge → self gainPierce 40s + Pierce Damage ▲ 60% 40s, refreshed per full charge) vs
+// 'Release' (the literal never-hold reading — the line never fires). K1 (debuff immunity) is
 // defensive and hold-gated → recorded `unmodeled` verbatim.
 //
 // Why each assertion discriminates:
-//   K2   Release: her shots carry no Damage-Up from Pierce Damage (not Pierce-tagged, no 60% buff).
-//        Hold: every shot of hers is Pierce-tagged and carries the 60% (dmgUp ≥ 1.6), self only.
-//        Counterfactuals: the mode gate dropped (60% live in Release), allies scope (5 holders).
+//   K2   Hold: the 60% lands on her full-charge frames, self only, 40s, and from then on every shot
+//        of hers is Pierce-tagged and carries it (+≥0.6 Damage Up vs Release at the same frame).
+//        Release: no grant, her shots are not Pierce-tagged (High Tension never reaches them).
+//        Counterfactuals: the mode gate dropped (live in Release), allies scope (4 holders),
+//        a whole-fight pierce flag instead of the timed gainPierce window (structure pin).
 //   K3   Keys to FULL BURST ENTRY — every FB, including the many where she did not cast (fixture B,
 //        dorothy covers stage 1) — all 5 allies, 20% of HER static ATK as flat ATK, 10s.
 //        Counterfactual: burstCast keying (only her casts).
@@ -35,7 +38,9 @@
 //        NOT followed by an in-window re-cast. Counterfactual: burstCast + delaySec 35 (fires after
 //        EVERY cast, 4×). All 5 allies, −10% of her ATK, 20s; counterfactual self scope (1 holder).
 //   K5   She fires NOTHING for 20s from each lapse, fires before and after; allies keep firing.
-//        Counterfactual: stun dropped (she fires inside the window).
+//        The stun is gated on her Low Tension status (opened by the K4 block, 20s).
+//        Counterfactuals: stun dropped (she fires inside the window); Low Tension status producer
+//        dropped (the gate never opens → no stun).
 //   K6   Each cast: 5 holders, Pierce Damage 15, 35s; a re-cast inside 35s STACKS (2) and refreshes,
 //        a cast after a lapse restarts at 1. Feeds a Pierce-tagged ally (alice): removing it lowers
 //        alice's total. Counterfactual maxStacks 1 (never 2).
@@ -138,7 +143,7 @@ const hasKind = (kind: string) => (b: any) =>
 
 const a = run(A);
 const b = run(B);
-const aHold = run(A, undefined, 'Hold');
+const aRel = run(A, undefined, 'Release');
 
 describe(`${SLUG} — fixture`, () => {
   it('A: she is the sole Burst I and casts every ~40s', () => {
@@ -165,41 +170,65 @@ describe('K1 — Defiant Spirit (hold-gated debuff immunity) is recorded unmodel
   });
 });
 
-describe('K2 — hold Full Charge 1s → self Pierce + Pierce Damage ▲ 60% (mode Hold)', () => {
-  it('Release (default): no 60% grant, and her shots are not Pierce-tagged (High Tension skips them)', () => {
-    expect(bySlot(a, 'skill1', 'pierceDamagePct')).toEqual([]);
-    expect(a.normals.length).toBeGreaterThan(0);
+describe('K2 — hold Full Charge 1s → self Pierce + Pierce Damage ▲ 60%, 40s (mode Hold, default)', () => {
+  const g = bySlot(a, 'skill1', 'pierceDamagePct');
+  const charged = a.events
+    .filter((e): e is Shot => e.kind === 'shot' && e.slug === SLUG && e.charged)
+    .map((e) => e.frame);
+
+  it('the block: fullCharge-keyed, self, mode Hold, gainPierce 40s + pierceDamagePct 60 40s', () => {
+    const ov = withPatchedOverride(SLUG, () => {});
+    expect(ov.modes).toEqual(['Hold', 'Release']);
+    expect((ov as any).hasPierce).toBeUndefined();
+    const b = find(ov, 'skill1', hasStat('pierceDamagePct', 60));
+    expect(b.trigger.kind).toBe('fullCharge');
+    expect(b.target.kind).toBe('self');
+    expect(b.mode).toBe('Hold');
+    const gp = b.effects.find((e: any) => e.kind === 'gainPierce');
+    expect(gp.durationSec).toBe(40);
+  });
+
+  it('Hold: the 60% lands on her full-charge frames, on her alone, 40s', () => {
+    expect(g.length).toBeGreaterThan(0);
+    // every full charge is a qualifying hold → one (re)application per full-charge pull
+    expect(frames(g)).toEqual([...new Set(charged)]);
+    for (const x of g) {
+      expect(x.targetIdx).toBe(a.idx);
+      expect(x.value).toBe(60);
+      expect(x.expiresFrame! - x.frame).toBe(40 * FPS);
+    }
+  });
+
+  it('Hold vs Release: same shot frames; after her first full charge every shot gains ≥ 0.6 Damage Up', () => {
+    expect(bySlot(aRel, 'skill1', 'pierceDamagePct')).toEqual([]);
+    expect(a.normals.map((d) => d.frame)).toEqual(
+      aRel.normals.map((d) => d.frame)
+    );
+    const diffs = a.normals
+      .map((d, i) => [d.frame, d.mult.dmgUp - aRel.normals[i].mult.dmgUp])
+      .filter(([f]) => f > charged[0]);
+    expect(diffs.length).toBeGreaterThan(20);
+    for (const [, x] of diffs) {
+      expect(x).toBeGreaterThanOrEqual(0.6 - 1e-9);
+    }
+    // the 15/stack High Tension reaches her too while it is up, now that she pierces
+    expect(diffs.some(([, x]) => x > 0.6 + 1e-9)).toBe(true);
+    expect(a.totals[SLUG]).toBeGreaterThan(aRel.totals[SLUG]);
+  });
+
+  it('Release: her shots are not Pierce-tagged (removing High Tension leaves them unchanged)', () => {
     const noHt = run(
       A,
       patch((ov) => {
         ov.burst = ov.burst.filter(
           (blk: any) => !hasStat('pierceDamagePct')(blk)
         );
-      })
+      }),
+      'Release'
     );
     expect(noHt.normals.map((d) => [d.frame, d.mult.dmgUp])).toEqual(
-      a.normals.map((d) => [d.frame, d.mult.dmgUp])
+      aRel.normals.map((d) => [d.frame, d.mult.dmgUp])
     );
-  });
-
-  it('Hold: the 60% is on her alone, permanent, and every shot of hers takes it (Pierce-tagged)', () => {
-    const g = bySlot(aHold, 'skill1', 'pierceDamagePct');
-    expect(g.map((x) => x.targetIdx)).toEqual([aHold.idx]);
-    expect(g[0].value).toBe(60);
-    expect(g[0].expiresFrame).toBeNull();
-    // same shot frames in both modes (the hold itself is not charged); Hold adds ≥ 0.6 Damage Up
-    // per shot — the 60%, plus 0.15 per High Tension stack while it is up, now that she pierces
-    expect(aHold.normals.map((d) => d.frame)).toEqual(
-      a.normals.map((d) => d.frame)
-    );
-    const diffs = aHold.normals.map(
-      (d, i) => d.mult.dmgUp - a.normals[i].mult.dmgUp
-    );
-    for (const x of diffs) {
-      expect(x).toBeGreaterThanOrEqual(0.6 - 1e-9);
-    }
-    expect(diffs.some((x) => x > 0.6 + 1e-9)).toBe(true);
-    expect(aHold.totals[SLUG]).toBeGreaterThan(a.totals[SLUG]);
   });
 
   it('DISCRIMINATING: dropping the mode gate makes it live in Release', () => {
@@ -207,9 +236,10 @@ describe('K2 — hold Full Charge 1s → self Pierce + Pierce Damage ▲ 60% (mo
       A,
       patch((ov) => {
         delete find(ov, 'skill1', hasStat('pierceDamagePct', 60)).mode;
-      })
+      }),
+      'Release'
     );
-    expect(bySlot(cf, 'skill1', 'pierceDamagePct').length).toBe(1);
+    expect(bySlot(cf, 'skill1', 'pierceDamagePct').length).toBeGreaterThan(0);
   });
 
   it('DISCRIMINATING: allies scope would hand the 60% to all four', () => {
@@ -219,10 +249,21 @@ describe('K2 — hold Full Charge 1s → self Pierce + Pierce Damage ▲ 60% (mo
         find(ov, 'skill1', hasStat('pierceDamagePct', 60)).target = {
           kind: 'allies',
         };
-      }),
-      'Hold'
+      })
     );
-    expect(bySlot(cf, 'skill1', 'pierceDamagePct').length).toBe(4);
+    const cg = bySlot(cf, 'skill1', 'pierceDamagePct');
+    expect(holdersAt(cg, frames(cg)[0])).toEqual([0, 1, 2, 3]);
+  });
+
+  it('DISCRIMINATING: without the gainPierce tag the 60% never reaches her shots', () => {
+    const cf = run(
+      A,
+      patch((ov) => {
+        const b = find(ov, 'skill1', hasStat('pierceDamagePct', 60));
+        b.effects = b.effects.filter((e: any) => e.kind !== 'gainPierce');
+      })
+    );
+    expect(cf.totals[SLUG]).toBeLessThan(a.totals[SLUG]);
   });
 });
 
@@ -332,6 +373,20 @@ describe('K5 — Low Energy: she is stunned for 20s on entering Low Tension', ()
 
   it('allies are not stunned (alice fires inside her stun window)', () => {
     expect(a.shots('alice').some((f) => inStun(a, f))).toBe(true);
+  });
+
+  it('DISCRIMINATING: without the Low Tension status the gate never opens — no stun', () => {
+    const cf = run(
+      A,
+      patch((ov) => {
+        for (const blk of ov.skill2) {
+          blk.effects = blk.effects.filter(
+            (e: any) => !(e.kind === 'selfStatus' && e.name === 'Low Tension')
+          );
+        }
+      })
+    );
+    expect(cf.shots(SLUG).some((f) => inStun(a, f))).toBe(true);
   });
 
   it('DISCRIMINATING: without the stun she fires inside the window', () => {

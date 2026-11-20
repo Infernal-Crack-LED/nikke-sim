@@ -1,0 +1,142 @@
+{
+  "note": "Sky (slug sky) — SR/Supporter/Iron/Elysion, Burst I cd 40s, ammo 6, charge 1s, full charge 250%. Kit-autonomy gauntlet 2026-11-20. HOLD-FULL-CHARGE is a user-selectable kit mode: modes ['Hold','Release'], Hold first. The Skill 1 self line activates when Full Charge is MAINTAINED for 1 or more seconds; the sim releases at full charge and never holds, so the mode carries the play-style choice. Hold (default) = a player who holds on her full charges: every full charge counts as a qualifying hold → self Gains Pierce for 40 sec (gainPierce durationSec 40) + Pierce Damage ▲ 60% for 40 sec, refreshed per full charge, so both are up from her first shot (the rapunzel-pure-grace precedent: a hold-gated line runs at real-play uptime). Release = the literal never-hold reading: the line never fires, her shots are not Pierce-tagged. SKILL2: fullBurstEnter → all allies ATK ▲ 20% of the skill user's ATK (casterAtkPct 20) for 10 sec, on every Full Burst whether or not she cast. 'When High Tension is removed' = trigger selfStatusEnd 'High Tension' — the lapse of her own High Tension window, which her burst opens for 35 sec and a re-cast inside the window extends — → all allies Low Tension: ATK ▼ 10% of the skill user's ATK (casterAtkPct -10) for 20 sec, plus the Low Tension status window (selfStatus, 20 sec); Low Energy ('only when in the Low Tension state', self) = the same trigger gated requiresSelfStatus 'Low Tension' → self stun for 20 sec. BURST: all allies High Tension: Pierce Damage ▲ 15% for 35 sec, stacking to 3 (each cast adds a stack and refreshes the duration; a cast after a lapse restarts at 1); self High Tension status window 35 sec (the window the Low Tension trigger reads); self ATK ▲ 50% for 35 sec. Every magnitude is kit-text literal at skill level 10 (DATAMINED).",
+  "modes": ["Hold", "Release"],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Defiant Spirit state. Affects all allies. Defiant Spirit: Grants debuff immunity to 1 debuff(s) for 5 sec. Activates 3 time(s) per battle."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "skill1 HOLD MODE (⚑ user-selected): the in-game trigger needs Full Charge held for 1 or more seconds, which the sim never does. Hold (default) credits every full charge as a hold, so Pierce and Pierce Damage ▲ 60% are up from her first full charge; Release = neither fires. The cost of holding (up to about 1 second of delayed fire per hold) is not charged. ⚑ estimate: Hold is the manual-play upper bound on Pierce uptime, Release the auto-play floor; recipe: a sky focus recording — check whether the Pierce buff icon is up and how her shot cadence compares with 1 shot per charge cycle; tier: MEASUREMENT-GATED.",
+    "skill1 DEFIANT SPIRIT (unmodeled): debuff immunity is a defensive effect with no incoming-damage counterpart in the sim, but it can also absorb her own Low Tension debuff on the allies it covers if a hold lands within 5 seconds before High Tension lapses (3 times per battle). Low Tension and the Low Energy stun always apply here. ⚑ estimate: in Hold mode a timed hold could cancel up to 3 of the Low Tension windows (and, if it covers her, the stun); recipe: a manual-play recording timing a hold just before High Tension lapses — does the Low Tension icon appear; tier: MEASUREMENT-GATED.",
+    "skill2 LOW ENERGY stun: the engine's stun stops firing, charging and reloading but not burst casting, so she can still cast her burst while stunned (the mast-romantic-maid convention), and a re-cast during Low Tension does not end Low Tension or the stun early (the kit states no early exit). ⚑ estimate: if a stunned unit cannot cast in-game, a cast that comes up during the 20-second stun waits until it ends; if re-entering High Tension clears Low Tension, the stun shortens to about 5 seconds per cycle; recipe: a recording where her cooldown returns during Low Energy — does she cast, and when does she resume firing; tier: MEASUREMENT-GATED.",
+    "burst HIGH TENSION lapse: 'removed' is read as the end of her own High Tension window (35 sec after her latest cast). Nothing in the sim cleanses a buff early, so the timed lapse is the only removal. With a 40-second cooldown the window lapses between casts unless burst cooldown reduction brings her next cast inside 35 seconds."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "mode": "Hold",
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 40
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 60,
+          "durationSec": 40
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 20,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "selfStatusEnd",
+        "name": "High Tension"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": -10,
+          "durationSec": 20
+        },
+        {
+          "kind": "selfStatus",
+          "name": "Low Tension",
+          "durationSec": 20
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "selfStatusEnd",
+        "name": "High Tension"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "requiresSelfStatus": "Low Tension",
+      "effects": [
+        {
+          "kind": "stun",
+          "durationSec": 20
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 15,
+          "durationSec": 35,
+          "maxStacks": 3
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "selfStatus",
+          "name": "High Tension",
+          "durationSec": 35
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 50,
+          "durationSec": 35
+        }
+      ]
+    }
+  ]
+}

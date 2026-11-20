@@ -1,0 +1,137 @@
+{
+  "slug": "sky",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Defiant Spirit: debuff immunity 1, 5s",
+      "disposition": "UNMODELED",
+      "scope": "Ally-protective utility: immunity to 1 debuff per application, 5s window, 3 activations per battle, gated 'while not in Defiant Spirit' (self-cooldown re-arm).",
+      "durationSemantics": "5 sec wall-clock per activation; hard cap 3 activations per battle (a battle-scoped charge count, not a duration).",
+      "triggerIdentity": "fullCharge maintained >=1 sec, gated on NOT currently in Defiant Spirit (noRetriggerWhileActive shape). NOT shotFired; the 1s-hold clause is a charge-hold condition.",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "Skipping it with no audit trail — or, subtler, modeling Sky's own skill2 Low Tension ATK ▼ while ignoring that this immunity exists in-kit precisely to eat that debuff (tandem rule #4).",
+      "distinguishingAssertion": "No block in the override emits any effect for this line; the override's unmodeled.skill1 carries it verbatim. No buffApply with an immunity-like stat exists (schema has no immunity primitive).",
+      "inertness": "Must move NOTHING: no damage, no buffApply, no resource. Pure unmodeled record.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Gains Pierce for 40 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Self attacks become Pierce-tagged for the window — this is what makes BOTH pierce-damage buffs (own 60%, burst 15%) live on her hits.",
+      "durationSemantics": "40 sec wall-clock (durationSec:40 on a gainPierce effect), refreshed per qualifying full charge — near-permanent uptime given SR cadence (chargeFrames 60), but NOT whole-fight by construction.",
+      "triggerIdentity": "fullCharge (proxy for 'Full Charge maintained 1+ sec'). ⚑ the 1s-hold residue is a convention the sim's release-at-full-charge model cannot literally express; recipe: footage of auto-play charge-hold cadence vs first proc time.",
+      "targetSet": "self",
+      "nearestWrongModel": "Top-level hasPierce:true (static whole-fight flag) instead of a gainPierce effect on the fullCharge block — the exact boolean-vs-step-gate trap the schema calls out.",
+      "distinguishingAssertion": "gainPierce effect with durationSec 40 sits on a skill1 fullCharge-triggered block and override.hasPierce is falsy; damage events before the first full-charge pull resolves carry no pierce tag (pierceDamagePct contributes 0 to them), green under faithful, red under static hasPierce.",
+      "inertness": "Allies' pierce state must not change — the grant is self-only.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Pierce Damage ▲ 60% for 40 sec",
+      "disposition": "FAITHFUL",
+      "scope": "pierceDamagePct — Damage-Up bucket entry read ONLY by Pierce-tagged hits; live on Sky's hits only inside the paired gainPierce window.",
+      "durationSemantics": "40 sec wall-clock, refreshed per qualifying full charge; co-terminal with the pierce grant.",
+      "triggerIdentity": "Same fullCharge block as the pierce grant (one ■ header, two effect lines).",
+      "targetSet": "self",
+      "nearestWrongModel": "Generic attackDamagePct 60 (unscoped Damage Up), or target allies — either over-credits: the buff must be dead weight on any non-pierce hit and on every teammate.",
+      "distinguishingAssertion": "buffApply {stat:'pierceDamagePct', value:60, caster==target==Sky} after the first full charge; totals(res) for every OTHER slug is byte-identical when this effect is stripped via withPatchedOverride (allies unaffected), while Sky's own total drops.",
+      "inertness": "Ally damage totals; Sky's damage during any frame where she is not pierce-tagged.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 20% of the skill user's ATK, 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Caster-scaled flat ATK add to the whole team — the classic supporter line; generic (not attack-type-scoped).",
+      "durationSemantics": "10 sec wall-clock per Full Burst entry.",
+      "triggerIdentity": "fullBurstEnter — 'when entering Full Burst' fires on ANY team FB, not only rotations Sky bursts (burstCast would under-fire whenever another B1 completes the chain, and Sky's own 40s burst cd makes that divergence real).",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "stat atkPct 20 (each target's OWN ATK) instead of casterAtkPct — over-credits a high-ATK carry since the kit scales off Sky's supporter ATK; second-nearest: trigger burstCast, halving uptime.",
+      "distinguishingAssertion": "At every fullBurstStart event a buffApply {stat:'casterAtkPct'} lands on each ally with value == 0.20 × Sky.staticAtk — the SAME flat number on every target (flat-resolved at apply). Under the atkPct misread the emitted stat/key differ and the carry's gain scales with its own ATK.",
+      "inertness": "No application outside FB entries; value must not track targets' ATK.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Low Tension: ATK ▼ 10% of user's ATK 20s",
+      "disposition": "FIX",
+      "scope": "A team-wide MALUS (negative caster-scaled flat ATK) — damage-relevant in the wrong direction; also opens the named 'Low Tension' self-state the stun line gates on.",
+      "durationSemantics": "20 sec wall-clock. Fires each time High Tension lapses: burst cd 40s vs High Tension 35s guarantees a lapse every cycle (steady-state: team ATK ▼ for ~20 of every ~40s).",
+      "triggerIdentity": "selfStatusEnd {name:'High Tension'} — fires on the frame Sky's own burst-opened High Tension window lapses. NOT fullBurstEnd (FB ends ~10s after entry; High Tension ends 35s after her CAST — different frames), and NOT an interval.",
+      "durationNote": "requires the burst to also author selfStatus 'High Tension' 35s on Sky, else this trigger can never fire",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "Omitting the line as 'defensive/edge-case flavor' (a debuff on your own team is easy to wave off), or keying it to fullBurstEnd — both erase/mistime a recurring ~10%-of-caster-ATK team-wide dip.",
+      "distinguishingAssertion": "At t ≈ (Sky's burstCast frame + 35s) — NOT at any fullBurstEnd frame — a buffApply with stat 'casterAtkPct' and NEGATIVE value == -0.10 × Sky.staticAtk lands on all allies; team totals over the following 20s are lower than with the effect stripped.",
+      "inertness": "Must not fire while High Tension is live (recast before lapse = window moved, no proc); must not scale off targets' own ATK.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Low Energy: Stuns for 20 sec",
+      "disposition": "FIX",
+      "scope": "SELF stun — no fire/charge/reload for 20s (bursting unaffected per engine). Zeroes Sky's own normal/charge output, her S1 re-triggering, and her gauge contribution for the window. Offensive-relevant despite 'stun' wording.",
+      "durationSemantics": "20 sec wall-clock, coextensive with the Low Tension state. ⛑ Whether re-entering High Tension (her next burst at lapse+5s) cancels Low Tension and ends the stun early (effective ~5s, not 20s) is kit-silent — a ×4 swing on her downtime. Literal reading: full 20s. Recipe: footage of her fire resumption after the burst recast.",
+      "triggerIdentity": "'Activates only when in the Low Tension state' = fires on Low Tension ENTRY — same frame as the selfStatusEnd('High Tension') block, authored either on that trigger or gated requiresSelfStatus:'Low Tension'.",
+      "targetSet": "self",
+      "nearestWrongModel": "Dropping the stun entirely as defensive flavor — over-credits Sky's personal output by up to ~50% uptime (20s stunned of every ~40s cycle under the literal reading).",
+      "distinguishingAssertion": "Zero 'shot' events (and zero reload events) with srcSlot==Sky in [lapseFrame, lapseFrame+20s] via cfg.onEvent, while her burstCast at lapse+~5s still occurs; shots resume after the stun. Red under the dropped-stun model (shots continue through the window).",
+      "inertness": "Allies' shot cadence; Sky's bursting.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "High Tension: Pierce Damage ▲ 15%, 35s ×3",
+      "disposition": "FAITHFUL",
+      "scope": "Team pierceDamagePct — only moves Pierce-tagged hits (Sky's own inside her S1 window; a pierce carry's always). Additive with Sky's own 60% in the same bucket.",
+      "durationSemantics": "35 sec wall-clock, maxStacks 3 — but burst cd 40s > 35s duration means stacks can NEVER accumulate in practice: author maxStacks:3 with value 15, steady-state 1 stack. Also opens the 'High Tension' named self-status (selfStatus, 35s, on Sky) that skill2's removal trigger reads.",
+      "triggerIdentity": "burstCast (her OWN burst block — fires only on rotations Sky casts), NOT fullBurstEnter. With another B1 in the comp they diverge; keying to fullBurstEnter over-credits.",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "value 45 pre-stacked (15×3 'stack-cap product' fudge) — triple-credits a cap the 40s cooldown makes unreachable; second-nearest: fullBurstEnter trigger; third: forgetting the paired selfStatus, which silently kills the entire Low Tension loop (skill2 blocks never fire — a conveniently flattering omission).",
+      "distinguishingAssertion": "buffApply {stat:'pierceDamagePct', value:15, maxStacks:3, stacks:1} on each ally at Sky's burstCast frames only; stacks never exceed 1 across the whole run; AND a later selfStatusEnd-driven skill2 proc exists (proving the selfStatus was authored).",
+      "inertness": "Non-pierce allies' totals must not move when this buff is stripped; no application on FBs Sky did not cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 50% for 35 sec (self)",
+      "disposition": "FAITHFUL",
+      "scope": "Plain self ATK percentage — scales her OWN ATK (stat atkPct), feeding her normals, charge damage, and any caster-ATK-scaled grants she emits (her skill2 casterAtkPct resolves off staticAtk at apply, so verify which basis the engine uses — buffApply values snapshot staticAtk per the harness note, so this does NOT inflate her team grant).",
+      "durationSemantics": "35 sec wall-clock — near-full uptime vs the 40s cooldown (5s gap each cycle, coinciding with the Low Tension window).",
+      "triggerIdentity": "burstCast (own burst block, self clause).",
+      "targetSet": "self",
+      "nearestWrongModel": "Target allies (bleeding a 50% ATK buff onto the carry — large over-credit), or casterAtkPct 50 (flat basis instead of percentage).",
+      "distinguishingAssertion": "buffApply {stat:'atkPct', value:50, casterIdx==targetIdx==Sky} at her burstCast frames; stripping it via withPatchedOverride changes totals(res)['sky'] only — every other slug's total is unchanged.",
+      "inertness": "All four teammates' totals.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:gainPierce-40s",
+    "skill1:pierceDamagePct-60",
+    "skill2:casterAtkPct-20-fullBurstEnter",
+    "skill2:lowTension-casterAtkPct--10",
+    "skill2:lowEnergy-stun-20s",
+    "burst:highTension-pierceDamagePct-15",
+    "burst:selfAtkPct-50"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Defiant Spirit: Grants debuff immunity to 1 debuff(s) for 5 sec. Activates 3 time(s) per battle."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in order of likelihood: (1) The tension loop silently missing — if the burst does not author selfStatus 'High Tension' (35s on self), skill2's selfStatusEnd trigger is structurally dead and BOTH the team ATK▼ and the 20s self-stun vanish, flattering Sky by a large margin; a passing suite that never asserts a post-lapse event would not catch it. Demand an assertion anchored at burstCast+35s. (2) Stun dropped as 'defensive'. (3) ATK lines mis-based: both skill2 lines are '% of the skill user's ATK' (casterAtkPct, flat-resolved, one negative) while the burst self line is plain atkPct — three different encodings, easy to homogenize. (4) burstCast vs fullBurstEnter: the burst blocks are her own cast; the skill2 team buff is 'entering Full Burst' — they are DIFFERENT triggers in the same kit, so a uniform choice is wrong on one side. Fixture hazard: Sky is Burst I with cd 40s — controlComp fixes liter at B1, so a faithful test needs a comp where Sky actually casts (replace liter or assert the alternation), else burstCast blocks fire zero times and the whole tension loop is untested. Measurement gates (⛑): (a) whether burst recast at lapse+5s cancels Low Tension/stun early (literal 20s vs effective 5s — biggest open swing on her own output); (b) the 'Full Charge maintained 1+ sec' hold convention for the S1 trigger (first-proc phase). Defiant Spirit immunity is unmodeled; HYPOTHESIS: its 3 charges (re-armed only by the 5s 'not in Defiant Spirit' gate) are exhausted in the opening ~20s, before the first High-Tension lapse at ~cast+35s, so NOT modeling the immunity should not reduce the Low Tension debuff's modeled uptime — the driver should state this reconciliation, not just skip the line.",
+  "model": "claude-fable-5"
+}
