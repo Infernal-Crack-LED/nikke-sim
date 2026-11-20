@@ -1310,6 +1310,8 @@ function triggerLabel(tr: any): string {
       return `stage ${tr.stage} cast`;
     case 'bossElement':
       return `boss is ${tr.element}`;
+    case 'selfStatusEnd':
+      return `${tr.name} ends`;
     default:
       return 'conditional';
   }

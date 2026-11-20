@@ -3482,6 +3482,30 @@ export function runSim(
     })
   );
 
+  // self-status END triggers ({kind:'selfStatusEnd', name}): fire the OWNER's block on the frame
+  // its OWN kit-named selfStatus window of that name lapses — "Activates when <Status> is removed"
+  // (sky's Low Tension on High Tension's lapse). A re-application before the lapse max-extends the
+  // window (the 'selfStatus' effect), so the lapse — and the trigger — moves with it. Only units
+  // whose override authors the trigger are scanned, so the loop is empty for everyone else.
+  const selfStatusEndBlocks: Array<{
+    unitIdx: number;
+    block: Block;
+    bi: number;
+    name: string;
+  }> = [];
+  units.forEach((u) =>
+    u.blocks.forEach((b, bi) => {
+      if (b.trigger.kind === 'selfStatusEnd') {
+        selfStatusEndBlocks.push({
+          unitIdx: u.idx,
+          block: b,
+          bi,
+          name: b.trigger.name,
+        });
+      }
+    })
+  );
+
   // passives on at frame 0 (boss-element conditionals count when the element matches)
   units.forEach((u) =>
     u.blocks.forEach((b, bi) => {
@@ -3621,6 +3645,16 @@ export function runSim(
         }
       }
       pendingBlocks = pendingBlocks.filter((p) => frame < p.resolveFrame);
+    }
+
+    // ---- self-status lapses (selfStatusEnd) ----
+    // The window is open while expiry > frame (the requiresSelfStatus gate), so it lapses AT its
+    // expiry frame; resolved at the top of the frame like the delayed blocks above, so whatever
+    // the trigger grants is live for all of this frame.
+    for (const sb of selfStatusEndBlocks) {
+      if (units[sb.unitIdx].selfStatuses.get(sb.name) === frame) {
+        applyBlock(sb.unitIdx, sb.block, sb.bi, frame);
+      }
     }
 
     const fbActive = fbEndFrame > frame;
