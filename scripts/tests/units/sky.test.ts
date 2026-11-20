@@ -325,6 +325,20 @@ describe('K4 — High Tension removed → all allies Low Tension: ATK ▼ 10% of
     }
   });
 
+  it('IS LOAD-BEARING: the negative grant really lowers ally damage (not clamped to zero)', () => {
+    const cf = run(
+      A,
+      patch((ov) => {
+        const blk = find(ov, 'skill2', hasStat('casterAtkPct', -10));
+        blk.effects = blk.effects.filter((e: any) => e.kind !== 'buff');
+      })
+    );
+    // same rotation (the status and the stun stay), only the ATK ▼ removed
+    expect(cf.casts).toEqual(a.casts);
+    expect(cf.totals.alice).toBeGreaterThan(a.totals.alice);
+    expect(cf.totals.helm).toBeGreaterThan(a.totals.helm);
+  });
+
   it('DISCRIMINATING: a burstCast + 35s delay stand-in fires after EVERY cast', () => {
     const cf = run(
       B,
