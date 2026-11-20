@@ -3650,7 +3650,10 @@ export function runSim(
     // ---- self-status lapses (selfStatusEnd) ----
     // The window is open while expiry > frame (the requiresSelfStatus gate), so it lapses AT its
     // expiry frame; resolved at the top of the frame like the delayed blocks above, so whatever
-    // the trigger grants is live for all of this frame.
+    // the trigger grants is live for all of this frame. Same-frame order: a re-application that
+    // runs BEFORE this point on the lapse frame (a delayed block landing above, a pre-FB
+    // fullBurstEnter block) extends the window and suppresses the fire; one that runs AFTER it
+    // (interval blocks, burst casts, shot triggers) fires the end block first, then re-opens.
     for (const sb of selfStatusEndBlocks) {
       if (units[sb.unitIdx].selfStatuses.get(sb.name) === frame) {
         applyBlock(sb.unitIdx, sb.block, sb.bi, frame);

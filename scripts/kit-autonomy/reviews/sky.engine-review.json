@@ -1,0 +1,59 @@
+{
+  "role": "code-review",
+  "verdict": "CLEAN",
+  "findings": [
+    {
+      "severity": "FOLLOW-UP",
+      "where": "docs/STATE.md:221",
+      "issue": "The kit-primitives registry lists `requiresSelfStatus` (and the `selfStatus` effect) but not the new `selfStatusEnd` trigger; docs/data/game-mechanics.md has no selfStatus entry at all. The engine now has a primitive STATE.md does not know about (STATE.md is authority slot 1 and 'if it disagrees with code, STATE.md is the bug').",
+      "suggestedFix": "Run /mechanics-doc-upkeep for this landing: add a `selfStatusEnd` row next to `requiresSelfStatus` in STATE.md's primitives table (carrier: sky once it lands), and give the selfStatus/selfStatusEnd pair a line in game-mechanics.md."
+    },
+    {
+      "severity": "FOLLOW-UP",
+      "where": "src/skills/overrides/asuka-wille.json:18",
+      "issue": "Both open handoffs (docs/handoffs/2026-09-04-top-dps-and-kit-gaps-remaining-work.md:132, 2026-08-24-kit-audit-primitive-followups.md:58) name `selfStatusEnd` as the replacement for asuka-wille's Emergency-Repair `fullBurstEnd + ownBurstGate:'cast'` proxy, and her override note still says 'the schema has no delayed/state-end trigger keyed to her burst' — now false. Correctly NOT touched by this diff (it would move a graded unit's numbers and is its own enactment), but it is now an actionable item.",
+      "suggestedFix": "File in docs/handoffs/QUEUE.md: re-model asuka-wille skill2 on `selfStatusEnd 'Annihilation State'` as a separate change with its own board A/B + /code-review; update her note's 'no state-end trigger' wording when that lands (override prose = current model only)."
+    },
+    {
+      "severity": "FOLLOW-UP",
+      "where": "data/characters.json",
+      "issue": "Branch precondition, not this diff: `red-hood` is absent from data/characters.json in this worktree (grep count 0), so scripts/regression.ts is red at HEAD as the commit message says. Inertness of THIS diff does not depend on it (see unexercisedScope), but constraint 5 requires verify.sh green before the branch leaves the machine.",
+      "suggestedFix": "Resolve the sync drop (restore red-hood or re-sync) in its own commit on this branch before opening the PR; do not regenerate the snapshot to absorb it."
+    },
+    {
+      "severity": "NOTE",
+      "where": "src/engine/sim.ts:3655",
+      "issue": "Degenerate edge: the validator only requires `durationSec > 0`, but a selfStatus with durationSec < 1/120 s rounds to 0 frames (expiry === open frame). For a frame-0 producer (passive/battleStart, applied in setup BEFORE the loop) the dispatch at frame 0 sees `expiry === 0` and fires the end block for a window that was never open; for a mid-fight producer the same 0-frame status can never fire (the frame's dispatch already ran). Unreachable with any realistic kit value; recording it so nobody 'fixes' one half later.",
+      "suggestedFix": "Optional: tighten the selfStatus validator to `Math.round(durationSec * 60) >= 1` (validate-structural.ts:801) so a status always spans at least one frame; otherwise leave as is."
+    },
+    {
+      "severity": "NOTE",
+      "where": "src/engine/sim.ts:3650",
+      "issue": "Same-frame ordering is a convention worth one more comment line: producers that run BEFORE this dispatch at the lapse frame (PREFB FB-start `fullBurstEnter` blocks at 3610, delayed `pendingBlocks` landing at 3631) EXTEND the window and suppress the fire; producers that run AFTER it (interval blocks, burstCast, shot triggers) fire the end block first and then re-open. Both readings are defensible ('removed then re-applied' vs 'refreshed'), but the asymmetry is implicit.",
+      "suggestedFix": "Add a sentence to the dispatch comment naming which producers precede it in the frame, so a future carrier whose re-application lands via delaySec/fullBurstEnter is not surprised by the missing end-fire."
+    },
+    {
+      "severity": "NOTE",
+      "where": "src/skills/validate-structural.ts:424",
+      "issue": "The same-slot block-order census (`blockOrderPairs` / `blockOrderWarnings`, lines 376–430 and 486–540) registers `requiresSelfStatus` as a selfStatus-family consumer but not `selfStatusEnd`. This is CORRECT — the dispatch is top-of-frame and independent of slot array order, so no ordering warning applies — but a reader comparing the two consumer scans may think the new kind was simply missed.",
+      "suggestedFix": "One-line comment at the requiresSelfStatus consumer push: 'selfStatusEnd is deliberately not a consumer here — it is dispatched at the top of the frame, so in-slot order cannot affect it'."
+    },
+    {
+      "severity": "NOTE",
+      "where": "scripts/tests/engine/self-status-end.test.ts:76",
+      "issue": "Coverage gap, not a defect: no pin for a re-application AFTER the lapse producing a SECOND fire (the two-lapse case sky actually exercises when burst-CDR lets her re-cast after High Tension has dropped), and none for a producer landing via `burstCast` rather than `battleStart`.",
+      "suggestedFix": "Add one case: open('Probe',10) + open('Probe',10,{delaySec:12}) → frames [600, 1320]."
+    }
+  ],
+  "unexercisedScope": "Inertness for every shipped unit is established by construction, independently of the driver's A/B: `grep -l selfStatusEnd src/skills/overrides/*.json` returns 0 files, so `selfStatusEndBlocks` is empty in every existing run and the new loop body never executes; the other three edits (TRIGGERS set, TriggerDef union, web triggerLabel case) are additive and only reached by a block of the new kind. Typecheck is clean, so no exhaustive switch over TriggerDef exists elsewhere that the union extension breaks; the only other trigger-kind enumerations found (`src/ranks/sustain-table.ts` union, `scripts/battery/fb-count-matrix.ts` APP_NONGEN_TRIGGERS, `scripts/lib/kit-parser.ts`) are hand-authored lists that do not need the new kind (kit-parser deliberately untouched per intent). What the verification does NOT exercise: (a) a real carrier — the first sky override will be the first run where the dispatch body executes with gates/everyN/delaySec on the end block and with a burstCast producer; (b) interaction with same-frame producers that precede the dispatch (delaySec landings, fullBurstEnter) — untested in either direction; (c) a Monte Carlo seeded run — no randomness touched, so no expected effect; (d) web rendering of the label — `tr: any`, string-only, trivially safe. The branch-level regression suite was NOT run here (red at HEAD for the red-hood data drop, confirmed absent in characters.json).",
+  "whatIRan": [
+    "npx vitest run scripts/tests/engine/self-status-end.test.ts (5/5 pass)",
+    "npm run -s typecheck (clean)",
+    "npx eslint on the five touched files (0 errors; 30 pre-existing `any` warnings in validate-structural.ts on unchanged lines; the new test file lints clean; no warnings on sim.ts lines 3480–3660)",
+    "grep -l selfStatusEnd src/skills/overrides/*.json | wc -l → 0",
+    "grep -c '\"red-hood\"' data/characters.json → 0",
+    "ls .husky/_ (hooks present in this worktree)",
+    "Read: sim.ts selfStatus effect (3146–3161), requiresSelfStatus gate (2557–2562), applyBlock/applyBlockEffects (2610–2689), frame-loop head (3607–3680); validate-structural.ts selfStatus rules + both censuses; src/ranks/sustain.ts switch; trigger-kinds.test.ts header; asuka-wille.json note"
+  ],
+  "model": "claude-fable-5-1"
+}

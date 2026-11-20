@@ -79,6 +79,15 @@ describe('selfStatusEnd trigger ("Activates when <Status> is removed")', () => {
     expect(m.map((e) => e.frame)).toEqual([16 * FPS]);
   });
 
+  it('a re-application AFTER the lapse opens a new window that fires again', () => {
+    // 10s window lapses at t=10s; a fresh 10s application at t=12s lapses at t=22s
+    const m = marks(
+      [open('Probe', 10), open('Probe', 10, { delaySec: 12 })],
+      [onEnd('Probe')]
+    );
+    expect(m.map((e) => e.frame)).toEqual([10 * FPS, 22 * FPS]);
+  });
+
   it('name-keyed: a different status name never fires it', () => {
     expect(marks([open('Other', 10)], [onEnd('Probe')])).toEqual([]);
   });
