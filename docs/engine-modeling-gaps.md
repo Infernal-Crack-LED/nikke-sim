@@ -69,8 +69,8 @@
 | `flatDamage` | 104 | 2b, a2, aigis, anchor, anis, anis-sparkling-summer, anis-star, arcana, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 6 | d, isabel, mihara, modernia, soda-twinkling-bunny, vesti |
-| `fullCharge` | 34 | a2, ade-agent-bunny, anis-star, belorta-pumpkin-witch, bready, cinderella, delta, diesel-winter-sweets, … |
-| `gainPierce` | 15 | ade-agent-bunny, asuka, d-killer-wife, dorothy, grave, harran, makima, mari, … |
+| `fullCharge` | 35 | a2, ade-agent-bunny, anis-star, belorta-pumpkin-witch, bready, cinderella, delta, diesel-winter-sweets, … |
+| `gainPierce` | 16 | ade-agent-bunny, asuka, d-killer-wife, dorothy, grave, harran, makima, mari, … |
 | `gaugeHits` | 4 | eve, liberalio, little-mermaid, snow-white-heavy-arms |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 7 | alice, laplace, laplace-ultimate-hero, maxwell, maxwell-ordinary-mechanic, red-hood, zwei |
@@ -90,8 +90,8 @@
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 12 | emilia, grave, himeno, mica, n102, neon, nihilister, noir, … |
 | `maxShots` | 6 | ada, e-h, guilty-mighty-bunny, laplace-ultimate-hero, maxwell, snow-white-heavy-arms |
-| `mode` | 9 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, guilty-mighty-bunny, mint, prika, … |
-| `modes` | 9 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, guilty-mighty-bunny, mint, prika, … |
+| `mode` | 10 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, guilty-mighty-bunny, mint, prika, … |
+| `modes` | 10 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, guilty-mighty-bunny, mint, prika, … |
 | `noB1` | 2 | anis-star, rapi-red-hood |
 | `noRetriggerWhileActive` | 1 | vesti-tactical-upgrade |
 | `nonBurstCasters` | 1 | crown |
@@ -109,12 +109,13 @@
 | `removeOnReload` | 1 | vesti-tactical-upgrade |
 | `requiresCore` | 3 | liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
-| `requiresSelfStatus` | 4 | asuka-wille, belorta-pumpkin-witch, rei-ayanami-tentative-name, rem |
+| `requiresSelfStatus` | 5 | asuka-wille, belorta-pumpkin-witch, rei-ayanami-tentative-name, rem, sky |
 | `requiresShielded` | 5 | asuka, kilo, mori, naga, rapunzel-pure-grace |
 | `requiresTargetStatus` | 11 | d-killer-wife, elegg, emma-tactical-upgrade, kurumi, marciana-marine-study, mast, phantom, privaty, … |
 | `resourceGate` | 25 | d, e-h, elegg-boom-and-shock, exia, guillotine, guillotine-winter-slayer, julia, laplace, … |
 | `sameWeapon` | 6 | ada, chisato, clay, frima, jill, snow-white-heavy-arms |
 | `selfAndAdjacent` | 2 | flora, rouge |
+| `selfStatusEnd` | 1 | sky |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 2 | flora, naga |
 | `shotFired` | 13 | clay, delta-ninja-thief, harran, helm-aquamarine, laplace, mari, neon-vision-eye, phantom, … |
@@ -123,7 +124,7 @@
 | `stageEnter` | 13 | cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, … |
 | `statImmunities` | 1 | liberalio |
 | `storedHit` | 1 | rapi-red-hood |
-| `stun` | 1 | mast-romantic-maid |
+| `stun` | 2 | mast-romantic-maid, sky |
 | `swapGate` | 10 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, sin-swift-bunny, snow-white-heavy-arms, takina, … |
 | `swapped` | 8 | eunhwa-tactical-upgrade, frima, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
 | `targetMaxHpPct` | 18 | 2b, belorta-pumpkin-witch, blanc, delta, diesel, folkwang, label, laplace-ultimate-hero, … |
