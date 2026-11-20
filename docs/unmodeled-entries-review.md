@@ -11,8 +11,8 @@
 
 | Reason | Entries | Share |
 | --- | --- | --- |
-| Defensive / HP / shield / aggro | 214 | 44.0% |
-| Missing engine primitive / trigger | 102 | 21.0% |
+| Defensive / HP / shield / aggro | 215 | 44.1% |
+| Missing engine primitive / trigger | 102 | 20.9% |
 | Other / see caveats | 93 | 19.1% |
 | Out-of-domain / parser unsupported | 39 | 8.0% |
 | Weapon-state / shot-count approximation | 13 | 2.7% |
@@ -20,11 +20,11 @@
 | RNG / probabilistic | 6 | 1.2% |
 | Self-status / stack gate | 5 | 1.0% |
 | Measurement-gated / unverified cadence | 4 | 0.8% |
-| **Total** | **486** | 100.0% |
+| **Total** | **487** | 100.0% |
 
 ## Entries by reason
 
-### Defensive / HP / shield / aggro (214)
+### Defensive / HP / shield / aggro (215)
 
 **A2** (a2)
 
@@ -683,6 +683,11 @@ Incoming healing ▲ 15.18% for 10 sec.
   - *Why:* skill2: the burst-usage escalation is a 'burstUses' resource pool (+1 per own burstCast, gates read the PRE-increment value); the step-2 payload (Incoming healing ▲51%) is unmodeled for the missing StatKey, but the gate still advances — steps 1 and 3 fire on exactly the right casts
 - **skill2:** Once: Recover 15.3% of attack damage as HP for 5 sec. — magnitude only: the HP amount has no engine consumer (no HP pool), so the number is unmodeled; the recovery EVENT is modeled (heal, burst slot), which is the board-relevant half — on-recovery consumers read the event, never the amount.
   - *Why:* skill2: the burst-usage escalation is a 'burstUses' resource pool (+1 per own burstCast, gates read the PRE-increment value); the step-2 payload (Incoming healing ▲51%) is unmodeled for the missing StatKey, but the gate still advances — steps 1 and 3 fire on exactly the right casts
+
+**Sky** (sky)
+
+- **skill1:** ■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Defiant Spirit state. Affects all allies. Defiant Spirit: Grants debuff immunity to 1 debuff(s) for 5 sec. Activates 3 time(s) per battle.
+  - *Why:* skill1 DEFIANT SPIRIT (unmodeled): debuff immunity is a defensive effect with no incoming-damage counterpart in the sim, but it can also absorb her own Low Tension debuff on the allies it covers if a hold lands within 5 seconds before High Tension lapses (3 times per battle). Low Tension and the Low Energy stun always apply here. Under the Hold mode's every-full-charge reading the 3 activations re-arm every 5 seconds and are spent in roughly the first 15 seconds, before her first Low Tension, so leaving the line out is neutral to that reading. ⚑ estimate: a player who saves the holds and times them could cancel up to 3 of the Low Tension windows (and, if it covers her, the stun); recipe: a manual-play recording timing a hold just before High Tension lapses — does the Low Tension icon appear; tier: MEASUREMENT-GATED.
 
 **Snow Crane** (snow-crane)
 
