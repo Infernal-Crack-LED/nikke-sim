@@ -1,24 +1,7 @@
 {
-  "syncedAt": "2026-10-09T16:36:34.340Z",
+  "syncedAt": "2026-11-20T14:00:13.342Z",
   "source": "bakery-bot DB nikke_characters.sheet_data (community Tsareena build sheet)",
   "units": {
-    "a2": {
-      "priority": "PvP Low Priority",
-      "annotations": ["C"],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Bastion · Resilience · Adjutant · Quantum",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Charge Speed · 4x Element · 4x Attack",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes (Low Prio)",
-        "levelDoll": "Yes (Low Prio)",
-        "endgameUses": "PvP",
-        "burstGen": "N/A",
-        "pairWith": null,
-        "notes": null
-      }
-    },
     "ada": {
       "priority": "Low Priority",
       "annotations": ["C"],
@@ -30,14 +13,14 @@
         "overloadGear": "Yes",
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Union raid · PvP",
+        "endgameUses": "Solo Raid · PvP",
         "burstGen": "Auto: Low Manual: High",
         "pairWith": null,
         "notes": "Can either Burst for extra damage or be used as an off burst buffer"
       }
     },
     "ade-agent-bunny": {
-      "priority": "High Union Raid Priority",
+      "priority": "PvE Medium Priority",
       "annotations": [],
       "build": {
         "skillLevels": "7+/7+/10",
@@ -68,23 +51,6 @@
         "burstGen": "Auto: Low Manual: High",
         "pairWith": "Mast: Romantic Maid",
         "notes": "Pair with Mast to prevent Mast from stunning herself"
-      }
-    },
-    "anis": {
-      "priority": "PvP Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "4/4/4",
-        "cube": "Quantum · Adjutant · Tempering",
-        "overloadMinimum": "4x Charge Speed",
-        "overloadIdeal": "4x Charge Speed · 4x Element · 4x Attack",
-        "overloadGear": "Yes (Low Prio)",
-        "overloadLevelFive": "Yes (Low Prio)",
-        "levelDoll": "Yes (Low Prio)",
-        "endgameUses": "PvP",
-        "burstGen": "N/A",
-        "pairWith": null,
-        "notes": null
       }
     },
     "anis-sparkling-summer": {
@@ -189,40 +155,6 @@
         "notes": null
       }
     },
-    "asuka-wille": {
-      "priority": "PvE Medium Priority",
-      "annotations": ["C"],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Resilience · Bastion · Destruction",
-        "overloadMinimum": "2x Element · 2x Attack · 1xAmmo",
-        "overloadIdeal": "4x Element · 4x Attack · 4x Ammo",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid",
-        "burstGen": "Auto: Low Manual: Low",
-        "pairWith": "ReiTN",
-        "notes": "Forced to reload after her burst if not using ReiTN"
-      }
-    },
-    "bay": {
-      "priority": "PvP Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "7/4/4",
-        "cube": "Vigor · Tempering · Edurance",
-        "overloadMinimum": "4x Charge Speed",
-        "overloadIdeal": "4x Charge Speed · 4x Element · 4x Attack",
-        "overloadGear": "Yes (Low Prio)",
-        "overloadLevelFive": "No",
-        "levelDoll": "Yes (Low Prio)",
-        "endgameUses": "PvP",
-        "burstGen": "N/A",
-        "pairWith": null,
-        "notes": null
-      }
-    },
     "biscuit": {
       "priority": "PvP Medium Priority",
       "annotations": [],
@@ -251,9 +183,9 @@
         "overloadGear": "Low Prio/No",
         "overloadLevelFive": "No",
         "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Tetra Tower · PvP",
+        "endgameUses": "Tetra Tower · PvP",
         "burstGen": "Auto: Low Manual: Low",
-        "pairWith": "Rouge or Noir",
+        "pairWith": "Rouge or Noir · None in PvP",
         "notes": "Must be used with 777 member for CD on burst skill. Without burst shes a heal bot"
       }
     },
@@ -427,40 +359,6 @@
         "notes": null
       }
     },
-    "drake-great-villain": {
-      "priority": "PvE Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Vigor · Destruction",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Crit Damage · 4x Attack or 4x Crit Chance",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Missilis Tower",
-        "burstGen": "Auto: Low Manual: Low",
-        "pairWith": null,
-        "notes": null
-      }
-    },
-    "ein": {
-      "priority": "Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Resilience · Rupture · Bastion",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 2x Ammo · 2x Crit Damage",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Misillis Tower · PvP",
-        "burstGen": "Auto: Low Manual: Low",
-        "pairWith": null,
-        "notes": null
-      }
-    },
     "elegg-boom-and-shock": {
       "priority": "High Union Raid Priority",
       "annotations": ["L"],
@@ -495,42 +393,8 @@
         "notes": null
       }
     },
-    "emma-tactical-upgrade": {
-      "priority": "PvP Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Bastion · Resilience · Healing · Vigor",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 4x Ammo",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes (Low Prio)",
-        "endgameUses": "Solo Raid · PvP",
-        "burstGen": "Auto: Low Manual: Low",
-        "pairWith": "Eunwha: Tactical Upgrade",
-        "notes": null
-      }
-    },
-    "eunhwa-tactical-upgrade": {
-      "priority": "PvP Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Bastion · Resilience · Destruction",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 2x Ammo · 2x Crit Damage",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes (Low Prio)",
-        "endgameUses": "Solo Raid · PvP",
-        "burstGen": "Auto: Low Manual: Low",
-        "pairWith": "Emma: Tactical Upgrade",
-        "notes": null
-      }
-    },
     "eve": {
-      "priority": "PvE Medium Priority",
+      "priority": "PvE Low Priority",
       "annotations": ["C"],
       "build": {
         "skillLevels": "10/10/10",
@@ -665,23 +529,6 @@
         "notes": null
       }
     },
-    "label": {
-      "priority": "PvP Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "7/10/4",
-        "cube": "Tempering · Vigor",
-        "overloadMinimum": "4x Attack",
-        "overloadIdeal": "4x Attack · 4x Element",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "PvP",
-        "burstGen": "N/A",
-        "pairWith": null,
-        "notes": null
-      }
-    },
     "laplace": {
       "priority": "PvP Medium Priority",
       "annotations": [],
@@ -697,23 +544,6 @@
         "burstGen": "N/A",
         "pairWith": null,
         "notes": null
-      }
-    },
-    "laplace-ultimate-hero": {
-      "priority": "Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Vigor · Bastion · Resilience",
-        "overloadMinimum": "4x Ammo · 4x Elemental",
-        "overloadIdeal": "4x Ammo · 4x Element · 4x Attack",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Missilis Tower · PvP",
-        "burstGen": "Auto: Medium Manual: Medium",
-        "pairWith": null,
-        "notes": "Does almost no damage in her base RL form so she needs ammo to keep herself transformed to do damage"
       }
     },
     "liberalio": {
@@ -734,7 +564,7 @@
       }
     },
     "liter": {
-      "priority": "High Union Raid Priority",
+      "priority": "PvE Low Priority",
       "annotations": [],
       "build": {
         "skillLevels": "10/7/10",
@@ -744,7 +574,7 @@
         "overloadGear": "Yes (low prio)",
         "overloadLevelFive": "No",
         "levelDoll": "No",
-        "endgameUses": "Story · Solo Raid · Union Raid · Missilis Tower",
+        "endgameUses": "Solo Raid · Missilis Tower",
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": null,
         "notes": null
@@ -768,7 +598,7 @@
       }
     },
     "ludmilla-winter-owner": {
-      "priority": "PvE Medium Priority",
+      "priority": "PvE Low Priority",
       "annotations": ["L"],
       "build": {
         "skillLevels": "10/7+/10",
@@ -784,23 +614,6 @@
         "notes": null
       }
     },
-    "maiden": {
-      "priority": "PvP Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "7/4/10",
-        "cube": "Quantum · Bastion · Vigor",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack",
-        "overloadGear": "Yes (Low Prio)",
-        "overloadLevelFive": "Yes (Low Prio)",
-        "levelDoll": "Yes (Low Prio)",
-        "endgameUses": "PvP",
-        "burstGen": "N/A",
-        "pairWith": null,
-        "notes": null
-      }
-    },
     "maiden-ice-rose": {
       "priority": "Low Priority",
       "annotations": ["L"],
@@ -812,31 +625,14 @@
         "overloadGear": "Yes",
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Union raid · PvP",
+        "endgameUses": "Solo Raid · PvP",
         "burstGen": "Auto: Low Manual: High",
         "pairWith": null,
         "notes": "Generally only uses burst once per fight at the very end. Use in place of your lower importance/damage burst"
       }
     },
-    "mana": {
-      "priority": "PvP Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Bastion · Resilience · Vigor · Healing",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 4x Crit Damage",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · PvP",
-        "burstGen": "Auto: Medium Manual: Medium",
-        "pairWith": null,
-        "notes": null
-      }
-    },
     "marciana-marine-study": {
-      "priority": "PvE Medium Priority",
+      "priority": "PvE Low Priority",
       "annotations": ["L"],
       "build": {
         "skillLevels": "10/10/10",
@@ -850,6 +646,23 @@
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": null,
         "notes": "Does not scale well with atk or atk damage buffs. Prefers to be in crit damage comps"
+      }
+    },
+    "marian-queen": {
+      "priority": "Highest Priority",
+      "annotations": [],
+      "build": {
+        "skillLevels": "10/10/10",
+        "cube": "Bastion · Resilience",
+        "overloadMinimum": "2x Element · 2x Attack",
+        "overloadIdeal": "4x Element · 4x Attack · 2x Ammo · 2x Critical Damage/Rate",
+        "overloadGear": "Yes",
+        "overloadLevelFive": "Yes",
+        "levelDoll": "Yes",
+        "endgameUses": "Story · Solo Raid · Union Raid · Pilgrim Tower",
+        "burstGen": "Auto: Low Manual: Low",
+        "pairWith": null,
+        "notes": "Huge damage along with ability to hit core in burst."
       }
     },
     "mast-romantic-maid": {
@@ -867,23 +680,6 @@
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": "Anchor: Innocent Maid",
         "notes": "Pair with Anchor to keep her from stunning herself"
-      }
-    },
-    "maxwell-ordinary-mechanic": {
-      "priority": "PvE Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "7+/10/4+",
-        "cube": "Vigor · Resilience · Adjutant · Quantum",
-        "overloadMinimum": "1x Ammo",
-        "overloadIdeal": "4x Element · 3x Attack · 1x Ammo · 4x Charge Speed",
-        "overloadGear": "Yes (Low Prio)",
-        "overloadLevelFive": "No",
-        "levelDoll": "Yes (Low Prio)",
-        "endgameUses": "Solo raid · Missilis Tower",
-        "burstGen": "Auto: High Manual: High",
-        "pairWith": null,
-        "notes": "Very large burst gen while being a flex support. Mediocre buffs for most but increases HP for nikkes like Lapluh and Cindy"
       }
     },
     "mihara-bonding-chain": {
@@ -948,7 +744,7 @@
         "overloadGear": "Yes",
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes (High Prio)",
-        "endgameUses": "Story · Solo Raid · Union Raid · Tetra Tower · PvP",
+        "endgameUses": "Story · Solo Raid · Tetra Tower · PvP",
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": null,
         "notes": "Best used in teams with lots of burst generation. Can do alright damage with electric support from Sanis"
@@ -965,7 +761,7 @@
         "overloadGear": "Yes",
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Union Raid",
+        "endgameUses": "Solo Raid",
         "burstGen": "Auto: Medium Manual: Medium",
         "pairWith": null,
         "notes": null
@@ -1005,23 +801,6 @@
         "notes": "Relies heavily on charge speed so does very well pair with liberalio and alice who buff charge speed"
       }
     },
-    "nero": {
-      "priority": "PvP Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/4",
-        "cube": "Vigore · Tempering · Endurance",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 4x Defence",
-        "overloadGear": "Yes (Low Prio)",
-        "overloadLevelFive": "Yes (Low Prio)",
-        "levelDoll": "Yes",
-        "endgameUses": "PvP",
-        "burstGen": "N/A",
-        "pairWith": null,
-        "notes": null
-      }
-    },
     "noah": {
       "priority": "PvP Medium Priority",
       "annotations": [],
@@ -1056,23 +835,6 @@
         "notes": null
       }
     },
-    "phantom": {
-      "priority": "PvE Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/7+",
-        "cube": "Resilience · Diffusion",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 1x Ammo · 3x Crit Damage",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes (High Prio)",
-        "endgameUses": "Solo Raid",
-        "burstGen": "Auto: Low Manual: Low",
-        "pairWith": null,
-        "notes": "Dependant on her hit rate buffs to deal maximum damage. She wants to constantly be hitting an enemy to not drop buffs"
-      }
-    },
     "prika": {
       "priority": "High Support Priority",
       "annotations": [],
@@ -1091,7 +853,7 @@
       }
     },
     "privaty": {
-      "priority": "High Priority",
+      "priority": "High Support Priority",
       "annotations": [],
       "build": {
         "skillLevels": "10/7+/7+",
@@ -1108,7 +870,7 @@
       }
     },
     "queen": {
-      "priority": "PvE Medium Priority",
+      "priority": "PvE Low Priority",
       "annotations": ["C"],
       "build": {
         "skillLevels": "10/10/7+",
@@ -1122,23 +884,6 @@
         "burstGen": "Auto: Medium Manual: Medium",
         "pairWith": "Yukiko",
         "notes": "Huge atk buffs and high distributed damage when paired with Yukiko. Atk buffs are not the best buff for her."
-      }
-    },
-    "quency-escape-queen": {
-      "priority": "PvE Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Bastion · Resilience · Assault · Destruction",
-        "overloadMinimum": "1x Hit Rate · 2x Element · 1x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 1x Hit Rate · 2x Ammo · 1x Crit Damage",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid",
-        "burstGen": "Auto: Low Manual: Low",
-        "pairWith": null,
-        "notes": null
       }
     },
     "rapi-red-hood": {
@@ -1192,40 +937,6 @@
         "notes": null
       }
     },
-    "red-hood": {
-      "priority": "High Union Raid Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Destruction · Resilience · Highest Level",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 1x Ammo · 3x Charge Speed",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Union Raid · PvP",
-        "burstGen": "Auto: Low Manual: High",
-        "pairWith": null,
-        "notes": "If you are using auto burst make sure you position her after your Burst 1 and 2"
-      }
-    },
-    "rei-ayanami-tentative-name": {
-      "priority": "Low Priority",
-      "annotations": ["C"],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Bastion · Resilience · Destruction",
-        "overloadMinimum": "2x Element · 2x Attack",
-        "overloadIdeal": "4x Element · 4x Attack · 2x Ammo · 2x Crit Damage",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "Yes",
-        "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · PvP",
-        "burstGen": "Auto: Low Manual: Low",
-        "pairWith": "Asuka WILLE",
-        "notes": null
-      }
-    },
     "rosanna": {
       "priority": "Low Priority",
       "annotations": [],
@@ -1237,44 +948,10 @@
         "overloadGear": "Yes",
         "overloadLevelFive": "Yes",
         "levelDoll": "Yes",
-        "endgameUses": "Solo Raid · Tetra Tower · PvP",
+        "endgameUses": "Solo Raid · PvP",
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": null,
         "notes": "One of the best PvP Girls. Used in electric weak content. Does fairly high damage herself but provides little buffs for others."
-      }
-    },
-    "rosanna-chic-ocean": {
-      "priority": "PvE Low Priority",
-      "annotations": ["L"],
-      "build": {
-        "skillLevels": "7/10/10",
-        "cube": "Highest Level",
-        "overloadMinimum": "None",
-        "overloadIdeal": "4x Element",
-        "overloadGear": "No",
-        "overloadLevelFive": "No",
-        "levelDoll": "No",
-        "endgameUses": "Solo Raid",
-        "burstGen": "Auto: Low Manual: Low",
-        "pairWith": null,
-        "notes": null
-      }
-    },
-    "rouge": {
-      "priority": "PvE Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Vigor · Resilience · Bastion",
-        "overloadMinimum": "2x Ammo",
-        "overloadIdeal": "2x Ammo · 4x Attack · 4x Element",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "No",
-        "levelDoll": "No",
-        "endgameUses": "Solo Raid",
-        "burstGen": "Auto: Low Manual: High",
-        "pairWith": null,
-        "notes": "Used for cooldown reduction and minor buffs to attack and max HP"
       }
     },
     "rumani": {
@@ -1326,6 +1003,23 @@
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": null,
         "notes": "Increasing her charge speed helps her damage"
+      }
+    },
+    "scarlet-goddeath": {
+      "priority": "High Priority",
+      "annotations": [],
+      "build": {
+        "skillLevels": "10/10/10",
+        "cube": "Resilience · Bastion",
+        "overloadMinimum": "2x Element · 2x Attack",
+        "overloadIdeal": "4x Element · 4x Attack · 1x Critical Rate/Damage · 3x Critical Damage",
+        "overloadGear": "Yes",
+        "overloadLevelFive": "Yes",
+        "levelDoll": "Yes",
+        "endgameUses": "Story · Solo Raid · Union Raid · Pilgrim Tower · PvP",
+        "burstGen": "Auto: Low Manual: Low",
+        "pairWith": null,
+        "notes": "Getting over 1 crit rate roll on her is unhelpful as she maxes out her crit stat from just the single roll."
       }
     },
     "sin-swift-bunny": {
@@ -1499,7 +1193,7 @@
       }
     },
     "yukiko": {
-      "priority": "PvE Medium Priority",
+      "priority": "PvE Low Priority",
       "annotations": ["C"],
       "build": {
         "skillLevels": "7+/10/10",
@@ -1513,23 +1207,6 @@
         "burstGen": "Auto: Low Manual: Low",
         "pairWith": "Queen (Makoto Niijima)",
         "notes": "Huge atk buffs and high distributed damage when paired with Makoto. Atk buffs are not the best buff for her."
-      }
-    },
-    "zwei": {
-      "priority": "PvE Low Priority",
-      "annotations": [],
-      "build": {
-        "skillLevels": "10/10/10",
-        "cube": "Resilience · Quantom",
-        "overloadMinimum": "None",
-        "overloadIdeal": "4x Element · 4x Attack",
-        "overloadGear": "Yes",
-        "overloadLevelFive": "No",
-        "levelDoll": "Yes (High Prio)",
-        "endgameUses": "Solo Raid · Union Raid",
-        "burstGen": "Auto: Medium Manual: Medium",
-        "pairWith": null,
-        "notes": null
       }
     }
   }
