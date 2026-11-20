@@ -1,0 +1,148 @@
+{
+  "slug": "sky",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullCharge"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 40
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 60,
+          "durationSec": 40
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 20,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "selfStatusEnd",
+        "name": "High Tension"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": -10,
+          "durationSec": 20,
+          "levelScale": {
+            "value": [
+              10
+            ]
+          }
+        },
+        {
+          "kind": "selfStatus",
+          "name": "Low Tension",
+          "durationSec": 20
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "selfStatusEnd",
+        "name": "High Tension"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "stun",
+          "durationSec": 20
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 15,
+          "durationSec": 35,
+          "maxStacks": 3
+        },
+        {
+          "kind": "selfStatus",
+          "name": "High Tension",
+          "durationSec": 35
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 50,
+          "durationSec": 35
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Defiant Spirit state. Affects all allies.",
+      "Defiant Spirit: Grants debuff immunity to 1 debuff(s) for 5 sec. Activates 3 time(s) per battle."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill1 trigger fidelity: the kit requires Full Charge to be HELD for 1+ sec; charge weapons release at full charge in-sim, so the hold is modeled as a plain `fullCharge` pull (over-fires vs a tap-firing player, matches a hold-firing one).",
+    "⚑ The Low Tension branch (ATK▼ to allies + 20s self-stun) is keyed to the lapse of the burst-side 'High Tension' selfStatus window (35s, max-extended per cast). With a 40s burst cooldown and per-rotation casting it is expected DORMANT in graded comps; it only pays out if bursting stops for >35s.",
+    "⚑ High Tension reaches its 3-stack cap (45% Pierce Damage) only from this unit's THIRD burst cast onward; no rampSec authored because per-cast stacking is the ramp.",
+    "Defiant Spirit (debuff immunity, 3×/battle) is unmodeled: no debuff-immunity primitive exists and the v1 boss applies no ally debuffs — inert at scope, not a damage skip.",
+    "Pierce Damage ▲ granted to allies is inert for allies carrying no Pierce tag (kit-correct: this unit self-tags via skill1's gainPierce and buffs whoever else is Pierce-tagged).",
+    "Self-stun modeled as `stun` 20s on self; per schema a stun blocks firing/charging/reloading but NOT bursting, so the unit's own burst chain is unaffected — unverified against footage."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Supporter kit, three real levers: (1) skill1 self-Pierce window + Pierce Damage ▲60% on a per-full-charge trigger — authored as a `gainPierce` EFFECT (40s window), never the whole-fight `hasPierce` flag, because pierce here is trigger-gated and absent before the first charge; (2) skill2 FB-enter caster-scaled ATK ▲20% to all allies for 10s (flat-resolved at apply time); (3) burst High Tension Pierce Damage ▲15% ×3 stacks to allies + self ATK ▲50%, both 35s on burstCast (Burst I ⇒ one cast per rotation). The kit's PENALTY half is modeled, not dropped: 'when High Tension is removed' is armed by a burst-side `selfStatus` window so the ATK▼10% and the 20s self-stun fire on a real lapse. The 'only when in the Low Tension state' gate is folded into the co-timed trigger rather than authored as `requiresSelfStatus` — Low Tension opens on exactly the lapse frame, so the two encodings are behaviourally identical while the fold does not depend on intra-slot block ordering (gate-vs-effect evaluation order is unverified). Negative casterAtkPct carries levelScale anchor [10] so the derived −10 still scales with skill level."
+}
