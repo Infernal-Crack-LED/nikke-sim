@@ -1,0 +1,136 @@
+{
+  "slug": "sky",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Defiant Spirit: debuff immunity x1, 5s",
+      "disposition": "UNMODELED",
+      "scope": "defensive — debuff immunity only; no damage, no weapon-state, no stat",
+      "durationSemantics": "5 sec per activation; 3 activations per battle; gated on NOT already in Defiant Spirit",
+      "triggerIdentity": "fullCharge held >=1s while not in Defiant Spirit (self-status gate); not a damage path",
+      "targetSet": "all allies (incl. self)",
+      "nearestWrongModel": "authoring a selfStatus 'Defiant Spirit' with some payload, or (worse) reading 'Activates 3 time(s) per battle' as a 3-use cap on the ADJACENT Pierce block",
+      "distinguishingAssertion": "no buffApply from sky skill1 with any stat other than pierceDamagePct; the Pierce/pierceDamagePct skill1 applies are NOT capped at 3 per fight (count of skill1 pierceDamagePct applies over a 180s run >> 3)",
+      "inertness": "must contribute zero blocks with stat/damage effects; must not cap or gate the Pierce block",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Gains Pierce for 40 sec",
+      "disposition": "FAITHFUL",
+      "scope": "self normal (full-charge) shots become Pierce-tagged — makes pierceDamagePct (own 60% + High Tension) live for her hits; no direct damage",
+      "durationSemantics": "40 wall-clock sec from each proc (gainPierce durationSec 40); refreshed by each qualifying full-charge; NOT permanent, NOT rounds",
+      "triggerIdentity": "fullCharge (charged pull) — ⚑ proxy: the kit requires the charge be HELD >=1 s past full (manual play), which the sim cannot express; in practice one hold per ~40s window suffices",
+      "targetSet": "self",
+      "nearestWrongModel": "top-level hasPierce:true (whole-fight tag from frame 0, no first-shot gap, no trigger) — or encoding the hold as nothing at all vs as a permanent fire-rate penalty",
+      "distinguishingAssertion": "no gainPierce/pierce effect live at frame 0; the first pierce window opens at the first full-charge pull of sky's slot (first `shot` event frame >= chargeFrames), and the override uses a skill1 block with trigger fullCharge + effect kind gainPierce durationSec 40 (inspection), hasPierce absent/false",
+      "inertness": "must not tag allies' shots as pierce; must not alter sky's cadence beyond the ⚑-documented hold cost (if a hold cost is modeled, it must be ≤ ~1 pull per 40s, never per-shot)",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Pierce Damage ▲ 60% for 40 sec",
+      "disposition": "FAITHFUL",
+      "scope": "pierceDamagePct — Damage Up bucket entry read ONLY by Pierce-tagged hits (hers, via the gainPierce window); additive with High Tension's 15%/stack and with any ally Damage Up",
+      "durationSemantics": "40 sec, refreshed per qualifying full-charge pull (uptime ~100% after the first shot; sawtooth never lapses at SR cadence)",
+      "triggerIdentity": "same fullCharge (held) trigger as the Pierce grant — same block",
+      "targetSet": "self",
+      "nearestWrongModel": "attackDamagePct 60 (generic Damage Up — would still move sky's total identically while she is pierce-tagged, but would also live outside the pierce window and breaks if gainPierce ever lapses/stun gap) — or a `passive` applying at frame 0",
+      "distinguishingAssertion": "buffApply stat 'pierceDamagePct' value 60, targetSlug 'sky', casterIdx===targetIdx, first such event frame === the first sky `shot` frame (not frame 0), expiresFrame === applyFrame + 40*60; no buffApply stat 'attackDamagePct' from sky",
+      "inertness": "zero pierceDamagePct-60 applies on liter/crown/helm; with the value patched to 0 via withPatchedOverride, totals of liter/crown/helm are byte-identical (they carry no pierce)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Entering Full Burst → ATK ▲ 20% of user",
+      "disposition": "FAITHFUL",
+      "scope": "generic ATK (flat add), all attack categories",
+      "durationSemantics": "10 sec wall-clock (the FB window), re-applied every Full Burst",
+      "triggerIdentity": "fullBurstEnter (ANY team Full Burst, incl. rotations where liter casts B1 and sky does not) — NOT burstCast",
+      "targetSet": "all allies incl. self (5 targets)",
+      "nearestWrongModel": "stat atkPct 20 (scales each TARGET's own ATK — over-credits the carry several-fold vs a Supporter-ATK-based flat add); or keying to burstCast (would skip rotations where liter takes the B1 cast)",
+      "distinguishingAssertion": "per fullBurstStart event there are exactly 5 buffApply events stat 'casterAtkPct' key from sky skill2, value ≈ 0.20 × sky.staticAtk (flat, NOT 20), expiresFrame === fbStartFrame + 600; count of these apply groups === count of fullBurstStart events (even when sky's own burstCast count is lower)",
+      "inertness": "no buffApply stat 'atkPct' value 20 from sky; value does not change when sky's own burst ATK ▲50% is live (engine resolves off staticAtk — see notes)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "High Tension removed → Low Tension ATK ▼",
+      "disposition": "FAITHFUL",
+      "scope": "generic ATK DEBUFF on the whole team (flat negative add of 10% of sky's ATK) — a damage-moving line, NOT flavor",
+      "durationSemantics": "20 sec from the lapse of High Tension; High Tension is 35 s and sky's burst cd is 40 s, so WITHOUT burst-CDR the lapse happens every cycle at cast+35s; WITH enough CDR (effective cd < 35 s) it never fires",
+      "triggerIdentity": "selfStatusEnd {name:'High Tension'} — fires ONCE when sky's own High Tension window lapses naturally; a re-cast that refreshes the window is NOT a removal. Requires the burst block to open selfStatus 'High Tension' 35 s on sky",
+      "targetSet": "all allies incl. self; the Low Tension state itself is a self-status on sky (selfStatus 'Low Tension' 20 s) that gates the stun line",
+      "nearestWrongModel": "(a) dropping the line as 'defensive/flavor' → omits a team-wide ATK ▼ and the stun chain; (b) atkPct -10 instead of casterAtkPct -10; (c) fullBurstEnd or interval{40} as the trigger; (d) firing once per ALLY whose High Tension lapses (5 stacked ▼ instead of 1); (e) using the boss-status channel (targetStatus/requiresTargetStatus) instead of selfStatus",
+      "distinguishingAssertion": "in a fixture where sky actually casts and no CDR is present: for each sky burstCast at frame C, there are exactly 5 buffApply events stat 'casterAtkPct' value ≈ -0.10 × sky.staticAtk (negative flat) at frame C + 35*60 (±1 frame), one per unit, expiresFrame = that frame + 1200; zero such events between C and C+35*60; with a CDR source making effective cd < 35 s, zero such events for the whole run",
+      "inertness": "must not fire on fullBurstEnd, on liter's B1 casts, or at battle start; must apply exactly once per lapse (5 events, not 25)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "In Low Tension → Low Energy: Stuns 20 sec",
+      "disposition": "FAITHFUL",
+      "scope": "self stun — sky fires/charges/reloads nothing for 20 s (her own DPS → 0 for that window; S1 fullCharge trigger cannot fire, so her 40 s pierce window must survive the gap on its last refresh)",
+      "durationSemantics": "20 sec, coincident with the Low Tension window (both 20 s from the lapse)",
+      "triggerIdentity": "conditional passive 'only when in Low Tension' ≡ fires at Low Tension onset: either a `stun durationSec 20` effect on the same selfStatusEnd block (self-targeted) or a block gated requiresSelfStatus 'Low Tension'. ⚑ ENGINE GAP: engine stun says 'bursting unaffected'; in-game a stunned Nikke cannot activate Burst — reported, not resolved (out of scope)",
+      "targetSet": "self only",
+      "nearestWrongModel": "omitting it (treating self-stun as non-damage) — it removes ~20 s of sky's own fire per 40 s cycle; or targeting allies; or treating it as a one-time effect",
+      "distinguishingAssertion": "for each Low Tension onset frame L (= sky burstCast + 35*60): zero `shot` events from sky's slot in [L, L+1200), and sky `shot` events resume within one charge time after L+1200; the stun recurs on EVERY cycle without CDR. totals(res)['sky'] with the stun patched out is strictly greater than with it in",
+      "inertness": "no shot gap on liter/crown/helm; sky's shot cadence outside stun windows is unchanged",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "High Tension: Pierce Dmg ▲ 15% 35s, x3",
+      "disposition": "FAITHFUL",
+      "scope": "pierceDamagePct — only Pierce-tagged attacks benefit (sky herself via S1; pierce-carrying allies; INERT on non-pierce allies such as liter/crown/helm)",
+      "durationSemantics": "35 sec per application, maxStacks 3; a stack is added per sky burst cast. With cd 40 s > 35 s the window lapses before the next cast, so stacks stay at 1 without burst-CDR — 3 stacks (45%) is reachable ONLY when effective cd < 35 s. Must NOT be baked to a 45% steady state",
+      "triggerIdentity": "burstCast (sky's OWN Burst I cast) — NOT fullBurstEnter; also opens selfStatus 'High Tension' 35 s on sky (the removal trigger's key)",
+      "targetSet": "all allies incl. self",
+      "nearestWrongModel": "(a) attackDamagePct 15 (generic Damage Up → credits every ally's non-pierce attacks); (b) fullBurstEnter trigger (fires on liter's B1 rotations too); (c) value authored at 45 (cap) or with rampSec as if stacks accrue; (d) forgetting the paired selfStatus so Low Tension never triggers",
+      "distinguishingAssertion": "buffApply stat 'pierceDamagePct' value 15 maxStacks 3 from sky burst slot, 5 per sky burstCast event (count groups === sky burstCast count, NOT === fullBurstStart count), expiresFrame = castFrame + 35*60; in the no-CDR fixture every such apply has stacks === 1; with a CDR fixture (effective cd < 35 s) stacks climb 1→2→3 and never exceed 3",
+      "inertness": "with the burst pierceDamagePct patched to 0 via withPatchedOverride('sky',…), totals of liter/crown/helm are byte-identical (no pierce tag on them); no buffApply stat 'attackDamagePct' from sky burst",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self. ATK ▲ 50% for 35 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic ATK (percent of own ATK) on sky only",
+      "durationSemantics": "35 sec from cast (lapses 5 s before the next 40 s cast without CDR)",
+      "triggerIdentity": "burstCast (sky's own cast); NOT fullBurstEnter",
+      "targetSet": "self only",
+      "nearestWrongModel": "target allies (a team-wide 50% ATK — gross over-credit of the carry); or casterAtkPct 50 (flat add) instead of atkPct 50; or fullBurstEnter",
+      "distinguishingAssertion": "exactly one buffApply stat 'atkPct' value 50 per sky burstCast event, targetSlug 'sky', casterIdx===targetIdx, expiresFrame = castFrame + 35*60; zero atkPct-50 applies on liter/crown/helm; zero such applies on fullBurstStart frames where sky did not cast",
+      "inertness": "liter/crown/helm totals byte-identical when this value is patched to 0; sky's S2 casterAtkPct ally grant value does NOT change while this is live (staticAtk basis — see notes)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Gains Pierce for 40 sec",
+    "skill1:Pierce Damage ▲ 60% for 40 sec",
+    "skill2:Entering Full Burst → ATK ▲ 20% of user",
+    "skill2:High Tension removed → Low Tension ATK ▼",
+    "skill2:In Low Tension → Low Energy: Stuns 20 sec",
+    "burst:High Tension: Pierce Dmg ▲ 15% 35s, x3",
+    "burst:Affects self. ATK ▲ 50% for 35 sec"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Defiant Spirit state. Affects all allies. Defiant Spirit: Grants debuff immunity to 1 debuff(s) for 5 sec. Activates 3 time(s) per battle."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "FIXTURE HAZARD (must be reconciled first): controlComp(carry) seats liter in B1 and the carry in the B3 slot, but sky IS a Burst I unit — two B1 units compete for one cast per rotation and slot order likely gives it to liter every time (liter cd 20 s vs sky 40 s). Every burst-keyed assertion above is vacuous unless the test first proves `burstCast` events are emitted for sky's slot; if liter preempts, build a comp with sky as the sole B1 (or confirm the engine's B1 selection) before asserting. EXPECTED SHARED-PRIOR MISREADS: (1) dropping Low Tension + Low Energy as 'defensive flavor' — they are a 20 s team-wide ATK ▼ and a 20 s self-stun recurring EVERY cycle at cd 40 s > 35 s duration, i.e. the kit's built-in penalty; the test must pin that without burst-CDR the chain fires at cast+35 s each cycle and with effective cd < 35 s it never fires and High Tension stacks to 3. (2) Baking High Tension at 45% (3 stacks) — unreachable in the no-CDR fixture; stacks must be 1 there. (3) casterAtkPct vs atkPct on BOTH 'of the skill user's ATK' lines (S2 +20 and Low Tension -10); the emitted buffApply value is a flat ATK number — assert ≈ ±pct × sky.staticAtk, and confirm the engine accepts a NEGATIVE casterAtkPct (if it clamps at 0, that is a GAP the driver must declare, not silently drop). (4) burstCast vs fullBurstEnter: S2 +20% is fullBurstEnter (any FB); both burst lines are burstCast. (5) hasPierce:true static flag vs a fullCharge-triggered gainPierce 40 s + pierceDamagePct 60 — the static flag has no first-shot gap and no trigger; the 'maintained ≥1 s' hold is a ⚑ manual-play proxy (cost ≈ one delayed pull per 40 s; document in note, do not model per-shot). (6) High Tension / Low Tension must ride the selfStatus channel (per-unit, name-keyed), never targetStatus/requiresTargetStatus (boss channel). ⚑ ENGINE CONVENTIONS to report, not act on: stun is 'bursting unaffected' in-engine whereas in-game a stunned Nikke cannot activate Burst (would push sky's real cycle from 40 s to ~55 s and change where Low Tension lands); casterAtkPct resolves off staticAtk, so sky's own ATK ▲50% does not inflate her 20%-of-ATK ally grant — if the game uses final ATK the grant is ×1.5 for 35 of every 40 s. Cadence tuple (chargeFrames 60, reloadFrames 151, ammo 6) is datamine ⚑ per the always-⚑ list. Pierce Damage ▲ values (60 own + 15/stack) are Damage Up bucket, additive with Crown/other Damage Up — not a separate multiplier; a with/without-patch ratio must be < 1.60 whenever another Damage Up buff is live.",
+  "model": "claude-fable-5-1"
+}

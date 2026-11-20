@@ -96,6 +96,7 @@ export const TRIGGERS = new Set([
   'bossElement',
   'chargeCounter',
   'interval',
+  'selfStatusEnd',
 ]);
 export const TARGETS = new Set([
   'self',
@@ -942,6 +943,14 @@ export function structuralCheck(
       ) {
         errors.push(`${p}: interval needs sec > 0`);
       }
+      if (
+        b.trigger?.kind === 'selfStatusEnd' &&
+        !(typeof b.trigger.name === 'string' && b.trigger.name.trim())
+      ) {
+        errors.push(
+          `${p}: selfStatusEnd needs a non-empty "name" (the kit's status name)`
+        );
+      }
       // (2026-08-11) The chargeCounter bypass rule that used to sit here is GONE, per its own
       // instruction: sim.ts now routes chargeCounter through applyBlock (its `phase` argument
       // selects the one phase effect), so everyN / everyNOffset / delaySec are live on this
@@ -1339,6 +1348,7 @@ export function targetStatusCensus(
   for (const [slug, o] of overrides) {
     const selfProducers = new Set<string>();
     const selfConsumers = new Map<string, string[]>(); // name -> block paths
+    const selfEndConsumers = new Map<string, string[]>(); // selfStatusEnd name -> block paths
     for (const slot of SLOTS) {
       const blocks = o?.[slot];
       if (!Array.isArray(blocks)) {
@@ -1356,12 +1366,29 @@ export function targetStatusCensus(
             `${slot}[${bi}]`,
           ]);
         }
+        // a selfStatusEnd trigger reads the same per-unit window: no producer = it never fires
+        if (
+          b?.trigger?.kind === 'selfStatusEnd' &&
+          typeof b.trigger.name === 'string'
+        ) {
+          selfEndConsumers.set(b.trigger.name, [
+            ...(selfEndConsumers.get(b.trigger.name) ?? []),
+            `${slot}[${bi}]`,
+          ]);
+        }
       });
     }
     for (const [name, paths] of selfConsumers) {
       if (!selfProducers.has(name)) {
         errors.push(
           `${slug}: requiresSelfStatus "${name}" (${paths.join(', ')}) has no selfStatus producer in this unit's own override — the per-unit gate can NEVER open (matching is exact and same-unit only); fix the name or add the producer`
+        );
+      }
+    }
+    for (const [name, paths] of selfEndConsumers) {
+      if (!selfProducers.has(name)) {
+        errors.push(
+          `${slug}: selfStatusEnd "${name}" (${paths.join(', ')}) has no selfStatus producer in this unit's own override — the trigger can NEVER fire (matching is exact and same-unit only); fix the name or add the producer`
         );
       }
     }

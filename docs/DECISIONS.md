@@ -6755,3 +6755,34 @@ red-by-design 2026-09-01, "the evidence favours landing"; the call was made 2026
   Taken ▲ 10.56%) window is an upper bound, ⚑ in the override. Encoded with the existing `selfStatus` /
   `requiresSelfStatus` pair rather than an `fbGate:'inFb'` proxy, which is byte-identical only while no
   Full Burst extender is on the team.
+
+## Sky enters the sim; `selfStatusEnd` trigger for "Activates when <Status> is removed"; a hold-gated line defaults to the held reading (2026-11-20)
+
+- **Roster.** The daily new-unit watch synced Sky (`sky` — SR / Supporter / Iron / Elysion, Burst I,
+  cd 40s). Her kit is a tension loop: her burst gives the team High Tension (Pierce Damage ▲ 15% for
+  35s, stacking to 3) and herself ATK ▲ 50% for 35s; when High Tension is removed the team drops into
+  Low Tension (ATK ▼ 10% of her ATK for 20s) and she is stunned for 20s.
+- **New engine trigger `selfStatusEnd`** (owner-approved engine edit under the new-unit watch standing
+  exception, 2026-10-02): `{kind:'selfStatusEnd', name}` fires the owner's block on the frame its own
+  named `selfStatus` window lapses; a re-application before the lapse extends the window and moves the
+  trigger. Needed because no trigger read a status lapse, and the nearest stand-in (`burstCast` + block
+  `delaySec` 35) fires after EVERY cast — wrong whenever burst cooldown reduction (21 overrides carry
+  `burstCdr`) brings her next cast inside 35s, which refreshes High Tension instead of removing it. The
+  end-of-window sibling of the `selfStatus` / `requiresSelfStatus` pair. Inert by mechanism for every
+  other override (`scripts/regression.ts` output byte-identical with and without it); pinned by
+  `scripts/tests/engine/self-status-end.test.ts`; code review on `claude-fable-5-1` CLEAN.
+- **The hold-gated Skill 1 line defaults to the held reading.** "Activates when Full Charge is
+  maintained for 1 or more seconds" cannot happen in the sim (it releases at full charge). Sky carries
+  modes `['Hold','Release']`: Hold (default) credits every full charge as a hold — self Pierce for 40s +
+  Pierce Damage ▲ 60% for 40s, refreshed per full charge — and Release is the literal never-hold
+  reading. The two precedents for this clause disagree: rapunzel-pure-grace runs its hold-gated line at
+  real-play uptime, while guilty-mighty-bunny / sin-swift-bunny leave their hold TOGGLE unfired by
+  default (their default mode is fixed by a battle-start line, which Sky's kit lacks). Both S2b reviewers,
+  the S6 blind override and the S5 blind tests independently chose the every-full-charge reading, so the
+  default follows them. This is a play-style assumption, not a measurement — the owner's first
+  spot-check; the recipe (a focus recording: Pierce buff icon + shot cadence) is in her override.
+- **Low Energy stun keeps the engine's "bursting unaffected" convention** (mast-romantic-maid), so she
+  casts her 40s burst while stunned; whether a stunned unit can cast in-game, and whether a re-cast
+  ends Low Tension early, are measurement-gated ⚑ caveats in her override. Defiant Spirit (debuff
+  immunity, 3 per battle) is unmodeled — defensive, and under the Hold reading its charges are spent
+  before the first Low Tension.

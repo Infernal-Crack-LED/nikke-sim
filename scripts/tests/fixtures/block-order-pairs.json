@@ -1327,6 +1327,16 @@
         "order": "consumer-first"
       }
     ],
+    "sky": [
+      {
+        "slot": "skill2",
+        "family": "selfStatus",
+        "name": "Low Tension",
+        "producer": 1,
+        "consumer": 2,
+        "order": "producer-first"
+      }
+    ],
     "soda-twinkling-bunny": [
       {
         "slot": "skill1",

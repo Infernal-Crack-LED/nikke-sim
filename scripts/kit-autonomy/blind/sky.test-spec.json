@@ -1,0 +1,74 @@
+{
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Defiant Spirit: debuff immunity 5 sec",
+      "disposition": "GAP",
+      "assertion": "it.skip — no immunity primitive and no per-battle activation cap in the schema, and the fixture applies no ally debuff, so the line is unobservable. Live assertion only that the text is accounted for in the override (no silent drop)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Gains Pierce for 40 sec (self)",
+      "disposition": "FAITHFUL",
+      "assertion": "Stripping gainPierce drops her total (proves the tag gates her own Pierce Damage Up, and that the fullCharge trigger fires). Structural: exactly one gainPierce, durationSec 40, trigger fullCharge, target self, no durationShots; ov.hasPierce !== true. RED under: whole-fight hasPierce flag, a round-budget window, a shotFired/passive trigger, or an allies target."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Pierce Damage ▲ 60% for 40 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Stripping the 60% drops only her total; teammate totals byte-identical in both pierce counterfactuals; tag-removal costs >= buff-removal; 60->120 lifts only her. Structural durationSec 40. RED under: an allies target that moves teammates, a missing/zero magnitude, or a value folded into another bucket (patch finds nothing, delta 0)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 20% of skill user ATK, 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Counterfactual delta on casterAtkPct buffApply multiset = FB_STARTS × N_UNITS, with exactly one distinct flat value and value !== 20. RED under burstCast keying (0 applications — she is a second Burst I and never casts), excludeSelf (×(N−1)), or a raw atkPct encoding (emits 20). Self-scoping counterfactual lowers teammate sum while her own total stays exactly equal; 10->30 sec raises the team, proving the window is bounded."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Low Tension: ATK ▼ 10%, 20 sec",
+      "disposition": "FAITHFUL (fixture-unreachable)",
+      "assertion": "Behaviourally asserted NEGATIVELY: zero negative ATK-family buffApply events in the control, since the chain needs her own burst. Structural: one block, trigger selfStatusEnd named /tension/i, target allies, casterAtkPct -10, durationSec 20. RED under fullBurstEnd/interval/battleStart keying (the team would eat a recurring ATK-down)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Low Energy: Stuns for 20 sec (self)",
+      "disposition": "FAITHFUL (fixture-unreachable)",
+      "assertion": "Positive control: an injected battleStart stun collapses her total to <5% of control, so the fixture would reveal a stun that fired — and the control shows none. Structural: stun durationSec 20, target self, gated (requiresSelfStatus or selfStatusEnd), trigger never passive/battleStart. RED under an ungated stun (her damage collapses)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "High Tension: Pierce Dmg ▲15%, 3 stacks",
+      "disposition": "FAITHFUL (fixture-unreachable)",
+      "assertion": "Structural: one burst block, target allies, pierceDamagePct 15, durationSec 35, maxStacks 3. RED under a folded 45 (3×15) single-stack encoding, a missing maxStacks, or a self target. Behavioural it.skip — her burst never casts in controlComp."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 50% for 35 sec (self)",
+      "disposition": "FAITHFUL (fixture-unreachable)",
+      "assertion": "Structural: a self-target burst buff value 50, stat atkPct (bare percentage — no 'of the skill user' clause), durationSec 35. RED under casterAtkPct (wrong scaling basis) or an allies target."
+    },
+    {
+      "slot": "burst/skill2",
+      "kitLine": "status machinery for the Tension chain",
+      "disposition": "FIX-sensitive (spec-prescriptive)",
+      "assertion": "selfStatus windows named /tension/i must exist at 35 sec (opened by the burst, read by selfStatusEnd) and 20 sec (the down-state the stun gates on). Without both, the S2b trigger can never fire and the S2c gate can never pass — the chain is dead rather than merely unreachable."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge maintained 1+ sec",
+      "disposition": "MEASUREMENT-GATED",
+      "assertion": "⚑ Not asserted. chargeFrames 60 == 1.0 s and the engine has no 'hold past full charge' primitive; fullCharge is the kit-shaped trigger and is per-pull for an unswapped SR. The 1-second extra hold (and any resulting cadence loss) is unmodelled residue — a recording-derived pin, not a test."
+    }
+  ],
+  "fixtures": "controlComp('sky', true) for all 8 runs (liter B1 / crown B2 / sky in the carry slot / fixed B3, boss Fire, focus sky), deterministic, no seed. The fixed B3 is kept because its buffs do not confound any assertion here — every magnitude claim is read as a DELTA between the control and a withPatchedOverride counterfactual, so shared team buffs cancel. Critical fixture fact: this unit is Burst I and controlComp always seats liter (Burst I), so liter takes Burst Stage 1 every rotation and this unit never casts her own burst — her burst slot, the status it opens, and the ATK-down/self-stun chain are unreachable, so they are covered negatively (chain must be inert, with an injected-stun positive control) plus structurally via the withPatchedOverride clone. Runs: control, no-gainPierce, no-pierceBuff, pierce-60->120, no-FB-ATK, FB-ATK-self-only, FB-ATK-10s->30s, injected-battleStart-stun.",
+  "gaps": [
+    "it.skip — S1a Defiant Spirit: debuff immunity (1 debuff, 5 sec, 3x per battle). No immunity effect kind and no per-battle activation-cap primitive in the schema; the fixture also applies no ally-side debuff, so the payload is unobservable.",
+    "it.skip — S2b/S2c behavioural chain (status removal -> team ATK ▼10% for 20 sec -> self stun 20 sec). Fixture gap: requires her OWN Burst I cast, which controlComp cannot produce because liter occupies Burst Stage 1. Needs a comp with no other Burst I unit.",
+    "it.skip — burst behavioural (allies Pierce Damage ▲15% up to 3 stacks + self ATK ▲50%). Same fixture gap: her burst never casts in controlComp; asserted structurally instead.",
+    "⚑ Not asserted: the 'Full Charge maintained for 1 or more seconds' hold on both skill1 blocks. chargeFrames 60 == 1.0 s and no hold-past-full-charge primitive exists; fullCharge is used as the kit-shaped trigger. Recipe: a focus recording — count her pulls per magazine against the datamined cadence to see whether an extra 1 s hold is actually paid.",
+    "Packet-internal contradiction on the OverrideFile shape (slot -> Block[] vs slot -> { blocks: Block[] }); blocksOf() accepts both so the test does not depend on the resolution, but the structural assertions silently read zero blocks if a THIRD shape is in use — each structural test therefore asserts a nonzero block count first.",
+    "Duration windows are asserted structurally (durationSec) and, for the 10-sec team ATK buff, behaviourally via a 10->30 sec extension; no frame-level expiry assertion is made because the packet does not guarantee a frame field on SimEvent and the engine emits no buffRemove on natural lapse."
+  ],
+  "model": "claude-opus-5"
+}

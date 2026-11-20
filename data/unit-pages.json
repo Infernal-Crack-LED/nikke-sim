@@ -650,43 +650,43 @@
       "ol": [
         {
           "label": "4× Max Ammo",
-          "gainPct": 61.36
+          "gainPct": 57.78
         },
         {
           "label": "3× Max Ammo + 1× Hit Rate",
-          "gainPct": 52.83
+          "gainPct": 51.15
         },
         {
           "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 52.74
+          "gainPct": 51.07
         },
         {
           "label": "3× Max Ammo + 1× Crit DMG",
-          "gainPct": 52.51
+          "gainPct": 50.85
         },
         {
           "label": "2× Max Ammo + 2× Hit Rate",
-          "gainPct": 41.64
+          "gainPct": 39.81
         },
         {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 41.18
+          "gainPct": 39.41
         },
         {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
-          "gainPct": 40.96
+          "gainPct": 39.16
         },
         {
           "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 40.88
+          "gainPct": 39.11
         },
         {
           "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
-          "gainPct": 40.75
+          "gainPct": 38.96
         },
         {
           "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 40.46
+          "gainPct": 38.69
         }
       ]
     },
@@ -856,43 +856,43 @@
       "ol": [
         {
           "label": "2× Max Ammo + 2× Charge Speed",
-          "gainPct": 23.76
-        },
-        {
-          "label": "3× Charge Speed + 1× Max Ammo",
-          "gainPct": 21.19
+          "gainPct": 21.62
         },
         {
           "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
-          "gainPct": 20.17
+          "gainPct": 18.67
         },
         {
-          "label": "4× Charge Speed",
-          "gainPct": 20.13
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 18.63
         },
         {
           "label": "2× Charge Speed + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 20.08
+          "gainPct": 18.6
         },
         {
           "label": "2× Charge Speed + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 19.82
-        },
-        {
-          "label": "3× Charge Speed + 1× Charge DMG",
-          "gainPct": 19.54
-        },
-        {
-          "label": "3× Charge Speed + 1× Crit Rate",
-          "gainPct": 19.54
-        },
-        {
-          "label": "3× Charge Speed + 1× Crit DMG",
-          "gainPct": 19.28
+          "gainPct": 18.35
         },
         {
           "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
-          "gainPct": 18.01
+          "gainPct": 17.95
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge Speed",
+          "gainPct": 17.91
+        },
+        {
+          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge Speed",
+          "gainPct": 17.66
+        },
+        {
+          "label": "4× Charge Speed",
+          "gainPct": 17.45
+        },
+        {
+          "label": "3× Charge Speed + 1× Charge DMG",
+          "gainPct": 16.65
         }
       ]
     },
@@ -1548,43 +1548,43 @@
       "ol": [
         {
           "label": "4× Hit Rate",
-          "gainPct": 21.83
+          "gainPct": 24.43
         },
         {
           "label": "3× Hit Rate + 1× Max Ammo",
-          "gainPct": 20.91
-        },
-        {
-          "label": "2× Max Ammo + 2× Hit Rate",
-          "gainPct": 16.38
-        },
-        {
-          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 15.56
-        },
-        {
-          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 15.26
+          "gainPct": 19.33
         },
         {
           "label": "3× Hit Rate + 1× Crit Rate",
-          "gainPct": 14.72
-        },
-        {
-          "label": "3× Max Ammo + 1× Hit Rate",
-          "gainPct": 14.69
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Hit Rate",
-          "gainPct": 14.66
+          "gainPct": 18.15
         },
         {
           "label": "3× Hit Rate + 1× Crit DMG",
-          "gainPct": 14.43
+          "gainPct": 17.85
         },
         {
-          "label": "2× Max Ammo + 1× Crit DMG + 1× Hit Rate",
-          "gainPct": 14.36
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 13.84
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 13.55
+        },
+        {
+          "label": "2× Hit Rate + 1× Crit Rate + 1× Crit DMG",
+          "gainPct": 12.81
+        },
+        {
+          "label": "2× Crit Rate + 2× Hit Rate",
+          "gainPct": 12.42
+        },
+        {
+          "label": "2× Max Ammo + 2× Hit Rate",
+          "gainPct": 11.87
+        },
+        {
+          "label": "2× Crit DMG + 2× Hit Rate",
+          "gainPct": 11.86
         }
       ]
     },
@@ -3903,43 +3903,43 @@
       "ol": [
         {
           "label": "4× Hit Rate",
-          "gainPct": 25.2
+          "gainPct": 27.39
         },
         {
           "label": "3× Hit Rate + 1× Max Ammo",
-          "gainPct": 21.98
+          "gainPct": 21.3
         },
         {
           "label": "3× Hit Rate + 1× Crit Rate",
-          "gainPct": 19.7
+          "gainPct": 20.63
         },
         {
           "label": "3× Hit Rate + 1× Crit DMG",
-          "gainPct": 19.41
-        },
-        {
-          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
-          "gainPct": 18.48
-        },
-        {
-          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
-          "gainPct": 18.18
+          "gainPct": 20.33
         },
         {
           "label": "2× Hit Rate + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 16.81
+          "gainPct": 17.11
         },
         {
           "label": "2× Max Ammo + 2× Hit Rate",
-          "gainPct": 16.79
+          "gainPct": 17.05
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 16.98
         },
         {
           "label": "2× Crit Rate + 2× Hit Rate",
-          "gainPct": 16.41
+          "gainPct": 16.7
+        },
+        {
+          "label": "2× Hit Rate + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 16.69
         },
         {
           "label": "2× Crit DMG + 2× Hit Rate",
-          "gainPct": 15.84
+          "gainPct": 16.13
         }
       ]
     },
@@ -4436,49 +4436,7 @@
             "Step 3 (Red Wolf): Expand Pierce range by 100% for 10 sec."
           ]
         }
-      },
-      "ol": [
-        {
-          "label": "2× Charge Speed + 2× Charge DMG",
-          "gainPct": 17.9
-        },
-        {
-          "label": "3× Charge DMG + 1× Charge Speed",
-          "gainPct": 16.69
-        },
-        {
-          "label": "3× Charge Speed + 1× Charge DMG",
-          "gainPct": 15.85
-        },
-        {
-          "label": "2× Charge Speed + 1× Crit Rate + 1× Charge DMG",
-          "gainPct": 15.49
-        },
-        {
-          "label": "2× Charge Speed + 1× Crit DMG + 1× Charge DMG",
-          "gainPct": 15.31
-        },
-        {
-          "label": "3× Charge DMG + 1× Max Ammo",
-          "gainPct": 14.96
-        },
-        {
-          "label": "4× Charge Speed",
-          "gainPct": 14.76
-        },
-        {
-          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
-          "gainPct": 14.6
-        },
-        {
-          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
-          "gainPct": 14.49
-        },
-        {
-          "label": "2× Charge DMG + 1× Crit Rate + 1× Charge Speed",
-          "gainPct": 14.34
-        }
-      ]
+      }
     },
     "rei-ayanami": {
       "status": {
@@ -4837,43 +4795,43 @@
       "ol": [
         {
           "label": "2× Max Ammo + 2× Charge DMG",
-          "gainPct": 14.05
+          "gainPct": 14.38
         },
         {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Crit DMG",
-          "gainPct": 13.79
+          "gainPct": 14.12
         },
         {
           "label": "2× Max Ammo + 1× Crit Rate + 1× Charge DMG",
-          "gainPct": 13.77
+          "gainPct": 14.1
         },
         {
           "label": "2× Max Ammo + 1× Crit DMG + 1× Charge DMG",
-          "gainPct": 13.52
+          "gainPct": 13.85
         },
         {
           "label": "2× Max Ammo + 2× Crit Rate",
-          "gainPct": 13.44
+          "gainPct": 13.77
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
+          "gainPct": 13.6
+        },
+        {
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 13.4
         },
         {
           "label": "2× Max Ammo + 2× Charge Speed",
-          "gainPct": 12.97
+          "gainPct": 13.3
         },
         {
           "label": "2× Max Ammo + 2× Crit DMG",
-          "gainPct": 12.95
+          "gainPct": 13.28
         },
         {
-          "label": "3× Max Ammo + 1× Charge Speed",
-          "gainPct": 12.71
-        },
-        {
-          "label": "3× Max Ammo + 1× Charge DMG",
-          "gainPct": 12.32
-        },
-        {
-          "label": "3× Max Ammo + 1× Crit Rate",
-          "gainPct": 12.01
+          "label": "2× Charge Speed + 1× Max Ammo + 1× Crit DMG",
+          "gainPct": 13.15
         }
       ]
     },
@@ -4923,6 +4881,17 @@
           "skill2": [
             "Noise Bullets Function: Changes some attacks' damage into true damage. — named state wrapper; its two effects ARE modeled (trueNormalsModes ['Engage'] for normals and the Swift Piercing shots).",
             "Enhanced Bullets Function: Enhances this unit's offensive capabilities. — named state wrapper; its two effects ARE modeled (Stance Critical Rate ▲ 35.14%, Critical Damage ▲ 75.12%)."
+          ]
+        }
+      }
+    },
+    "sky": {
+      "status": {
+        "tier": "MODEL_ONLY",
+        "tuned": false,
+        "unmodeled": {
+          "skill1": [
+            "■ Activates when Full Charge is maintained for 1 or more seconds while this unit is not in the Defiant Spirit state. Affects all allies. Defiant Spirit: Grants debuff immunity to 1 debuff(s) for 5 sec. Activates 3 time(s) per battle."
           ]
         }
       }
@@ -5378,44 +5347,44 @@
       },
       "ol": [
         {
-          "label": "2× Max Ammo + 2× Charge DMG",
-          "gainPct": 27.26
-        },
-        {
-          "label": "3× Max Ammo + 1× Charge DMG",
-          "gainPct": 26.04
-        },
-        {
           "label": "3× Charge DMG + 1× Max Ammo",
-          "gainPct": 25.68
-        },
-        {
-          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
-          "gainPct": 25.53
-        },
-        {
-          "label": "2× Max Ammo + 2× Charge Speed",
-          "gainPct": 24.99
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit Rate + 1× Charge DMG",
-          "gainPct": 23.81
-        },
-        {
-          "label": "2× Max Ammo + 1× Crit DMG + 1× Charge DMG",
-          "gainPct": 23.59
-        },
-        {
-          "label": "3× Max Ammo + 1× Charge Speed",
-          "gainPct": 23.53
+          "gainPct": 18.61
         },
         {
           "label": "2× Charge Speed + 1× Max Ammo + 1× Charge DMG",
-          "gainPct": 23.49
+          "gainPct": 18.06
         },
         {
-          "label": "4× Max Ammo",
-          "gainPct": 23.28
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Charge Speed",
+          "gainPct": 17.27
+        },
+        {
+          "label": "4× Charge DMG",
+          "gainPct": 17.26
+        },
+        {
+          "label": "3× Charge Speed + 1× Max Ammo",
+          "gainPct": 17.14
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge DMG",
+          "gainPct": 16.81
+        },
+        {
+          "label": "2× Max Ammo + 2× Charge Speed",
+          "gainPct": 16.73
+        },
+        {
+          "label": "3× Charge DMG + 1× Charge Speed",
+          "gainPct": 16.48
+        },
+        {
+          "label": "2× Max Ammo + 1× Charge Speed + 1× Charge DMG",
+          "gainPct": 16.09
+        },
+        {
+          "label": "2× Charge DMG + 1× Max Ammo + 1× Crit Rate",
+          "gainPct": 15.57
         }
       ]
     },

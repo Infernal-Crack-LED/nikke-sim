@@ -1,0 +1,38 @@
+S2d INDEPENDENT VERIFICATION MATRIX — sky — kit-autonomy gauntlet 2026-11-20
+Arm 1 (pre-S3, NO override on disk — the new unit's starting state; commit b9cf194c): RED as required:
+    Error: no skill override for "sky" — the engine does not parse skill prose at runtime
+          Tests  no tests
+Arm 2 (shipped override): npx vitest run scripts/tests/units/sky.test.ts --reporter=verbose — every DISCRIMINATING case runs the named nearest-wrong encoding via withPatchedOverride in the same file and asserts it diverges, so GREEN-vs-shipped and RED-vs-counterfactual are both inside the listed assertions.
+
+✓ scripts/tests/units/sky.test.ts > sky — fixture > A: she is the sole Burst I and casts every ~40s 1ms
+✓ scripts/tests/units/sky.test.ts > sky — fixture > B: dorothy covers stage 1 too, and at least one of her re-casts lands inside 35s 0ms
+✓ scripts/tests/units/sky.test.ts > K1 — Defiant Spirit (hold-gated debuff immunity) is recorded unmodeled > verbatim in unmodeled.skill1, and no block carries it 0ms
+✓ scripts/tests/units/sky.test.ts > K2 — hold Full Charge 1s → self Pierce + Pierce Damage ▲ 60%, 40s (mode Hold, default) > the block: fullCharge-keyed, self, mode Hold, gainPierce 40s + pierceDamagePct 60 40s 0ms
+✓ scripts/tests/units/sky.test.ts > K2 — hold Full Charge 1s → self Pierce + Pierce Damage ▲ 60%, 40s (mode Hold, default) > Hold: the 60% lands on her full-charge frames, on her alone, 40s 1ms
+✓ scripts/tests/units/sky.test.ts > K2 — hold Full Charge 1s → self Pierce + Pierce Damage ▲ 60%, 40s (mode Hold, default) > Hold vs Release: same shot frames; after her first full charge every shot gains ≥ 0.6 Damage Up 1ms
+✓ scripts/tests/units/sky.test.ts > K2 — hold Full Charge 1s → self Pierce + Pierce Damage ▲ 60%, 40s (mode Hold, default) > Release: her shots are not Pierce-tagged (removing High Tension leaves them unchanged) 22ms
+✓ scripts/tests/units/sky.test.ts > K2 — hold Full Charge 1s → self Pierce + Pierce Damage ▲ 60%, 40s (mode Hold, default) > DISCRIMINATING: dropping the mode gate makes it live in Release 25ms
+✓ scripts/tests/units/sky.test.ts > K2 — hold Full Charge 1s → self Pierce + Pierce Damage ▲ 60%, 40s (mode Hold, default) > DISCRIMINATING: allies scope would hand the 60% to all four 17ms
+✓ scripts/tests/units/sky.test.ts > K2 — hold Full Charge 1s → self Pierce + Pierce Damage ▲ 60%, 40s (mode Hold, default) > DISCRIMINATING: without the gainPierce tag the 60% never reaches her shots 15ms
+✓ scripts/tests/units/sky.test.ts > K3 — entering Full Burst → all allies ATK ▲ 20% of her ATK, 10s > on EVERY Full Burst start (incl. ones she did not cast), all 5, +20% of her ATK, 10s 1ms
+✓ scripts/tests/units/sky.test.ts > K3 — entering Full Burst → all allies ATK ▲ 20% of her ATK, 10s > DISCRIMINATING: burstCast keying fires only on her casts 39ms
+✓ scripts/tests/units/sky.test.ts > K4 — High Tension removed → all allies Low Tension: ATK ▼ 10% of her ATK, 20s > A: lands 35s after every cast (each window lapses before her next cast) 0ms
+✓ scripts/tests/units/sky.test.ts > K4 — High Tension removed → all allies Low Tension: ATK ▼ 10% of her ATK, 20s > B: lands ONLY at real lapses — an in-window re-cast refreshes High Tension, no Low Tension 0ms
+✓ scripts/tests/units/sky.test.ts > K4 — High Tension removed → all allies Low Tension: ATK ▼ 10% of her ATK, 20s > all 5 allies, −10% of her static ATK as flat ATK, 20s 0ms
+✓ scripts/tests/units/sky.test.ts > K4 — High Tension removed → all allies Low Tension: ATK ▼ 10% of her ATK, 20s > DISCRIMINATING: a burstCast + 35s delay stand-in fires after EVERY cast 35ms
+✓ scripts/tests/units/sky.test.ts > K4 — High Tension removed → all allies Low Tension: ATK ▼ 10% of her ATK, 20s > DISCRIMINATING: self scope would debuff only her 33ms
+✓ scripts/tests/units/sky.test.ts > K5 — Low Energy: she is stunned for 20s on entering Low Tension > she fires nothing inside any stun window, but fires before and after 1ms
+✓ scripts/tests/units/sky.test.ts > K5 — Low Energy: she is stunned for 20s on entering Low Tension > allies are not stunned (alice fires inside her stun window) 0ms
+✓ scripts/tests/units/sky.test.ts > K5 — Low Energy: she is stunned for 20s on entering Low Tension > DISCRIMINATING: without the Low Tension status the gate never opens — no stun 23ms
+✓ scripts/tests/units/sky.test.ts > K5 — Low Energy: she is stunned for 20s on entering Low Tension > DISCRIMINATING: without the stun she fires inside the window 24ms
+✓ scripts/tests/units/sky.test.ts > K6 — burst → all allies High Tension: Pierce Damage ▲ 15%, 35s, stacks to 3 > each cast: all 5, 15 per stack, 35s 1ms
+✓ scripts/tests/units/sky.test.ts > K6 — burst → all allies High Tension: Pierce Damage ▲ 15%, 35s, stacks to 3 > an in-window re-cast stacks; a cast after a lapse restarts at 1 0ms
+✓ scripts/tests/units/sky.test.ts > K6 — burst → all allies High Tension: Pierce Damage ▲ 15%, 35s, stacks to 3 > feeds a Pierce-tagged ally: removing it lowers alice 32ms
+✓ scripts/tests/units/sky.test.ts > K6 — burst → all allies High Tension: Pierce Damage ▲ 15%, 35s, stacks to 3 > DISCRIMINATING: maxStacks 1 never reaches 2 32ms
+✓ scripts/tests/units/sky.test.ts > K7 — burst → self ATK ▲ 50%, 35s > each cast, her alone, 50, 35s 0ms
+✓ scripts/tests/units/sky.test.ts > K7 — burst → self ATK ▲ 50%, 35s > DISCRIMINATING: allies scope reaches all four 24ms
+Tests  27 passed (27)
+
+Engine pin (selfStatusEnd): npx vitest run scripts/tests/engine/self-status-end.test.ts — 6/6 green; the two DISCRIMINATING cases verified RED with the sim.ts dispatch disabled (commit 9da670e4).
+
+Coverage note: the selfStatusEnd-vs-(burstCast + delaySec 35) discrimination needs a re-cast INSIDE 35s, which only burst-cooldown reduction produces (fixture B, dorothy). In fixture A (no CDR) the two encodings are byte-identical — the K4 'B:' case and its counterfactual carry the discrimination.

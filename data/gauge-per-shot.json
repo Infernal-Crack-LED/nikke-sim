@@ -661,6 +661,12 @@
     "fullChargeBonus": 250,
     "source": "datamined"
   },
+  "marian-queen": {
+    "basePerTrigger": 5,
+    "targetPerTrigger": 10,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
   "mary": {
     "basePerTrigger": 200,
     "targetPerTrigger": 400,
@@ -998,15 +1004,15 @@
     "fullChargeBonus": 250,
     "source": "datamined"
   },
-  "raven": {
+  "rapunzel-sanctuary": {
     "basePerTrigger": 140,
     "targetPerTrigger": 280,
     "fullChargeBonus": 250,
     "source": "datamined"
   },
-  "red-hood": {
-    "basePerTrigger": 280,
-    "targetPerTrigger": 560,
+  "raven": {
+    "basePerTrigger": 140,
+    "targetPerTrigger": 280,
     "fullChargeBonus": 250,
     "source": "datamined"
   },
@@ -1100,6 +1106,12 @@
     "fullChargeBonus": 150,
     "source": "datamined"
   },
+  "scarlet-goddeath": {
+    "basePerTrigger": 170,
+    "targetPerTrigger": 340,
+    "fullChargeBonus": 0,
+    "source": "datamined"
+  },
   "signal": {
     "basePerTrigger": 10,
     "targetPerTrigger": 20,
@@ -1115,6 +1127,12 @@
   "sin-swift-bunny": {
     "basePerTrigger": 280,
     "targetPerTrigger": 560,
+    "fullChargeBonus": 250,
+    "source": "datamined"
+  },
+  "sky": {
+    "basePerTrigger": 285,
+    "targetPerTrigger": 570,
     "fullChargeBonus": 250,
     "source": "datamined"
   },

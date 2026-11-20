@@ -1,0 +1,145 @@
+{
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when Full Charge is maintai",
+      "status": "SKIPPED",
+      "effectOrReason": "Header of the Defiant Spirit block (all allies, gated on NOT being in that state). Skipped with its payload — no debuff-immunity primitive; verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Defiant Spirit: Grants debuff immunity",
+      "status": "SKIPPED",
+      "effectOrReason": "No EffectDef for debuff immunity; the v1 boss applies no ally debuffs, so the line is inert at scope. 3×/battle limiter moot. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when Full Charge is maintai",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullCharge'}, target {kind:'self'} — 'Affects self'. ⚑ the '1 or more seconds' HOLD is unrepresentable (engine releases at full charge)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Gains Pierce for 40 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "gainPierce durationSec 40 (timed window, NOT the top-level hasPierce flag — pierce is off until the first full charge)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Pierce Damage ▲ 60% for 40 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pierceDamagePct 60, durationSec 40, self. Damage-Up bucket; live because the sibling gainPierce tags her shots."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates when entering Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnter'} (team FB entry, not burstCast — the text says 'entering Full Burst'), target {kind:'allies'} incl. self."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 20% of the skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 20, durationSec 10 — caster-scaled flat ATK add, resolved at apply time."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates when High Tension is remove",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'selfStatusEnd', name:'High Tension'}, armed by the burst block's selfStatus('High Tension',35s) which also targets this unit. target allies."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Low Tension: ATK ▼ 10% of the skill use",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct -10, durationSec 20 (levelScale anchor [10]) + selfStatus('Low Tension',20) to open the named state the next line reads. A real team-wide PENALTY — faithful, not skipped."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates only when in the Low Tensio",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Gate folded into the same selfStatusEnd('High Tension') trigger on a separate self-targeted block: Low Tension opens on exactly that frame, so co-timing == requiresSelfStatus without depending on gate/effect ordering."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Low Energy: Stuns for 20 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "stun durationSec 20, target self — blocks firing/charging/reloading (bursting unaffected per schema)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} (own burst block, no activation clause), target {kind:'allies'} incl. self. Burst I ⇒ stage omitted."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "High Tension: Pierce Damage ▲ 15%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pierceDamagePct 15, durationSec 35, maxStacks 3 (one stack per own cast) + selfStatus('High Tension',35) to arm skill2's removal trigger."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second burst block, trigger burstCast, target {kind:'self'}."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 50% for 35 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 50, durationSec 35 — unscoped self ATK (scales her OWN ATK; no 'of the skill user's ATK' clause, so atkPct not casterAtkPct)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "{kind:'fullCharge'} — every charged pull (SR, chargeFrames 60 ⇒ ~1 pull/charge cycle)",
+      "reasoning": "The kit gates on Full Charge being MAINTAINED for ≥1 sec after reaching full charge. The engine releases charge weapons exactly at full charge, so no hold state exists; `fullCharge` is the closest primitive and fires on every charged pull. Against a player who holds, this is exact; against one who releases immediately, it over-fires. Since both effects are 40s windows on a ~1-2s cadence, uptime saturates either way — the error is confined to the first seconds of the fight.",
+      "recipe": "Focus recording: time the Pierce-icon appearance relative to the first shot. If the buff icon appears ~1s AFTER the first full charge rather than on release, the hold is real and the block needs a block-level delaySec ~1 (or an interval stand-in) instead."
+    },
+    {
+      "field": "skill2[1].trigger / burst[0].effects[1] (selfStatus 'High Tension')",
+      "estimate": "Window 35s, max-extended per own burst cast ⇒ with cd 40s the lapse fires at most once late in a 180s fight; expected ZERO firings in graded comps",
+      "reasoning": "The kit gives no activation event for 'High Tension is removed' other than its own expiry, and `selfStatusEnd` requires a `selfStatus` effect to arm it. Pairing the burst's named buff with a same-named 35s selfStatus is the only way to express the kit's penalty loop. Whether the game ALSO removes High Tension on some other condition (stack consumption, overwrite by another Tension source) is unknown; if it does, the ATK▼/stun pair would fire far more often and this baseline under-credits the penalty.",
+      "recipe": "Record a fight where the unit stops bursting for >35s: confirm (a) an ATK▼ popup on all allies, (b) a self-stun immediately after, (c) the 20s durations. Then confirm the inverse — burst every rotation and verify the penalty NEVER appears."
+    },
+    {
+      "field": "burst[0].effects[0].maxStacks",
+      "estimate": "3 stacks, +1 per own burst cast; steady state 3 from the 3rd rotation on (time-average over a 180s fight ≈ 2.5 stacks ⇒ ~37% of the 45% ceiling-equivalent)",
+      "reasoning": "The kit states the cap but not the accrual rule. One-stack-per-cast is the default reading for a burst-applied stacking buff, and the 35s duration exceeds the 40s cooldown only marginally — so whether stacks SURVIVE to the next cast is itself uncertain (35s duration vs 40s cd suggests a 5s gap where a stack could lapse, which would pin the kit at 1 stack forever unless FB cadence is faster than cd). No rampSec authored: per-cast stacking already ramps, and layering rampSec on top would double-haircut.",
+      "recipe": "Popup/icon read across three consecutive bursts: count the stack pips on the ally buff icon at each cast. Critically, check the pip count IMMEDIATELY BEFORE the 2nd and 3rd cast — if it has dropped to 0, the 35s window genuinely lapses under a 40s cooldown and the buff never exceeds 1 stack."
+    },
+    {
+      "field": "skill2[1].effects[0].value (sign) + levelScale",
+      "estimate": "casterAtkPct -10 with levelScale {value:[10]}",
+      "reasoning": "A team-wide ATK ▼ scaled off the caster's ATK has no dedicated debuff StatKey; a negative casterAtkPct is the arithmetic equivalent on the flat-ATK path. The derived negative will not match index 9 of the level table, hence the [10] anchor. UNVERIFIED that the engine accepts a negative flat-ATK contribution without clamping at 0.",
+      "recipe": "Harness: force the lapse (patch the selfStatus durationSec down via withPatchedOverride), capture buffApply events with stat 'casterAtkPct', and assert the emitted value is negative and that the target's effectiveAtk actually drops by (10/100)×caster.staticAtk."
+    },
+    {
+      "field": "skill2[2].effects[0] (stun self 20s)",
+      "estimate": "stun durationSec 20 — zero shots fired for 20s, burst chain unaffected",
+      "reasoning": "Per the schema a stun blocks firing/charging/reloading but not bursting. For a Supporter this costs little damage directly, but it also stops the skill1 `fullCharge` trigger, so Pierce + Pierce Damage ▲60% lapse 40s after the last charge during a long stun — a second-order loss the kit text does not spell out.",
+      "recipe": "Same forced-lapse harness run: count shot events in the 20s after the lapse frame (expect 0) and confirm a burstCast still occurs inside the window if the gauge fills."
+    },
+    {
+      "field": "base cadence tuple (chargeFrames 60 / reloadFrames 151 / hitsPerShot 1)",
+      "estimate": "as datamined",
+      "reasoning": "ALWAYS-⚑: datamine cadence fields are known-unreliable, and here they set how often the skill1 pierce window refreshes and how often full charges land. A wrong charge time changes trigger frequency, not magnitudes, so the 40s windows absorb most of the error.",
+      "recipe": "Frame-count one magazine (6 rounds) of unbuffed fire from a focus recording: derive pulls/s and reload frames, compare against 60/151."
+    },
+    {
+      "field": "skill1 Defiant Spirit (unmodeled)",
+      "estimate": "inert — 0 damage contribution",
+      "reasoning": "Debuff immunity has no primitive and the v1 boss applies no ally debuffs, so modeling it could not move damage. Recorded verbatim in unmodeled.skill1 rather than silently dropped. Flagged because its activation clause shares the skill1 trigger — if a future debuff-immunity primitive lands, the block shape is already known.",
+      "recipe": "None needed at v1 scope; revisit only if the engine gains ally-debuff modeling."
+    },
+    {
+      "field": "noFb / noRange",
+      "estimate": "neither set",
+      "reasoning": "Per the hard rules: FB-by-timing defaults ON and noRange is engine-automatic. This kit has NO flatDamage/dot/hitRepeat riders at all — it is pure buffs plus one stun — so there is nothing for either field to attach to.",
+      "recipe": "N/A (no function-damage instances in this kit)."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -142,6 +142,12 @@ export type TriggerDef =
   // LATER than the same-numbered stageEnter; do not substitute one for the other.
   | { kind: 'stageCast'; stage: 1 | 2 | 3 }
   | { kind: 'bossElement'; element: string } // permanent, but only if the boss has this element
+  // "Activates when <Status> is removed" — fires on the frame the OWNER's own kit-named selfStatus
+  // window of this name lapses (opened/max-extended by a `selfStatus` effect targeting the owner;
+  // a re-application before the lapse moves it). Same-unit only, like requiresSelfStatus. In-sim
+  // nothing cleanses a status, so "removed" is always the timed lapse. e.g. sky's Low Tension on
+  // High Tension's lapse. Pinned by scripts/tests/engine/self-status-end.test.ts.
+  | { kind: 'selfStatusEnd'; name: string }
   | { kind: 'unsupported'; raw: string };
 
 export type TargetDef =

@@ -201,6 +201,7 @@ current but not a contract.
 | `stageEnter`             | When the chain REACHES stage N — gauge-full (N=1) or the stage-(N-1) cast (N=2,3) | 13 units (cinderella, ein, flora, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, neon-blue-ocean, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny, yukiko) |
 | `stageCast`              | When a stage-N burst is CAST by anyone — one chain step after `stageEnter` | rupee-winter-shopper                                                                                        |
 | `bossElement`            | Permanent passive, active only if boss has this element              | eve                                                                                                                       |
+| `selfStatusEnd`          | On the frame the OWNER's own named `selfStatus` window lapses ("Activates when <Status> is removed"); a re-application before the lapse extends the window and moves it | sky |
 
 **Every trigger above dispatches through `applyBlock`**, so the block-level gates below, `everyN` /
 `everyNOffset` and block `delaySec` bind uniformly. `chargeCounter` was the last exception and was

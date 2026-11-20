@@ -1,0 +1,127 @@
+{
+  "slug": "sky",
+  "kitDescription": "Sky is an Iron sniper Supporter with a Burst I. When she holds a full charge for a second, her shots gain Pierce for 40 seconds and she deals 60% more Pierce damage for the same window; the first few holds also hand the whole team a brief immunity to one debuff, three times per battle. Whenever any Full Burst begins she gives every ally a flat ATK boost worth 20% of her own ATK for 10 seconds. Her burst puts the team into High Tension, a stacking 15% Pierce-damage buff for 35 seconds (up to three stacks), and gives herself 50% more ATK for 35 seconds. The catch: when High Tension wears off the team drops into Low Tension, losing 10% of her ATK for 20 seconds, and she herself is stunned (Low Energy) for those 20 seconds. Because her burst cooldown is 40 seconds and High Tension lasts 35, the penalty fires every cycle unless burst cooldown reduction brings her next cast inside the window.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "UNMODIFIED (harness wiring, not a model divergence): 'runs the unit and actually produces Full Bursts' — the blind file passes onEvent at the top level of runComp instead of cfg.onEvent, so it records zero events (FB_STARTS 0, burstCast 0).",
+      "UNMODIFIED (same wiring defect): 'fires once per TEAM Full Burst and reaches every ally incl. self, flat-resolved' — empty event log → deltas.length 0 ≠ 1.",
+      "UNMODIFIED (same wiring defect): 'is a TEAM buff: scoping it to self costs the teammates and only them' — empty event log → deltas.length 0 ≠ 1.",
+      "ADAPTED (one-line cfg.onEvent fix; 17 green / 1 RED / 3 skipped): 'no ATK-down is ever applied in the control fixture' — RECON_ERROR. The blind writer assumed liter takes every Burst-1 so sky never casts; under first-ready selection she does cast in controlComp (driver-reported 18.3 s, then re-casts inside 35 s under liter's burst CDR), and the four negative casterAtkPct applies at 53.3 s = 18.3 + 35 are the kit-correct Low Tension lapse. Either way (casts or no casts) there is no model divergence — the blind's own structural assertions on this line (selfStatusEnd /tension/i, allies, casterAtkPct −10, 20 s) are green against the shipped override.",
+      "All 9 S5 STRUCTURAL assertions (gainPierce 40 s on a fullCharge self block, hasPierce absent, pierceDamagePct 60/40 s, fullBurstEnter casterAtkPct 20/10 s allies incl. self, gated 20 s self stun, −10 casterAtkPct on selfStatusEnd 'High Tension', burst pierceDamagePct 15/35 s/maxStacks 3 allies, self atkPct 50/35 s, selfStatus 35 s + 20 s both /tension/i, 'defiant' present) traced GREEN by hand against sky.json."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Defiant Spirit: debuff immunity ×1, 5 s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim (header + payload) + caveat: defensive, no primitive; notes it could absorb her own Low Tension on a timed hold (⚑ MEASUREMENT-GATED).",
+        "blindSaid": "S2b ×2: UNMODELED (fable-5 hypothesizes the 3 charges exhaust in the opening ~20 s, before the first lapse); S5: it.skip + 'defiant' present; S6: unmodeled verbatim, inert at scope.",
+        "formulaCheck": "No damage, stat, or resource term in any bucket; the engine has no immunity primitive and the scope-lock boss applies no ally debuffs. Nothing to route.",
+        "fireRateOk": true,
+        "explanation": "Recorded, not dropped. Reconciliation nuance for the owner: under the shipped Hold mode (every full charge counts as a held charge) the kit's own 'while not in Defiant Spirit' gate re-arms every 5 s, so the 3 charges are spent within ~11–16 s of battle start — before the earliest High Tension lapse (cast + 35 s). In the modeled Hold world the immunity therefore cannot touch Low Tension, and omitting it is exactly neutral; the caveat's 'a timed hold could cancel up to 3 Low Tension windows' describes a player who saves charges, which contradicts the Hold premise. Wording tweak, not a modeling error."
+      },
+      {
+        "kitLine": "Gains Pierce for 40 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill1 block: trigger fullCharge, target self, mode 'Hold' (default of modes ['Hold','Release']), gainPierce durationSec 40; hasPierce absent. Release = line never fires.",
+        "blindSaid": "S2b ×2, S5, S6 all: fullCharge → self gainPierce 40 s, NOT static hasPierce; the 1 s hold is a ⚑ convention. Four independent agents converge on the Hold-equivalent reading.",
+        "formulaCheck": "Pierce tag → the DamageUp Pierce term (§1e) becomes live for her shots; no double-hit on the partless boss (PIERCE_CORE_DOUBLE false). gainPierce is the sanctioned timed-window primitive (§11).",
+        "fireRateOk": true,
+        "explanation": "Fires on every charged pull (~82-frame SR cycle), refreshing the 40 s window; first application on her first shot at ~1.5 s. Survives the 20 s stun (last refresh ≤1.4 s before the lapse leaves ≥18 s of window after the stun ends). Driver's K2 pins frames == charged-shot frames, self-only, 40 s expiry, and Hold-vs-Release discrimination. The mode default is a play-style question the kit cannot answer — documented ⚑ with recipe (owner spot-check #1)."
+      },
+      {
+        "kitLine": "Pierce Damage ▲ 60% for 40 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Same block: buff pierceDamagePct 60, durationSec 40, self.",
+        "blindSaid": "All four agents: pierceDamagePct 60 / 40 s / self in the same fullCharge block; nearest-wrong named as attackDamagePct 60 or allies target.",
+        "formulaCheck": "pierceDamagePct is an additive DamageUp-bucket member gated on the Pierce tag (§1e) — composes additively with High Tension's 15/stack and any ally Damage Up, not a separate multiplier.",
+        "fireRateOk": true,
+        "explanation": "Driver K2 shows every post-first-charge normal gains ≥0.6 dmgUp vs Release and strictly more while High Tension is up (proving the tag also admits the burst buff); allies-scope and no-gainPierce counterfactuals diverge. S5 adapted: 60→120 lifts only her, teammates byte-identical."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "ATK ▲ 20% of the skill user's ATK, 10 s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger fullBurstEnter, target allies (incl. self), buff casterAtkPct 20, durationSec 10 — on every Full Burst whether or not she cast.",
+        "blindSaid": "All four agents: fullBurstEnter (not burstCast), allies incl. self, casterAtkPct 20 (flat-resolved), 10 s.",
+        "formulaCheck": "§1a: caster-ATK grants convert at application to a flat add that does not dilute. Trigger timing: 'when entering Full Burst' = team FB entry (§8 fullBurstEnter), so it fires on rotations another B1 completes.",
+        "fireRateOk": true,
+        "explanation": "Fixture B pins frames == every fullBurstStart (11 vs her 5 casts), 5 holders, value ≈ 0.20 × staticAtk, 600-frame expiry; burstCast-keyed counterfactual fires only on her casts. Residual (engine-wide, not sky-specific): the emitted value equals 0.20 × staticAtk even at FB starts where her own ATK ▲50% is live, i.e. the engine resolves casterAtkPct off static ATK while damage-calculation.md §1a says 'caster's final ATK' — see gotcha 1."
+      },
+      {
+        "kitLine": "Low Tension: ATK ▼ 10% of user's ATK 20 s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "NEW trigger selfStatusEnd 'High Tension' (engine change 9da670e4: fires on the frame the unit's own named selfStatus window expires; re-cast inside the window extends it) → allies casterAtkPct −10, 20 s + selfStatus 'Low Tension' 20 s.",
+        "blindSaid": "S2b ×2: selfStatusEnd 'High Tension' → allies casterAtkPct −10 / 20 s, requires burst to author the 35 s selfStatus, must NOT fire on in-window re-casts; S6: block identical to the driver's except a levelScale anchor [10]; S5 structural: identical.",
+        "formulaCheck": "A negative flat caster-ATK grant subtracts inside §1a effectiveAtk (only FinalATK is clamped at 0). Trigger: no existing primitive reads a status lapse; burstCast + delaySec 35 is wrong under burst CDR (21 overrides carry burstCdr).",
+        "fireRateOk": true,
+        "explanation": "Fixture A: lands at every cast + 35 s (4 in 180 s), 5 holders, −0.10 × staticAtk, 1200-frame expiry. Fixture B (dorothy CDR): lands only at the 2 real lapses, not after the 2 in-window re-casts; the burstCast+delaySec stand-in fires 4× and is discriminated. Engine pin self-status-end.test.ts 6/6 with dispatch-disabled RED; regression board byte-identical. Verification gap: the test asserts the emitted negative value, not that ally damage actually drops during the window — see gotcha 2. S6's levelScale anchor is immaterial at scope lock (SL10 literal either way)."
+      },
+      {
+        "kitLine": "Low Energy: Stuns for 20 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Same selfStatusEnd trigger, target self, requiresSelfStatus 'Low Tension' → stun 20 s. Caveat ⚑: engine stun stops fire/charge/reload but not burst casting; no early exit on re-entering High Tension.",
+        "blindSaid": "S2b ×2: FIX/FAITHFUL — self stun 20 s at Low Tension onset, flag the 'bursting unaffected' convention and possible early exit; S6: same stun, gate folded into the co-timed trigger; S5 structural: 20 s, self, gated — green.",
+        "formulaCheck": "No damage term; zeroes her normal/charge instances and her fullCharge-driven S1 refresh for the window. §2a: casts are not blocked by the engine's stun.",
+        "fireRateOk": true,
+        "explanation": "Fixture A/B: zero sky shot events in every [lapse, lapse+20 s), shots before and after; alice fires through it. Gate ordering works as shipped (producer block precedes the gated block in the same frame — the 'no Low Tension status → no stun' counterfactual proves the gate is live, something S6's fold could not pin). Documented ⚑ residual with large downstream effect: in fixture A her next cast (cast + 40 s) falls INSIDE the stun (cast + 35..55 s); if a stunned Nikke cannot burst in-game, her real cycle stretches toward ~55 s and every Low Tension landing moves (owner spot-check #2)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "High Tension: Pierce Dmg ▲15% 35 s ×3",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies pierceDamagePct 15, 35 s, maxStacks 3 (stack per cast, refresh, restart at 1 after a lapse); self block authors selfStatus 'High Tension' 35 s.",
+        "blindSaid": "All four: burstCast (not fullBurstEnter), allies, 15 / 35 s / maxStacks 3, never pre-folded to 45, plus the paired 35 s selfStatus. S6 places the selfStatus in the allies block (equivalent — the window is per-unit, name-keyed on sky). S2b fable-5 claimed stacks can never accumulate (cd 40 > 35) — RECON_ERROR: burst CDR makes 2+ stacks real and fixture B shows it.",
+        "formulaCheck": "pierceDamagePct is a DamageUp member read only by Pierce-tagged hits (§1e) — inert on crown/helm, live on sky (S1 window) and alice. Stacks add inside the bucket (15/stack).",
+        "fireRateOk": true,
+        "explanation": "Fixture B: applies on each of her 5 casts, 5 holders, 35 s expiry, stacks 1→2 on an in-window re-cast, back to 1 after a lapse; removing the block lowers alice (Pierce carry); maxStacks-removed counterfactual never reaches 2."
+      },
+      {
+        "kitLine": "ATK ▲ 50% for 35 sec (self)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self atkPct 50, 35 s.",
+        "blindSaid": "All four: self atkPct 50 (bare percentage, not casterAtkPct), 35 s, burstCast.",
+        "formulaCheck": "Plain ATK ▲ % dilutes into the (1 + ΣATK%) term on staticAtk (§1a); self scope only.",
+        "fireRateOk": true,
+        "explanation": "Fixture A: one apply per cast, targetIdx == sky, value 50, 2100-frame expiry; allies-scope counterfactual reaches all four. Lapses 5 s before each 40 s re-cast, coinciding with the Low Tension window."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "skill2",
+      "summary": "casterAtkPct resolves off static ATK in-engine while the damage-formula SSOT (§1a) states 'caster's final ATK'; sky's +20%-of-ATK team grant is therefore not lifted by her own ATK ▲50% (live at every FB start she opens). Engine-wide convention affecting every caster-ATK buffer, surfaced here because sky pairs a large self-ATK buff with a caster-scaled grant.",
+      "evidence": "Kit: 'ATK ▲ 20% of the skill user's ATK'. damage-calculation.md §1a: 'convert at application time to a flat add of the caster's final ATK × X'. Driver K3 asserts every positive casterAtkPct value ≈ 0.2 × staticAtk (passes, S2d green) across FB starts that occur 82 frames after her burstCast while her atkPct 50 is live → engine basis is static. Both S2b reviewers flagged this as report-not-act ('if the game uses final ATK the grant is ×1.5 for 35 of every 40 s').",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Needs an owner ruling or measurement, not a sky edit: popup-compare an ally's FinalATK-driven hit during a Full Burst sky opened (her +50% live) vs one another B1 opened (her +50% lapsed); a ×1.5 difference in the +20% grant's contribution confirms final-ATK basis and the engine's casterAtkPct conversion (and the SSOT wording) must be reconciled roster-wide. Until then, either align §1a's wording to the engine's static basis or record the gap in open-questions."
+    },
+    {
+      "subkind": "ENGINE",
+      "slot": "skill2",
+      "summary": "The Low Tension ATK ▼ is verified only at the emitted-buff layer (negative casterAtkPct value, 5 holders, 20 s); no assertion shows an ally's damage actually falls during the window, so a hypothetical zero-clamp on negative flat grants would leave the line modeled-but-inert undetected. Not shown to differ — a verification gap, flagged as PLAUSIBLE.",
+      "evidence": "Kit: 'Low Tension: ATK ▼ 10% of the skill user's ATK for 20 sec'. §1a effectiveAtk sums caster-ATK grants as flat values with the only clamp at FinalATK = max(0, …), so arithmetic says it works. Driver K4 asserts x.value ≈ −0.1 × staticAtk only; S5 has no behavioural coverage (fixture-unreachable by its premise); S2b fable-5-1 explicitly asked the driver to confirm the engine accepts a negative casterAtkPct without clamping.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Add one damage-side assertion to K4: in fixture A, alice's (or crown's) damage events in [lapse, lapse + 20 s) carry a strictly lower ATK term than the same frames in a run with the −10 effect patched out (or totals for a non-sky ally drop when the effect is present). Green = the negative grant is live; red = declare a GAP, never a fudge."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.00",
+  "verdict": "GO",
+  "verdictRationale": "All eight kit lines are either FAITHFUL (7) or a DOCUMENTED_GAP (Defiant Spirit, verbatim + caveat); there is no SILENT_DROP, and the two gotchas are low-severity engine-level residuals (the roster-wide casterAtkPct static-vs-final basis, and a missing damage-side assertion for the negative Low Tension grant) that do not block GO. The blind re-derivations converged mechanically after one harness wiring fix (S5 passes onEvent at the wrong level — 3 vacuous REDs): 17 green / 1 RED / 3 skipped, and the lone RED is a RECON_ERROR (the blind assumed sky never casts in controlComp; her cast-plus-35 s lapse is the kit-correct Low Tension). S6's override is block-identical to the driver's modulo a levelScale anchor and the placement of the 35 s High Tension selfStatus, both behaviourally neutral. The new selfStatusEnd primitive is the right shape (burstCast + delaySec is wrong under burst CDR), is independently pinned (engine test 6/6, dispatch-disabled RED, board byte-identical), and the driver's fixture B discriminates it. Discrimination holds on every load-bearing line (mode gate, scope, trigger identity, stack cap, status producer, stun presence). Same-model residuals for the owner to spot-check, ranked: (1) the Hold default for the 'Full Charge maintained 1 s' trigger — all four agents and the driver chose the full-uptime reading, which is a shared prior, not a measurement; Release is one mode switch away and the recipe (focus recording, Pierce icon + shot cadence) is stated; (2) the 'stunned units can still burst' engine convention — in the sole-B1 fixture every re-cast lands inside the 20 s stun, so if the game forbids it her cycle stretches toward ~55 s and all Low Tension timings move; (3) the Defiant Spirit caveat should state that in Hold mode the 3 charges are exhausted in the first ~11–16 s (5 s re-arm gate), so omitting the immunity is exactly neutral to Low Tension uptime rather than a possible ≤3-window cancel; (4) gotcha 1's casterAtkPct basis, which is worth a roster-wide owner ruling independent of sky.",
+  "model": "claude-fable-5-1"
+}
